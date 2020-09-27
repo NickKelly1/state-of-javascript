@@ -1,0 +1,9 @@
+- logo
+- top npm packages
+- top / common npm package comparisons
+- useful links
+  - epic react
+  - npm compare
+  - npm trends
+- screen resolution trends
+- 

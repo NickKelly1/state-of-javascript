@@ -1,0 +1,37 @@
+<div>
+  <h2>
+    The Blog
+  </h2>
+  <div id="articles">
+    Write articles here
+  </div>
+  <script>
+    const disp = async () => {
+      const res = await fetch('/articles');
+      const articles = await res.json();
+      console.log('articles: ', articles);
+      const container = document.querySelector('#articles');
+      container.innerHTML = '';
+      articles.forEach(article => {
+        // img
+        const img = document.createElement('img');
+        img.style.maxHeight = '50px';
+        img.setAttribute('src', article.thumbnail.url);
+        container.appendChild(img);
+
+        // title
+        const title = document.createElement('h3');
+        title.innerText = article.title;
+        container.appendChild(title);
+        console.log('appending title:', title);
+
+        // content
+        const content = document.createElement('div');
+        content.innerText = article.content;
+        container.appendChild(content);
+        console.log('appending content:', content);
+      });
+    }
+    disp();
+  </script>
+</div>

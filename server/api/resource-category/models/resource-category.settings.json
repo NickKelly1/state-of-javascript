@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "resource_categories",
+  "info": {
+    "name": "resource Category"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "resources": {
+      "via": "resource_category",
+      "collection": "resource"
+    },
+    "resource_subcategories": {
+      "via": "resource_category",
+      "collection": "resource-subcategory"
+    }
+  }
+}
