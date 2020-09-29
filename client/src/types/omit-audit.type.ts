@@ -1,0 +1,1 @@
+export type OmitAudit<T> = Omit<T, 'created_by' | 'updated_by'>
