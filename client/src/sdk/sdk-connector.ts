@@ -18,6 +18,7 @@ export class SdkConnector {
     ]
     const response = await fetch(info, init);
     const json: T = await response.json();
+    if (!response.ok) throw json;
     return json;
   }
 }

@@ -9,6 +9,8 @@ import { ResourcesCard } from '../../src/components/resources-card/resources-car
 import { StoriesCard } from '../../src/components/stories-card/stories-card';
 import { ResourceSdkResource } from '../../src/sdk/types/resource.sdk.resource';
 import { StoryCard } from '../../src/components/story-card/story-card';
+import { SdkFilterEq, SdkQuery, SdkSort, SdkSortDir } from '../../src/sdk/sdk-query.type';
+import { Sort } from '@material-ui/icons';
 
 interface IHomeProps {
   resources: ResourceSdkResource[];
@@ -62,7 +64,18 @@ function HomePage(props: IHomeProps) {
 
 
 export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk }) => {
-  const [resources, stories] = await Promise.all([sdk.resources(), sdk.stories()]);
+  const resourceQuery = SdkQuery.create();
+  resourceQuery.addSort(SdkSort.create({ field: 'id', value: SdkSortDir.Desc }));
+  const resourcesRes = sdk.resources({ query: resourceQuery });
+
+  const storiesQuery = SdkQuery.create();
+  storiesQuery.addSort(SdkSort.create({ field: 'updated_at', value: SdkSortDir.Desc }));
+  // storiesQuery.addFilter(SdkFilterEq.create({ field: 'id', value: 1 }));
+  storiesQuery.setLimit(2);
+  const storiesRes = sdk.stories({ query: storiesQuery });
+
+  const [ resources, stories, ] = await Promise.all([ resourcesRes, storiesRes ]);
+
   return {
     props: {
       resources,

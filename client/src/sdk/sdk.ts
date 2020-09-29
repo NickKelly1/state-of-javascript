@@ -1,5 +1,6 @@
 import { PublicEnv } from "../env/public-env.helper";
 import { SdkConnector } from "./sdk-connector";
+import { SdkQuery } from "./sdk-query.type";
 import { ResourceSdkResource } from "./types/resource.sdk.resource";
 import { StorySdkResource } from "./types/story.sdk.resource";
 
@@ -19,13 +20,17 @@ export class Sdk {
     //
   }
 
-  async resources(): Promise<ResourceSdkResource[]> {
-    const resources = await this.sdkConnector.json<ResourceSdkResource[]>('/resources');
+  async resources(arg: { query?: SdkQuery }): Promise<ResourceSdkResource[]> {
+    const { query } = arg;
+    const search = query?.toSearch().toString() ?? '';
+    const resources = await this.sdkConnector.json<ResourceSdkResource[]>(`/resources?${search}`);
     return resources;
   }
 
-  async stories(): Promise<StorySdkResource[]> {
-    const stories = await this.sdkConnector.json<StorySdkResource[]>('/stories');
+  async stories(arg: { query?: SdkQuery }): Promise<StorySdkResource[]> {
+    const { query } = arg;
+    const search = query?.toSearch().toString() ?? '';
+    const stories = await this.sdkConnector.json<StorySdkResource[]>(`/stories?${search}`);
     return stories;
   }
 }
