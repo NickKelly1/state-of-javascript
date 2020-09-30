@@ -2,20 +2,18 @@ import React, { useMemo, useState } from 'react';
 import { Box, Button, makeStyles, Paper, Typography } from "@material-ui/core";
 import { ArticleSdkResource } from '../../sdk/types/article.sdk.resource';
 import { formatRelative } from 'date-fns';
-import { InlineSdkImg } from '../inline-sdk-img/inline-sdk-img';
-import { MaybeLink } from '../maybe-link/maybe-link';
 import { InfoCard } from '../info-card/info-card';
 import { InfoCardHeader } from '../info-card-header/info-card-header';
 import { InfoCardSubtitle } from '../info-card-subtitle/info-card-subtitle';
 import { InfoCardBody } from '../info-card-body/info-card-body';
 import { InfoCardTitle } from '../info-card-title/info-card-title';
 import { InfoCardCategory } from '../info-card-category/info-card-category';
-import ReactMarkdown from 'react-markdown';
+import { Markdown } from '../markdown/markdown';
 
 const useStyles = makeStyles((theme) => ({
   more: {
-    paddingLeft: 0,
-    marginTop: theme.spacing(2),
+    // paddingLeft: 0,
+    marginTop: theme.spacing(1),
   }
 }));
 
@@ -57,18 +55,14 @@ export function ArticleCard(props: IArticleCardProps) {
         {article.teaser && (
           <>
             <Button className={classes.more} onClick={() => setMore(!more)}>
-              {!more && (
-                'See more...'
-              )}
-              {more && (
-                'See less...'
-              )}
+              {!more && ( 'More...')}
+              {more && ( 'Less...')}
             </Button>
             {more && (
               <div>
-                <ReactMarkdown>
+                <Markdown>
                   {article.teaser}
-                </ReactMarkdown>
+                </Markdown>
               </div>
             )}
           </>

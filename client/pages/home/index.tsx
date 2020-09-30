@@ -55,7 +55,7 @@ function HomePage(props: IHomeProps) {
                   <Grid container spacing={2}>
                     {stories.map((story, i) => (
                       <Fragment key={i}>
-                        <Grid item xs={12} sm={12} lg={6}>
+                        <Grid item xs={12} sm={12} lg={12}>
                           <ArticleCard article={story} />
                         </Grid>
                       </Fragment>
