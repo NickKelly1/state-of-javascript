@@ -7,4 +7,5 @@ export interface ResourceSdkResource extends ResourceSdkData {
   resource_subcategory: OrNullable<ResourceSubcategorySdkData>;
   icon: OrNullable<MediaSdkResource>;
   logo: OrNullable<MediaSdkResource>;
+  example: OrNullable<MediaSdkResource>;
 }

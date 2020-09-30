@@ -2,7 +2,7 @@ import { PublicEnv } from "../env/public-env.helper";
 import { SdkConnector } from "./sdk-connector";
 import { SdkQuery } from "./sdk-query.type";
 import { ResourceSdkResource } from "./types/resource.sdk.resource";
-import { StorySdkResource } from "./types/story.sdk.resource";
+import { ArticleSdkResource } from "./types/article.sdk.resource";
 
 export class Sdk {
   static create(arg: {
@@ -27,10 +27,10 @@ export class Sdk {
     return resources;
   }
 
-  async stories(arg: { query?: SdkQuery }): Promise<StorySdkResource[]> {
+  async stories(arg: { query?: SdkQuery }): Promise<ArticleSdkResource[]> {
     const { query } = arg;
     const search = query?.toSearch().toString() ?? '';
-    const stories = await this.sdkConnector.json<StorySdkResource[]>(`/stories?${search}`);
+    const stories = await this.sdkConnector.json<ArticleSdkResource[]>(`/stories?${search}`);
     return stories;
   }
 }
