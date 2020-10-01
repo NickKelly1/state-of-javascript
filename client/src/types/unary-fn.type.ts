@@ -1,0 +1,1 @@
+export interface UnaryFn<A, R> { (arg: A): R; }
