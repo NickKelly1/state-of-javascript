@@ -24,12 +24,8 @@ import {
   Cell,
 } from 'recharts';
 import { NpmsPackageInfos } from '../../src/npms-api/types/npms-package-info.type';
-import { Attempt, attemptAsync, success, unwrapAttempt } from '../../src/helpers/attempted.helper';
+import { Attempt, attemptAsync, } from '../../src/helpers/attempted.helper';
 import { NormalisedError } from '../../src/helpers/normalise-error.helper';
-import { fail } from 'assert';
-import { PackagePopularityPieChart } from '../../src/components/fitted-pie-chart/package-popularity-pie-chart';
-import { PackageScorePieChart } from '../../src/components/fitted-pie-chart/package-score-pie-chart';
-import { FittedPieChart } from '../../src/components/fitted-pie-chart/fitted-pie-chart';
 import { NpmPackagesDashboard } from '../../src/components/dashboards/npm-packages-dashboard/npm-packages-dashboard';
 import { WithAttempted } from '../../src/components/with-attempted/with-attempted';
 
