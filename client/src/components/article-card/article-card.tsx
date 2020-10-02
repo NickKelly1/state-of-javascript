@@ -55,8 +55,10 @@ export function ArticleCard(props: IArticleCardProps) {
         {article.teaser && (
           <>
             <Button className={classes.more} onClick={() => setMore(!more)}>
-              {!more && ( 'More...')}
-              {more && ( 'Less...')}
+              <u>
+                {!more && ( 'More...')}
+                {more && ( 'Less...')}
+              </u>
             </Button>
             {more && (
               <div>

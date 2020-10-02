@@ -55,7 +55,7 @@ export interface NpmsPackageInfo_Collected_GitHub {
   forksCount: OrNullable<number>;
   subscribersCount: OrNullable<number>;
   issues: OrNullable<NpmsPackageInfo_Collected_GitHub_Issues>;
-  contributors: OrNullable<NpmsPackageInfo_Collected_GitHub_Contributor>;
+  contributors: OrNullable<NpmsPackageInfo_Collected_GitHub_Contributor[]>;
   commits: OrNullable<NpmsPackageInfo_Collected_GitHub_Commit[]>;
   statuses: OrNullable<NpmsPackageInfo_Collected_GitHub_Status[]>;
 }
@@ -73,7 +73,7 @@ export interface NpmsPackageInfo_Collected_Source {
 }
 
 export interface NpmsPackageInfo_Collected_Npm {
-  downloads: OrNullable<NpmsPackageInfo_Collected_Npm_Downloads>;
+  downloads: OrNullable<NpmsPackageInfo_Collected_Npm_Downloads[]>;
   dependentsCount: OrNullable<number>;
   dependencies: OrNullable<NpmsPackageInfo_Collected_Npm_Dependencies>;
   devDependencies: OrNullable<NpmsPackageInfo_Collected_Npm_Dependencies>;

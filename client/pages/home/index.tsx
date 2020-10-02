@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import Next, { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import { ssPropsHandler } from '../../src/helpers/ss-props-handler.helper';
-import { Button, Grid, Link, makeStyles, Paper, Typography } from '@material-ui/core';
+import { Button, Grid, Link, makeStyles, Paper, Typography, withTheme } from '@material-ui/core';
 import { ArticleSdkResource } from '../../src/sdk/types/article.sdk.resource';
 import { ResourceSdkResource } from '../../src/sdk/types/resource.sdk.resource';
 import { ArticleCard } from '../../src/components/article-card/article-card';
@@ -27,10 +27,10 @@ import { NpmsPackageInfos } from '../../src/npms-api/types/npms-package-info.typ
 import { Attempt, attemptAsync, success, unwrapAttempt } from '../../src/helpers/attempted.helper';
 import { NormalisedError } from '../../src/helpers/normalise-error.helper';
 import { fail } from 'assert';
-import { PackagePopularityPieChart } from '../../src/components/package-popularity-pie-chart/package-popularity-pie-chart';
-import { PackageScorePieChart } from '../../src/components/package-popularity-pie-chart/package-score-pie-chart';
-import { FittedPieChart, IPieChartDatum } from '../../src/components/package-popularity-pie-chart/fitted-pie-chart';
-import { HttpFrameworkDashboard } from '../../src/components/dashboards/http-framework-dashboards/http-framework-dashboards';
+import { PackagePopularityPieChart } from '../../src/components/fitted-pie-chart/package-popularity-pie-chart';
+import { PackageScorePieChart } from '../../src/components/fitted-pie-chart/package-score-pie-chart';
+import { FittedPieChart } from '../../src/components/fitted-pie-chart/fitted-pie-chart';
+import { NpmPackagesDashboard } from '../../src/components/dashboards/npm-packages-dashboard/npm-packages-dashboard';
 import { WithAttempted } from '../../src/components/with-attempted/with-attempted';
 
 interface IHomeProps {
@@ -39,6 +39,8 @@ interface IHomeProps {
   tools: Attempt<ResourceSdkResource[], NormalisedError>;
   httpServerPackages: Attempt<NpmsPackageInfos, NormalisedError>;
   wssPackages: Attempt<NpmsPackageInfos, NormalisedError>;
+  ormPackages: Attempt<NpmsPackageInfos, NormalisedError>;
+  cmsPackages: Attempt<NpmsPackageInfos, NormalisedError>;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -55,26 +57,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function HomePage(props: IHomeProps) {
-  const { resources, tools, stories, httpServerPackages, wssPackages } = props;
+  const { resources, tools, stories, httpServerPackages, wssPackages, ormPackages, cmsPackages } = props;
   const classes = useStyles();
   const [moreHttpServerStats, setMoreHttpServerStats] = useState(false);
   const [moreWsServerStats, setMoreWsServerStats] = useState(false);
-
-  const wssPopularity: IPieChartDatum[] = useMemo(() => {
-    const entries = Object.entries(wssPackages);
-    const data: IPieChartDatum[] = [];
-    entries.forEach(([name, pkg]) => {
-      const score = pkg?.score?.final;
-      const downloads = pkg?.evaluation?.popularity?.downloadsCount;
-      if (score != undefined && downloads != undefined) {
-        const value = score * Math.sqrt(downloads);
-        data.push({ name, value });
-      } else {
-        console.warn(`Cannot show package "${name}"`);
-      }
-    });
-    return data;
-  }, [wssPackages]);
 
   return (
     <>
@@ -90,28 +76,23 @@ function HomePage(props: IHomeProps) {
               </Grid>
               <Grid item xs={12} md={6}>
                 <WithAttempted attempted={httpServerPackages}>
-                  {(packages) => <HttpFrameworkDashboard packages={packages} />}
+                  {(packages) => <NpmPackagesDashboard title="Frameworks" packages={packages} />}
                 </WithAttempted>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Paper className={classes.paper}>
-                  <Grid container>
-                    <Grid className="centered" item xs={12}>
-                      <Typography variant="h6" component="h3">
-                        Web Socket Servers
-                      </Typography>
-                    </Grid>
-                    <Grid className="centered" item xs={12}>
-                      <PackagePopularityPieChart packages={unwrapAttempt(wssPackages)} />
-                    </Grid>
-                    <Grid className="centered" item xs={12}>
-                      <Button onClick={() => setMoreWsServerStats(!moreWsServerStats)}>
-                        {moreWsServerStats && 'Less...'}
-                        {!moreWsServerStats && 'More...'}
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </Paper>
+                <WithAttempted attempted={ormPackages}>
+                  {(packages) => <NpmPackagesDashboard title="ORM" packages={packages} />}
+                </WithAttempted>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <WithAttempted attempted={wssPackages}>
+                  {(packages) => <NpmPackagesDashboard title="Web Socket Servers" packages={packages} />}
+                </WithAttempted>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <WithAttempted attempted={cmsPackages}>
+                  {(packages) => <NpmPackagesDashboard title="CMS" packages={packages} />}
+                </WithAttempted>
               </Grid>
             </Grid>
           </section>
@@ -127,13 +108,19 @@ function HomePage(props: IHomeProps) {
               <Grid item xs={12}>
                 <section>
                   <Grid container spacing={2}>
-                    {unwrapAttempt(stories).map((story, i) => (
-                      <Fragment key={i}>
-                        <Grid item xs={12} sm={12} lg={12}>
-                          <ArticleCard article={story} />
-                        </Grid>
-                      </Fragment>
-                    ))}
+                    <WithAttempted attempted={stories}>
+                      {(success) => (
+                        <>
+                          {success.map((story, i) => (
+                            <Fragment key={i}>
+                              <Grid item xs={12} sm={12} lg={12}>
+                                <ArticleCard article={story} />
+                              </Grid>
+                            </Fragment>
+                          ))}
+                        </>
+                      )}
+                    </WithAttempted>
                   </Grid>
                 </section>
               </Grid>
@@ -153,13 +140,19 @@ function HomePage(props: IHomeProps) {
               <Grid item xs={12}>
                 <section>
                   <Grid container spacing={2}>
-                    {unwrapAttempt(tools).map((tool, i) => (
-                      <Fragment key={i}>
-                        <Grid item xs={12} sm={6} lg={4}>
-                          <ToolCard tool={tool} />
-                        </Grid>
-                      </Fragment>
-                    ))}
+                    <WithAttempted attempted={tools}>
+                      {(success) => (
+                        <>
+                          {success.map((tool, i) => (
+                            <Fragment key={i}>
+                              <Grid item xs={12} sm={6} lg={4}>
+                                <ToolCard tool={tool} />
+                              </Grid>
+                            </Fragment>
+                          ))}
+                        </>
+                      )}
+                    </WithAttempted>
                   </Grid>
                 </section>
               </Grid>
@@ -207,11 +200,10 @@ export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, 
 
   const httpServerPackagesRequest = npmsApi.packageInfos({ names: [
     'express',
-    // '@nestjs/core',
+    '@nestjs/core',
     'koa',
-    // 'strapi',
     '@hapi/hapi',
-    // 'sails',
+    'sails',
   ] });
 
   const wssPackagesRequest = npmsApi.packageInfos({ names: [
@@ -220,28 +212,38 @@ export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, 
     'websocket',
   ] });
 
+  const ormPackagesRequest = npmsApi.packageInfos({ names: [
+    'typeorm',
+    'rxdb',
+    'mongoose',
+    'sequelize',
+    'loopback',
+  ] });
+
+  const cmsPackagesRequest = npmsApi.packageInfos({ names: [
+    'strapi',
+    // 'keystone',
+    'ghost',
+    'loopback',
+  ] });
+
   const [
     resources,
     tools,
     stories,
     httpServerPackages,
     wssPackages,
+    ormPackages,
+    cmsPackages,
   ] = await Promise.all([
     attemptAsync(resourcesRequest),
     attemptAsync(toolsRequest),
     attemptAsync(storiesRequest),
     attemptAsync(httpServerPackagesRequest),
     attemptAsync(wssPackagesRequest),
+    attemptAsync(ormPackagesRequest),
+    attemptAsync(cmsPackagesRequest),
   ]);
-
-  console.log('FINITO');
-  console.log({
-    resources,
-    tools,
-    stories,
-    httpServerPackages,
-    wssPackages,
-  });
 
   return {
     props: {
@@ -250,6 +252,8 @@ export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, 
       tools,
       httpServerPackages,
       wssPackages,
+      ormPackages,
+      cmsPackages,
     }
   }
 })
