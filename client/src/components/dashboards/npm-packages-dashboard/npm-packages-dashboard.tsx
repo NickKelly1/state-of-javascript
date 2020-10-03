@@ -170,7 +170,7 @@ export function NpmPackagesDashboard(props: INpmPackageDashboardsProps) {
               <Legend colours={colours} names={packageNames} />
             </Grid>
 
-            <Grid className="centered" item xs={6} sm={4}>
+            <Grid className="centered" item xs={12} sm={4}>
               <Col>
                 <Typography className="centered" component="h4" variant="h6">
                   Downloads
@@ -182,7 +182,7 @@ export function NpmPackagesDashboard(props: INpmPackageDashboardsProps) {
                 />
               </Col>
             </Grid>
-            <Grid className="centered" item xs={6} sm={4}>
+            <Grid className="centered" item xs={12} sm={4}>
               <Col>
                 <Typography className="centered" component="h4" variant="h6">
                   Growth

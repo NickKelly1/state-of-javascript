@@ -52,7 +52,7 @@ export function FittedAreaChart(props: IFittedAreaChartProps) {
         <XAxis dataKey="name" />
         <YAxis />
         <CartesianGrid strokeDasharray="3 3" />
-        <Tooltip />
+        {/* <Tooltip /> */}
         {bars.map((bar, i) => (
           <Area
             type="monotone"

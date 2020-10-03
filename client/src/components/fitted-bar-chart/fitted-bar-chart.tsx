@@ -56,7 +56,7 @@ export function FittedBarChart<T extends string = string>(props: IFittedBarChart
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
-          <Tooltip />
+          {/* <Tooltip /> */}
           {bars.map(bar => (
             <Bar key={bar.key} dataKey={bar.key} fill={bar.colour} />
           ))}
