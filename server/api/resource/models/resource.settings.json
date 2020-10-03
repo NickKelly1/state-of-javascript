@@ -47,6 +47,17 @@
       ],
       "plugin": "upload",
       "required": false
+    },
+    "example": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false
     }
   }
 }

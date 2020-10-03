@@ -52,14 +52,6 @@
       "via": "users",
       "plugin": "users-permissions",
       "configurable": false
-    },
-    "articles": {
-      "via": "author",
-      "collection": "article"
-    },
-    "posts": {
-      "via": "user",
-      "collection": "post"
     }
   }
 }

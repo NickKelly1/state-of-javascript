@@ -2,7 +2,7 @@
   "kind": "collectionType",
   "collectionName": "stories",
   "info": {
-    "name": "story"
+    "name": "article"
   },
   "options": {
     "increments": true,
@@ -17,10 +17,6 @@
     },
     "source": {
       "type": "string"
-    },
-    "topic": {
-      "model": "topic",
-      "via": "stories"
     },
     "tags": {
       "collection": "tag",
@@ -37,6 +33,13 @@
       ],
       "plugin": "upload",
       "required": false
+    },
+    "teaser": {
+      "type": "richtext"
+    },
+    "topic": {
+      "via": "articles",
+      "model": "topic"
     }
   }
 }
