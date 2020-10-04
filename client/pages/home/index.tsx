@@ -34,9 +34,11 @@ interface IHomeProps {
   stories: Attempt<ArticleSdkResource[], NormalisedError>;
   tools: Attempt<ResourceSdkResource[], NormalisedError>;
   httpServerPackages: Attempt<NpmsPackageInfos, NormalisedError>;
-  wssPackages: Attempt<NpmsPackageInfos, NormalisedError>;
+  // wssPackages: Attempt<NpmsPackageInfos, NormalisedError>;
   ormPackages: Attempt<NpmsPackageInfos, NormalisedError>;
-  cmsPackages: Attempt<NpmsPackageInfos, NormalisedError>;
+  // cmsPackages: Attempt<NpmsPackageInfos, NormalisedError>;
+  frontendPackages: Attempt<NpmsPackageInfos, NormalisedError>;
+  fullstackPackages: Attempt<NpmsPackageInfos, NormalisedError>;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -53,7 +55,17 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function HomePage(props: IHomeProps) {
-  const { resources, tools, stories, httpServerPackages, wssPackages, ormPackages, cmsPackages } = props;
+  const {
+    resources,
+    tools,
+    stories,
+    httpServerPackages,
+    // wssPackages,
+    ormPackages,
+    // cmsPackages,
+    frontendPackages,
+    fullstackPackages,
+  } = props;
   const classes = useStyles();
   const [moreHttpServerStats, setMoreHttpServerStats] = useState(false);
   const [moreWsServerStats, setMoreWsServerStats] = useState(false);
@@ -72,7 +84,17 @@ function HomePage(props: IHomeProps) {
               </Grid>
               <Grid item xs={12} md={6}>
                 <WithAttempted attempted={httpServerPackages}>
-                  {(packages) => <NpmPackagesDashboard title="Frameworks" packages={packages} />}
+                  {(packages) => <NpmPackagesDashboard title="Backend" packages={packages} />}
+                </WithAttempted>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <WithAttempted attempted={frontendPackages}>
+                  {(packages) => <NpmPackagesDashboard title="Frontend" packages={packages} />}
+                </WithAttempted>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <WithAttempted attempted={fullstackPackages}>
+                  {(packages) => <NpmPackagesDashboard title="Fullstack" packages={packages} />}
                 </WithAttempted>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -80,16 +102,16 @@ function HomePage(props: IHomeProps) {
                   {(packages) => <NpmPackagesDashboard title="ORM" packages={packages} />}
                 </WithAttempted>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <WithAttempted attempted={wssPackages}>
-                  {(packages) => <NpmPackagesDashboard title="Web Socket Servers" packages={packages} />}
-                </WithAttempted>
-              </Grid>
-              <Grid item xs={12} md={6}>
+              {/* <Grid item xs={12} md={6}>
                 <WithAttempted attempted={cmsPackages}>
                   {(packages) => <NpmPackagesDashboard title="CMS" packages={packages} />}
                 </WithAttempted>
-              </Grid>
+              </Grid> */}
+              {/* <Grid item xs={12} md={6}>
+                <WithAttempted attempted={wssPackages}>
+                  {(packages) => <NpmPackagesDashboard title="Web Socket Servers" packages={packages} />}
+                </WithAttempted>
+              </Grid> */}
             </Grid>
           </section>
         </Grid>
@@ -202,11 +224,11 @@ export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, 
     'sails',
   ] });
 
-  const wssPackagesRequest = npmsApi.packageInfos({ names: [
-    'socket.io',
-    'ws',
-    'websocket',
-  ] });
+  // const wssPackagesRequest = npmsApi.packageInfos({ names: [
+  //   'socket.io',
+  //   'ws',
+  //   'websocket',
+  // ] });
 
   const ormPackagesRequest = npmsApi.packageInfos({ names: [
     'typeorm',
@@ -216,29 +238,43 @@ export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, 
     'loopback',
   ] });
 
-  const cmsPackagesRequest = npmsApi.packageInfos({ names: [
-    'strapi',
-    // 'keystone',
-    'ghost',
-    'loopback',
-  ] });
+  // const cmsPackagesRequest = npmsApi.packageInfos({ names: [
+  //   'strapi',
+  //   'ghost',
+  //   'loopback',
+  // ] });
+
+  const frontendPackagesRequest = npmsApi.packageInfos({ names: [
+    'react',
+    'vue',
+    'angular',
+  ]});
+
+  const fullstackPackagesRequest = npmsApi.packageInfos({ names: [
+    'next',
+    'gatsby',
+  ]});
 
   const [
     resources,
     tools,
     stories,
     httpServerPackages,
-    wssPackages,
+    // wssPackages,
     ormPackages,
-    cmsPackages,
+    // cmsPackages,
+    frontendPackages,
+    fullstackPackages,
   ] = await Promise.all([
     attemptAsync(resourcesRequest),
     attemptAsync(toolsRequest),
     attemptAsync(storiesRequest),
     attemptAsync(httpServerPackagesRequest),
-    attemptAsync(wssPackagesRequest),
+    // attemptAsync(wssPackagesRequest),
     attemptAsync(ormPackagesRequest),
-    attemptAsync(cmsPackagesRequest),
+    // attemptAsync(cmsPackagesRequest),
+    attemptAsync(frontendPackagesRequest),
+    attemptAsync(fullstackPackagesRequest),
   ]);
 
   return {
@@ -247,9 +283,11 @@ export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, 
       stories,
       tools,
       httpServerPackages,
-      wssPackages,
+      // wssPackages,
       ormPackages,
-      cmsPackages,
+      // cmsPackages,
+      frontendPackages,
+      fullstackPackages,
     }
   }
 })
