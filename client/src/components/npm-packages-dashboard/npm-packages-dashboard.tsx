@@ -2,21 +2,21 @@ import { Box, Button, Grid, makeStyles, Paper, Typography } from '@material-ui/c
 import clsx from 'clsx';
 import { FullscreenExitRounded } from '@material-ui/icons';
 import React, { Fragment, useCallback, useMemo, useState } from 'react';
-import { Attempt } from '../../../helpers/attempted.helper';
-import { NormalisedError } from '../../../helpers/normalise-error.helper';
-import { makePackageChartData } from '../../../hooks/make-package-chart-data.hook';
-import { useRandomDashColours } from '../../../hooks/use-random-dash-colors.hook';
-import { NpmsPackageInfos, NpmsPackageInfo_Collected_Npm_Downloads } from '../../../npms-api/types/npms-package-info.type';
-import { FittedDoublePieChart } from '../../fitted-double-pie-chart/fitted-double-pie-chart';
-import { FittedPieChart } from '../../fitted-pie-chart/fitted-pie-chart';
+import { Attempt } from '../../helpers/attempted.helper';
+import { NormalisedError } from '../../helpers/normalise-error.helper';
+import { makePackageChartData } from '../../hooks/make-package-chart-data.hook';
+import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
+import { NpmsPackageInfos, NpmsPackageInfo_Collected_Npm_Downloads } from '../../npms-api/types/npms-package-info.type';
+import { FittedDoublePieChart } from '../fitted-double-pie-chart/fitted-double-pie-chart';
+import { FittedPieChart } from '../fitted-pie-chart/fitted-pie-chart';
 import seedRandom from 'seed-random';
-import { ring } from '../../../helpers/ring.helper';
-import { Legend } from '../../legend/legend';
-import { Col } from '../../col/col';
-import { FittedBarChart, IFittedBarChartProps } from '../../fitted-bar-chart/fitted-bar-chart';
-import { FittedAreaChart } from '../../fitted-area-chart/fitted-area-chart';
-import { MultiDimensionDataDefinition } from '../../../types/multi-dimensional-data-definition.type';
-import { OrNullable } from '../../../types/or-nullable.type';
+import { ring } from '../../helpers/ring.helper';
+import { Legend } from '../legend/legend';
+import { Col } from '../col/col';
+import { FittedBarChart, IFittedBarChartProps } from '../fitted-bar-chart/fitted-bar-chart';
+import { FittedAreaChart } from '../fitted-area-chart/fitted-area-chart';
+import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
+import { OrNullable } from '../../types/or-nullable.type';
 
 function downloadFrequency(downloads: OrNullable<NpmsPackageInfo_Collected_Npm_Downloads>): number {
   // return downloads?.count ?? 0;
@@ -28,10 +28,10 @@ function downloadFrequency(downloads: OrNullable<NpmsPackageInfo_Collected_Npm_D
   const to = new Date(downloads.to);
   if (Number.isNaN(to.valueOf())) return 0;
 
-  const days = ((to.valueOf() - from.valueOf()) / (1000 * 60 * 60 * 24))
+  const hours = ((to.valueOf() - from.valueOf()) / (1000 * 60 * 60))
   const dls = downloads.count || 0;
-  const perDay = Math.ceil(dls / (days) || 1);
-  return perDay;
+  const perHour = Math.ceil(dls / (hours) || 1);
+  return perHour;
 }
 
 function ym(date: OrNullable<string>): string {
@@ -60,6 +60,8 @@ export interface INpmPackageDashboardsProps {
   packages: NpmsPackageInfos;
 }
 
+// let n = 0;
+
 export function NpmPackagesDashboard(props: INpmPackageDashboardsProps) {
   const { title, packages } = props;
   const classes = useStyles();
@@ -71,7 +73,7 @@ export function NpmPackagesDashboard(props: INpmPackageDashboardsProps) {
   const absoluteAcceperation = makePackageChartData(packages, ({ pkg }) => (pkg.evaluation?.popularity?.downloadsAcceleration));
   const relativeAcceleration = makePackageChartData(packages, ({ pkg }) => (pkg.evaluation?.popularity?.downloadsAcceleration || 0) / (pkg.evaluation?.popularity?.downloadsCount || 1));
   const scores = makePackageChartData(packages, ({ pkg }) => pkg.score?.final);
-  const random = useMemo(() => seedRandom(NpmPackagesDashboard.name), []);
+  const random = useMemo(() => seedRandom(title), []);
   const colours = useRandomDashColours({ random });
 
   const barSummaryScores: MultiDimensionDataDefinition = useMemo((): MultiDimensionDataDefinition => ({
@@ -153,6 +155,9 @@ export function NpmPackagesDashboard(props: INpmPackageDashboardsProps) {
       }))
       .reverse(),
   }), [packages, packageNames]);
+
+  console.log('packages:', packages);
+  console.log('ftd:', npmDownloadFrequencyToDate);
 
   return (
     <Paper className={classes.paper}>
@@ -280,7 +285,7 @@ export function NpmPackagesDashboard(props: INpmPackageDashboardsProps) {
                   <Grid item xs={12}>
                     <Col>
                       <Typography className="centered" component="h5" variant="h6">
-                        Download frequency
+                        Downloads per hour
                       </Typography>
                       <FittedAreaChart
                         height={200}

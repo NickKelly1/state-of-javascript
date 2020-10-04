@@ -27,7 +27,7 @@ export function FittedPieChart(props: IFittedPieChartProps) {
   const { data, colours, radius } = props;
 
   const randomColours = useRandomDashColours();
-  const useColours = colours ?? randomColours;
+  const usingColours = colours ?? randomColours;
 
   const maxRadius = radius;
   const cut = percent(maxRadius, 30);
@@ -54,7 +54,7 @@ export function FittedPieChart(props: IFittedPieChartProps) {
           {data.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
-              fill={ring(useColours, index)}
+              fill={ring(usingColours, index)}
             />
           ))}
         </Pie>

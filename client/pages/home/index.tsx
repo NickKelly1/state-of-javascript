@@ -26,7 +26,7 @@ import {
 import { NpmsPackageInfos } from '../../src/npms-api/types/npms-package-info.type';
 import { Attempt, attemptAsync, } from '../../src/helpers/attempted.helper';
 import { NormalisedError } from '../../src/helpers/normalise-error.helper';
-import { NpmPackagesDashboard } from '../../src/components/dashboards/npm-packages-dashboard/npm-packages-dashboard';
+import { NpmPackagesDashboard } from '../../src/components/npm-packages-dashboard/npm-packages-dashboard';
 import { WithAttempted } from '../../src/components/with-attempted/with-attempted';
 
 interface IHomeProps {
