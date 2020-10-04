@@ -19,15 +19,12 @@ import { WithoutFirstLoad } from '../without-first-load/without-first-load';
 
 export interface IFittedPieChartProps {
   data: PieChartDatum[];
-  colours?: string[];
+  colours: string[];
   radius: number;
 }
 
 export function FittedPieChart(props: IFittedPieChartProps) {
   const { data, colours, radius } = props;
-
-  const randomColours = useRandomDashColours();
-  const usingColours = colours ?? randomColours;
 
   const maxRadius = radius;
   const cut = percent(maxRadius, 30);
@@ -51,10 +48,10 @@ export function FittedPieChart(props: IFittedPieChartProps) {
           dataKey="value"
           // label={(datum) => datum.name}
         >
-          {data.map((entry, index) => (
+          {data.map((entry, i) => (
             <Cell
-              key={`cell-${index}`}
-              fill={ring(usingColours, index)}
+              key={`cell-${i}`}
+              fill={ring(colours, i)}
             />
           ))}
         </Pie>

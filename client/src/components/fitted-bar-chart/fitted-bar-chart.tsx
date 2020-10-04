@@ -22,7 +22,7 @@ import { PieChartDatum } from '../../types/pie-chart-datum.type';
 import { WithoutFirstLoad } from '../without-first-load/without-first-load';
 
 export interface IFittedBarChartProps<T extends string = string> {
-  colours?: string[];
+  colours: string[];
   height: number;
   definition: MultiDimensionDataDefinition<T>
 }
@@ -31,8 +31,7 @@ export interface IFittedBarChartProps<T extends string = string> {
 export function FittedBarChart<T extends string = string>(props: IFittedBarChartProps<T>) {
   const { definition, colours, height, } = props;
 
-  const randomColours = useRandomDashColours();
-  const usingColours = colours ?? randomColours;
+  const usingColours = colours;
 
   const [data, bars]: [MultiDimensionalDataPoint[], { colour: string, key: T }[]] = useMemo(() => {
     const { dimensions, points } = definition;

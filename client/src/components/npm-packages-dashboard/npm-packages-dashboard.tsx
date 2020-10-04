@@ -60,7 +60,7 @@ export interface INpmPackageDashboardsProps {
   packages: NpmsPackageInfos;
 }
 
-const compiled_at = new Date().valueOf().toString();
+// const compiled_at = new Date().valueOf().toString();
 
 export function NpmPackagesDashboard(props: INpmPackageDashboardsProps) {
   const { title, packages } = props;
@@ -73,7 +73,7 @@ export function NpmPackagesDashboard(props: INpmPackageDashboardsProps) {
   const absoluteAcceperation = makePackageChartData(packages, ({ pkg }) => (pkg.evaluation?.popularity?.downloadsAcceleration));
   const relativeAcceleration = makePackageChartData(packages, ({ pkg }) => (pkg.evaluation?.popularity?.downloadsAcceleration || 0) / (pkg.evaluation?.popularity?.downloadsCount || 1));
   const scores = makePackageChartData(packages, ({ pkg }) => pkg.score?.final);
-  const random = useMemo(() => seedRandom(`${title}${compiled_at}`), []);
+  const random = useMemo(() => seedRandom(title), []);
   const colours = useRandomDashColours({ random });
 
   const barSummaryScores: MultiDimensionDataDefinition = useMemo((): MultiDimensionDataDefinition => ({
