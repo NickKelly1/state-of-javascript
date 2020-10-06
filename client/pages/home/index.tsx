@@ -2,7 +2,7 @@ import React, { Fragment, PureComponent, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import Next, { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import { ParsedUrlQuery } from 'querystring';
-import { ssPropsHandler } from '../../src/helpers/ss-props-handler.helper';
+import { serverSidePropsHandler } from '../../src/helpers/server-side-props-handler.helper';
 import { Button, Grid, Link, makeStyles, Paper, Typography, withTheme } from '@material-ui/core';
 import { ArticleSdkResource } from '../../src/sdk/types/article.sdk.resource';
 import { ResourceSdkResource } from '../../src/sdk/types/resource.sdk.resource';
@@ -28,6 +28,9 @@ import { Attempt, attemptAsync, } from '../../src/helpers/attempted.helper';
 import { NormalisedError } from '../../src/helpers/normalise-error.helper';
 import { NpmPackagesDashboard } from '../../src/components/npm-packages-dashboard/npm-packages-dashboard';
 import { WithAttempted } from '../../src/components/with-attempted/with-attempted';
+import { staticPropsHandler } from '../../src/helpers/static-props-handler.helper';
+import { Sdk } from '../../src/sdk/sdk';
+import { NpmsApi } from '../../src/npms-api/npms-api';
 
 interface IHomeProps {
   resources: Attempt<ResourceSdkResource[], NormalisedError>;
@@ -194,16 +197,8 @@ function HomePage(props: IHomeProps) {
   );
 }
 
-
-function logMiddleware() {
-  //
-}
-
-function middleware() {
-  //
-}
-
-export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, npmsApi }) => {
+async function getProps(args: { sdk: Sdk, npmsApi: NpmsApi }): Promise<IHomeProps> {
+  const { sdk, npmsApi } = args
   const resourceQuery = SdkQuery.create();
   resourceQuery.addSort(SdkSort.create({ field: 'id', value: SdkSortDir.Desc }));
   resourceQuery.addFilter(SdkFilterNIn.create({ field: 'resource_category', values: [SdkResourceCategory.Tooling] }))
@@ -286,18 +281,31 @@ export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, 
   ]);
 
   return {
-    props: {
-      resources,
-      stories,
-      tools,
-      httpServerPackages,
-      // wssPackages,
-      ormPackages,
-      // cmsPackages,
-      frontendPackages,
-      fullstackPackages,
-    }
+    resources,
+    stories,
+    tools,
+    httpServerPackages,
+    // wssPackages,
+    ormPackages,
+    // cmsPackages,
+    frontendPackages,
+    fullstackPackages,
   }
-})
+}
+
+// const getServerSideProps = serverSidePropsHandler<IHomeProps>(async ({ ctx, sdk, npmsApi }) => {
+//   const props = await getProps({ sdk, npmsApi });
+//   return {
+//     props,
+//   };
+// })
+
+export const getStaticProps = staticPropsHandler<IHomeProps>(async ({ ctx, sdk, npmsApi }) => {
+  const props = await getProps({ sdk, npmsApi });
+  return {
+    props,
+    // revalidate: false,
+  };
+});
 
 export default HomePage;

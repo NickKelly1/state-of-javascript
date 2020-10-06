@@ -1,4 +1,8 @@
-import Home, { getServerSideProps as gssp } from './home/index';
+import Home, {
+  // getServerSideProps as reExportgetServerSideProps,
+  getStaticProps as reExportGetStaticProps,
+} from './home/index';
 
 export default Home;
-export const getServerSideProps = gssp;
+// export const getServerSideProps;
+export const getStaticProps = reExportGetStaticProps;
