@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+echo "pulling source code..."
+git pull

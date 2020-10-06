@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+pm2 delete "server"
+pm2 delete "client"
