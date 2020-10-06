@@ -14,13 +14,11 @@ export class NpmsApiConnector {
     let info: RequestInfo;
     if (typeof input === 'string') {
       info = `${this.url}${input}`;
-      console.log('hitting:', info);
     } else {
       info = {
         ...input,
         url: `${this.url}${input.url}`,
       };
-      console.log('hitting:', info.url);
     }
     const response = await fetch(info, init);
     const json: T = await response.json();

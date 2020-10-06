@@ -36,7 +36,6 @@ export class NpmsApi {
   async packageInfos<T extends string>(arg: { names: T[] | readonly T[] }): Promise<NpmsPackageInfos<T>> {
     const { names } = arg;
     const body = JSON.stringify({ names });
-    console.log('sending body...', body);
     const json = this.connector.json<Record<string, OrNullable<NpmsPackageInfo>>>(
       `/v${this.version}/package/mget`,
       {

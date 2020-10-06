@@ -195,6 +195,14 @@ function HomePage(props: IHomeProps) {
 }
 
 
+function logMiddleware() {
+  //
+}
+
+function middleware() {
+  //
+}
+
 export const getServerSideProps = ssPropsHandler<IHomeProps>(async ({ ctx, sdk, npmsApi }) => {
   const resourceQuery = SdkQuery.create();
   resourceQuery.addSort(SdkSort.create({ field: 'id', value: SdkSortDir.Desc }));

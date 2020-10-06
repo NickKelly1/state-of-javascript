@@ -15,6 +15,7 @@ interface ServerSidePropsHander<P extends { [key: string]: any }, Q extends Pars
   }): Promise<GetServerSidePropsResult<P>>;
 }
 
+
 /**
  * @param handler Server-side props handler
  */
@@ -25,6 +26,13 @@ export function ssPropsHandler<
   handler: ServerSidePropsHander<P, Q>
 ): GetServerSideProps<P, Q> {
   return async function wrapper(ctx: GetServerSidePropsContext<Q>) {
+    const start = Date.now();
+    ctx.res.on('finish', () => {
+      const end = Date.now();
+      const dur = end - start;
+      console.log(`'${ctx.req.url}' ? '${ctx.query ? new URLSearchParams(ctx.query as any).toString() : ''}'\t${ctx.res.statusCode}\t+${dur}ms`)
+    });
+
     const publicEnv = PublicEnvSingleton;
 
     const sdkConnector = SdkConnector.create({ publicEnv });
@@ -39,7 +47,7 @@ export function ssPropsHandler<
       publicEnv,
       npmsApi,
     });
-
+    const end = Date.now();
     return result;
   }
 }
