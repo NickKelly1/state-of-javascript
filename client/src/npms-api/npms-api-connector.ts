@@ -1,4 +1,5 @@
 import { PublicEnv } from "../env/public-env.helper";
+import { Debug } from "../debug/debug";
 
 export class NpmsApiConnector {
   protected readonly url = 'https://api.npms.io';
@@ -14,13 +15,13 @@ export class NpmsApiConnector {
     let info: RequestInfo;
     if (typeof input === 'string') {
       info = `${this.url}${input}`;
-      console.log('hitting:', info);
+      Debug.NpmsConnector(`[${this.json.name}] "${info}"`);
     } else {
       info = {
         ...input,
         url: `${this.url}${input.url}`,
       };
-      console.log('hitting:', info.url);
+      Debug.NpmsConnector(`[${this.json.name}] "${info.url}"`);
     }
     const response = await fetch(info, init);
     const json: T = await response.json();

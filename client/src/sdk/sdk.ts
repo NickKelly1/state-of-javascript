@@ -3,6 +3,7 @@ import { SdkConnector } from "./sdk-connector";
 import { SdkQuery } from "./sdk-query.type";
 import { ResourceSdkResource } from "./types/resource.sdk.resource";
 import { ArticleSdkResource } from "./types/article.sdk.resource";
+import { Debug } from "../debug/debug";
 
 export class Sdk {
   static create(arg: {
@@ -23,6 +24,7 @@ export class Sdk {
   async resources(arg: { query?: SdkQuery }): Promise<ResourceSdkResource[]> {
     const { query } = arg;
     const search = query?.toSearch().toString() ?? '';
+    Debug.Sdk(`[${this.resources.name}] Finding resources: "${search}"`);
     const resources = await this.sdkConnector.json<ResourceSdkResource[]>(`/resources?${search}`);
     return resources;
   }
@@ -30,6 +32,7 @@ export class Sdk {
   async stories(arg: { query?: SdkQuery }): Promise<ArticleSdkResource[]> {
     const { query } = arg;
     const search = query?.toSearch().toString() ?? '';
+    Debug.Sdk(`[${this.stories.name}] Finding stories: "${search}"`);
     const stories = await this.sdkConnector.json<ArticleSdkResource[]>(`/stories?${search}`);
     return stories;
   }

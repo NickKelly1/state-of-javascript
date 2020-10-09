@@ -7,6 +7,6 @@ export function randomIndex<T>(
     random?: RandomFn;
   },
 ): number {
-  const random = options?.random ? options.random() : Math.random();
+  const random = options?.random?.() ?? Math.random();
   return Math.floor(random * countable.length);
 }

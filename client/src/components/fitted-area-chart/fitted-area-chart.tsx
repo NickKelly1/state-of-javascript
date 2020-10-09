@@ -8,15 +8,14 @@ import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data
 
 interface IFittedAreaChartProps {
   height: number;
-  colours?: string[];
+  colours: string[];
   definition: MultiDimensionDataDefinition;
 }
 
 export function FittedAreaChart(props: IFittedAreaChartProps) {
   const { height, definition, colours } = props;
 
-  const randomColours = useRandomDashColours();
-  const usingColours = colours ?? randomColours;
+  const usingColours = colours;
 
   const [data, bars]: [MultiDimensionalDataPoint[], { colour: string, key: string }[]] = useMemo(() => {
     const { dimensions, points } = definition;
@@ -27,15 +26,15 @@ export function FittedAreaChart(props: IFittedAreaChartProps) {
       return datum;
     });
     const bars = dimensions.map((dimension, i) => ({
-      colour: ring(usingColours, i),
+      colour: ring(colours, i),
       key: dimension
     }));
     return [data, bars];
-  }, [definition]);
+  }, [definition, colours]);
   const dimensionIds = useMemo(() => definition.dimensions.map((_, i) => ({
     id: shortid(),
-    colour: ring(usingColours, i),
-  })), [definition]);
+    colour: ring(colours, i),
+  })), [definition, colours]);
 
   return (
     <ResponsiveContainer width="100%" height={height}>

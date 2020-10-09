@@ -26,13 +26,13 @@
     "description": {
       "type": "string"
     },
-    "stories": {
-      "via": "topic",
-      "collection": "story"
+    "articles": {
+      "collection": "story",
+      "via": "topic"
     },
     "tags": {
-      "via": "topic",
-      "collection": "tag"
+      "collection": "tag",
+      "via": "topic"
     }
   }
 }

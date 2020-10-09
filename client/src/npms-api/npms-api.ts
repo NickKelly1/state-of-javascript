@@ -2,6 +2,7 @@ import { PublicEnv } from "../env/public-env.helper";
 import { OrNullable } from "../types/or-nullable.type";
 import { NpmsApiConnector } from "./npms-api-connector";
 import { NpmsPackageInfo, NpmsPackageInfos } from "./types/npms-package-info.type";
+import { Debug } from "../debug/debug";
 
 /**
  * https://api-docs.npms.io/#api-_Package
@@ -21,8 +22,10 @@ export class NpmsApi {
 
   async packageInfo(arg: { name: string }): Promise<NpmsPackageInfo> {
     const { name } = arg;
+    const url = `/v${this.version}/package/${name}`
+    Debug.Npms(`[${this.packageInfo.name}] package info: "${name}"`);
     const json = this.connector.json<NpmsPackageInfo>(
-      `/v${this.version}/package/${name}`,
+      url,
       {
         headers: {  
           'Accept': 'application/json',
@@ -36,7 +39,7 @@ export class NpmsApi {
   async packageInfos<T extends string>(arg: { names: T[] | readonly T[] }): Promise<NpmsPackageInfos<T>> {
     const { names } = arg;
     const body = JSON.stringify({ names });
-    console.log('sending body...', body);
+    Debug.Npms(`[${this.packageInfos.name}] package info: "${names.join(', ')}"`);
     const json = this.connector.json<Record<string, OrNullable<NpmsPackageInfo>>>(
       `/v${this.version}/package/mget`,
       {

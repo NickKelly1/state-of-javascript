@@ -13,15 +13,15 @@
       "type": "string"
     },
     "topic": {
-      "model": "topic",
-      "via": "tags"
+      "via": "tags",
+      "model": "topic"
     },
     "stories": {
       "via": "tags",
       "collection": "story"
     },
     "icon": {
-      "collection": "file",
+      "model": "file",
       "via": "related",
       "allowedTypes": [
         "images",
