@@ -22,6 +22,10 @@ export default class MyDocument extends Document {
             rel="stylesheet"
             href="/fonts/CascadiaCode.css"
           />
+          <link
+            rel="manifest"
+            href="/site.webmanifest"
+          />
         </Head>
         <body>
           <Main />

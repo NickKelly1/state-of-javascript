@@ -1,0 +1,17 @@
+{
+  "name":"State of JavaScript",
+  "short_name":"State of JavaScript",
+  "display": "standalone",
+  "description": "A summary of the current state of JavaScript programming",
+  "icons":[
+    {
+      "src":"/android-chrome-192x192.png",
+      "sizes":"192x192",
+      "type":"image/png"
+    },{
+      "src":"/android-chrome-512x512.png",
+      "sizes":"512x512",
+      "type":"image/png"
+    }
+  ]
+}
