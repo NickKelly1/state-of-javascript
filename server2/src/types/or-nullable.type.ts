@@ -1,0 +1,1 @@
+export type OrNullable<T> = null | undefined | T;

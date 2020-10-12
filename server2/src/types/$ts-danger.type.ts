@@ -1,0 +1,1 @@
+export type $TS_DANGER<T> = T;

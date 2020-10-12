@@ -1,0 +1,1 @@
+export type $TS_FIX_ME<T> = T;
