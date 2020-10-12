@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { ExecutionContext } from 'src/classes/execution-context';
-import { IException } from 'src/interfaces/exception.interface';
+import { IException } from '../interfaces/exception.interface';
+import { ExecutionContext } from './execution-context';
+import * as overrides from '../custom';
 
 
 export class HttpContext {
@@ -34,10 +35,6 @@ export class HttpContext {
 
   throw(exception: IHttpExceptionable): never {
     throw exception(this);
-  }
-
-  normaliseException(unknown: unknown): IException {
-    //
   }
 }
 

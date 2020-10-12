@@ -1,7 +1,7 @@
-import { ExpressContext } from "@src/classes/express-context";
-import { HttpCode } from "@src/constants/http-code.const";
-import { mw } from "@src/helpers/mw.helper";
-import { Router } from "express";
+import { Router } from 'express';
+import { ExpressContext } from '../../classes/express-context';
+import { HttpCode } from '../../constants/http-code.const';
+import { mw } from '../../helpers/mw.helper';
 
 export function UserRoutes(arg: { app: ExpressContext }): Router {
   const { app } = arg;

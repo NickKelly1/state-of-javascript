@@ -1,5 +1,5 @@
-import { ExpressContext } from "@src/classes/express-context";
-import { Router } from "express";
+import { Router } from 'express';
+import { ExpressContext } from '../../classes/express-context';
 
 
 export function AuthRoutes(arg: { app: ExpressContext }): Router {

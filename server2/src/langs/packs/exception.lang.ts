@@ -6,7 +6,7 @@ import { ILangHandler, ILangOptionCtx, langSwitch } from "../lange-switch.fn";
 
 export const ExceptionLang = {
   NotFound: (arg?: { name?: string }): ILangHandler => {
-    const { name } = arg;
+    const name = arg?.name;
     return langSwitch({
       [Language.En]: () => {
         if (name) return `${name} not found`;

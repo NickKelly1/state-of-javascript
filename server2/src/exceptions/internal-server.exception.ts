@@ -4,7 +4,7 @@ import { Lang } from '../langs/lang';
 import { ExecutionContext } from '../classes/execution-context';
 import { Language } from '../langs/consts/language.enum';
 import { BaseException } from './base.exception';
-import { IHttpExceptionable } from '@src/classes/http.context';
+import { IHttpExceptionable } from '../classes/http.context';
 
 export interface IInternalServerExceptionArg {
   //

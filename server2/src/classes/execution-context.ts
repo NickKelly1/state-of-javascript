@@ -1,8 +1,7 @@
-import { exec } from "child_process";
-import { Request, Response } from "express";
-import { HttpContext } from '@src/classes/http.context';
-import { OrUndefined } from '@src/types/or-undefined.type';
-import { WsCtx } from "@src/classes/ws.context";
+import { Request, Response } from 'express';
+import { OrUndefined } from '../types/or-undefined.type';
+import { HttpContext } from './http.context';
+import { WsCtx } from './ws.context';
 
 
 interface IMatchFnArg<T> {

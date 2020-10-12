@@ -1,6 +1,6 @@
-import { Env } from "@src/env";
-import { IException } from "@src/interfaces/exception.interface";
-import { IJson } from "@src/interfaces/json.interface";
+import { Env } from "../env";
+import { IException } from "../interfaces/exception.interface";
+import { IJson } from "../interfaces/json.interface";
 
 export abstract class BaseException extends Error implements IException {
   public readonly __is_exception = true;

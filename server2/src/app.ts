@@ -1,4 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
+import Debug from 'debug';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
@@ -12,6 +13,7 @@ import { is } from './helpers/is.helper';
 import { Env } from './env';
 import { IException } from './interfaces/exception.interface';
 import { InternalServerException } from './exceptions/internal-server.exception';
+import { Dbg } from './dbg';
 
 export const app = new ExpressContext({ root: express() });
 
@@ -37,4 +39,3 @@ app.root.use(function(err: Error, req: Request, res: Response, next: NextFunctio
   res.status(exception.code);
   res.json(exception.toJson());
 });
-

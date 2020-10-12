@@ -2,16 +2,17 @@
  * Module dependencies.
  */
 
-import { app } from '@src/app';
 import http from 'http';
-import { Dbg } from '@src/debug';
-import { $TS_FIX_ME } from '@src/types/$ts-fix-me.type';
+import { app } from './app';
+import { Dbg } from './dbg';
+import { Env } from './env';
+import { $TS_FIX_ME } from './types/$ts-fix-me.type';
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(Env.PORT);
 app.root.set('port', port);
 
 /**

@@ -1,11 +1,11 @@
 import HttpCodes from 'http-status-codes';
 import HttpErrors from 'http-errors';
 import { IException } from "../interfaces/exception.interface";
-import { Lang } from '@src/langs/lang';
-import { ExecutionContext } from '@src/classes/execution-context';
-import { Language } from '@src/langs/consts/language.enum';
-import { IHttpExceptionable } from '@src/classes/http.context';
 import { BaseException } from './base.exception';
+import { IHttpExceptionable } from '../classes/http.context';
+import { ExecutionContext } from '../classes/execution-context';
+import { Lang } from '../langs/lang';
+import { Language } from '../langs/consts/language.enum';
 
 export interface INotFoundExceptionArg {
   name?: string;

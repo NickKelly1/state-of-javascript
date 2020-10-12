@@ -1,8 +1,6 @@
 import { NextFunction } from 'express';
-import { HttpContext } from '@src/classes/http.context';
-import { ExecutionContext } from '@src/classes/execution-context';
-import { IException } from '@src/interfaces/exception.interface';
-import { IMiddleware } from '@src/interfaces/middleware.interface';
+import { HttpContext } from '../classes/http.context';
+import { IMiddleware } from '../interfaces/middleware.interface';
 
 export type IMwReturn = any;
 

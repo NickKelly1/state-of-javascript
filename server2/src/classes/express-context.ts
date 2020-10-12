@@ -1,4 +1,3 @@
-import { IMwFn, mw } from '@src/helpers/mw.helper';
 import { Express, IRouterHandler, IRouterMatcher } from 'express';
 
 export class ExpressContext {

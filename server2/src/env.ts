@@ -1,3 +1,8 @@
+import dotenv from 'dotenv';
+import { DebugOpt } from './constants/debug-opt.const';
+
+dotenv.config();
+
 const from = process.env;
 function extract(name: string): string | undefined { return from[name] };
 function extractAssert(name: string): string {
@@ -35,14 +40,23 @@ const to = {
       throw new TypeError(`Environment variable "${name}" must be one of ${arg.map(String).join(', ')}`);
     }
     return val as T;
+  },
+  subsetOf: <T extends string>(arg: T[]) => (name: string): T[] => {
+    let raw = extract(name) ?? '';
+    const strs = raw.split(',').filter(Boolean);
+    const extra = strs.filter(val => !arg.some(ar => ar === val));
+    if (extra.length) throw new TypeError(`Environment variable "${name}" has unexpectd values: "${extra.join(',')}"`);
+    return strs as T[];
   }
 }
+
 
 export const Env = {
   is_dev(): boolean { return Env.NODE_ENV === 'development'; },
   is_testing(): boolean { return Env.NODE_ENV === 'testing'; },
   is_prod(): boolean { return Env.NODE_ENV === 'production'; },
   NODE_ENV: to.oneOf(['production', 'testing', 'development'])('NODE_ENV'),
+  // DEBUG: to.subsetOf(Object.values(DebugOpt))('DEBUG'),
   PORT: to.int('PORT'),
   PG_USER:  to.string('PG_USER'),
   PG_PSW:  to.string('PG_PSW'),

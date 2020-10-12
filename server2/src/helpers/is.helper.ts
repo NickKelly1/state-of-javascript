@@ -1,5 +1,5 @@
-import { IException } from "@src/interfaces/exception.interface";
-import { ALanguage, Languages } from "../langs/consts/language.enum";
+import { IException } from '../interfaces/exception.interface';
+import { ALanguage, Languages } from '../langs/consts/language.enum';
 
 // type guards...
 export const is = {

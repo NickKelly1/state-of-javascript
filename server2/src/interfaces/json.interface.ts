@@ -1,3 +1,3 @@
-import { Primitive } from "@src/types/primitive.type";
+import { Primitive } from "../types/primitive.type";
 
 export interface IJson { [K: string]: Primitive | Primitive[] | IJson | IJson[] };
