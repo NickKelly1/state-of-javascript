@@ -33,10 +33,6 @@
       "model": "resource-category",
       "via": "resources"
     },
-    "resource_subcategory": {
-      "model": "resource-subcategory",
-      "via": "resources"
-    },
     "icon": {
       "model": "file",
       "via": "related",

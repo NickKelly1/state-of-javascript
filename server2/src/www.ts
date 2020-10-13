@@ -3,88 +3,95 @@
  */
 
 import http from 'http';
-import { app } from './app';
+import { bootApp } from './app';
+import { ExpressContext } from './common/classes/express-context';
 import { Dbg } from './dbg';
-import { Env } from './env';
-import { $TS_FIX_ME } from './types/$ts-fix-me.type';
+import { Env } from './environment/env';
+import { $TS_FIX_ME } from './common/types/$ts-fix-me.type';
 
-/**
- * Get port from environment and store in Express.
- */
+async function bootServer() {
+  const app: ExpressContext = await bootApp();
 
-var port = normalizePort(Env.PORT);
-app.root.set('port', port);
+  /**
+   * Get port from environment and store in Express.
+   */
 
-/**
- * Create HTTP server.
- */
+  var port = normalizePort(Env.PORT);
+  app.root.set('port', port);
 
-var server = http.createServer(app.root);
+  /**
+   * Create HTTP server.
+   */
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+  var server = http.createServer(app.root);
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+  /**
+   * Listen on provided port, on all network interfaces.
+   */
 
-/**
- * Normalize a port into a number, string, or false.
- */
+  server.listen(port);
+  server.on('error', onError);
+  server.on('listening', onListening);
 
-function normalizePort(val: $TS_FIX_ME<any>) {
-  var port = parseInt(val, 10);
+  /**
+   * Normalize a port into a number, string, or false.
+   */
 
-  if (isNaN(port)) {
-    // named pipe
-    return val;
+  function normalizePort(val: $TS_FIX_ME<any>) {
+    var port = parseInt(val, 10);
+
+    if (isNaN(port)) {
+      // named pipe
+      return val;
+    }
+
+    if (port >= 0) {
+      // port number
+      return port;
+    }
+
+    return false;
   }
 
-  if (port >= 0) {
-    // port number
-    return port;
-  }
+  /**
+   * Event listener for HTTP server "error" event.
+   */
 
-  return false;
-}
-
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error: $TS_FIX_ME<any>) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
+  function onError(error: $TS_FIX_ME<any>) {
+    if (error.syscall !== 'listen') {
       throw error;
+    }
+
+    var bind = typeof port === 'string'
+      ? 'Pipe ' + port
+      : 'Port ' + port;
+
+    // handle specific listen errors with friendly messages
+    switch (error.code) {
+      case 'EACCES':
+        console.error(bind + ' requires elevated privileges');
+        process.exit(1);
+        break;
+      case 'EADDRINUSE':
+        console.error(bind + ' is already in use');
+        process.exit(1);
+        break;
+      default:
+        throw error;
+    }
+  }
+
+  /**
+   * Event listener for HTTP server "listening" event.
+   */
+
+  function onListening() {
+    var addr: $TS_FIX_ME<any> = server.address();
+    var bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
+    Dbg.Www('Listening on ' + bind);
   }
 }
 
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr: $TS_FIX_ME<any> = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  Dbg.Www('Listening on ' + bind);
-}
+bootServer();

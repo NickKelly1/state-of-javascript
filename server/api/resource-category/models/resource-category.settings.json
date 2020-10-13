@@ -15,10 +15,6 @@
     "resources": {
       "via": "resource_category",
       "collection": "resource"
-    },
-    "resource_subcategories": {
-      "via": "resource_category",
-      "collection": "resource-subcategory"
     }
   }
 }

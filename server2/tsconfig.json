@@ -1,6 +1,6 @@
 {
   "files": [
-    ".src/custom.d.ts",
+    "./src/custom.d.ts",
   ],
   "include": [
     "src",

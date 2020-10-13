@@ -1,0 +1,1 @@
+export { UserModel } from './app/user/user.model';
