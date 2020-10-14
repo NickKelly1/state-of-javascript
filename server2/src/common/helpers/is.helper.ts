@@ -1,5 +1,6 @@
 import { ALanguage, Languages } from '../i18n/consts/language.enum';
 import { Exception } from '../exceptions/exception';
+import { OrNullable } from '../types/or-nullable.type';
 
 // type guards...
 export const is = {
@@ -11,6 +12,12 @@ export const is = {
   },
   notUndefined<T>(arg: undefined | T): arg is T {
     return arg !== undefined;
+  },
+  nullable: (arg: unknown): arg is null | undefined => {
+    return arg === null || arg === undefined;
+  },
+  notNullable: <T>(arg: OrNullable<T>): arg is T => {
+    return arg !== null && arg !== undefined;
   },
   null: (arg: unknown): arg is null => {
     return arg === null;

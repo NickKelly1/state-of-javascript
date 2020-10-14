@@ -1,12 +1,11 @@
 import Joi from 'joi';
 import { UserModel } from '../../../circle';
+import { UserDefinition } from '../user.definition';
 
 export interface IUpdateUserDto {
-  first?: string;
-  last?: string;
+  name?: string;
 }
 
 export const UpdateUserDto = Joi.object<IUpdateUserDto>({
-  first: Joi.string().min(3).max(20).optional(),
-  last: Joi.string().min(3).max(20).optional(),
+  name: Joi.string().min(UserDefinition.name.min).max(UserDefinition.name.max).optional(),
 });

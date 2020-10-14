@@ -1,12 +1,11 @@
 import Joi from 'joi';
 import { UserModel } from '../../../circle';
+import { UserDefinition } from '../user.definition';
 
 export interface ICreateUserDto {
-  first: string;
-  last?: string;
+  name: string;
 }
 
 export const CreateUserDto = Joi.object<ICreateUserDto>({
-  first: Joi.string().min(3).max(20).required(),
-  last: Joi.string().min(3).max(20).optional(),
+  name: Joi.string().min(UserDefinition.name.min).max(UserDefinition.name.max).required(),
 });

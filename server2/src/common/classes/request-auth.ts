@@ -1,11 +1,15 @@
-import { Permission, PublicPermissions } from "../../app/permission/constants/permission.const";
-import { PermissionId } from "../../app/permission/types/permission-id.type";
+import { IAccessTokenDto } from "../../app/auth/dtos/access-token.dto";
+import { Permission, PublicPermissions } from "../../app/permission/permission.const";
+import { PermissionId } from "../../app/permission/permission-id.type";
+import { UserId } from "../../app/user/user.id.type";
 import { OrUndefined } from "../types/or-undefined.type";
 
 export class RequestAuth {
-  _permissions: Set<PermissionId> = new Set(PublicPermissions);
+  protected _permissions: Set<PermissionId> = new Set(PublicPermissions);
 
-  _roles: Set<PermissionId> = new Set();
+  protected _roles: Set<PermissionId> = new Set();
+
+  protected _user_id: OrUndefined<UserId>;
 
   get permissions(): Set<PermissionId> { return this._permissions; };
 
@@ -19,5 +23,11 @@ export class RequestAuth {
 
   hasAllPermissions(permissions: PermissionId[]): boolean {
     return permissions.every(perm => this.permissions.has(perm));
+  }
+
+  addAccess(arg: { access: IAccessTokenDto }) {
+    const { access } = arg;
+    this._user_id = access.user_id;
+    access.permissions.forEach(perm => this.permissions.add(perm));
   }
 }

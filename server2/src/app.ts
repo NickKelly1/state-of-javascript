@@ -1,77 +1,85 @@
-import express, { ErrorRequestHandler, Handler, IRouterHandler, NextFunction, Request, RequestHandler, Response } from 'express';
-import Debug from 'debug';
+import * as ts_node_remember_overrides from './custom';
+import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
-import logger from 'morgan';
+import morgan from 'morgan';
 import { Routes } from './routes';
 import { ExpressContext } from './common/classes/express-context';
 import { mw } from './common/helpers/mw.helper';
-import { $TS_DANGER } from './common/types/$ts-danger.type';
-import { HttpContext } from './common/classes/http.context';
-import { is } from './common/helpers/is.helper';
-import { Env } from './environment/env';
-import { InternalServerException } from './common/exceptions/types/internal-server.exception';
-import { Dbg } from './dbg';
-import { Sequelize } from 'sequelize';
-import { sequelize } from './db/sequelize';
-import { RequestAuth } from './common/classes/request-auth';
+import { EnvService } from './common/environment/env';
+import { createSequelize, } from './app/db/create-sequelize';
 import { NotFoundException } from './common/exceptions/types/not-found.exception';
-import { $TS_FIX_ME } from './common/types/$ts-fix-me.type';
-import * as ts_node_remember_overrides from './custom';
+import { logger, loggerStream } from './common/logger/logger';
+import { servicesMw } from './common/middleware/services.middleware';
+import { errorHandlerMw } from './common/middleware/error-handler.middleware';
+import { modelsInit } from './models.init';
+import { passportMw } from './common/middleware/passport.middleware';
+import { handler } from './common/helpers/handler.helper';
+import { delay } from './common/helpers/delay.helper';
+import { permissionsInitialise } from './app/permission/permissions.initialise';
+import { DbService } from './app/db/db.service';
+import { QueryRunner } from './app/db/query-runner';
+import { rolesInitialise } from './app/role/roles.initialise';
+import { rolePermissionsInitialise } from './app/role-permission/role-permissions.initialise';
+import { usersInitialise } from './app/user/users.initialise';
+import { userRolesInitialise } from './app/user-role/user-roles.initialise';
 
+export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
+  const { env } = arg;
+  logger.info('booting...')
 
-export async function bootApp(): Promise<ExpressContext> {
+  const sequelize = createSequelize({ env });
 
   try {
     // make sure db creds work...
     const auth = await sequelize.authenticate();
   } catch (error) {
-    Dbg.Db('Failed to authenticate...');
+    logger.debug('Failed to authenticate...');
     throw error;
   }
 
+  modelsInit({ sequelize });
+
+  // initialise domains
+  await sequelize.transaction(async transaction => {
+    const runner = new QueryRunner(transaction);
+    logger.info('Initialising Permissions...');
+    await permissionsInitialise({ env, runner });
+
+    logger.info('Initialising Roles...');
+    await rolesInitialise({ env, runner });
+
+    logger.info('Initialising RolePermissions...');
+    await rolePermissionsInitialise({ env, runner });
+
+    logger.info('Initialising Users...');
+    await usersInitialise({ env, runner });
+
+    logger.info('Initialising UserRoles...');
+    await userRolesInitialise({ env, runner });
+  });
+
+
   // TODO: don't synchronise
-  console.log('syncing...')
+  logger.info('syncing...')
   await sequelize.sync();
 
   const app = new ExpressContext({ root: express() });
 
-  app.use(logger('dev'));
+  app.use(handler(async (req, res, next) => {
+    if (env.DELAY) await delay(env.DELAY);
+    next();
+  }));
+  app.use(morgan('dev', { stream: loggerStream }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
-
-  app.use(function wrapAuth(req: Request, res: Response, next: NextFunction) {
-    // initialise req locals
-    const auth = new RequestAuth();
-    const http = HttpContext.create({ req, res });
-    req.__locals__ = { auth, ctx: http };
-    next();
-  } as Handler);
-
-  // routes...
+  app.use(servicesMw({ env, sequelize }));
+  app.use(passportMw());
   app.use(Routes({ app }));
-
-  app.use(mw(async (ctx) => {
-    throw ctx.except(NotFoundException());
-  }));
-
-  // error handler
-  app.use((function handleError(err: any, req: Request, res: Response, next: NextFunction) {
-    const http = HttpContext.create({ req, res });
-    const exception = is.exception(err)
-      ? err
-      : http.except(InternalServerException({
-        debug: is.obj(err)
-          ? err instanceof Error
-            ? { name: err.name, message: err.message, stack: err.stack?.split('\n') }
-            : { ...err }
-          : err
-        }));
-    res.status(exception.code);
-    res.json(exception.toJson());
-  }) as $TS_FIX_ME<ErrorRequestHandler>);
+  app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
+  app.use(errorHandlerMw());
 
   return app;
 }

@@ -6,15 +6,12 @@ import { HttpCode } from '../../constants/http-code.const';
 
 
 export const ForbiddenException = (arg?: Partial<IExceptionArg>): IThrowable => (ctx) => {
-  const error = arg?.error ?? ctx.lang(ExceptionLang.Forbidden);
-  const message = arg?.message ?? arg?.error ?? ctx.lang(ExceptionLang.Forbidden);
-
   return new Exception({
     code: HttpCode.UNAUTHENTICATED,
     name: 'ForbiddenException',
-    error,
-    message,
-    data: arg?.data,
-    debug: arg?.debug,
+    ctx,
+    ...arg,
+    error: arg?.error ?? ctx.lang(ExceptionLang.Forbidden),
+    message: arg?.message ?? arg?.error ?? ctx.lang(ExceptionLang.Forbidden),
   });
 }

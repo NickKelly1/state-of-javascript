@@ -5,18 +5,19 @@
 import http from 'http';
 import { bootApp } from './app';
 import { ExpressContext } from './common/classes/express-context';
-import { Dbg } from './dbg';
-import { Env } from './environment/env';
 import { $TS_FIX_ME } from './common/types/$ts-fix-me.type';
+import { EnvService, EnvServiceSingleton } from './common/environment/env';
+import { logger } from './common/logger/logger';
 
-async function bootServer() {
-  const app: ExpressContext = await bootApp();
+async function bootServer(arg: { env: EnvService }) {
+  const { env } = arg;
+  const app: ExpressContext = await bootApp({ env });
 
   /**
    * Get port from environment and store in Express.
    */
 
-  var port = normalizePort(Env.PORT);
+  var port = normalizePort(env.PORT);
   app.root.set('port', port);
 
   /**
@@ -69,11 +70,11 @@ async function bootServer() {
     // handle specific listen errors with friendly messages
     switch (error.code) {
       case 'EACCES':
-        console.error(bind + ' requires elevated privileges');
+        logger.error(bind + ' requires elevated privileges');
         process.exit(1);
         break;
       case 'EADDRINUSE':
-        console.error(bind + ' is already in use');
+        logger.error(bind + ' is already in use');
         process.exit(1);
         break;
       default:
@@ -90,8 +91,8 @@ async function bootServer() {
     var bind = typeof addr === 'string'
       ? 'pipe ' + addr
       : 'port ' + addr.port;
-    Dbg.Www('Listening on ' + bind);
+    logger.debug('Listening on ' + bind);
   }
 }
 
-bootServer();
+bootServer({ env: EnvServiceSingleton });

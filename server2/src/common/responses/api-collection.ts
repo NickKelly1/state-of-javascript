@@ -4,11 +4,11 @@ import { IRowsWithCount } from "../interfaces/rows-with-count.interface";
 import { collectionMeta } from "./collection-meta";
 
 export function apiCollection<T>(arg: {
-  results: IRowsWithCount<T>,
+  data: T[]
+  total: number;
   page: IPaginateInput,
 }): IApiCollection<T> {
-  const { results, page } = arg;
-  const { rows } = results;
-  const meta = collectionMeta({ results, page });
-  return { data: rows, meta };
+  const { data, page, total } = arg;
+  const meta = collectionMeta({ data, total, page });
+  return { data, meta };
 }

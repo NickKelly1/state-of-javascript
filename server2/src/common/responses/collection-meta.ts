@@ -3,21 +3,19 @@ import { IPaginateInput } from "../interfaces/pageinate-input.interface";
 import { IRowsWithCount } from "../interfaces/rows-with-count.interface";
 
 export function collectionMeta<T>(arg: {
-  results: IRowsWithCount<T>;
+  data: T[];
+  total: number;
   page: IPaginateInput;
 }): ICollectionMeta {
-  const { page, results } = arg;
+  const { page, data, total } = arg;
   const { limit, offset } = page;
-  const { count, rows } = results;
 
-  const total = count;
-  const on_page = rows.length;
   // limit = 5,
   //  count = 0 => pages = Math.ceil(1 / 5) = 1
   //  count = 1 => pages = Math.ceil(2 / 5) = 1
   //  count = 4 => pages = Math.ceil(5 / 5) = 1
   //  count = 5 => pages = Math.ceil(6 / 5) = 2
-  const pages = Math.ceil((count + 1) / limit);
+  const pages = Math.ceil((total + 1) / limit);
 
   // limit = 5,
   //  offset = 0 => page_number = Math.ceil(1 / 5) = 1
@@ -28,5 +26,5 @@ export function collectionMeta<T>(arg: {
 
   const more = page_number < pages;
 
-  return { limit, offset, total, on_page, page_number, pages, more, };
+  return { limit, offset, total, page_number, pages, more, };
 }

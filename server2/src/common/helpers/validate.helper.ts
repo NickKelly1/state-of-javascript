@@ -6,7 +6,7 @@ import { exceptionData } from './exception-data.helper';
 
 
 export function validate<T>(validator: Joi.ObjectSchema<T>, body: unknown): Either<IExceptionData, T> {
-  const result = validator.validate(body);
+  const result = validator.validate(body, { abortEarly: false });
   if (result.error) { return left<IExceptionData, T>(exceptionData(result.error)) }
   return right(result.value as $TS_DANGER<unknown> as T);
 }
