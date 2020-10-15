@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Box, makeStyles, Paper, Typography } from "@material-ui/core";
-import { ArticleSdkResource } from '../../sdk/types/article.sdk.resource';
+import { ArticleCmsResource } from '../../cms/types/article.cms.resource';
 import { formatRelative } from 'date-fns';
-import { InlineSdkImg } from '../inline-sdk-img/inline-sdk-img';
+import { InlineCmsImg } from '../inline-cms-img/inline-cms-img';
 import { MaybeLink } from '../maybe-link/maybe-link';
 import { InfoCard } from '../info-card/info-card';
 import { InfoCardHeader } from '../info-card-header/info-card-header';
@@ -10,8 +10,8 @@ import { InfoCardSubtitle } from '../info-card-subtitle/info-card-subtitle';
 import { InfoCardBody } from '../info-card-body/info-card-body';
 import { InfoCardTitle } from '../info-card-title/info-card-title';
 import { InfoCardCategory } from '../info-card-category/info-card-category';
-import { ResourceSdkResource } from '../../sdk/types/resource.sdk.resource';
-import { SdkImg } from '../sdk-img/sdk-img';
+import { ResourceCmsResource } from '../../cms/types/resource.cms.resource';
+import { CmsImg } from '../cms-img/cms-img';
 
 const useStyles = makeStyles((theme) => ({
   img: {
@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export interface IToolCardProps {
-  tool: ResourceSdkResource;
+  tool: ResourceCmsResource;
 }
 
 export function ToolCard(props: IToolCardProps) {
@@ -45,7 +45,7 @@ export function ToolCard(props: IToolCardProps) {
             {tool.description}
           </Typography>
         </Box>
-        {tool.example?.url && (<SdkImg className={classes.img} src={tool.example?.url} />)}
+        {tool.example?.url && (<CmsImg className={classes.img} src={tool.example?.url} />)}
       </InfoCardBody>
     </InfoCard>
   );

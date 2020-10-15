@@ -7,8 +7,8 @@ import npmDebug from 'debug';
 export const Debug = {
   Npms: npmDebug('npms'),
   NpmsConnector: npmDebug('npms-connector'),
-  Sdk: npmDebug('sdk'),
-  SdkConnector: npmDebug('sdk-connector'),
+  Cms: npmDebug('cms'),
+  CmsConnector: npmDebug('cms-connector'),
   StaticGeneration: npmDebug('static-generation'),
   ServerSideProps: npmDebug('server-side-props'),
 } as const;

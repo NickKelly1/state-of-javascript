@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Button, makeStyles, Paper, Typography } from "@material-ui/core";
-import { ArticleSdkResource } from '../../sdk/types/article.sdk.resource';
+import { ArticleCmsResource } from '../../cms/types/article.cms.resource';
 import { formatRelative } from 'date-fns';
 import { InfoCard } from '../info-card/info-card';
 import { InfoCardHeader } from '../info-card-header/info-card-header';
@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export interface IArticleCardProps {
-  article: ArticleSdkResource;
+  article: ArticleCmsResource;
 }
 
 export function ArticleCard(props: IArticleCardProps) {

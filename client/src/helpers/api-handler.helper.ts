@@ -2,14 +2,14 @@ import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { PublicEnvSingleton, PublicEnv } from "../env/public-env.helper";
 import { NpmsApi } from "../npms-api/npms-api";
 import { NpmsApiConnector } from "../npms-api/npms-api-connector";
-import { Sdk } from "../sdk/sdk";
-import { SdkConnector } from "../sdk/sdk-connector";
+import { Cms } from "../cms/cms";
+import { CmsConnector } from "../cms/cms-connector";
 
 interface ApiHandlerFn<T> {
   (arg: {
     req: NextApiRequest;
     res: NextApiResponse<T>;
-    sdk: Sdk;
+    cms: Cms;
     npmsApi: NpmsApi;
     publicEnv: PublicEnv;
   }): void | Promise<void>;
@@ -19,8 +19,8 @@ export function apiHandler<T = any>(handler: ApiHandlerFn<T>): NextApiHandler {
   return async function wrapper(req, res) {
     const publicEnv = PublicEnvSingleton;
 
-    const sdkConnector = SdkConnector.create({ publicEnv });
-    const sdk = Sdk.create({ publicEnv, sdkConnector });
+    const cmsConnector = CmsConnector.create({ publicEnv });
+    const cms = Cms.create({ publicEnv, cmsConnector });
 
     const npmsApiConnector = NpmsApiConnector.create({ publicEnv });
     const npmsApi = NpmsApi.create({ publicEnv, npmsApiConnector });
@@ -28,7 +28,7 @@ export function apiHandler<T = any>(handler: ApiHandlerFn<T>): NextApiHandler {
     const result = await handler({
       req,
       res,
-      sdk,
+      cms,
       publicEnv,
       npmsApi,
     });

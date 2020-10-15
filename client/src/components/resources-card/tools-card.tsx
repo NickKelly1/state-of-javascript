@@ -1,8 +1,8 @@
 import { Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import React, { Fragment } from 'react';
-import { ResourceSdkResource } from '../../sdk/types/resource.sdk.resource';
+import { ResourceCmsResource } from '../../cms/types/resource.cms.resource';
 import { InfoCard } from '../info-card/info-card';
-import { InlineSdkImg } from '../inline-sdk-img/inline-sdk-img';
+import { InlineCmsImg } from '../inline-cms-img/inline-cms-img';
 import { MaybeLink } from '../maybe-link/maybe-link';
 
 const useStyles = makeStyles((theme) => ({
@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface IToolsCardProps {
-  tools: ResourceSdkResource[];
+  tools: ResourceCmsResource[];
 }
 
 export function ToolsCard(props: IToolsCardProps) {
@@ -38,8 +38,8 @@ export function ToolsCard(props: IToolsCardProps) {
         {tools.map((tool, i) => (
           <Fragment key={i}>
             <Grid className="centered" item xs={1}>
-              {tool.icon?.url ? (<InlineSdkImg src={tool.icon.url} />)
-              : tool.logo?.url ? (<InlineSdkImg src={tool.logo.url} />)
+              {tool.icon?.url ? (<InlineCmsImg src={tool.icon.url} />)
+              : tool.logo?.url ? (<InlineCmsImg src={tool.logo.url} />)
               : null}
             </Grid>
             <Grid item key={i} xs={11}>

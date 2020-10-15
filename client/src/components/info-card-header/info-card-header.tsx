@@ -2,7 +2,7 @@ import { Box, makeStyles, Typography } from '@material-ui/core';
 import React, { ReactNode } from 'react';
 import { OrNullable } from '../../types/or-nullable.type';
 import { OrString } from '../../types/or-string.type';
-import { InlineSdkImg } from '../inline-sdk-img/inline-sdk-img';
+import { InlineCmsImg } from '../inline-cms-img/inline-cms-img';
 import { MaybeLink } from '../maybe-link/maybe-link';
 
 const useStyles = makeStyles((theme) => ({

@@ -2,7 +2,7 @@ import { Box, makeStyles, Typography } from '@material-ui/core';
 import React, { ReactNode } from 'react';
 import { OrNullable } from '../../types/or-nullable.type';
 import { OrString } from '../../types/or-string.type';
-import { InlineSdkImg } from '../inline-sdk-img/inline-sdk-img';
+import { InlineCmsImg } from '../inline-cms-img/inline-cms-img';
 import { MaybeLink } from '../maybe-link/maybe-link';
 
 const useStyles = makeStyles((theme) => ({
@@ -24,7 +24,7 @@ export function InfoCardTitle(props: IInfoCardTitleProps) {
     <Box className={classes.root}>
       <Typography className="d-flex" variant="h6" component="h3" color="inherit">
         <Box className="centered" mr={2} component="span">
-          {icon && (<InlineSdkImg className="centered" src={icon} />)}
+          {icon && (<InlineCmsImg className="centered" src={icon} />)}
         </Box>
         <Box className="centered" component="span">
           <MaybeLink href={link} color="inherit">

@@ -4,14 +4,14 @@ import Next, { GetServerSideProps, GetServerSidePropsContext, GetServerSideProps
 import { ParsedUrlQuery } from 'querystring';
 import { serverSidePropsHandler } from '../../src/helpers/server-side-props-handler.helper';
 import { Button, Grid, Link, makeStyles, Paper, Typography, withTheme } from '@material-ui/core';
-import { ArticleSdkResource } from '../../src/sdk/types/article.sdk.resource';
-import { ResourceSdkResource } from '../../src/sdk/types/resource.sdk.resource';
+import { ArticleCmsResource } from '../../src/cms/types/article.cms.resource';
+import { ResourceCmsResource } from '../../src/cms/types/resource.cms.resource';
 import { ArticleCard } from '../../src/components/article-card/article-card';
-import { SdkFilterEq, SdkFilterNIn, SdkQuery, SdkSort, SdkSortDir } from '../../src/sdk/sdk-query.type';
+import { CmsFilterEq, CmsFilterNIn, CmsQuery, CmsSort, CmsSortDir } from '../../src/cms/cms-query.type';
 import { Sort } from '@material-ui/icons';
 import { ToolsCard } from '../../src/components/resources-card/tools-card';
 import { ToolCard } from '../../src/components/tool-card/tool-card';
-import { SdkResourceCategory } from '../../src/sdk/sdk-resource-category.enum';
+import { CmsResourceCategory } from '../../src/cms/cms-resource-category.enum';
 import {
   LineChart,
   Line,
@@ -29,13 +29,13 @@ import { NormalisedError } from '../../src/helpers/normalise-error.helper';
 import { NpmPackagesDashboard } from '../../src/components/npm-packages-dashboard/npm-packages-dashboard';
 import { WithAttempted } from '../../src/components/with-attempted/with-attempted';
 import { staticPropsHandler } from '../../src/helpers/static-props-handler.helper';
-import { Sdk } from '../../src/sdk/sdk';
+import { Cms } from '../../src/cms/cms';
 import { NpmsApi } from '../../src/npms-api/npms-api';
 
 interface IHomeProps {
-  resources: Attempt<ResourceSdkResource[], NormalisedError>;
-  stories: Attempt<ArticleSdkResource[], NormalisedError>;
-  tools: Attempt<ResourceSdkResource[], NormalisedError>;
+  resources: Attempt<ResourceCmsResource[], NormalisedError>;
+  stories: Attempt<ArticleCmsResource[], NormalisedError>;
+  tools: Attempt<ResourceCmsResource[], NormalisedError>;
   httpServerPackages: Attempt<NpmsPackageInfos, NormalisedError>;
   // wssPackages: Attempt<NpmsPackageInfos, NormalisedError>;
   ormPackages: Attempt<NpmsPackageInfos, NormalisedError>;
@@ -197,27 +197,27 @@ function HomePage(props: IHomeProps) {
   );
 }
 
-async function getProps(args: { sdk: Sdk, npmsApi: NpmsApi }): Promise<IHomeProps> {
-  const { sdk, npmsApi } = args
-  const resourceQuery = SdkQuery.create();
-  resourceQuery.addSort(SdkSort.create({ field: 'id', value: SdkSortDir.Desc }));
-  resourceQuery.addFilter(SdkFilterNIn.create({ field: 'resource_category', values: [SdkResourceCategory.Tooling] }))
+async function getProps(args: { cms: Cms, npmsApi: NpmsApi }): Promise<IHomeProps> {
+  const { cms, npmsApi } = args
+  const resourceQuery = CmsQuery.create();
+  resourceQuery.addSort(CmsSort.create({ field: 'id', value: CmsSortDir.Desc }));
+  resourceQuery.addFilter(CmsFilterNIn.create({ field: 'resource_category', values: [CmsResourceCategory.Tooling] }))
   resourceQuery.setLimit(10);
   resourceQuery.setSkip(0);
-  const resourcesRequest = sdk.resources({ query: resourceQuery });
+  const resourcesRequest = cms.resources({ query: resourceQuery });
 
-  const toolsQuery = SdkQuery.create();
-  toolsQuery.addSort(SdkSort.create({ field: 'id', value: SdkSortDir.Desc }));
-  toolsQuery.addFilter(SdkFilterEq.create({ field: 'resource_category', value: SdkResourceCategory.Tooling }))
+  const toolsQuery = CmsQuery.create();
+  toolsQuery.addSort(CmsSort.create({ field: 'id', value: CmsSortDir.Desc }));
+  toolsQuery.addFilter(CmsFilterEq.create({ field: 'resource_category', value: CmsResourceCategory.Tooling }))
   toolsQuery.setLimit(10);
   toolsQuery.setSkip(0);
-  const toolsRequest = sdk.resources({ query: toolsQuery });
+  const toolsRequest = cms.resources({ query: toolsQuery });
 
-  const storiesQuery = SdkQuery.create();
-  storiesQuery.addSort(SdkSort.create({ field: 'created_at', value: SdkSortDir.Desc }));
+  const storiesQuery = CmsQuery.create();
+  storiesQuery.addSort(CmsSort.create({ field: 'created_at', value: CmsSortDir.Desc }));
   storiesQuery.setLimit(10);
   storiesQuery.setSkip(0);
-  const storiesRequest = sdk.stories({ query: storiesQuery });
+  const storiesRequest = cms.stories({ query: storiesQuery });
 
   const httpServerPackagesRequest = npmsApi.packageInfos({ names: [
     'express',
@@ -293,15 +293,15 @@ async function getProps(args: { sdk: Sdk, npmsApi: NpmsApi }): Promise<IHomeProp
   }
 }
 
-// const getServerSideProps = serverSidePropsHandler<IHomeProps>(async ({ ctx, sdk, npmsApi }) => {
-//   const props = await getProps({ sdk, npmsApi });
+// const getServerSideProps = serverSidePropsHandler<IHomeProps>(async ({ ctx, cms, npmsApi }) => {
+//   const props = await getProps({ cms, npmsApi });
 //   return {
 //     props,
 //   };
 // })
 
-export const getStaticProps = staticPropsHandler<IHomeProps>(async ({ ctx, sdk, npmsApi }) => {
-  const props = await getProps({ sdk, npmsApi });
+export const getStaticProps = staticPropsHandler<IHomeProps>(async ({ ctx, cms, npmsApi }) => {
+  const props = await getProps({ cms, npmsApi });
   return {
     props,
     // revalidate: false,
