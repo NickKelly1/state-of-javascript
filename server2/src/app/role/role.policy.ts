@@ -1,8 +1,8 @@
-import { UserModel } from "../../circle";
+import { RoleModel } from "../../circle";
 import { IRequestContext } from "../../common/interfaces/request-context.interface";
 import { Permission } from "../permission/permission.const";
 
-export class UserPolicy {
+export class RolePolicy {
   constructor(
     protected readonly ctx: IRequestContext,
   ) {
@@ -12,33 +12,33 @@ export class UserPolicy {
   canFindMany(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowUser]);
+    return this.ctx.auth.hasAnyPermissions([Permission.ShowRole]);
   }
 
   canFindOne(arg: {
-    model: UserModel;
+    model: RoleModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowUser]);
+    return this.ctx.auth.hasAnyPermissions([Permission.ShowRole]);
   }
 
   canCreate(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateUser]);
+    return this.ctx.auth.hasAnyPermissions([Permission.CreateRole]);
   }
 
   canUpdate(arg: {
-    model: UserModel;
+    model: RoleModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateUser]);
+    return this.ctx.auth.hasAnyPermissions([Permission.CreateRole]);
   }
 
   canDelete(arg: {
-    model: UserModel;
+    model: RoleModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateUser]);
+    return this.ctx.auth.hasAnyPermissions([Permission.CreateRole]);
   }
 }

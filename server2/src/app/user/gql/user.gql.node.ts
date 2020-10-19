@@ -23,12 +23,15 @@ export const UserGqlNode = new GraphQLObjectType<IUserGqlNode, GqlContext>({
     userRoleConnection: {
       type: GraphQLNonNull(UserRoleGqlConnection),
       args: connectionGqlArg,
-      resolve: async (parent, args): Promise<IUserRoleGqlConnection> => {
-        const { page, findOpts } = transformGqlCollectionInput(args);
-        const { rows, count } = await UserRoleModel.findAndCountAll({
-          ...findOpts,
-          where: {
-            [UserRoleField.user_id]: { [Op.eq]: parent.id }
+      resolve: async (parent, args, ctx): Promise<IUserRoleGqlConnection> => {
+        const { page, options } = transformGqlCollectionInput(args);
+        const { rows, count } = await ctx.services.userRoleRepository().findAllAndCount({
+          runner: null,
+          options: {
+            ...options,
+            where: {
+              [UserRoleField.user_id]: { [Op.eq]: parent.id }
+            },
           },
         });
         const meta = collectionMeta({ data: rows, total: count, page });

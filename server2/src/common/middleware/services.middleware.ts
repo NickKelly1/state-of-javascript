@@ -4,15 +4,21 @@ import { JwtService } from "../../app/auth/jwt.service";
 import { DbService } from "../../app/db/db.service";
 import { HashService } from "../../app/hash/hash.service";
 import { PermissionPolicy } from "../../app/permission/permission.policy";
+import { PermissionRepository } from "../../app/permission/permission.repository";
 import { PermissionService } from "../../app/permission/permission.service";
 import { RolePermissionPolicy } from "../../app/role-permission/role-permission.policy";
+import { RolePermissionRepository } from "../../app/role-permission/role-permission.repository";
 import { RolePermissionService } from "../../app/role-permission/role-permission.service";
+import { RoleRepository } from "../../app/role/role.repository";
 import { RoleService } from "../../app/role/role.service";
-import { RolePolicy } from "../../app/role/user.policy";
+import { RolePolicy } from "../../app/role/role.policy";
+import { UserPasswordRepository } from "../../app/user-password/user-password.repository";
 import { UserPasswordService } from "../../app/user-password/user-password.service";
 import { UserRolePolicy } from "../../app/user-role/user-role.policy";
+import { UserRoleRepository } from "../../app/user-role/user-role.repository";
 import { UserRoleService } from "../../app/user-role/user-role.service";
 import { UserPolicy } from "../../app/user/user.policy";
+import { UserRepository } from "../../app/user/user.repository";
 import { UserService } from "../../app/user/user.service";
 import { HttpContext } from "../classes/http.context";
 import { RequestAuth } from "../classes/request-auth";
@@ -30,24 +36,30 @@ export const servicesMw = (arg: { env: EnvService, sequelize: Sequelize }) => ha
     httpCtx: ctx,
     services: {
       userService: lazy(() => new UserService(ctx)),
+      userRepository: lazy(() => new UserRepository(ctx)),
       userPolicy: lazy(() => new UserPolicy(ctx)),
 
       roleService: lazy(() => new RoleService(ctx)),
+      roleRepository: lazy(() => new RoleRepository(ctx)),
       rolePolicy: lazy(() => new RolePolicy(ctx)),
 
       permissionService: lazy(() => new PermissionService(ctx)),
+      permissionRepository: lazy(() => new PermissionRepository(ctx)),
       permissionPolicy: lazy(() => new PermissionPolicy(ctx)),
 
       userRoleService: lazy(() => new UserRoleService(ctx)),
+      userRoleRepository: lazy(() => new UserRoleRepository(ctx)),
       userRolePolicy: lazy(() => new UserRolePolicy(ctx)),
 
       rolePermissionService: lazy(() => new RolePermissionService(ctx)),
+      rolePermissionRepository: lazy(() => new RolePermissionRepository(ctx)),
       rolePermissionPolicy: lazy(() => new RolePermissionPolicy(ctx)),
 
+      userPasswordService: lazy(() => new UserPasswordService(ctx)),
+      userPasswordRepository: lazy(() => new UserPasswordRepository(ctx)),
 
       env: lazy(() => arg.env),
       hash: lazy(() => new HashService(ctx)),
-      userPasswordService: lazy(() => new UserPasswordService(ctx)),
       dbService: lazy(() => new DbService(ctx, arg.sequelize)),
       jwtService: lazy(() => new JwtService(ctx)),
     }

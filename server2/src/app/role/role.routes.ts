@@ -16,6 +16,7 @@ import { JsonResponder } from '../../common/responses/json.responder';
 import { IApiResource } from '../../common/interfaces/api-resource.interface';
 import { IRoleRo } from './dtos/role.ro';
 import { IApiCollection } from '../../common/interfaces/api-collection.interface';
+import { OrNull } from '../../common/types/or-null.type';
 
 
 
@@ -26,19 +27,23 @@ export function RoleRoutes(arg: { app: ExpressContext }): Router {
   // findMany
   router.get(
     '/',
-    mw<JsonResponder<IApiCollection<IRoleRo>>>(async (ctx) => {
-      ctx.authorize(await ctx.services.rolePolicy().canFindMany({ ctx }));
-      const { page, findOptions } = ctx.findQuery();
+    mw<JsonResponder<IApiCollection<OrNull<IRoleRo>>>>(async (ctx) => {
+      ctx.authorize(ctx.services.rolePolicy().canFindMany({}));
+      const { page, options } = ctx.findQuery();
       const [models, total] = await ctx.services.dbService().transact(async ({ runner }) => {
         const { transaction } = runner;
-        const { rows, count } = await RoleModel.findAndCountAll({ transaction, ...findOptions });
+        const { rows, count } = await ctx.services.roleRepository().findAllAndCount({ runner, options });
         return [rows, count];
       });
 
       const collection = apiCollection({
         total,
         page,
-        data: models.map(model => ctx.services.roleService().toRo({ model })),
+        data: models.map(model =>
+          ctx.services.rolePolicy().canFindOne({ model })
+            ? ctx.services.roleService().toRo({ model })
+            : null
+        ),
       });
 
       return new JsonResponder(HttpCode.OK, collection);
@@ -52,20 +57,15 @@ export function RoleRoutes(arg: { app: ExpressContext }): Router {
     mw<JsonResponder<IApiResource<IRoleRo>>>(async (ctx) => {
       const id = ctx.req.params.id;
       const { res } = ctx;
-      ctx.authorize(await ctx.services.rolePolicy().canFindMany({ ctx }));
+      ctx.authorize(ctx.services.rolePolicy().canFindMany());
 
       const model = await ctx.services.dbService().transact(async ({ runner }) => {
         const { transaction } = runner;
-        const model = await RoleModel
-          .findByPk(id, { transaction })
-          .then(orFail(() => ctx.except(NotFoundException({
-            message: ctx.lang(RoleLang.NotFound),
-          }))));
+        const model = await ctx.services.roleRepository().findByPkOrfail(id, { runner });
         return model;
       });
 
-      ctx.authorize(await ctx.services.rolePolicy().canFindOne({ ctx, model }));
-
+      ctx.authorize(ctx.services.rolePolicy().canFindOne({ model }));
       const resource = apiResource({ data: ctx.services.roleService().toRo({ model }) });
       return new JsonResponder(HttpCode.OK, resource);
     }),
@@ -78,7 +78,7 @@ export function RoleRoutes(arg: { app: ExpressContext }): Router {
     mw<JsonResponder<IApiResource<IRoleRo>>>(async (ctx) => {
       const { req, res } = ctx;
 
-      ctx.authorize(await ctx.services.rolePolicy().canCreate({ ctx }));
+      ctx.authorize(ctx.services.rolePolicy().canCreate({ ctx }));
       const dto = ctx.body(CreateRoleDto);
 
       const model = await ctx.services.dbService().transact(async ({ runner }) => {

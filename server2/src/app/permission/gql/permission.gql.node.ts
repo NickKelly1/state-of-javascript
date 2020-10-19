@@ -8,7 +8,6 @@ import { collectionMeta } from "../../../common/responses/collection-meta";
 import { IRolePermissionGqlConnection, RolePermissionGqlConnection } from "../../role-permission/gql/role-permission.gql.connection";
 import { IRolePermissionGqlEdge } from "../../role-permission/gql/role-permission.gql.edge";
 import { RolePermissionField } from "../../role-permission/role-permission.attributes";
-import { RolePermissionModel } from "../../role-permission/role-permission.model";
 
 export type IPermissionGqlNode = PermissionModel;
 export const PermissionGqlNode = new GraphQLObjectType<IPermissionGqlNode, GqlContext>({
@@ -20,13 +19,16 @@ export const PermissionGqlNode = new GraphQLObjectType<IPermissionGqlNode, GqlCo
     rolePermissionConnection: {
       type: GraphQLNonNull(RolePermissionGqlConnection),
       args: connectionGqlArg,
-      resolve: async (parent, args): Promise<IRolePermissionGqlConnection> => {
-        const { page, findOpts } = transformGqlCollectionInput(args);
-        const { rows, count } = await RolePermissionModel.findAndCountAll({
-          ...findOpts,
-          where: {
-            [RolePermissionField.permission_id]: { [Op.eq]: parent.id }
-          },
+      resolve: async (parent, args, ctx): Promise<IRolePermissionGqlConnection> => {
+        const { page, options } = transformGqlCollectionInput(args);
+        const { rows, count } = await ctx.services.rolePermissionRepository().findAllAndCount({
+          runner: null,
+          options: {
+            ...options,
+            where: {
+              [RolePermissionField.permission_id]: { [Op.eq]: parent.id }
+            },
+          }
         });
         const meta = collectionMeta({ data: rows, total: count, page });
         const connection: IRolePermissionGqlConnection = {

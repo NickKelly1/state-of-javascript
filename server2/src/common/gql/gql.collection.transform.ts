@@ -6,7 +6,7 @@ import { OrUndefined } from "../types/or-undefined.type";
 import { IGqlConnectionArgOptions } from "./gql.connection.input";
 import { ISortGqlInput, SortGqlInput } from "./gql.sort";
 
-export function transformGqlCollectionInput(arg: { [_q: string]: any }): { page: IPaginateInput; findOpts: FindAndCountOptions } {
+export function transformGqlCollectionInput(arg: { [_q: string]: any }): { page: IPaginateInput; options: FindAndCountOptions } {
   const options = (arg as IGqlConnectionArgOptions)?.options ?? {};
   let order: OrUndefined<OrderItem[]>;
   if (options.sorts) {
@@ -16,7 +16,7 @@ export function transformGqlCollectionInput(arg: { [_q: string]: any }): { page:
   const offset = options.offset ?? 0;
   const page: IPaginateInput=  { limit, offset };
   return {
-    findOpts: {
+    options: {
       order,
       limit,
       offset,

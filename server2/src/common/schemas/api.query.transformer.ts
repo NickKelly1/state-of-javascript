@@ -364,7 +364,7 @@ const transformApiSorts = (ctx: IRequestContext) => (fromQs: ApiSorts): Order =>
 
 export interface IParsedQuery {
   page: IPaginateInput;
-  findOptions: {
+  options: {
     offset: number;
     limit: number;
     where?: WhereOptions;
@@ -394,5 +394,5 @@ export function transformApiQuery(ctx: IRequestContext, qsVal: ApiQuery): IParse
   const offset = qsVal.offset ?? 0;
 
   const page: IPaginateInput = { limit, offset };
-  return { page, findOptions: { offset, limit, where, order } };
+  return { page, options: { offset, limit, where, order } };
 }

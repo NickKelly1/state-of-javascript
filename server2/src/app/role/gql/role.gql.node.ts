@@ -1,3 +1,4 @@
+import { option } from "fp-ts/lib/Option";
 import { GraphQLInt, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
 import { Op, } from "sequelize";
 import { GqlContext } from "../../../common/classes/gql.context";
@@ -25,13 +26,16 @@ export const RoleGqlNode = new GraphQLObjectType<IRoleGqlNode, GqlContext>({
     userRoleConnection: {
       type: GraphQLNonNull(UserRoleGqlConnection),
       args: connectionGqlArg,
-      resolve: async (parent, args): Promise<IUserRoleGqlConnection> => {
-        const { page, findOpts } = transformGqlCollectionInput(args);
-        const { rows, count } = await UserRoleModel.findAndCountAll({
-          ...findOpts,
-          where: {
-            [UserRoleField.role_id]: { [Op.eq]: parent.id }
-          },
+      resolve: async (parent, args, ctx): Promise<IUserRoleGqlConnection> => {
+        const { page, options } = transformGqlCollectionInput(args);
+        const { rows, count } = await ctx.services.userRoleRepository().findAllAndCount({
+          runner: null,
+          options: {
+            ...options,
+            where: {
+              [UserRoleField.role_id]: { [Op.eq]: parent.id }
+            },
+          }
         });
         const meta = collectionMeta({ data: rows, total: count, page });
         const connection: IUserRoleGqlConnection = {
@@ -48,12 +52,15 @@ export const RoleGqlNode = new GraphQLObjectType<IRoleGqlNode, GqlContext>({
     rolePermissionConnection: {
       type: GraphQLNonNull(RolePermissionGqlConnection),
       args: connectionGqlArg,
-      resolve: async (parent, args): Promise<IRolePermissionGqlConnection> => {
-        const { page, findOpts } = transformGqlCollectionInput(args);
-        const { rows, count } = await RolePermissionModel.findAndCountAll({
-          ...findOpts,
-          where: {
-            [RolePermissionField.role_id]: { [Op.eq]: parent.id }
+      resolve: async (parent, args, ctx): Promise<IRolePermissionGqlConnection> => {
+        const { page, options } = transformGqlCollectionInput(args);
+        const { rows, count } = await ctx.services.rolePermissionRepository().findAllAndCount({
+          runner: null,
+          options: {
+            ...options,
+            where: {
+              [RolePermissionField.role_id]: { [Op.eq]: parent.id }
+            },
           },
         });
         const meta = collectionMeta({ data: rows, total: count, page });

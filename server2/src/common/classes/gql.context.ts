@@ -46,6 +46,7 @@ import { QueryRunner } from '../../app/db/query-runner';
 import { InternalServerException } from '../exceptions/types/internal-server.exception';
 import { InternalServerExceptionLang } from '../i18n/packs/internal-server-exception.lang';
 import { Transaction } from 'sequelize';
+import { Loader } from './loader';
 
 export class GqlContext implements IRequestContext {
   public readonly execution: ExecutionContext;
@@ -106,6 +107,13 @@ export class GqlContext implements IRequestContext {
     this.res = res;
   }
 
+  protected _loader?: Loader;
+  public get loader(): Loader {
+    if (this._loader) return this._loader;
+    this._loader = new Loader({ ctx: this, });
+    return this._loader;
+  }
+
   authorize(can: boolean): void | never {
     if (!can) throw this.except(ForbiddenException());
   }
@@ -130,6 +138,7 @@ export class GqlContext implements IRequestContext {
       user_id: this.auth.user_id ?? null,
     };
   }
+
 
   // prep(arg: { runner: QueryRunner }) {
   //   const { runner } = arg;

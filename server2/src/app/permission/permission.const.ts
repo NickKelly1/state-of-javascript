@@ -10,9 +10,6 @@ export const Permission = {
   DeleteRole: 230,
 
   ShowPermission: 300,
-  CreatePermission: 310,
-  UpdatePermission: 320,
-  DeletePermission: 330,
 
   ShowUserRole: 400,
   CreateUserRole: 410,
@@ -41,9 +38,9 @@ export const PublicPermissions = [
   Permission.DeleteRole,
 
   Permission.ShowPermission,
-  Permission.CreatePermission,
-  Permission.UpdatePermission,
-  Permission.DeletePermission,
+  // Permission.CreatePermission,
+  // Permission.UpdatePermission,
+  // Permission.DeletePermission,
 
   Permission.ShowUserRole,
   Permission.CreateUserRole,

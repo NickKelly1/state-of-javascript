@@ -21,32 +21,32 @@ import { UserRoleService } from './user-role.service';
 import { IUserRoleRo } from './dtos/user-role.ro';
 import { IApiCollection } from '../../common/interfaces/api-collection.interface';
 import { Op, WhereOperators, WhereOptions } from 'sequelize';
+import { OrNull } from '../../common/types/or-null.type';
 
 
 
 export function UserRoleRoutes(arg: { app: ExpressContext }): Router {
-  const { app } = arg;
   const router = Router();
 
   // findMany
   router.get(
     '/',
-    mw<JsonResponder<IApiCollection<IUserRoleRo>>>(async (ctx) => {
-      ctx.authorize(await ctx.services.userRolePolicy().canFindMany({ ctx }));
-      const { page, findOptions } = ctx.findQuery();
+    mw<JsonResponder<IApiCollection<OrNull<IUserRoleRo>>>>(async (ctx) => {
+      ctx.authorize(ctx.services.userRolePolicy().canFindMany());
+      const { page, options } = ctx.findQuery();
       const [models, total] = await ctx.services.dbService().transact(async ({ runner }) => {
-        const { transaction } = runner;
-        const { rows, count } = await UserRoleModel.findAndCountAll({
-          transaction,
-          ...findOptions
-        });
+        const { rows, count } = await ctx.services.userRoleRepository().findAllAndCount({ runner, options });
         return [rows, count];
       });
 
       const collection = apiCollection({
         total,
         page,
-        data: models.map(model => ctx.services.userRoleService().toRo({ model })),
+        data: models.map(model =>
+          ctx.services.userRolePolicy().canFindOne({ model })
+            ? ctx.services.userRoleService().toRo({ model })
+            : null,
+        ),
       });
 
       return new JsonResponder(HttpCode.OK, collection);
@@ -59,8 +59,7 @@ export function UserRoleRoutes(arg: { app: ExpressContext }): Router {
     '/:id',
     mw<JsonResponder<IApiResource<IUserRoleRo>>>(async (ctx) => {
       const id = ctx.req.params.id;
-      const { res } = ctx;
-      ctx.authorize(await ctx.services.userRolePolicy().canFindMany({ ctx }));
+      ctx.authorize(ctx.services.userRolePolicy().canFindMany());
 
       const model = await ctx.services.dbService().transact(async ({ runner }) => {
         const { transaction } = runner;
@@ -70,8 +69,7 @@ export function UserRoleRoutes(arg: { app: ExpressContext }): Router {
         return model;
       });
 
-      ctx.authorize(await ctx.services.userRolePolicy().canFindOne({ ctx, model }));
-
+      ctx.authorize(ctx.services.userRolePolicy().canFindOne({ model }));
       const resource = apiResource({ data: ctx.services.userRoleService().toRo({ model }) });
       return new JsonResponder(HttpCode.OK, resource);
     }),
@@ -82,24 +80,14 @@ export function UserRoleRoutes(arg: { app: ExpressContext }): Router {
   router.post(
     '/',
     mw<JsonResponder<IApiResource<IUserRoleRo>>>(async (ctx) => {
-      const { res } = ctx;
-
-      ctx.authorize(await ctx.services.userRolePolicy().canCreate({ ctx }));
+      ctx.authorize(ctx.services.userRolePolicy().canCreate());
       const dto = ctx.body(CreateUserRoleDto);
 
       const model = await ctx.services.dbService().transact(async ({ runner }) => {
         const { transaction } = runner;
         const [user, role] = await Promise.all([
-          UserModel
-            .findByPk(dto.user_id)
-            .then(orFail(() => ctx.except(BadRequestException({
-              data: {[UserRoleField.user_id]: [ctx.lang(UserLang.NotFound)] },
-            })))),
-          RoleModel
-            .findByPk(dto.role_id)
-            .then(orFail(() => ctx.except(BadRequestException({
-              data: {[UserRoleField.role_id]: [ctx.lang(RoleLang.NotFound)] },
-            })))),
+          ctx.services.userRepository().findByPkOrfail(dto.user_id, { runner }),
+          ctx.services.roleRepository().findByPkOrfail(dto.role_id, { runner }),
         ]);
         const model = await ctx.services.userRoleService().create({ runner, role, user });
         await model.reload({ transaction });

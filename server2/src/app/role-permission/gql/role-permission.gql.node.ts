@@ -11,13 +11,15 @@ import { RolePermissionModel } from "../role-permission.model";
 import { RoleModel } from "../../role/role.model";
 import { IRoleGqlConnection, RoleGqlConnection } from "../../role/gql/role.gql.connection";
 import { RoleField } from "../../role/role.attributes";
-import { IRoleGqlEdge } from "../../role/gql/role.gql.edge";
+import { IRoleGqlEdge, RoleGqlEdge } from "../../role/gql/role.gql.edge";
 import { connectionGqlArg } from "../../../common/gql/gql.connection.input";
 import { transformGqlCollectionInput } from "../../../common/gql/gql.collection.transform";
 import { IPermissionGqlConnection, PermissionGqlConnection } from "../../permission/gql/permission.gql.connection";
 import { PermissionModel } from "../../permission/permission.model";
-import { IPermissionGqlEdge } from "../../permission/gql/permission.gql.edge";
+import { IPermissionGqlEdge, PermissionGqlEdge } from "../../permission/gql/permission.gql.edge";
 import { PermissionField } from "../../permission/permission.attributes";
+import { IUserRoleGqlEdge } from "../../user-role/gql/user-role.gql.edge";
+import { IRolePermissionGqlEdge } from "./role-permission.gql.edge";
 
 
 export type IRolePermissionGqlNode = RolePermissionModel;
@@ -28,49 +30,21 @@ export const RolePermissionGqlNode: GraphQLObjectType<RolePermissionModel, GqlCo
     role_id: { type: GraphQLNonNull(GraphQLInt), },
     permission_id: { type: GraphQLNonNull(GraphQLInt), },
 
-    roleConnection: {
-      type: GraphQLNonNull(RoleGqlConnection),
-      args: connectionGqlArg,
-      resolve: async (parent, args): Promise<IRoleGqlConnection> => {
-        const { page, findOpts } = transformGqlCollectionInput(args);
-        const { rows, count } = await RoleModel.findAndCountAll({
-          ...findOpts,
-          where: {
-            [RoleField.id]: { [Op.eq]: parent.role_id },
-          },
-        });
-        const meta = collectionMeta({ data: rows, total: count, page });
-        const connection: IRoleGqlConnection = {
-          edges: rows.map((row): IRoleGqlEdge => ({
-            cursor: row.id.toString(),
-            node: row,
-          })),
-          meta,
-        };
-        return connection;
+    role: {
+      type: GraphQLNonNull(RoleGqlEdge),
+      resolve: async (parent, args, ctx): Promise<IRoleGqlEdge> => {
+        const model = await ctx.loader.roles.load(parent.role_id);
+        const edge: IRoleGqlEdge = { node: model, cursor: model.id.toString(), };
+        return edge;
       },
     },
 
-    permissionConnection: {
-      type: GraphQLNonNull(PermissionGqlConnection),
-      args: connectionGqlArg,
-      resolve: async (parent, args): Promise<IPermissionGqlConnection> => {
-        const { page, findOpts } = transformGqlCollectionInput(args);
-        const { rows, count } = await PermissionModel.findAndCountAll({
-          ...findOpts,
-          where: {
-            [PermissionField.id]: { [Op.eq]: parent.permission_id },
-          },
-        });
-        const meta = collectionMeta({ data: rows, total: count, page });
-        const connection: IPermissionGqlConnection = {
-          edges: rows.map((row): IPermissionGqlEdge => ({
-            cursor: row.id.toString(),
-            node: row,
-          })),
-          meta,
-        };
-        return connection;
+    permission: {
+      type: GraphQLNonNull(PermissionGqlEdge),
+      resolve: async (parent, args, ctx): Promise<IPermissionGqlEdge> => {
+        const model = await ctx.loader.permissions.load(parent.permission_id);
+        const edge: IPermissionGqlEdge = { node: model, cursor: model.id.toString(), };
+        return edge;
       },
     },
   }),

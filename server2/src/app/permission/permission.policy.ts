@@ -9,41 +9,35 @@ export class PermissionPolicy {
     //
   }
 
-  async canFindMany(arg: {
-    ctx: IRequestContext;
-  }): Promise<boolean> {
-    const { ctx } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.ShowPermission]);
+  canFindMany(arg?: {
+    //
+  }): boolean {
+    return this.ctx.auth.hasAnyPermissions([Permission.ShowPermission]);
   }
 
-  async canFindOne(arg: {
-    ctx: IRequestContext;
+  canFindOne(arg: {
     model: PermissionModel;
-  }): Promise<boolean> {
-    const { ctx, model } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.ShowPermission]);
+  }): boolean {
+    return this.ctx.auth.hasAnyPermissions([Permission.ShowPermission]);
   }
 
-  async canCreate(arg: {
-    ctx: IRequestContext;
-  }): Promise<boolean> {
-    const { ctx } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.CreatePermission]);
+  canCreate(arg?: {
+    //
+  }): boolean {
+    return false;
   }
 
-  async canUpdate(arg: {
-    ctx: IRequestContext;
+  canUpdate(arg: {
     model: PermissionModel;
-  }): Promise<boolean> {
-    const { ctx, model } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.CreatePermission]);
+  }): boolean {
+    const { model } = arg;
+    return false;
   }
 
-  async canDelete(arg: {
-    ctx: IRequestContext;
+  canDelete(arg: {
     model: PermissionModel;
-  }): Promise<boolean> {
-    const { ctx, model } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.CreatePermission]);
+  }): boolean {
+    const { model } = arg;
+    return false;
   }
 }

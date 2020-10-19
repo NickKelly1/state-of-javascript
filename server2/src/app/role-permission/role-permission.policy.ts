@@ -9,33 +9,29 @@ export class RolePermissionPolicy {
     //
   }
 
-  async canFindMany(arg: {
-    ctx: IRequestContext;
-  }): Promise<boolean> {
-    const { ctx } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.ShowRolePermission]);
+  canFindMany(arg?: {
+    //
+  }): boolean {
+    return this.ctx.auth.hasAnyPermissions([Permission.ShowRolePermission]);
   }
 
-  async canFindOne(arg: {
-    ctx: IRequestContext;
+  canFindOne(arg: {
     model: RolePermissionModel;
-  }): Promise<boolean> {
-    const { ctx, model } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.ShowRolePermission]);
+  }): boolean {
+    const { model } = arg;
+    return this.ctx.auth.hasAnyPermissions([Permission.ShowRolePermission]);
   }
 
-  async canCreate(arg: {
-    ctx: IRequestContext;
-  }): Promise<boolean> {
-    const { ctx } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.CreateRolePermission]);
+  canCreate(arg?: {
+    //
+  }): boolean {
+    return this.ctx.auth.hasAnyPermissions([Permission.CreateRolePermission]);
   }
 
-  async canDelete(arg: {
-    ctx: IRequestContext;
+  canDelete(arg: {
     model: RolePermissionModel;
-  }): Promise<boolean> {
-    const { ctx, model } = arg;
-    return ctx.auth.hasAnyPermissions([Permission.CreateRolePermission]);
+  }): boolean {
+    const { model } = arg;
+    return this.ctx.auth.hasAnyPermissions([Permission.CreateRolePermission]);
   }
 }
