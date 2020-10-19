@@ -1,18 +1,15 @@
-import { option } from "fp-ts/lib/Option";
 import { GraphQLInt, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
 import { Op, } from "sequelize";
 import { GqlContext } from "../../../common/classes/gql.context";
 import { transformGqlCollectionInput } from "../../../common/gql/gql.collection.transform";
-import { connectionGqlArg, IGqlConnectionArgOptions } from "../../../common/gql/gql.connection.input";
+import { connectionGqlArg } from "../../../common/gql/gql.connection.input";
 import { collectionMeta } from "../../../common/responses/collection-meta";
 import { IRolePermissionGqlConnection, RolePermissionGqlConnection } from "../../role-permission/gql/role-permission.gql.connection";
 import { IRolePermissionGqlEdge } from "../../role-permission/gql/role-permission.gql.edge";
 import { RolePermissionField } from "../../role-permission/role-permission.attributes";
-import { RolePermissionModel } from "../../role-permission/role-permission.model";
 import { IUserRoleGqlConnection, UserRoleGqlConnection } from "../../user-role/gql/user-role.gql.connection";
 import { IUserRoleGqlEdge } from "../../user-role/gql/user-role.gql.edge";
 import { UserRoleField } from "../../user-role/user-role.attributes";
-import { UserRoleModel } from "../../user-role/user-role.model";
 import { RoleModel } from "../role.model";
 
 

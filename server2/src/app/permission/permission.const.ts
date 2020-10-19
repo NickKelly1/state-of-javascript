@@ -38,9 +38,6 @@ export const PublicPermissions = [
   Permission.DeleteRole,
 
   Permission.ShowPermission,
-  // Permission.CreatePermission,
-  // Permission.UpdatePermission,
-  // Permission.DeletePermission,
 
   Permission.ShowUserRole,
   Permission.CreateUserRole,
