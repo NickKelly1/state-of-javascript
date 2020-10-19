@@ -1,4 +1,4 @@
-import { Optional } from "sequelize/types";
+import { Optional } from "sequelize";
 import { IAuditable } from "../../common/interfaces/auditable.interface";
 import { created_at } from "../../common/schemas/constants/created_at.const";
 import { id } from "../../common/schemas/constants/id.const";

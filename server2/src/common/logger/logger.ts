@@ -5,7 +5,7 @@ import winston from 'winston';
 import path from 'path';
 import fs from 'fs';
 import { EnvServiceSingleton } from '../environment/env';
-import { is } from '../helpers/is.helper';
+import { ist } from '../helpers/is.helper';
 import { pretty } from '../helpers/pretty.helper';
 
 
@@ -100,7 +100,7 @@ export const loggerStream = new Writable({
       logger.info(clean(chunk.toString('utf-8')));
       return void done();
     }
-    else if (is.str(chunk)) {
+    else if (ist.str(chunk)) {
       logger.info(clean(chunk));
       return void done();
     }

@@ -1,15 +1,15 @@
 import { ErrorRequestHandler, Handler, NextFunction, Request, Response, } from 'express';
 import { HttpContext } from '../classes/http.context';
 import { InternalServerException } from '../exceptions/types/internal-server.exception';
-import { is } from '../helpers/is.helper';
+import { ist } from '../helpers/is.helper';
 import { logger } from '../logger/logger';
 
 export const errorHandlerMw = (): ErrorRequestHandler => ((err: any, req: Request, res: Response, next: NextFunction) => {
   const ctx = HttpContext.ensure({ req, res });
-  const exception = is.exception(err)
+  const exception = ist.exception(err)
     ? err
     : ctx.except(InternalServerException({
-      debug: is.obj(err)
+      debug: ist.obj(err)
         ? err instanceof Error
           ? { name: err.name, message: err.message, stack: err.stack?.split('\n') }
           : { ...err }

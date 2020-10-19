@@ -1,3 +1,4 @@
+import qs from 'qs';
 import getConfig from 'next/config';
 
 const config = getConfig();
@@ -61,6 +62,7 @@ function oneOf<T extends string>(name: string, oneOf: T[]): T {
 export class PublicEnv {
   static create(): PublicEnv { return new PublicEnv(); }
   // public readonly NODE_ENV = oneOf('NODE_ENV', ['development', 'testing', 'production']);
+  public readonly CMS_URL = string('CMS_URL');
   public readonly API_URL = string('API_URL');
   toJSON(): PublicEnv {
     return { ...this };
@@ -68,3 +70,11 @@ export class PublicEnv {
 }
 
 export const PublicEnvSingleton = PublicEnv.create();
+
+
+// TODO: only in debug mode...
+if (typeof window !== 'undefined') {
+  (window as any).__debug__ = {
+    qs,
+  };
+}

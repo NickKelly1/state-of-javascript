@@ -1,8 +1,11 @@
 import * as ts_node_remember_overrides from './custom';
-import express from 'express';
+import { GraphiQL } from 'graphiql/dist/';
+import { gqlSchema } from './gql';
+import express, { Handler, Request, Response } from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import cors from 'cors';
 import { Routes } from './routes';
 import { ExpressContext } from './common/classes/express-context';
 import { mw } from './common/helpers/mw.helper';
@@ -23,6 +26,14 @@ import { rolesInitialise } from './app/role/roles.initialise';
 import { rolePermissionsInitialise } from './app/role-permission/role-permissions.initialise';
 import { usersInitialise } from './app/user/users.initialise';
 import { userRolesInitialise } from './app/user-role/user-roles.initialise';
+import { ExecutionResult, graphql, } from 'graphql';
+import { GqlContext } from './common/classes/gql.context';
+import { HttpCode } from './common/constants/http-code.const';
+import { JsonResponder } from './common/responses/json.responder';
+import { graphqlHTTP, OptionsData } from 'express-graphql';
+import { GraphiQLData } from 'express-graphql/renderGraphiQL';
+import { IncomingMessage, OutgoingMessage } from 'http';
+import { mwGql } from './common/helpers/mw-gql.helper';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
@@ -66,6 +77,7 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
 
   const app = new ExpressContext({ root: express() });
 
+  app.use(cors())
   app.use(handler(async (req, res, next) => {
     if (env.DELAY) await delay(env.DELAY);
     next();
@@ -77,6 +89,16 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(servicesMw({ env, sequelize }));
   app.use(passportMw());
+  app.use('/v1/graphql', graphqlHTTP(mwGql(async (ctx): Promise<OptionsData> => {
+    const { req, res } = ctx;
+    const gql = GqlContext.create({ req, res, });
+    const data: OptionsData = {
+      schema: gqlSchema,
+      context: gql,
+      graphiql: true,
+    };
+    return data;
+  })));
   app.use(Routes({ app }));
   app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
   app.use(errorHandlerMw());

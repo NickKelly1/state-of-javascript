@@ -10,12 +10,12 @@ export class CmsConnector {
   async json<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
     let info: RequestInfo;
     if (typeof input === 'string') {
-      info = `${this.publicEnv.API_URL}${input}`;
+      info = `${this.publicEnv.CMS_URL}${input}`;
       Debug.CmsConnector(`[${this.json.name}] "${info}"`);
     } else {
       info = {
         ...input,
-        url: `${this.publicEnv.API_URL}${input.url}`,
+        url: `${this.publicEnv.CMS_URL}${input.url}`,
       };
       Debug.CmsConnector(`[${this.json.name}] "${info.url}"`);
     }

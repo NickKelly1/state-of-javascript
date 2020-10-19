@@ -1,4 +1,4 @@
-import { Association } from "sequelize/types";
+import { Association } from "sequelize";
 import { UserModel, UserPasswordModel, RoleModel, UserRoleModel } from "../../circle";
 import { K2K } from "../../common/types/k2k.type";
 

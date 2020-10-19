@@ -4,15 +4,16 @@ import { HttpContext } from '../classes/http.context';
 import { RequestAuth } from '../classes/request-auth';
 import { $TS_FIX_ME } from '../types/$ts-fix-me.type';
 import { handler } from './handler.helper';
+import { ist } from './is.helper';
 
 export type IMwReturn = any;
 
-export interface IMwFn {
-  (ctx: HttpContext, next: NextFunction): IMwReturn;
+export interface IMwFn<T> {
+  (ctx: HttpContext, next: NextFunction): T | Promise<T>;
 }
 
-export const mw = (fn: IMwFn): Handler => handler(async (req, res, next) => {
-  const { ctx } = req.__locals__;
-  await fn(ctx, next);
+export const mw = <T = any>(fn: IMwFn<T>): Handler => handler(async (req, res, next) => {
+  const ctx = HttpContext.ensure({ req, res });
+  const result = await fn(ctx, next);
+  if (ist.responder(result)) result.respond(res);
 });
-

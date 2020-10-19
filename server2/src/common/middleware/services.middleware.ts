@@ -1,5 +1,5 @@
 import { Handler, NextFunction, Request, Response } from "express"
-import { Sequelize } from "sequelize/types";
+import { Sequelize } from "sequelize";
 import { JwtService } from "../../app/auth/jwt.service";
 import { DbService } from "../../app/db/db.service";
 import { HashService } from "../../app/hash/hash.service";
@@ -27,7 +27,7 @@ export const servicesMw = (arg: { env: EnvService, sequelize: Sequelize }) => ha
   const ctx = HttpContext.ensure({ req, res });
   req.__locals__ = {
     auth,
-    ctx,
+    httpCtx: ctx,
     services: {
       userService: lazy(() => new UserService(ctx)),
       userPolicy: lazy(() => new UserPolicy(ctx)),

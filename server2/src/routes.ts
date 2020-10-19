@@ -13,14 +13,13 @@ export function Routes(arg: { app: ExpressContext }): Router {
 
   const router = Router();
 
+  router.use('/v1/auth', AuthRoutes({ app }));
 
-  router.use('/auth', AuthRoutes({ app }));
-
-  router.use('/users', UserRoutes({ app }))
-  router.use('/roles', RoleRoutes({ app }));
-  router.use('/permissions', PermissionRoutes({ app }));
-  router.use('/user-roles', UserRoleRoutes({ app }));
-  router.use('/role-permissions', RolePermissionRoutes({ app }));
+  router.use('/v1/users', UserRoutes({ app }))
+  router.use('/v1/roles', RoleRoutes({ app }));
+  router.use('/v1/permissions', PermissionRoutes({ app }));
+  router.use('/v1/user-roles', UserRoleRoutes({ app }));
+  router.use('/v1/role-permissions', RolePermissionRoutes({ app }));
 
   return router;
 }

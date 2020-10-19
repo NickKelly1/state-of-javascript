@@ -7,7 +7,7 @@ import { mw } from '../../common/helpers/mw.helper';
 import { HttpCode } from '../../common/constants/http-code.const';
 import { IPaginateInput } from '../../common/interfaces/pageinate-input.interface';
 import { apiCollection } from '../../common/responses/api-collection';
-import { pretty } from '../../common/helpers/pretty.helper';
+import { pretty, prettyQ } from '../../common/helpers/pretty.helper';
 import { apiResource } from '../../common/responses/api-resource';
 import { logger } from '../../common/logger/logger';
 import { RolePermissionModel } from '../../circle';
@@ -17,6 +17,10 @@ import { RoleModel } from '../role/role.model';
 import { RoleLang } from '../../common/i18n/packs/role.lang';
 import { PermissionModel } from '../permission/permission.model';
 import { PermissionLang } from '../../common/i18n/packs/permission.lang';
+import { JsonResponder } from '../../common/responses/json.responder';
+import { IApiResource } from '../../common/interfaces/api-resource.interface';
+import { IRolePermissionRo } from './dtos/role-permission.ro';
+import { IApiCollection } from '../../common/interfaces/api-collection.interface';
 
 
 
@@ -25,79 +29,86 @@ export function RolePermissionRoutes(arg: { app: ExpressContext }): Router {
   const router = Router();
 
   // findMany
-  router.get('/', mw(async (ctx) => {
-    const { req, res } = ctx;
-    const page: IPaginateInput = { offset: 0, limit: 15 };
-    const { offset, limit } = page;
-    ctx.authorize(await ctx.services.rolePermissionPolicy().canFindMany({ ctx }));
+  router.get(
+    '/',
+    mw<JsonResponder<IApiCollection<IRolePermissionRo>>>(async (ctx) => {
+      const { req, res } = ctx;
+      ctx.authorize(await ctx.services.rolePermissionPolicy().canFindMany({ ctx }));
+      const { page, findOptions } = ctx.findQuery();
+      const [models, total] = await ctx.services.dbService().transact(async ({ runner }) => {
+        const { transaction } = runner;
+        const { rows, count } = await RolePermissionModel.findAndCountAll({ transaction, ...findOptions });
+        return [rows, count];
+      });
 
-    const [models, total] = await ctx.services.dbService().transact(async ({ runner }) => {
-      const { transaction } = runner;
-      const { rows, count } = await RolePermissionModel.findAndCountAll({ transaction, limit, offset });
-      return [rows, count];
-    });
+      const collection = apiCollection({
+        total,
+        page,
+        data: models.map(model => ctx.services.rolePermissionService().toRo({ model })),
+      });
 
-    const collection = apiCollection({
-      total,
-      page,
-      data: models.map(model => ctx.services.rolePermissionService().toRo({ model })),
-    });
-
-    res.status(HttpCode.OK).json(collection);
-  }));
+      return new JsonResponder(HttpCode.OK, collection);
+    }),
+  );
 
 
   // findOne
-  router.get('/:id', mw(async (ctx) => {
-    const id = ctx.req.params.id;
-    const { res } = ctx;
-    ctx.authorize(await ctx.services.rolePermissionPolicy().canFindMany({ ctx }));
+  router.get(
+    '/:id',
+    mw<JsonResponder<IApiResource<IRolePermissionRo>>>(async (ctx) => {
+      const id = ctx.req.params.id;
+      const { res } = ctx;
+      ctx.authorize(await ctx.services.rolePermissionPolicy().canFindMany({ ctx }));
 
-    const model = await ctx.services.dbService().transact(async ({ runner }) => {
-      const { transaction } = runner;
-      const model = await RolePermissionModel
-        .findByPk(id, { transaction })
-        .then(orFail(() => ctx.except(NotFoundException())));
-      return model;
-    });
+      const model = await ctx.services.dbService().transact(async ({ runner }) => {
+        const { transaction } = runner;
+        const model = await RolePermissionModel
+          .findByPk(id, { transaction })
+          .then(orFail(() => ctx.except(NotFoundException())));
+        return model;
+      });
 
-    ctx.authorize(await ctx.services.rolePermissionPolicy().canFindOne({ ctx, model }));
+      ctx.authorize(await ctx.services.rolePermissionPolicy().canFindOne({ ctx, model }));
 
-    const resource = apiResource({ data: ctx.services.rolePermissionService().toRo({ model }) });
-    res.status(HttpCode.OK).json(resource);
-  }));
+      const resource = apiResource({ data: ctx.services.rolePermissionService().toRo({ model }) });
+      return new JsonResponder(HttpCode.OK, resource);
+    }),
+  );
 
 
   // create
-  router.post('/', mw(async (ctx) => {
-    const { res } = ctx;
+  router.post(
+    '/',
+    mw<JsonResponder<IApiResource<IRolePermissionRo>>>(async (ctx) => {
+      const { res } = ctx;
 
-    ctx.authorize(await ctx.services.rolePermissionPolicy().canCreate({ ctx }));
-    const dto = ctx.body(CreateRolePermissionDto);
+      ctx.authorize(await ctx.services.rolePermissionPolicy().canCreate({ ctx }));
+      const dto = ctx.body(CreateRolePermissionDto);
 
-    const model = await ctx.services.dbService().transact(async ({ runner }) => {
-      const { transaction } = runner;
-      const [role, permission] = await Promise.all([
-        RoleModel
-          .findByPk(dto.role_id)
-          .then(orFail(() => ctx.except(BadRequestException({
-            data: {[RolePermissionField.permission_id]: [ctx.lang(RoleLang.NotFound)] },
-          })))),
-        PermissionModel
-          .findByPk(dto.permission_id)
-          .then(orFail(() => ctx.except(BadRequestException({
-            data: {[RolePermissionField.permission_id]: [ctx.lang(PermissionLang.NotFound)] },
-          })))),
-      ]);
-      const model = await ctx.services.rolePermissionService().create({ runner, role, permission });
-      await model.reload({ transaction });
-      return model;
-    });
+      const model = await ctx.services.dbService().transact(async ({ runner }) => {
+        const { transaction } = runner;
+        const [role, permission] = await Promise.all([
+          RoleModel
+            .findByPk(dto.role_id)
+            .then(orFail(() => ctx.except(BadRequestException({
+              data: {[RolePermissionField.permission_id]: [ctx.lang(RoleLang.NotFound)] },
+            })))),
+          PermissionModel
+            .findByPk(dto.permission_id)
+            .then(orFail(() => ctx.except(BadRequestException({
+              data: {[RolePermissionField.permission_id]: [ctx.lang(PermissionLang.NotFound)] },
+            })))),
+        ]);
+        const model = await ctx.services.rolePermissionService().create({ runner, role, permission });
+        await model.reload({ transaction });
+        return model;
+      });
 
-    logger.info(`RolePermission created: ${pretty(model)}`);
-    const resource = apiResource({ data: ctx.services.rolePermissionService().toRo({ model }) }) ;
-    res.status(HttpCode.OK).json(resource);
-  }));
+      logger.info(`RolePermission created: ${pretty(model)}`);
+      const resource = apiResource({ data: ctx.services.rolePermissionService().toRo({ model }) }) ;
+      return new JsonResponder(HttpCode.OK, resource);
+    }),
+  );
 
   return router;
 }

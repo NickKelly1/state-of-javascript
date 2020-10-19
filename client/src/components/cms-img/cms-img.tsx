@@ -15,6 +15,6 @@ export function CmsImg(props: ICmsImgProps) {
   const { src, style, className } = props;
   const { publicEnv } = useContext(PublicEnvContext);
   return (
-    <img style={style} className={className ?? undefined} src={`${publicEnv.API_URL}${src}`} />
+    <img style={style} className={className ?? undefined} src={`${publicEnv.CMS_URL}${src}`} />
   );
 }

@@ -1,7 +1,7 @@
 import { PermissionModel } from '../../circle';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
 import { auditableRo } from '../../common/helpers/auditable-ro.helper';
-import { is } from '../../common/helpers/is.helper';
+import { ist } from '../../common/helpers/is.helper';
 import { softDeleteableRo } from '../../common/helpers/soft-deleteable-ro.helper';
 import { PermissionLang } from '../../common/i18n/packs/permission.lang';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
@@ -48,7 +48,7 @@ export class PermissionService {
   }) {
     const { model, dto, runner } = arg;
     const { transaction } = runner;
-    if (is.notUndefined(dto.name)) model.name = dto.name;
+    if (ist.notUndefined(dto.name)) model.name = dto.name;
     await model.save({ transaction });
     return model;
   }

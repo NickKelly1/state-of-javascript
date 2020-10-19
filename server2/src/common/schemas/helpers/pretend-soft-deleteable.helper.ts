@@ -1,4 +1,4 @@
-import { DataType } from "sequelize/types";
+import { DataType } from "sequelize";
 import { $TS_DANGER } from "../../types/$ts-danger.type";
 import { deleted_at } from "../constants/deleted_at.const";
 

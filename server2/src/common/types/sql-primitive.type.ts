@@ -1,0 +1,1 @@
+export type SqlPrimitive = null | string | number | boolean;

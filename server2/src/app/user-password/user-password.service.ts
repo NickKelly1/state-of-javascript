@@ -1,6 +1,6 @@
-import { Transaction } from 'sequelize/types';
+import { Transaction } from 'sequelize';
 import { UserModel, UserPasswordModel } from '../../circle';
-import { is } from '../../common/helpers/is.helper';
+import { ist } from '../../common/helpers/is.helper';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { ICreateUserPasswordDto } from './dtos/create-user-password.dto';
@@ -71,7 +71,7 @@ export class UserPasswordService {
   }) {
     const { model, dto, runner } = arg;
     const { transaction } = runner;
-    if (is.notUndefined(dto.password)) {
+    if (ist.notUndefined(dto.password)) {
       const { hash, salt } = await this.encrypt({ raw: dto.password });
       model.hash = hash;
       model.salt = salt;

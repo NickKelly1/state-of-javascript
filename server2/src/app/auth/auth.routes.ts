@@ -4,6 +4,7 @@ import passportLocal from 'passport-local';
 import { ExpressContext } from '../../common/classes/express-context';
 import { HttpCode } from '../../common/constants/http-code.const';
 import { mw } from '../../common/helpers/mw.helper';
+import { JsonResponder } from '../../common/responses/json.responder';
 import { ICreateUserPasswordDto } from '../user-password/dtos/create-user-password.dto';
 import { ICreateUserDto } from '../user/dtos/create-user.dto';
 import { SignupDto } from './dtos/signup.dto';
@@ -32,7 +33,7 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
 
   router.post(
     '/signup',
-    mw(async (ctx, next) => {
+    mw<JsonResponder<ISignupRo>>(async (ctx, next) => {
       const { req, res } = ctx;
       const dto = ctx.body(SignupDto);
 
@@ -60,7 +61,7 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
         refresh_token_iat: refresh.iat,
       }
 
-      res.status(HttpCode.OK).json(ro);
+      return new JsonResponder(HttpCode.CREATED, ro);
     }),
   );
 

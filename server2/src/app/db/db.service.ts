@@ -1,4 +1,4 @@
-import { Sequelize, Transaction } from "sequelize/types";
+import { Sequelize, Transaction } from "sequelize";
 import { IRequestContext } from "../../common/interfaces/request-context.interface";
 import { OrUndefined } from "../../common/types/or-undefined.type";
 import { QueryRunner } from "./query-runner";

@@ -15,11 +15,16 @@ import { NpmsApiConnector } from "../npms-api/npms-api-connector";
 import { Cms } from "../cms/cms";
 import { CmsConnector } from "../cms/cms-connector";
 import { Debug } from "../debug/debug";
+import { Api } from "../backend-api/api";
+import { ApiFactory } from "../backend-api/api.factory";
+import { CmsFactory } from "../cms/cms.factory";
+import { NpmsApiFactory } from "../npms-api/npms-api.factory";
 
 interface StaticPropsHander<P extends { [key: string]: any }, Q extends ParsedUrlQuery> {
   (arg: {
     ctx: GetStaticPropsContext<Q>,
     cms: Cms;
+    api: Api;
     publicEnv: PublicEnv;
     npmsApi: NpmsApi;
   }): Promise<GetStaticPropsResult<P>>;
@@ -29,6 +34,7 @@ interface StaticPathsHandler<P extends { [key: string]: any }> {
   (arg: {
     cms: Cms;
     publicEnv: PublicEnv;
+    api: Api;
     npmsApi: NpmsApi;
   }): Promise<GetStaticPathsResult<P>>;
 }
@@ -45,11 +51,10 @@ export function staticPropsHandler<
     const params = ctx.params ? new URLSearchParams(ctx.params as any) : undefined;
     Debug.StaticGeneration(`[${staticPropsHandler.name}] handling ${params?.toString() ?? '?'}...`);
     const publicEnv = PublicEnvSingleton;
-    const cmsConnector = CmsConnector.create({ publicEnv });
-    const cms = Cms.create({ publicEnv, cmsConnector: cmsConnector });
-    const npmsApiConnector = NpmsApiConnector.create({ publicEnv });
-    const npmsApi = NpmsApi.create({ publicEnv, npmsApiConnector });
-    const result = await handler({ ctx, npmsApi, publicEnv, cms, });
+    const cms = CmsFactory({ publicEnv });
+    const npmsApi = NpmsApiFactory({ publicEnv });
+    const api = ApiFactory({ publicEnv });
+    const result = await handler({ ctx, npmsApi, publicEnv, cms, api, });
     const end = Date.now();
     const dur = end - start;
     console.log(`static page -\t${params?.toString() ?? '?'}\t${dur}ms`)
@@ -67,11 +72,10 @@ export function staticPathsHandler<
     const start = Date.now();
     Debug.StaticGeneration(`[${staticPathsHandler.name}] handling...`);
     const publicEnv = PublicEnvSingleton;
-    const cmsConnector = CmsConnector.create({ publicEnv });
-    const cms = Cms.create({ publicEnv, cmsConnector: cmsConnector });
-    const npmsApiConnector = NpmsApiConnector.create({ publicEnv });
-    const npmsApi = NpmsApi.create({ publicEnv, npmsApiConnector });
-    const result = await handler({ npmsApi, publicEnv, cms, });
+    const cms = CmsFactory({ publicEnv });
+    const npmsApi = NpmsApiFactory({ publicEnv });
+    const api = ApiFactory({ publicEnv });
+    const result = await handler({ npmsApi, publicEnv, cms, api, });
     const end = Date.now();
     const dur = end - start;
     console.log(`static paths -\t${dur}ms`)

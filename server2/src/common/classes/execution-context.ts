@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { OrUndefined } from '../types/or-undefined.type';
+import { GqlContext } from './gql.context';
 import { HttpContext } from './http.context';
 import { WsCtx } from './ws.context';
 
@@ -11,6 +12,7 @@ interface IExecutionContextMatchFnArg<T> {
 
 export class ExecutionContext {
   protected _http?: HttpContext;
+  protected _gql?: GqlContext;
   protected _ws?: WsCtx;
 
   constructor(readonly arg: {
@@ -24,6 +26,11 @@ export class ExecutionContext {
 
   setHttp(http: HttpContext): this {
     this._http = http;
+    return this;
+  }
+
+  setGql(gql: GqlContext): this {
+    this._gql = gql;
     return this;
   }
 

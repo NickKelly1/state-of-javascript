@@ -14,7 +14,7 @@ export class ExpressContext {
     this.root = root;
   }
 
-  mw(fn: IMwFn): this {
+  mw<T = any>(fn: IMwFn<T>): this {
     mw(fn);
     this.root.use(mw(fn));
     return this;

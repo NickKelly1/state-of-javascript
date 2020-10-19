@@ -1,3 +1,5 @@
+import url from 'url';
+import qs from 'qs';
 import { ParamsDictionary, Query, } from 'express-serve-static-core';
 import { Request, Response } from 'express';
 import { ExecutionContext } from './execution-context';
@@ -16,7 +18,30 @@ import { isLeft } from 'fp-ts/lib/Either';
 import { BadRequestException } from '../exceptions/types/bad-request.exception';
 import { ExceptionLang } from '../i18n/packs/exception.lang';
 import { IJson } from '../interfaces/json.interface';
-
+import {
+  ApiQuery,
+  ApiSorts,
+  ApiConditionAnd,
+  ApiConditionAttributes,
+  ApiConditionOr,
+  ApiConditionValue,
+  ApiConditional,
+  ApiDir,
+  ApiFilter,
+  ApiFilterAttributes,
+  ApiFilterOperators,
+  ApiFilterOperatorsTypes,
+  ApiFilterRange,
+  ApiOp,
+  ApiSort,
+  _and,
+  _attr,
+  _or,
+  _val,
+} from '../schemas/api.query.types';
+import { IParsedQuery, transformApiQuery } from '../schemas/api.query.transformer';
+import { logger } from '../logger/logger';
+import { pretty, prettyQ } from '../helpers/pretty.helper';
 
 export class HttpContext implements IRequestContext {
   public readonly execution: ExecutionContext;
@@ -36,12 +61,15 @@ export class HttpContext implements IRequestContext {
     res: Response;
   }): HttpContext {
     const { req, res } = arg;
-    let ctx = req?.__locals__?.ctx;
+    let ctx = req?.__locals__?.httpCtx;
     if (!ctx) {
       const execution = new ExecutionContext({});
       ctx = new HttpContext({ execution, req, res });
       execution.setHttp(ctx);
-      req.__locals__ = { ...req.__locals__, ctx };
+      if (!req.__locals__) {
+        req.__locals__ = ({} as Request['__locals__']);
+      }
+      req.__locals__ = { ...req.__locals__, httpCtx: ctx };
     }
     return ctx;
   }
@@ -65,7 +93,6 @@ export class HttpContext implements IRequestContext {
 
   except(throwable: IThrowable): Exception {
     const exception = throwable(this);
-    // Error.captureStackTrace()
     exception.shiftStack(3);
     return exception;
   }
@@ -75,9 +102,10 @@ export class HttpContext implements IRequestContext {
     return langMatch(languages, switcher);
   }
 
-  body<T>(validator: Joi.ObjectSchema<T>): T {
+  body<T>(validator?: Joi.ObjectSchema<T>): T {
     const { req } = this;
     const { body } = req;
+    if (!validator) return body as T;
     const validation = validate(validator, body);
     if (isLeft(validation)) {
       throw this.except(BadRequestException({
@@ -85,7 +113,16 @@ export class HttpContext implements IRequestContext {
         data: validation.left,
       }));
     }
-    return body;
+    return validation.right;
+  }
+
+  findQuery(): IParsedQuery {
+    const { req } = this;
+    const { query } = req;
+    const parsed = qs.parse(url.parse(req.url).query ?? '', { depth: 30 });
+    const transformed = transformApiQuery(this, (parsed._q ?? {}) as ApiQuery);
+    logger.info(`query\n${req.url}\n-----------\n${prettyQ(parsed)}\n+++++++++++\n${prettyQ(transformed)}`)
+    return transformed;
   }
 
   info(): IJson {

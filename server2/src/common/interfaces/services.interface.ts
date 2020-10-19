@@ -1,4 +1,4 @@
-import { Sequelize } from "sequelize/types";
+import { Sequelize } from "sequelize";
 import { JwtService } from "../../app/auth/jwt.service";
 import { DbService } from "../../app/db/db.service";
 import { HashService } from "../../app/hash/hash.service";

@@ -9,6 +9,6 @@ export function InlineCmsImg(props: IInlineCmsImgProps) {
   const { src } = props;
   const { publicEnv } = useContext(PublicEnvContext);
   return (
-    <InlineImg {...props} src={`${publicEnv.API_URL}${src}`} />
+    <InlineImg {...props} src={`${publicEnv.CMS_URL}${src}`} />
   );
 }

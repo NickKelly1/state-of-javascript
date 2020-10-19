@@ -5,7 +5,7 @@ import { ExceptionLang } from '../../i18n/packs/exception.lang';
 import { IThrowable } from '../../interfaces/request-context.interface';
 import { HttpCode } from '../../constants/http-code.const';
 import { OrNullable } from '../../types/or-nullable.type';
-import { is } from '../../helpers/is.helper';
+import { ist } from '../../helpers/is.helper';
 
 export const NotFoundException = (arg?: Partial<IExceptionArg>): IThrowable => (ctx) => {
   return new Exception({

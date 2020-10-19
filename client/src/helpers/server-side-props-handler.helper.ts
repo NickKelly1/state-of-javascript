@@ -6,11 +6,16 @@ import { NpmsApiConnector } from "../npms-api/npms-api-connector";
 import { Cms } from "../cms/cms";
 import { CmsConnector } from "../cms/cms-connector";
 import { Debug } from "../debug/debug";
+import { Api } from "../backend-api/api";
+import { ApiFactory } from "../backend-api/api.factory";
+import { NpmsApiFactory } from "../npms-api/npms-api.factory";
+import { CmsFactory } from "../cms/cms.factory";
 
 interface ServerSidePropsHander<P extends { [key: string]: any }, Q extends ParsedUrlQuery> {
   (arg: {
     ctx: GetServerSidePropsContext<Q>,
     cms: Cms;
+    api: Api;
     publicEnv: PublicEnv;
     npmsApi: NpmsApi;
   }): Promise<GetServerSidePropsResult<P>>;
@@ -33,11 +38,10 @@ export function serverSidePropsHandler<
       console.log(`${ctx.req.url}?${params?.toString() ?? ''}\t${ctx.res.statusCode}\t+${dur}ms`)
     });
     const publicEnv = PublicEnvSingleton;
-    const cmsConnector = CmsConnector.create({ publicEnv });
-    const cms = Cms.create({ publicEnv, cmsConnector });
-    const npmsApiConnector = NpmsApiConnector.create({ publicEnv });
-    const npmsApi = NpmsApi.create({ publicEnv, npmsApiConnector });
-    const result = await handler({ ctx, cms, publicEnv, npmsApi, });
+    const cms = CmsFactory({ publicEnv });
+    const npmsApi = NpmsApiFactory({ publicEnv });
+    const api = ApiFactory({ publicEnv });
+    const result = await handler({ ctx, cms, publicEnv, npmsApi, api, });
     return result;
   }
   return wrapper;
