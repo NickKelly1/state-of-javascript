@@ -1,28 +1,28 @@
 import { GraphQLEnumType, GraphQLInputObjectType, GraphQLNonNull, GraphQLString } from "graphql";
 import { OrNullable } from "../types/or-nullable.type";
 
-export enum DirGqlEnum {
+export enum GqlDirEnum {
   Asc = 'ASC',
   Desc = 'DESC',
 };
 
-export const DirGqlEnumType = new GraphQLEnumType({
-  name: 'Dir',
+export const GqlDirEnumType = new GraphQLEnumType({
+  name: 'SortDirection',
   values: {
-    Asc: { value: DirGqlEnum.Asc, },
-    Desc: { value: DirGqlEnum.Desc, },
+    Asc: { value: GqlDirEnum.Asc, },
+    Desc: { value: GqlDirEnum.Desc, },
   },
 });
 
-export interface ISortGqlInput {
+export interface IGqlSortInput {
   field: string;
-  dir: DirGqlEnum;
+  dir: GqlDirEnum;
 }
 
-export const SortGqlInput = new GraphQLInputObjectType({
-  name: 'Sort',
+export const GqlSortInput = new GraphQLInputObjectType({
+  name: 'QuerySort',
   fields: () => ({
     field: { type: GraphQLNonNull(GraphQLString) },
-    dir: { type: GraphQLNonNull(DirGqlEnumType) },
+    dir: { type: GraphQLNonNull(GqlDirEnumType) },
   }),
 });

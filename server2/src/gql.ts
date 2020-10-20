@@ -1,85 +1,124 @@
-import Dataloader from 'dataloader';
 import {
-  graphql,
-  GraphQLField,
-  GraphQLFieldConfigMap,
-  GraphQLInt,
   GraphQLObjectType,
   GraphQLSchema,
-  GraphQLString,
-  Thunk,
-  GraphQLArgumentConfig,
-  GraphQLArgument,
-  GraphQLInputObjectType,
-  GraphQLUnionType,
   GraphQLNonNull,
-  GraphQLList,
-  GraphQLBoolean,
-  subscribe,
-  SubscriptionArgs,
-  SingleFieldSubscriptionsRule,
-  isTypeSubTypeOf,
+  GraphQLFieldConfigArgumentMap,
 } from 'graphql';
-import { graphqlHTTP } from 'express-graphql';
-import { IUserAttributes, UserField } from './app/user/user.attributes';
-import { _or } from './common/schemas/api.query.types';
-import { HttpContext } from './common/classes/http.context';
-import { UserModel } from './app/user/user.model';
-import { FindOptions, Identifier, Model, ModelCtor, Op, Sequelize, WhereOptions } from 'sequelize';
+import { Op, Rangable, WhereAttributeHash, WhereOptions } from 'sequelize';
 import { logger } from './common/logger/logger';
 import { prettyQ } from './common/helpers/pretty.helper';
-import { IPaginateInput } from './common/interfaces/pageinate-input.interface';
-import { ICollectionMeta } from './common/interfaces/collection-meta.interface';
-import { UserRoleModel } from './app/user-role/user-role.model';
-import { UserRoleGqlConnection } from './app/user-role/gql/user-role.gql.connection';
-import { IUserGqlNode, UserGqlNode } from './app/user/gql/user.gql.node';
-import { IUserRoleGqlNode, UserRoleGqlNode } from './app/user-role/gql/user-role.gql.node';
-import { IRoleGqlNode, RoleGqlNode } from './app/role/gql/role.gql.node';
-import { RoleModel } from './app/role/role.model';
-import { IRolePermissionGqlNode, RolePermissionGqlNode } from './app/role-permission/gql/role-permission.gql.node';
-import { RolePermissionModel } from './app/role-permission/role-permission.model';
-import { UserId } from './app/user/user.id.type';
+import { IUserRoleGqlConnection, UserRoleGqlConnection } from './app/user-role/gql/user-role.gql.connection';
 import { GqlContext } from './common/classes/gql.context';
-import { IConstructor } from './common/interfaces/constructor.interface';
-import { IRequestContext } from './common/interfaces/request-context.interface';
-import { OrNull } from './common/types/or-null.type';
-import { QueryRunner } from './app/db/query-runner';
-import { IRowsWithCount } from './common/interfaces/rows-with-count.interface';
 import { OrUndefined } from './common/types/or-undefined.type';
+import { IUserGqlConnection, UserGqlConnection } from './app/user/gql/user.gql.connection';
+import { transformGqlQuery } from './common/gql/gql.query.transform';
+import { collectionMeta } from './common/responses/collection-meta';
+import { IUserGqlEdge } from './app/user/gql/user.gql.edge';
+import { IRolePermissionGqlConnection, RolePermissionGqlConnection } from './app/role-permission/gql/role-permission.gql.connection';
+import { IRolePermissionGqlEdge } from './app/role-permission/gql/role-permission.gql.edge';
+import { IRoleGqlConnection, RoleGqlConnection } from './app/role/gql/role.gql.connection';
+import { IRoleGqlEdge } from './app/role/gql/role.gql.edge';
+import { IUserRoleGqlEdge } from './app/user-role/gql/user-role.gql.edge';
+import { gqlQueryArg } from './common/gql/gql.query.arg';
+import { GqlUserQuery } from './app/user/gql/user.gql.query';
+import { GqlUserRoleQuery } from './app/user-role/gql/user-role.gql.query';
+import { GqlRoleQuery } from './app/role/gql/role.gql.query';
+import { GqlRolePermissionQuery } from './app/role-permission/gql/role-permission.gql.query';
+import { OrNull } from './common/types/or-null.type';
 
 
 const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
   name: 'RootQueryType',
   fields: () => ({
     users: {
-      type: GraphQLNonNull(GraphQLList(GraphQLNonNull(UserGqlNode))),
-      resolve: async (): Promise<IUserGqlNode[]> => {
-        const { rows, count } = await UserModel.findAndCountAll({});
-        return rows;
+      type: GraphQLNonNull(UserGqlConnection),
+      args: gqlQueryArg(GqlUserQuery),
+      resolve: async (parent, args, ctx): Promise<IUserGqlConnection> => {
+        ctx.authorize(ctx.services.userPolicy().canFindMany());
+        const { page, options } = transformGqlQuery(args);
+        const { rows, count } = await ctx.services.userRepository().findAllAndCount({
+          runner: null,
+          options: { ...options },
+        });
+        const meta = collectionMeta({ data: rows, total: count, page });
+        const connection: IUserGqlConnection = {
+          edges: rows.map((model): OrNull<IUserGqlEdge> =>
+            ctx.services.userPolicy().canFindOne({ model })
+              ? ({ cursor: model.id.toString(), node: model, })
+              : null
+            ),
+          meta,
+        };
+        return connection;
       },
     },
 
     userRoles: {
-      type: GraphQLNonNull(GraphQLList(GraphQLNonNull(UserRoleGqlNode))),
-      resolve: async (parent, args, ctx): Promise<IUserRoleGqlNode[]> => {
-        const { rows, count } = await UserRoleModel.findAndCountAll({});
-        return rows;
+      type: GraphQLNonNull(UserRoleGqlConnection),
+      args: gqlQueryArg(GqlUserRoleQuery),
+      resolve: async (parent, args, ctx): Promise<IUserRoleGqlConnection> => {
+        ctx.authorize(ctx.services.userPolicy().canFindMany());
+        const { page, options } = transformGqlQuery(args);
+        const { rows, count } = await ctx.services.userRoleRepository().findAllAndCount({
+          runner: null,
+          options: { ...options, },
+        });
+        const meta = collectionMeta({ data: rows, total: count, page });
+        const connection: IUserRoleGqlConnection = {
+          edges: rows.map((model): OrNull<IUserRoleGqlEdge> =>
+            ctx.services.userRolePolicy().canFindOne({ model })
+              ? ({ cursor: model.id.toString(), node: model, })
+              : null
+          ),
+          meta,
+        };
+        return connection;
       },
     },
 
     roles: {
-      type: GraphQLNonNull(GraphQLList(GraphQLNonNull(RoleGqlNode))),
-      resolve: async (): Promise<IRoleGqlNode[]> => {
-        const { rows, count } = await RoleModel.findAndCountAll({});
-        return rows;
+      type: GraphQLNonNull(RoleGqlConnection),
+      args: gqlQueryArg(GqlRoleQuery),
+      resolve: async (parent, args, ctx): Promise<IRoleGqlConnection> => {
+        ctx.authorize(ctx.services.rolePolicy().canFindMany());
+        const { page, options } = transformGqlQuery(args);
+        const { rows, count } = await ctx.services.roleRepository().findAllAndCount({
+          runner: null,
+          options: { ...options, },
+        });
+        const meta = collectionMeta({ data: rows, total: count, page });
+        const connection: IRoleGqlConnection = {
+          edges: rows.map((model): OrNull<IRoleGqlEdge> =>
+            ctx.services.rolePolicy().canFindOne({ model })
+              ? ({ cursor: model.id.toString(), node: model, })
+              : null
+          ),
+          meta,
+        };
+        return connection;
       },
     },
 
     rolePermissions: {
-      type: GraphQLNonNull(GraphQLList(GraphQLNonNull(RolePermissionGqlNode))),
-      resolve: async (): Promise<IRolePermissionGqlNode[]> => {
-        const { rows, count } = await RolePermissionModel.findAndCountAll({});
-        return rows;
+      type: GraphQLNonNull(RolePermissionGqlConnection),
+      args: gqlQueryArg(GqlRolePermissionQuery),
+      resolve: async (parent, args, ctx): Promise<IRolePermissionGqlConnection> => {
+        ctx.authorize(ctx.services.rolePermissionPolicy().canFindMany());
+        const { page, options } = transformGqlQuery(args);
+        const { rows, count } = await ctx.services.rolePermissionRepository().findAllAndCount({
+          runner: null,
+          options: { ...options, },
+        });
+        const meta = collectionMeta({ data: rows, total: count, page });
+        const connection: IRolePermissionGqlConnection = {
+          edges: rows.map((model): OrNull<IRolePermissionGqlEdge> =>
+            ctx.services.rolePermissionPolicy().canFindOne({ model })
+              ? ({ cursor: model.id.toString(), node: model, })
+              : null,
+          ),
+          meta,
+        };
+        return connection;
       },
     },
   }),
@@ -89,25 +128,3 @@ export const gqlSchema = new GraphQLSchema({
   // subscription: sub,
   query: GqlRootQuery,
 });
-
-
-// export async function testGql(arg: { sequelize: Sequelize }) {
-//   logger.debug('gql testing...');
-//   const query = /* GraphQL */ `{
-//     users {
-//         id
-//         name
-//       }
-//   }`;
-//   const result = await graphql(gqlSchema, query);
-//   logger.debug(`gql test result: ${prettyQ(result)}`)
-// }
-
-// // graphqlHTTP()(req, res)
-
-
-// const sub = new GraphQLObjectType({
-
-// });
-
-// const t = subscribe({ schema: gqlSchema, document });

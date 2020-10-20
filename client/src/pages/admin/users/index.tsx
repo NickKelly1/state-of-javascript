@@ -1,3 +1,5 @@
+import { gql, request, GraphQLClient } from 'graphql-request';
+import graphQuery from './query.graphql';
 import React, { useContext, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { Column, ColumnGroup, useTable } from 'react-table';
@@ -10,12 +12,130 @@ import { UserId } from '../../../backend-api/services/user/user.id';
 import { IApiCollection } from '../../../backend-api/types/api-collection.interface';
 import { pretty } from '../../../helpers/pretty.helper';
 import { serverSidePropsHandler } from "../../../helpers/server-side-props-handler.helper";
-import { Box, Collapse, createStyles, IconButton, List, ListItem, ListItemText, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Theme, Typography } from '@material-ui/core';
+import {
+  Box,
+  Collapse,
+  createStyles,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  makeStyles,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Theme,
+  Typography,
+} from '@material-ui/core';
 import KeyboardArrowUpIcon  from '@material-ui/icons/KeyboardArrowUpSharp';
 import KeyboardArrowDownIcon  from '@material-ui/icons/KeyboardArrowDownSharp';
 import { useQuery } from 'react-query';
 import { ApiContext } from '../../../contexts/api.context';
 import { OrUndefined } from '../../../types/or-undefined.type';
+import { graphql } from 'graphql';
+
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+console.log('GRAPH QUERY:', graphQuery);
+
+const pageQuery = /* GraphQL */ gql`
+query AdminUsersPage{
+  users(
+    options:{
+      offset:0
+      limit:15
+    }
+  ){
+    meta{
+      limit
+      offset
+      total
+      page_number
+      pages
+      more
+    }
+    edges{
+      node{
+        id
+        name
+        created_at
+        updated_at
+        deleted_at
+        userRoleConnection(
+          options:{
+            offset:0
+            limit:15
+          }
+        ){
+          meta{
+            limit
+            offset
+            total
+            page_number
+            pages
+            more
+          }
+          edges{
+            node{
+              id
+              user_id
+              role_id
+              created_at
+              updated_at
+              user{
+                node{
+                  id
+                  name
+                }
+              }
+              role{
+                node{
+                  id
+                  name
+                  rolePermissionConnection(
+                    options:{
+                      offset:0
+                      limit:15
+                    }
+                  ){
+                    meta{
+                      limit
+                      offset
+                      total
+                      page_number
+                      pages
+                      more
+                    }
+                    edges{
+                      node{
+                        id
+                        role_id
+                        permission_id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+	}
+}
+`
 
 const useRowStyles = makeStyles({
   root: {
@@ -292,8 +412,8 @@ function UserAuthorizationSubsection(props: IUserAuthorizationSubsection) {
   }
 
   interface IAll {
-    roles: IApiCollection<IRoleRo>;
-    permissions: IApiCollection<IRoleRo>;
+    // roles: IApiCollection<IRoleRo>;
+    // permissions: IApiCollection<IRoleRo>;
   }
 
   interface IData {
@@ -360,7 +480,10 @@ function UserAuthorizationSubsection(props: IUserAuthorizationSubsection) {
       const result: IData = {
         personalised,
         // all
-        all: { permissions: [], roles: [] },
+        all: {
+          // permissions: [],
+          // roles: [],
+        },
       };
       return result;
     },

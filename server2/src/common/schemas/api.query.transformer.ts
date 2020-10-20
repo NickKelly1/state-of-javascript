@@ -102,6 +102,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
           [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(handleAttributes) } },
           [_val]: (fieldAttributes): WhereValue => {
             const fieldWheres: WhereValue[] = [];
+
             // between
             if (ist.notNullable(fieldAttributes._between)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_between'], WhereValue>({
@@ -117,15 +118,13 @@ export const transformApiFilter = matchFilter<WhereOptions>({
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_eq'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
-                [_val]: (operatorValue): WhereAttributeHash => {
-                  return { [Op.eq]: operatorValue };
-                },
+                [_val]: (operatorValue): WhereAttributeHash => { return { [Op.eq]: operatorValue }; },
               });
               fieldWheres.push(opMatch(fieldAttributes._eq));
             }
 
             // gt
-            if (fieldAttributes._gt) {
+            if (ist.notNullable(fieldAttributes._gt)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_gt'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -135,7 +134,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // gte
-            if (fieldAttributes._gte) {
+            if (ist.notNullable(fieldAttributes._gte)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_gte'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -145,7 +144,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // ilike
-            if (fieldAttributes._ilike) {
+            if (ist.notNullable(fieldAttributes._ilike)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_ilike'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -155,7 +154,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // in
-            if (fieldAttributes._in) {
+            if (ist.notNullable(fieldAttributes._in)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_in'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -165,7 +164,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // iregexp
-            if (fieldAttributes._iregexp) {
+            if (ist.notNullable(fieldAttributes._iregexp)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_iregexp'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -175,7 +174,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // like
-            if (fieldAttributes._like) {
+            if (ist.notNullable(fieldAttributes._like)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_like'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -185,7 +184,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // lt
-            if (fieldAttributes._lt) {
+            if (ist.notNullable(fieldAttributes._lt)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_lt'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -195,7 +194,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // iregexp
-            if (fieldAttributes._lte) {
+            if (ist.notNullable(fieldAttributes._lte)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_lte'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -205,7 +204,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // nbetween
-            if (fieldAttributes._nbetween) {
+            if (ist.notNullable(fieldAttributes._nbetween)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_nbetween'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -215,7 +214,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // nilike
-            if (fieldAttributes._nilike) {
+            if (ist.notNullable(fieldAttributes._nilike)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_nilike'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -224,8 +223,8 @@ export const transformApiFilter = matchFilter<WhereOptions>({
               fieldWheres.push(opMatch(fieldAttributes._nilike));
             }
 
-            // neq
-            if (fieldAttributes._nin) {
+            // nin
+            if (ist.notNullable(fieldAttributes._nin)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_nin'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -234,8 +233,8 @@ export const transformApiFilter = matchFilter<WhereOptions>({
               fieldWheres.push(opMatch(fieldAttributes._nin));
             }
 
-            // neq
-            if (fieldAttributes._niregexp) {
+            // niregexp
+            if (ist.notNullable(fieldAttributes._niregexp)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_niregexp'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -244,8 +243,8 @@ export const transformApiFilter = matchFilter<WhereOptions>({
               fieldWheres.push(opMatch(fieldAttributes._niregexp));
             }
 
-            // neq
-            if (fieldAttributes._nlike) {
+            // nlike
+            if (ist.notNullable(fieldAttributes._nlike)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_nlike'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -254,8 +253,8 @@ export const transformApiFilter = matchFilter<WhereOptions>({
               fieldWheres.push(opMatch(fieldAttributes._nlike));
             }
 
-            // neq
-            if (fieldAttributes._nregexp) {
+            // nregexp
+            if (ist.notNullable(fieldAttributes._nregexp)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_nregexp'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -264,21 +263,31 @@ export const transformApiFilter = matchFilter<WhereOptions>({
               fieldWheres.push(opMatch(fieldAttributes._nregexp));
             }
 
+            // neq
+            if (ist.notNullable(fieldAttributes._neq)) {
+              const opMatch = matchCondition<ApiFilterOperatorsTypes['_neq'], WhereValue>({
+                [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
+                [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
+                [_val]: (operatorValue): WhereAttributeHash => { return { [Op.ne]: operatorValue }; },
+              });
+              fieldWheres.push(opMatch(fieldAttributes._neq));
+            }
+
             // null
-            if (fieldAttributes._null) {
+            if (ist.notNullable(fieldAttributes._null)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_null'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
                 [_val]: (operatorValue): WhereAttributeHash => {
-                  if (operatorValue) return { [Op.eq]: true };
-                  return { [Op.eq]: false };
+                  if (operatorValue) return { [Op.is]: null };
+                  return { [Op.not]: { [Op.is]: null } };
                 },
               });
               fieldWheres.push(opMatch(fieldAttributes._null));
             }
 
             // overlap
-            if (fieldAttributes._overlap) {
+            if (ist.notNullable(fieldAttributes._overlap)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_overlap'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -288,7 +297,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // regexp
-            if (fieldAttributes._regexp) {
+            if (ist.notNullable(fieldAttributes._regexp)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_regexp'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -298,7 +307,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // overlap
-            if (fieldAttributes._strict_left) {
+            if (ist.notNullable(fieldAttributes._strict_left)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_strict_left'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -308,7 +317,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // overlap
-            if (fieldAttributes._strict_right) {
+            if (ist.notNullable(fieldAttributes._strict_right)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_strict_right'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },
@@ -318,7 +327,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
             }
 
             // overlap
-            if (fieldAttributes._substring) {
+            if (ist.notNullable(fieldAttributes._substring)) {
               const opMatch = matchCondition<ApiFilterOperatorsTypes['_substring'], WhereValue>({
                 [_and]: (ands): WhereValue => { return { [Op.and]: ands.map(opMatch) } },
                 [_or]: (ors): WhereValue => { return { [Op.or]: ors.map(opMatch) } },

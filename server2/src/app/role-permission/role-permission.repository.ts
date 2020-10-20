@@ -1,4 +1,4 @@
-import { Model, ModelCtor } from "sequelize/types";
+import { Model, ModelCtor } from "sequelize";
 import { BaseRepository } from "../../common/classes/repository.base";
 import { UserPasswordModel } from "../user-password/user-password.model";
 import { RolePermissionModel } from "./role-permission.model";

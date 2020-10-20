@@ -5,9 +5,11 @@ import { GqlConnection, IGqlConnection } from "../../../common/gql/gql.connectio
 import { GqlEdge, IGqlEdge } from "../../../common/gql/gql.edge";
 import { IUserGqlEdge, UserGqlEdge } from "./user.gql.edge";
 import { UserGqlNode } from "./user.gql.node";
+import { OrNull } from "../../../common/types/or-null.type";
 
-export type IUserGqlConnection =  IGqlConnection<IUserGqlEdge>;
+export type IUserGqlConnection =  IGqlConnection<OrNull<IUserGqlEdge>>;
 export const UserGqlConnection = GqlConnection({
   name: 'UserConnection',
-  edge: () => GraphQLNonNull(UserGqlEdge),
+  // allowed to be null
+  edge: () => UserGqlEdge,
 });
