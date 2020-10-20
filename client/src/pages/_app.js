@@ -1,15 +1,15 @@
-import '../styles/global.css';
+import '../../styles/global.css';
 import React from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import theme from '../src/theme';
-import { Layout } from '../src/components/layout/layout';
-import { ApiProvider } from '../src/contexts/api.context';
-import { NpmsApiProvider } from '../src/contexts/npms-api.context';
-import { CmsProvider } from '../src/contexts/cms.context';
-import { PublicEnvProvider } from '../src/contexts/public-env.context';
+import theme from '../theme';
+import { Layout } from '../components/layout/layout';
+import { ApiProvider } from '../contexts/api.context';
+import { NpmsApiProvider } from '../contexts/npms-api.context';
+import { CmsProvider } from '../contexts/cms.context';
+import { PublicEnvProvider } from '../contexts/public-env.context';
 
 export default function MyApp(props) {
   const { Component, pageProps } = props;

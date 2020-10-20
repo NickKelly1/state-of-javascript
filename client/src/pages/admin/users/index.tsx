@@ -1,21 +1,21 @@
 import React, { useContext, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { Column, ColumnGroup, useTable } from 'react-table';
-import { IPermissionRo } from '../../../src/backend-api/services/permission/dtos/permission.ro';
-import { IRolePermissionRo } from '../../../src/backend-api/services/role-permission/dtos/role-permission.ro';
-import { IRoleRo } from '../../../src/backend-api/services/role/dtos/role.ro';
-import { IUserRoleRo } from '../../../src/backend-api/services/user-roles/dtos/user-role.ro';
-import { IUserRo } from '../../../src/backend-api/services/user/dtos/user.ro';
-import { UserId } from '../../../src/backend-api/services/user/user.id';
-import { IApiCollection } from '../../../src/backend-api/types/api-collection.interface';
-import { pretty } from '../../../src/helpers/pretty.helper';
-import { serverSidePropsHandler } from "../../../src/helpers/server-side-props-handler.helper";
+import { IPermissionRo } from '../../../backend-api/services/permission/dtos/permission.ro';
+import { IRolePermissionRo } from '../../../backend-api/services/role-permission/dtos/role-permission.ro';
+import { IRoleRo } from '../../../backend-api/services/role/dtos/role.ro';
+import { IUserRoleRo } from '../../../backend-api/services/user-roles/dtos/user-role.ro';
+import { IUserRo } from '../../../backend-api/services/user/dtos/user.ro';
+import { UserId } from '../../../backend-api/services/user/user.id';
+import { IApiCollection } from '../../../backend-api/types/api-collection.interface';
+import { pretty } from '../../../helpers/pretty.helper';
+import { serverSidePropsHandler } from "../../../helpers/server-side-props-handler.helper";
 import { Box, Collapse, createStyles, IconButton, List, ListItem, ListItemText, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Theme, Typography } from '@material-ui/core';
 import KeyboardArrowUpIcon  from '@material-ui/icons/KeyboardArrowUpSharp';
 import KeyboardArrowDownIcon  from '@material-ui/icons/KeyboardArrowDownSharp';
 import { useQuery } from 'react-query';
-import { ApiContext } from '../../../src/contexts/api.context';
-import { OrUndefined } from '../../../src/types/or-undefined.type';
+import { ApiContext } from '../../../contexts/api.context';
+import { OrUndefined } from '../../../types/or-undefined.type';
 
 const useRowStyles = makeStyles({
   root: {
