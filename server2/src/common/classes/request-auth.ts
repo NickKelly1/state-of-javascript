@@ -15,7 +15,7 @@ export class RequestAuth {
 
   get roles(): Set<PermissionId> { return this._roles; };
 
-  get user_id(): OrUndefined<PermissionId> { return undefined; };
+  get user_id(): OrUndefined<PermissionId> { return this._user_id; };
 
   hasAnyPermissions(permissions: PermissionId[]): boolean {
     return permissions.some(perm => this.permissions.has(perm));

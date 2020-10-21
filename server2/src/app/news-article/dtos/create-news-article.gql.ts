@@ -4,13 +4,13 @@ import { PermissionId } from '../../permission/permission-id.type';
 import { RoleId } from '../../role/role.id.type';
 import { NewsArticleDefinition } from '../news-article.definition';
 
-export interface ICreateNewsArticleDto {
+export interface ICreateNewsArticleInput {
   title: string;
   teaser: string;
   body: string;
 }
 
-export const CreateNewsArticleGqlDto = new GraphQLInputObjectType({
+export const CreateNewsArticleGqlInput = new GraphQLInputObjectType({
   name: 'CreateNewsArticle',
   fields: () => ({
     title: { type: GraphQLNonNull(GraphQLString), },
@@ -19,8 +19,8 @@ export const CreateNewsArticleGqlDto = new GraphQLInputObjectType({
   }),
 })
 
-export const CreateNewsArticleDto = Joi.object<ICreateNewsArticleDto>({
+export const CreateNewsArticleValidator = Joi.object<ICreateNewsArticleInput>({
   title: Joi.string().min(NewsArticleDefinition.title.min).max(NewsArticleDefinition.title.max).required(),
   teaser: Joi.string().min(NewsArticleDefinition.teaser.min).max(NewsArticleDefinition.teaser.max).required(),
-  body: Joi.number().min(NewsArticleDefinition.body.min).max(NewsArticleDefinition.body.max).required(),
+  body: Joi.string().min(NewsArticleDefinition.body.min).max(NewsArticleDefinition.body.max).required(),
 });

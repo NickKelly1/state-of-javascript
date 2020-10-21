@@ -2,7 +2,7 @@ import { NewsArticleModel } from '../../circle';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { UserModel } from '../user/user.model';
-import { ICreateNewsArticleDto } from './dtos/create-news-article.dto';
+import { ICreateNewsArticleInput } from './dtos/create-news-article.gql';
 
 export class NewsArticleService {
   constructor(
@@ -14,7 +14,7 @@ export class NewsArticleService {
   async create(arg: {
     runner: QueryRunner;
     author: UserModel,
-    dto: ICreateNewsArticleDto,
+    dto: ICreateNewsArticleInput,
   }): Promise<NewsArticleModel> {
     const { runner, author, dto } = arg;
     const { transaction } = runner;

@@ -49,6 +49,7 @@ import { Transaction } from 'sequelize';
 import { Loader } from './loader';
 import { UserId } from '../../app/user/user.id.type';
 import { userInfo } from 'os';
+import { ist } from '../helpers/is.helper';
 
 export class GqlContext implements IRequestContext {
   public readonly execution: ExecutionContext;
@@ -66,7 +67,7 @@ export class GqlContext implements IRequestContext {
 
   assertAuthentication(): UserId {
     const user_id = this.auth.user_id;
-    if (!user_id) {
+    if (ist.nullable(user_id)) {
       throw this.except(UnauthenticatedException());
     }
     return user_id;

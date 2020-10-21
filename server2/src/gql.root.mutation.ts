@@ -6,7 +6,7 @@ import { ILoginGqlInput, ILoginGqlObj, LoginGqlInput, LoginGqlInputValidator, Lo
 import { RefreshGqlInput, RefreshGqlInputValidator, RefreshGqlObj } from './app/auth/gql/refresh.gql';
 import { ISignupGqlObj, SignupGqlInput, SignupGqlInputValidator, SignupGqlObj } from './app/auth/gql/signup.gql';
 import { RefreshTokenValidator } from './app/auth/token/refresh.token.gql';
-import { CreateNewsArticleDto, CreateNewsArticleGqlDto } from './app/news-article/dtos/create-news-article.dto';
+import { CreateNewsArticleValidator, CreateNewsArticleGqlInput } from './app/news-article/dtos/create-news-article.gql';
 import { INewsArticleGqlNode, NewsArticleGqlNode } from './app/news-article/gql/news-article.gql.node';
 import { RoleAssociation } from './app/role/role.associations';
 import { ICreateUserPasswordDto } from './app/user-password/dtos/create-user-password.dto';
@@ -27,11 +27,11 @@ export const GqlRootMutation = new GraphQLObjectType<undefined, GqlContext>({
   fields: () => ({
     createNewsArticle: {
       type: GraphQLNonNull(NewsArticleGqlNode),
-      args: { dto: { type: GraphQLNonNull(CreateNewsArticleGqlDto) } },
+      args: { dto: { type: GraphQLNonNull(CreateNewsArticleGqlInput) } },
       resolve: async (parent, args, ctx): Promise<INewsArticleGqlNode> => {
         ctx.authorize(ctx.services.newsArticlePolicy().canCreate());
         const author_id = ctx.assertAuthentication();
-        const dto = ctx.validate(CreateNewsArticleDto, args.dto);
+        const dto = ctx.validate(CreateNewsArticleValidator, args.dto);
         const model = await ctx.services.dbService().transact(async ({ runner }) => {
           const author = await ctx.services.userRepository().findByPkOrfail(author_id, { runner, unscoped: true });
           const article = await ctx.services.newsArticleService().create({ runner, author, dto });

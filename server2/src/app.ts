@@ -95,7 +95,7 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
     const { req, res } = ctx;
     const gql = GqlContext.create({ req, res, });
     const data: OptionsData = {
-      formatError: (error) => {
+      customFormatErrorFn: (error) => {
         const exception = makeException(ctx, error.originalError);
 
         if (exception.code === 500) { logger.error(exception.name, exception.toJsonDev()); }
