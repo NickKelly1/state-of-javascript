@@ -20,7 +20,7 @@ export class JwtService {
 
   protected expiresInSeconds(hasExp: { exp: number }): number {
     const { exp } = hasExp;
-    return Math.round(exp - (Date.now() / 1000));
+    return Math.round(exp - Date.now());
   }
 
   isExpired(hasExp: { exp: number }): boolean {
