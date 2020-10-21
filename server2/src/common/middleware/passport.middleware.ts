@@ -12,14 +12,6 @@ export const passportMw = (): Handler => mw((ctx, next) => {
   const { req } = ctx;
   const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 
-  console.log('--');
-  console.log('--');
-  console.log('--');
-  console.log('--');
-  console.log('--');
-  console.log('--');
-  console.log(token);
-
   if (ist.nullable(token)) {
     // no token...
     return void next();

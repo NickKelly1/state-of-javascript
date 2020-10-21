@@ -14,6 +14,7 @@ import { UserId } from '../user/user.id.type';
 import { UserModel } from '../user/user.model';
 import { pretendSoftDeleteable } from '../../common/schemas/helpers/pretend-soft-deleteable.helper';
 import { NewsArticleDefinition } from './news-article.definition';
+import { SoftDeleteableSchema } from '../../common/schemas/soft-deleteable.schema';
 
 
 export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticleCreationAttributes> implements INewsArticleAttributes {
@@ -54,5 +55,6 @@ export const initNewsArticleModel: ModelInitFn = (arg) => {
     sequelize,
     tableName: 'news_articles',
     ...AuditableSchema,
+    ...SoftDeleteableSchema,
   });
 }

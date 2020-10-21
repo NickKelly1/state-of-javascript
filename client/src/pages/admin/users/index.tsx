@@ -1,5 +1,4 @@
 import { gql, request, GraphQLClient } from 'graphql-request';
-import graphQuery from './query.graphql';
 import React, { useContext, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { Column, ColumnGroup, useTable } from 'react-table';
@@ -38,19 +37,7 @@ import { ApiContext } from '../../../contexts/api.context';
 import { OrUndefined } from '../../../types/or-undefined.type';
 import { graphql } from 'graphql';
 
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-console.log('GRAPH QUERY:', graphQuery);
-
-const pageQuery = /* GraphQL */ gql`
+const pageQuery = gql`
 query AdminUsersPage{
   users(
     options:{
