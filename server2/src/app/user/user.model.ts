@@ -13,6 +13,7 @@ import { UserDefinition } from './user.definition';
 import { UserId } from './user.id.type';
 import { RoleModel } from '../role/role.model';
 import { UserRoleModel } from '../user-role/user-role.model';
+import { NewsArticleModel } from '../news-article/news-article.model';
 
 
 export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> implements IUserAttributes {
@@ -33,6 +34,7 @@ export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> i
   [UserAssociation.userRoles]?: UserRoleModel[];
 
   // associations
+  getNewsArticles!: HasManyGetAssociationsMixin<NewsArticleModel>;
   getPassword!: HasOneGetAssociationMixin<UserPasswordModel>;
   getRoles!: HasManyGetAssociationsMixin<UserPasswordModel>;
   getUserRoles!: HasManyGetAssociationsMixin<UserRoleModel>;

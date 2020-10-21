@@ -23,19 +23,12 @@ export async function usersInitialise(arg: {
   const allUsersMap = new Map(allUsers.map(perm => [perm.id, perm]));
   const expectedSet = new Set(expectedArr);
 
-  const unexpected = allUsers.filter(perm => !expectedSet.has(perm.id));
-  const missing = expectedArr.filter(perm => !allUsersMap.has(perm));
+  const missing = expectedArr.filter(usr => !allUsersMap.has(usr));
   const broken = allUsers.filter(perm => expectedSet.has(perm.id) && perm.name !== getName(perm.id));
-
-  // remove unexpected
-  if (unexpected.length) {
-    logger.warn(`Removing "${unexpected.length}" unexpected users...`);
-    await Promise.all(unexpected.map(unex => unex.destroy({ transaction })));
-  }
 
   // fix broken
   if (broken.length) {
-    logger.warn(`Fixing "${unexpected.length}" broken users...`);
+    logger.warn(`Fixing "${broken.length}" broken users...`);
     await Promise.all(broken.map(broke => {
       broke.name = getName(broke.id);
       return broke.save({ transaction });

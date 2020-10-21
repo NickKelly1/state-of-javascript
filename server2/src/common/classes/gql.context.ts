@@ -47,6 +47,8 @@ import { InternalServerException } from '../exceptions/types/internal-server.exc
 import { InternalServerExceptionLang } from '../i18n/packs/internal-server-exception.lang';
 import { Transaction } from 'sequelize';
 import { Loader } from './loader';
+import { UserId } from '../../app/user/user.id.type';
+import { userInfo } from 'os';
 
 export class GqlContext implements IRequestContext {
   public readonly execution: ExecutionContext;
@@ -60,6 +62,14 @@ export class GqlContext implements IRequestContext {
 
   get auth(): RequestAuth {
     return this.req.__locals__.auth;
+  }
+
+  assertAuthentication(): UserId {
+    const user_id = this.auth.user_id;
+    if (!user_id) {
+      throw this.except(UnauthenticatedException());
+    }
+    return user_id;
   }
 
   // get transaction(): Transaction {
@@ -120,7 +130,7 @@ export class GqlContext implements IRequestContext {
 
   except(throwable: IThrowable): Exception {
     const exception = throwable(this);
-    exception.shiftStack(3);
+    exception.shiftStack(2);
     return exception;
   }
 
@@ -138,6 +148,20 @@ export class GqlContext implements IRequestContext {
       user_id: this.auth.user_id ?? null,
     };
   }
+
+  validate<T>(validator: Joi.ObjectSchema<T>, obj: unknown): T {
+    const { req } = this;
+    const { body } = req;
+    const validation = validate(validator, obj);
+    if (isLeft(validation)) {
+      throw this.except(BadRequestException({
+        error: this.lang(ExceptionLang.BadRequest),
+        data: validation.left,
+      }));
+    }
+    return validation.right;
+  }
+
 
 
   // prep(arg: { runner: QueryRunner }) {

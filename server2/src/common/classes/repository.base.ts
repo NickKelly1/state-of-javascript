@@ -29,9 +29,13 @@ export abstract class BaseRepository<M extends Model<any, any>> {
    *
    * @param wheres
    */
-  protected buildWhere(wheres?: OrNullable<WhereOptions<M['_attributes']>>[]): OrUndefined<WhereOptions<M['_attributes']>> {
+  protected buildWhere(
+    wheres?: OrNullable<WhereOptions<M['_attributes']>>[],
+    options?: { unscoped?: boolean },
+  ): OrUndefined<WhereOptions<M['_attributes']>> {
+    const unscoped = options?.unscoped;
     const definedWheres = wheres?.filter(ist.notNullable) ?? [];
-    const scope = this.scope?.();
+    const scope = unscoped ? undefined : this.scope?.();
 
     if (definedWheres.length) {
       if (scope) {
@@ -66,11 +70,12 @@ export abstract class BaseRepository<M extends Model<any, any>> {
   async findAll(arg: {
     runner: OrNull<QueryRunner>,
     options?: Omit<FindOptions<M['_attributes']>, 'transaction'>,
+    unscoped?: boolean;
   }): Promise<M[]> {
-    const { runner, options } = arg;
+    const { runner, options, unscoped } = arg;
     const transaction = runner?.transaction;
     const { where: optionsWhere, ...otherFindOpts } = options ?? {};
-    const where = this.buildWhere([optionsWhere]);
+    const where = this.buildWhere([optionsWhere], { unscoped });
     const result = await this.Model.findAll({ ...otherFindOpts, transaction, where, });
     return result;
   }
@@ -84,11 +89,12 @@ export abstract class BaseRepository<M extends Model<any, any>> {
   async findAllAndCount(arg: {
     runner: OrNull<QueryRunner>,
     options?: Omit<FindOptions<M['_attributes']>, 'transaction'>,
+    unscoped?: boolean;
   }): Promise<IRowsWithCount<M>> {
-    const { runner, options } = arg;
+    const { runner, options, unscoped } = arg;
     const transaction = runner?.transaction;
     const { where: optionsWhere, ...otherFindOpts } = options ?? {};
-    const where = this.buildWhere([optionsWhere]);
+    const where = this.buildWhere([optionsWhere], { unscoped });
     const result = await this.Model.findAndCountAll({ ...otherFindOpts, transaction, where, });
     return result;
   }
@@ -105,14 +111,15 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     arg: {
       runner: OrNull<QueryRunner>,
       options?: Omit<FindOptions<M['_attributes']>, 'transaction'>
+      unscoped?: boolean;
     },
   ): Promise<OrNull<M>> {
-    const { runner, options } = arg;
+    const { runner, options, unscoped } = arg;
     const transaction = runner?.transaction;
     const { where: optionsWhere, ...otherFindOpts } = options ?? {};
     const pkField = this.Model.primaryKeyAttribute;
     const pkWhere: WhereOptions = { [pkField]: { [Op.eq]: pk } };
-    const where = this.buildWhere([optionsWhere, pkWhere]);
+    const where = this.buildWhere([optionsWhere, pkWhere], { unscoped });
     const result = await this.Model.findOne({ ...otherFindOpts, transaction, where, });
     return result;
   }
@@ -129,6 +136,7 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     arg: {
       runner: OrNull<QueryRunner>,
       options?: Omit<FindOptions<M['_attributes']>, 'transaction'>
+      unscoped?: boolean;
     },
   ): Promise<M> {
     const result = await this.findByPk(pk, arg);
@@ -145,11 +153,12 @@ export abstract class BaseRepository<M extends Model<any, any>> {
   async findOne(arg: {
     runner: OrNull<QueryRunner>,
     options?: Omit<FindOptions<M['_attributes']>, 'transaction'>
+    unscoped?: boolean;
   }): Promise<OrNull<M>> {
-    const { runner, options } = arg;
+    const { runner, options, unscoped } = arg;
     const transaction = runner?.transaction;
     const { where: optionsWhere, ...otherFindOpts } = options ?? {};
-    const where = this.buildWhere([optionsWhere]);
+    const where = this.buildWhere([optionsWhere], { unscoped });
     const result = await this.Model.findOne({ ...otherFindOpts, transaction, where, });
     return result;
   }
@@ -163,6 +172,7 @@ export abstract class BaseRepository<M extends Model<any, any>> {
   async findOneOrfail(arg: {
     runner: OrNull<QueryRunner>,
     options?: Omit<FindOptions<M['_attributes']>, 'transaction'>
+    unscoped?: boolean;
   }): Promise<M> {
     const result = await this.findOne(arg);
     if (!result) throw this.ctx.except(NotFoundException());

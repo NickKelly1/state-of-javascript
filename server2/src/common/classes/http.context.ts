@@ -93,7 +93,7 @@ export class HttpContext implements IRequestContext {
 
   except(throwable: IThrowable): Exception {
     const exception = throwable(this);
-    exception.shiftStack(3);
+    exception.shiftStack(2);
     return exception;
   }
 
@@ -102,11 +102,10 @@ export class HttpContext implements IRequestContext {
     return langMatch(languages, switcher);
   }
 
-  body<T>(validator?: Joi.ObjectSchema<T>): T {
+  validate<T>(validator: Joi.ObjectSchema<T>, obj: unknown): T {
     const { req } = this;
     const { body } = req;
-    if (!validator) return body as T;
-    const validation = validate(validator, body);
+    const validation = validate(validator, obj);
     if (isLeft(validation)) {
       throw this.except(BadRequestException({
         error: this.lang(ExceptionLang.BadRequest),
@@ -114,6 +113,13 @@ export class HttpContext implements IRequestContext {
       }));
     }
     return validation.right;
+  }
+
+  body<T>(validator?: Joi.ObjectSchema<T>): T {
+    const { req } = this;
+    const { body } = req;
+    if (!validator) return body as T;
+    return this.validate(validator, body);
   }
 
   findQuery(): IParsedQuery {

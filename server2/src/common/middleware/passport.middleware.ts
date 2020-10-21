@@ -9,16 +9,14 @@ import { mw } from "../helpers/mw.helper";
 export const passportMw = (): Handler => mw((ctx, next) => {
   const { req } = ctx;
   const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-  if (!token) {
-    //
-  }
 
-  if (ist.null(token)) {
+  if (ist.nullable(token)) {
     // no token...
     return void next();
   }
 
   const mbAccess = ctx.services.jwtService().decodeAccessToken({ token });
+
   if (isLeft(mbAccess)) {
     // failed to validatea token
     throw mbAccess.left;

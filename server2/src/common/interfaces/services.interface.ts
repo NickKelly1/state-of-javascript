@@ -20,6 +20,9 @@ import { UserPolicy } from "../../app/user/user.policy";
 import { UserRepository } from "../../app/user/user.repository";
 import { UserService } from "../../app/user/user.service";
 import { EnvService } from "../environment/env";
+import { NewsArticleService } from "../../app/news-article/news-article.service";
+import { NewsArticleRepository } from "../../app/news-article/news-article.repository";
+import { NewsArticlePolicy } from "../../app/news-article/news-article.policy";
 
 export interface IServices {
   userService: () => UserService;
@@ -41,6 +44,10 @@ export interface IServices {
   rolePermissionService: () => RolePermissionService;
   rolePermissionRepository: () => RolePermissionRepository;
   rolePermissionPolicy: () => RolePermissionPolicy;
+
+  newsArticleService: () => NewsArticleService;
+  newsArticleRepository: () => NewsArticleRepository;
+  newsArticlePolicy: () => NewsArticlePolicy;
 
   userPasswordService: () => UserPasswordService,
   userPasswordRepository: () => UserPasswordRepository;

@@ -1,6 +1,16 @@
 import { Language } from "../consts/language.enum";
 
 export const ExceptionLang = {
+  IncorrectPassword: {
+    [Language.En]: `incorrect password`,
+    [Language.Ger]: '__TODO__',
+  },
+
+  CannotLogIn: (arg: { user: string }) => ({
+    [Language.En]: `"${arg.user}" cannot log in`,
+    [Language.Ger]: '__TODO__',
+  }),
+
   LoginExpired: {
     [Language.En]: 'login expired',
     [Language.Ger]: '__TODO__',

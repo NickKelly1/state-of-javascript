@@ -1,4 +1,6 @@
 import { Association, Model, Sequelize } from 'sequelize';
+import { NewsArticleAssociation } from './app/news-article/news-article.associations';
+import { NewsArticleField } from './app/news-article/news-article.attributes';
 import { PermissionAssociation } from './app/permission/permission.associations';
 import { PermissionField } from './app/permission/permission.attributes';
 import { RolePermissionAssociation } from './app/role-permission/role-permission.associations';
@@ -24,6 +26,8 @@ import {
   initUserModel,
   initUserPasswordModel,
   initUserRoleModel,
+  NewsArticleModel,
+  initNewsArticleModel,
 } from './circle';
 
 export function modelsInit(arg: { sequelize: Sequelize }) {
@@ -36,12 +40,14 @@ export function modelsInit(arg: { sequelize: Sequelize }) {
   initPermissionModel({ sequelize });
   initUserRoleModel({ sequelize });
   initRolePermissionModel({ sequelize });
+  initNewsArticleModel({ sequelize });
 
 
   // user
   UserModel.hasOne(UserPasswordModel, { as: UserAssociation.password, sourceKey: UserField.id, foreignKey: UserPasswordField.user_id, })
   UserModel.hasMany(UserRoleModel, { as: UserAssociation.userRoles, sourceKey: UserField.id, foreignKey: UserRoleField.user_id, })
   UserModel.belongsToMany(RoleModel, { as: UserAssociation.roles, through: UserRoleModel as typeof Model, sourceKey: UserField.id, targetKey: RoleField.id, foreignKey: UserRoleField.user_id, otherKey: UserRoleField.role_id });
+  UserModel.hasMany(NewsArticleModel, { as: UserAssociation.newsArticles, sourceKey: UserField.id, foreignKey: NewsArticleField.author_id, })
 
   // user password
   UserPasswordModel.belongsTo(UserModel, { as: UserPasswordAssociation.user, foreignKey: UserPasswordField.user_id, targetKey: UserField.id, });
@@ -63,4 +69,7 @@ export function modelsInit(arg: { sequelize: Sequelize }) {
   // user role
   UserRoleModel.belongsTo(UserModel, { as: UserRoleAssociation.user, targetKey: UserField.id, foreignKey: UserRoleField.user_id, });
   UserRoleModel.belongsTo(RoleModel, { as: UserRoleAssociation.role, targetKey: RoleField.id, foreignKey: UserRoleField.role_id, })
+
+  // news article
+  NewsArticleModel.belongsTo(UserModel, { as: NewsArticleAssociation.author, targetKey: UserField.id, foreignKey: NewsArticleField.author_id, })
 }

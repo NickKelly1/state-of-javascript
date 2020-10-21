@@ -26,6 +26,9 @@ import { EnvService } from "../environment/env";
 import { handler } from "../helpers/handler.helper";
 import { lazy } from "../helpers/lazy";
 import { logger } from "../logger/logger";
+import { NewsArticleService } from "../../app/news-article/news-article.service";
+import { NewsArticleRepository } from "../../app/news-article/news-article.repository";
+import { NewsArticlePolicy } from "../../app/news-article/news-article.policy";
 
 export const servicesMw = (arg: { env: EnvService, sequelize: Sequelize }) => handler((req: Request, res: Response, next: NextFunction) => {
   // initialise req locals
@@ -54,6 +57,10 @@ export const servicesMw = (arg: { env: EnvService, sequelize: Sequelize }) => ha
       rolePermissionService: lazy(() => new RolePermissionService(ctx)),
       rolePermissionRepository: lazy(() => new RolePermissionRepository(ctx)),
       rolePermissionPolicy: lazy(() => new RolePermissionPolicy(ctx)),
+
+      newsArticleService: lazy(() => new NewsArticleService(ctx)),
+      newsArticleRepository: lazy(() => new NewsArticleRepository(ctx)),
+      newsArticlePolicy: lazy(() => new NewsArticlePolicy(ctx)),
 
       userPasswordService: lazy(() => new UserPasswordService(ctx)),
       userPasswordRepository: lazy(() => new UserPasswordRepository(ctx)),

@@ -27,7 +27,7 @@ import { GqlRolePermissionQuery } from './app/role-permission/gql/role-permissio
 import { OrNull } from './common/types/or-null.type';
 
 
-const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
+export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
   name: 'RootQueryType',
   fields: () => ({
     users: {
@@ -122,9 +122,4 @@ const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
       },
     },
   }),
-});
-
-export const gqlSchema = new GraphQLSchema({
-  // subscription: sub,
-  query: GqlRootQuery,
 });

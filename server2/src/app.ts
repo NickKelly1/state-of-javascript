@@ -1,6 +1,6 @@
 import * as ts_node_remember_overrides from './custom';
 import { GraphiQL } from 'graphiql/dist/';
-import { gqlSchema } from './gql';
+import { GqlSchema } from './gql.schema';
 import express, { Handler, Request, Response } from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
@@ -26,7 +26,7 @@ import { rolesInitialise } from './app/role/roles.initialise';
 import { rolePermissionsInitialise } from './app/role-permission/role-permissions.initialise';
 import { usersInitialise } from './app/user/users.initialise';
 import { userRolesInitialise } from './app/user-role/user-roles.initialise';
-import { ExecutionResult, graphql, } from 'graphql';
+import { ExecutionResult, graphql, GraphQLError, } from 'graphql';
 import { GqlContext } from './common/classes/gql.context';
 import { HttpCode } from './common/constants/http-code.const';
 import { JsonResponder } from './common/responses/json.responder';
@@ -34,6 +34,8 @@ import { graphqlHTTP, OptionsData } from 'express-graphql';
 import { GraphiQLData } from 'express-graphql/renderGraphiQL';
 import { IncomingMessage, OutgoingMessage } from 'http';
 import { mwGql } from './common/helpers/mw-gql.helper';
+import { prettyQ } from './common/helpers/pretty.helper';
+import { makeException } from './common/helpers/make-exception.helper';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
@@ -50,6 +52,10 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   }
 
   modelsInit({ sequelize });
+
+  // TODO: don't synchronise
+  logger.info('syncing...')
+  await sequelize.sync();
 
   // initialise domains
   await sequelize.transaction(async transaction => {
@@ -71,10 +77,6 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   });
 
 
-  // TODO: don't synchronise
-  logger.info('syncing...')
-  await sequelize.sync();
-
   const app = new ExpressContext({ root: express() });
 
   app.use(cors())
@@ -93,7 +95,24 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
     const { req, res } = ctx;
     const gql = GqlContext.create({ req, res, });
     const data: OptionsData = {
-      schema: gqlSchema,
+      formatError: (error) => {
+        const exception = makeException(ctx, error.originalError);
+
+        if (exception.code === 500) { logger.error(exception.name, exception.toJsonDev()); }
+        else { logger.warn(exception.name, exception.toJsonDev()); }
+
+        const modifiedError = new GraphQLError(
+          error.message,
+          error.nodes,
+          error.source,
+          error.positions,
+          error.path,
+          error.originalError,
+          { ...error.extensions, exception: exception.toJson() },
+        );
+        return modifiedError;
+      },
+      schema: GqlSchema,
       context: gql,
       graphiql: true,
     };

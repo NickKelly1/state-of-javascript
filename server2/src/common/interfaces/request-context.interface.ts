@@ -1,3 +1,4 @@
+import Joi from "joi";
 import { RequestAuth } from "../classes/request-auth";
 import { Exception } from "../exceptions/exception";
 import { LangSwitch } from "../i18n/helpers/lange-match.helper"
@@ -16,4 +17,5 @@ export interface IRequestContext {
   info(): IJson;
   readonly auth: RequestAuth;
   readonly services: IServices;
+  validate<T>(validator: Joi.ObjectSchema<T>, obj: unknown): T;
 }

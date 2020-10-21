@@ -21,6 +21,11 @@ export const Permission = {
   UpdateRolePermission: 520,
   DeleteRolePermission: 530,
 
+  ShowNewsArticle: 600,
+  CreateNewsArticle: 610,
+  UpdateNewsArticle: 620,
+  DeleteNewsArticle: 630,
+
 } as const;
 export type Permission = typeof Permission;
 export type APermission = Permission[keyof Permission];
@@ -48,4 +53,9 @@ export const PublicPermissions = [
   Permission.CreateRolePermission,
   Permission.UpdateRolePermission,
   Permission.DeleteRolePermission,
+
+  Permission.ShowNewsArticle,
+  Permission.CreateNewsArticle,
+  Permission.UpdateNewsArticle,
+  Permission.DeleteNewsArticle,
 ];
