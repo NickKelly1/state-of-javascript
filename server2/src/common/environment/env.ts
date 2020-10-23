@@ -54,6 +54,7 @@ export const EnvServiceSingleton = {
   is_dev(): boolean { return EnvServiceSingleton.NODE_ENV === 'development'; },
   is_testing(): boolean { return EnvServiceSingleton.NODE_ENV === 'testing'; },
   is_prod(): boolean { return EnvServiceSingleton.NODE_ENV === 'production'; },
+  HOST: to.string('HOST'),
   NODE_ENV: to.oneOf(['production', 'testing', 'development'])('NODE_ENV'),
   PORT: to.int('PORT'),
   PG_USER: to.string('PG_USER'),

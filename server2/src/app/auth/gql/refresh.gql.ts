@@ -21,11 +21,11 @@ import { OrNull } from "../../../common/types/or-null.type";
 // ---------------
 
 export interface IRefreshGqlInput {
-  refresh_token: string;
+  refresh_token?: string;
 }
 
 export const RefreshGqlInputValidator = Joi.object<IRefreshGqlInput>({
-  refresh_token: Joi.string().required(),
+  refresh_token: Joi.string(),
 });
 
 export const RefreshGqlInput = new GraphQLInputObjectType({
@@ -34,27 +34,3 @@ export const RefreshGqlInput = new GraphQLInputObjectType({
     refresh_token: { type: GraphQLNonNull(GraphQLString) },
   }),
 });
-
-// ----------------
-// ---- output ----
-// ----------------
-
-export interface IRefreshGqlObj {
-  access_token: string;
-  refresh_token: string;
-  access_token_object: IAccessToken;
-  refresh_token_object: IRefreshToken;
-  // user: OrNull<IUserGqlNode>;
-}
-
-export const RefreshGqlObj = new GraphQLObjectType({
-  name: 'RefreshObject',
-  fields: () => ({
-    access_token: { type: GraphQLNonNull(GraphQLString) },
-    refresh_token: { type: GraphQLNonNull(GraphQLString) },
-    access_token_object: { type: GraphQLNonNull(AccessTokenGqlObj) },
-    refresh_token_object: { type: GraphQLNonNull(RefreshTokenGqlObj) },
-    // user: { type: UserGqlNode }
-  }),
-});
-

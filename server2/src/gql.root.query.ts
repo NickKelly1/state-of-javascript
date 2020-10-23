@@ -25,11 +25,37 @@ import { GqlUserRoleQuery } from './app/user-role/gql/user-role.gql.query';
 import { GqlRoleQuery } from './app/role/gql/role.gql.query';
 import { GqlRolePermissionQuery } from './app/role-permission/gql/role-permission.gql.query';
 import { OrNull } from './common/types/or-null.type';
+import { INewsArticleGqlConnection, NewsArticleGqlConnection } from './app/news-article/gql/news-article.gql.connection';
+import { GqlNewsArticleQuery } from './app/news-article/gql/news-article.gql.query';
+import { INewsArticleGqlEdge } from './app/news-article/gql/news-article.gql.edge';
 
 
 export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
   name: 'RootQueryType',
   fields: () => ({
+    newsArticles: {
+      type: GraphQLNonNull(NewsArticleGqlConnection),
+      args: gqlQueryArg(GqlNewsArticleQuery),
+      resolve: async (parent, args, ctx): Promise<INewsArticleGqlConnection> => {
+        ctx.authorize(ctx.services.userPolicy().canFindMany());
+        const { page, options } = transformGqlQuery(args);
+        const { rows, count } = await ctx.services.newsArticleRepository().findAllAndCount({
+          runner: null,
+          options: { ...options },
+        });
+        const meta = collectionMeta({ data: rows, total: count, page });
+        const connection: INewsArticleGqlConnection = {
+          edges: rows.map((model): OrNull<INewsArticleGqlEdge> =>
+            ctx.services.newsArticlePolicy().canFindOne({ model })
+              ? ({ cursor: model.id.toString(), node: model, })
+              : null
+            ),
+          meta,
+        };
+        return connection;
+      },
+    },
+
     users: {
       type: GraphQLNonNull(UserGqlConnection),
       args: gqlQueryArg(GqlUserQuery),

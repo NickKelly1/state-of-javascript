@@ -6,7 +6,7 @@ import { InlineCmsImg } from '../inline-cms-img/inline-cms-img';
 import { MaybeLink } from '../maybe-link/maybe-link';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+  centered: {
     //
   },
 }));

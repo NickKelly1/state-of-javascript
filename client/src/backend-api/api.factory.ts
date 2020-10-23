@@ -1,6 +1,7 @@
 import { PublicEnv } from "../env/public-env.helper";
 import { Api } from "./api";
 import { ApiConnector } from "./api.connector";
+import { ApiCredentials } from "./api.credentials";
 import { IApiServices } from "./api.services.interface";
 import { ApiAuthService } from "./services/auth/api.auth-service";
 import { ApiPermissionService } from "./services/permission/api.permission.service";
@@ -11,7 +12,8 @@ import { ApiUserService } from "./services/user/api.user.service";
 
 export function ApiFactory(arg: { publicEnv: PublicEnv }): Api {
   const { publicEnv } = arg;
-  const apiConnector = new ApiConnector(publicEnv);
+  const credentials = new ApiCredentials(publicEnv);
+  const apiConnector = new ApiConnector(publicEnv, credentials);
   const services: IApiServices = {
     users: new ApiUserService(apiConnector),
     auth: new ApiAuthService(apiConnector),
@@ -20,6 +22,6 @@ export function ApiFactory(arg: { publicEnv: PublicEnv }): Api {
     roles: new ApiRoleService(apiConnector),
     userRoles: new ApiUserRoleService(apiConnector),
   };
-  const api = new Api(publicEnv, apiConnector, services);
+  const api = new Api(publicEnv, apiConnector, services, credentials);
   return api;
 }

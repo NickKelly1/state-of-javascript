@@ -64,6 +64,9 @@ export class PublicEnv {
   // public readonly NODE_ENV = oneOf('NODE_ENV', ['development', 'testing', 'production']);
   public readonly CMS_URL = string('CMS_URL');
   public readonly API_URL = string('API_URL');
+  public readonly API_AUTH_REFRESH_ATTEMPT_COUNT = integer('API_AUTH_REFRESH_ATTEMPT_COUNT');
+  public readonly API_AUTH_REFRESH_ATTEMPT_PAUSE_MS = integer('API_AUTH_REFRESH_ATTEMPT_PAUSE_MS');
+  public readonly API_AUTH_REFRESH_LEEWAY_MS = integer('API_AUTH_REFRESH_LEEWAY_MS');
   toJSON(): PublicEnv {
     return { ...this };
   }

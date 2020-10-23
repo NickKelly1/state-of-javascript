@@ -39,7 +39,7 @@ import { makeException } from './common/helpers/make-exception.helper';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
-  logger.info('booting...')
+  logger.info('booting...');
 
   const sequelize = createSequelize({ env });
 
@@ -79,7 +79,39 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
 
   const app = new ExpressContext({ root: express() });
 
-  app.use(cors())
+  // app.use('/zing', handler(async ()))
+
+  // app.use(function (req, res, next) {
+  //   res.cookie(
+  //     'fuckzaaa',
+  //     'you',
+  //     {
+  //       maxAge: 10,
+  //     },
+  //   );
+  //   next();
+  //   // res
+  //   //   .status(200)
+  //   //   .contentType('json')
+  //   //   .send(prettyQ(JSON.stringify({ hello: ':)' })));
+  // });
+  // app.use(cors({ origin: true, credentials: true }));
+  // app.use(cors({
+  //   origin: '*',
+  //   credentials: true,
+  // }));
+  app.use(cors((req, done) => done(null, ({
+    credentials: true,
+    origin: req.headers.origin,
+  }))));
+  // app.use(function(req, res, next) {
+  //   res.header('Access-Control-Allow-Credentials', 'true');
+  //   res.header('Access-Control-Allow-Origin', req.headers.origin);
+  //   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS');
+  //   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Set-Cookie');
+  //   next();
+  // });
+  // app.use(cors({ origin: true, credentials: true }));
   app.use(handler(async (req, res, next) => {
     if (env.DELAY) await delay(env.DELAY);
     next();
@@ -119,6 +151,29 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
     return data;
   })));
   app.use(Routes({ app }));
+  app.use('/zing', mw((ctx, next) => {
+    const { req, res } = ctx;
+
+    const html = /* html */ `
+    <html>
+      <head>
+        <title>
+          The Title
+        </title>
+      </head>
+      <body>
+        <div>
+          hoe hoe hoe
+        </div>
+      </body>
+    </htm>
+    `;
+
+    res
+      .status(200)
+      .contentType('html')
+      .send(html);
+  }));
   app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
   app.use(errorHandlerMw());
 

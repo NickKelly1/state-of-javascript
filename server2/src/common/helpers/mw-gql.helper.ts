@@ -6,7 +6,7 @@ import { HttpContext } from '../classes/http.context';
 import { RequestAuth } from '../classes/request-auth';
 import { $TS_FIX_ME } from '../types/$ts-fix-me.type';
 import { handler } from './handler.helper';
-import { ist } from './is.helper';
+import { ist } from './ist.helper';
 
 export type IMwReturn = any;
 

@@ -1,7 +1,7 @@
 import { FindOptions, Identifier, Model, Model as TModelAttributes, ModelCtor, Op, WhereOptions } from "sequelize";
 import { QueryRunner } from "../../app/db/query-runner";
 import { NotFoundException } from "../exceptions/types/not-found.exception";
-import { ist } from "../helpers/is.helper";
+import { ist } from "../helpers/ist.helper";
 import { IRequestContext } from "../interfaces/request-context.interface";
 import { IRowsWithCount } from "../interfaces/rows-with-count.interface";
 import { OrNull } from "../types/or-null.type";

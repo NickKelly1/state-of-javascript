@@ -1,5 +1,5 @@
 
-declare module '*.graphql' {
-  declare const content: string;
-  export default content;
-}
+// declare module '*.graphql' {
+//   declare const content: string;
+//   export default content;
+// }

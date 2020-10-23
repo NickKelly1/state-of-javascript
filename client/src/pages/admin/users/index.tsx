@@ -37,95 +37,95 @@ import { ApiContext } from '../../../contexts/api.context';
 import { OrUndefined } from '../../../types/or-undefined.type';
 import { graphql } from 'graphql';
 
-const pageQuery = gql`
-query AdminUsersPage{
-  users(
-    options:{
-      offset:0
-      limit:15
-    }
-  ){
-    meta{
-      limit
-      offset
-      total
-      page_number
-      pages
-      more
-    }
-    edges{
-      node{
-        id
-        name
-        created_at
-        updated_at
-        deleted_at
-        userRoleConnection(
-          options:{
-            offset:0
-            limit:15
-          }
-        ){
-          meta{
-            limit
-            offset
-            total
-            page_number
-            pages
-            more
-          }
-          edges{
-            node{
-              id
-              user_id
-              role_id
-              created_at
-              updated_at
-              user{
-                node{
-                  id
-                  name
-                }
-              }
-              role{
-                node{
-                  id
-                  name
-                  rolePermissionConnection(
-                    options:{
-                      offset:0
-                      limit:15
-                    }
-                  ){
-                    meta{
-                      limit
-                      offset
-                      total
-                      page_number
-                      pages
-                      more
-                    }
-                    edges{
-                      node{
-                        id
-                        role_id
-                        permission_id
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-	}
-}
-`
+// const pageQuery = gql`
+// query AdminUsersPage{
+//   users(
+//     options:{
+//       offset:0
+//       limit:15
+//     }
+//   ){
+//     meta{
+//       limit
+//       offset
+//       total
+//       page_number
+//       pages
+//       more
+//     }
+//     edges{
+//       node{
+//         id
+//         name
+//         created_at
+//         updated_at
+//         deleted_at
+//         userRoleConnection(
+//           options:{
+//             offset:0
+//             limit:15
+//           }
+//         ){
+//           meta{
+//             limit
+//             offset
+//             total
+//             page_number
+//             pages
+//             more
+//           }
+//           edges{
+//             node{
+//               id
+//               user_id
+//               role_id
+//               created_at
+//               updated_at
+//               user{
+//                 node{
+//                   id
+//                   name
+//                 }
+//               }
+//               role{
+//                 node{
+//                   id
+//                   name
+//                   rolePermissionConnection(
+//                     options:{
+//                       offset:0
+//                       limit:15
+//                     }
+//                   ){
+//                     meta{
+//                       limit
+//                       offset
+//                       total
+//                       page_number
+//                       pages
+//                       more
+//                     }
+//                     edges{
+//                       node{
+//                         id
+//                         role_id
+//                         permission_id
+//                       }
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+// 	}
+// }
+// `
 
 const useRowStyles = makeStyles({
-  root: {
+  centered: {
     '& > *': {
       borderBottom: 'unset',
     },
@@ -378,7 +378,7 @@ interface IUserAuthorizationSubsection {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
+    centered: {
       width: '100%',
       maxWidth: 360,
       backgroundColor: theme.palette.background.paper,

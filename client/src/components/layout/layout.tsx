@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
   },
   layoutToolbar: {
     paddingLeft: 0,
-  }
+  },
 }));
 
 export interface ILayoutProps {
@@ -50,13 +50,11 @@ export function Layout(props: ILayoutProps) {
       </AppBar>
 
       {/* content */}
-      <div className={classes.content}>
+      <main className={classes.content}>
         <Container maxWidth="lg">
-          <main>
-            <Component {...pageProps} />
-          </main>
+          <Component {...pageProps} />
         </Container>
-      </div>
+      </main>
 
       {/* footer  */}
       <Paper>

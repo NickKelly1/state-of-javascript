@@ -29,6 +29,7 @@ import { logger } from "../logger/logger";
 import { NewsArticleService } from "../../app/news-article/news-article.service";
 import { NewsArticleRepository } from "../../app/news-article/news-article.repository";
 import { NewsArticlePolicy } from "../../app/news-article/news-article.policy";
+import { AuthSerivce } from "../../app/auth/auth.service";
 
 export const servicesMw = (arg: { env: EnvService, sequelize: Sequelize }) => handler((req: Request, res: Response, next: NextFunction) => {
   // initialise req locals
@@ -69,6 +70,7 @@ export const servicesMw = (arg: { env: EnvService, sequelize: Sequelize }) => ha
       hash: lazy(() => new HashService(ctx)),
       dbService: lazy(() => new DbService(ctx, arg.sequelize)),
       jwtService: lazy(() => new JwtService(ctx)),
+      authService: lazy(() => new AuthSerivce(ctx)),
     }
   };
   next();

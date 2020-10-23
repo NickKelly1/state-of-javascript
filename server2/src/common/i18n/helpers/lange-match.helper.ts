@@ -1,4 +1,5 @@
-import { ist } from "../../helpers/is.helper";
+import { ist } from "../../helpers/ist.helper";
+import { isu } from "../../helpers/isu.helper";
 import { $TS_DANGER } from "../../types/$ts-danger.type";
 import { OrUndefined } from "../../types/or-undefined.type";
 import { LanguageDefault } from "../consts/language.default";
@@ -8,7 +9,7 @@ export type LangSwitch = Record<ALanguage, OrUndefined<string>>
 
 export function langMatch(languages: string[], switcher: LangSwitch): string {
   for (const language of languages) {
-    if (ist.language(language)) {
+    if (isu.language(language)) {
       const phrase = switcher[language];
       if (ist.str(phrase)) return phrase;
     }

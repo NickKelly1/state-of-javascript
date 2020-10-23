@@ -1,5 +1,5 @@
 import { Op, Rangable, WhereAttributeHash, WhereOperators, WhereOptions } from "sequelize";
-import { ist } from "../helpers/is.helper";
+import { ist } from "../helpers/ist.helper";
 import { OrUndefined } from "../types/or-undefined.type";
 import { IGqlFilterField, IGqlFilterGroup, IGqlFilterRange } from "./gql.filter.types";
 import { IGqlQuery } from "./gql.query";

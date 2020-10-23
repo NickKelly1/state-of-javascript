@@ -1,10 +1,11 @@
 import { Exception } from '../exceptions/exception';
 import { InternalServerException } from '../exceptions/types/internal-server.exception';
-import { ist } from '../helpers/is.helper';
+import { ist } from './ist.helper';
 import { IRequestContext } from '../interfaces/request-context.interface';
+import { isu } from './isu.helper';
 
 export function makeException(ctx: IRequestContext, err: any): Exception {
-  const exception = ist.exception(err)
+  const exception = isu.exception(err)
     ? err
     : ctx.except(InternalServerException({
       debug: ist.obj(err)

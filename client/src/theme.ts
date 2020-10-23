@@ -48,7 +48,8 @@ const theme = createMuiTheme({
     ].join(','),
   },
   palette: {
-    // type: 'dark',
+    type: 'dark',
+
     text: {
       primary: textLight,
       disabled: textDisabled,
@@ -73,6 +74,12 @@ const theme = createMuiTheme({
     info: {
       main: purple,
     },
+
+
+
+
+
+
     // info: 
     // secondary: {
     //   // main: '#19857b',

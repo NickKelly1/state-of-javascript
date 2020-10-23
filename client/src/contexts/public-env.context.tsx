@@ -10,12 +10,12 @@ const initial: IPublicEnvContext = { publicEnv: PublicEnvSingleton };
 export const PublicEnvContext = createContext<IPublicEnvContext>(initial);
 
 interface IPublicEnvProviderProps {
-  publicEnv: PublicEnv;
+  // publicEnv: PublicEnv;
   children: ReactNode;
 }
 
 export function PublicEnvProvider(props: IPublicEnvProviderProps) {
-  const { children, publicEnv } = props;
+  const { children } = props;
   const [ctx, setCtx] = useState<IPublicEnvContext>(initial);
 
   return (

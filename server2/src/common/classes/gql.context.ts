@@ -49,21 +49,18 @@ import { Transaction } from 'sequelize';
 import { Loader } from './loader';
 import { UserId } from '../../app/user/user.id.type';
 import { userInfo } from 'os';
-import { ist } from '../helpers/is.helper';
+import { ist } from '../helpers/ist.helper';
 
 export class GqlContext implements IRequestContext {
   public readonly execution: ExecutionContext;
-  protected readonly req: Request;
-  protected readonly res: Response;
+  protected readonly _req: Request;
+  protected readonly _res: Response;
   protected _runner?: QueryRunner;
 
-  get services(): IServices {
-    return this.req.__locals__.services;
-  }
-
-  get auth(): RequestAuth {
-    return this.req.__locals__.auth;
-  }
+  get req(): Request { return this._req; }
+  get res(): Response { return this._res; }
+  get services(): IServices { return this._req.__locals__.services; }
+  get auth(): RequestAuth { return this._req.__locals__.auth; }
 
   assertAuthentication(): UserId {
     const user_id = this.auth.user_id;
@@ -114,8 +111,8 @@ export class GqlContext implements IRequestContext {
   ) {
     const { execution, req, res, } = arg;
     this.execution = execution;
-    this.req = req;
-    this.res = res;
+    this._req = req;
+    this._res = res;
   }
 
   protected _loader?: Loader;
@@ -136,13 +133,13 @@ export class GqlContext implements IRequestContext {
   }
 
   lang(switcher: Record<ALanguage, OrUndefined<string>>): string {
-    const languages = this.req.acceptsLanguages();
+    const languages = this._req.acceptsLanguages();
     return langMatch(languages, switcher);
   }
 
   info(): IJson {
-    const url = this.req.url;
-    const ip = this.req.ip;
+    const url = this._req.url;
+    const ip = this._req.ip;
     return {
       url,
       ip,
@@ -151,7 +148,7 @@ export class GqlContext implements IRequestContext {
   }
 
   validate<T>(validator: Joi.ObjectSchema<T>, obj: unknown): T {
-    const { req } = this;
+    const { _req: req } = this;
     const { body } = req;
     const validation = validate(validator, obj);
     if (isLeft(validation)) {

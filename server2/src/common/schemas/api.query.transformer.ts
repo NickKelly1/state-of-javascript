@@ -1,6 +1,6 @@
 import { Op, Order, WhereAttributeHash, WhereOptions, WhereValue } from "sequelize";
 import { BadRequestException } from "../exceptions/types/bad-request.exception";
-import { ist } from "../helpers/is.helper";
+import { ist } from "../helpers/ist.helper";
 import { pretty } from "../helpers/pretty.helper";
 import { QueryLang } from "../i18n/packs/query.lang";
 import { IPaginateInput } from "../interfaces/pageinate-input.interface";

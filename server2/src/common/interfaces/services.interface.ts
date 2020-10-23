@@ -23,6 +23,7 @@ import { EnvService } from "../environment/env";
 import { NewsArticleService } from "../../app/news-article/news-article.service";
 import { NewsArticleRepository } from "../../app/news-article/news-article.repository";
 import { NewsArticlePolicy } from "../../app/news-article/news-article.policy";
+import { AuthSerivce } from "../../app/auth/auth.service";
 
 export interface IServices {
   userService: () => UserService;
@@ -56,4 +57,5 @@ export interface IServices {
   env: () => EnvService;
   dbService: () => DbService;
   jwtService: () => JwtService;
+  authService: () => AuthSerivce;
 }

@@ -5,7 +5,7 @@ import winston from 'winston';
 import path from 'path';
 import fs from 'fs';
 import { EnvServiceSingleton } from '../environment/env';
-import { ist } from '../helpers/is.helper';
+import { ist } from '../helpers/ist.helper';
 import { pretty } from '../helpers/pretty.helper';
 
 

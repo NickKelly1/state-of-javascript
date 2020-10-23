@@ -10,15 +10,20 @@ import { ApiProvider } from '../contexts/api.context';
 import { NpmsApiProvider } from '../contexts/npms-api.context';
 import { CmsProvider } from '../contexts/cms.context';
 import { PublicEnvProvider } from '../contexts/public-env.context';
+import { AppProps } from 'next/app';
 
-export default function MyApp(props) {
+interface IMyAppProps extends AppProps {
+  //
+}
+
+export default function MyApp(props: IMyAppProps) {
   const { Component, pageProps } = props;
 
   React.useEffect(() => {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
-      jssStyles.parentElement.removeChild(jssStyles);
+      jssStyles.parentElement?.removeChild(jssStyles);
     }
   }, []);
 

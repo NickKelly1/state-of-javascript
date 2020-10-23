@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 import { OrString } from '../../types/or-string.type';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+  centered: {
     // padding: theme.spacing(2),
   },
 }));

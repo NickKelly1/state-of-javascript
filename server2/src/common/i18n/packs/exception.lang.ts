@@ -21,6 +21,11 @@ export const ExceptionLang = {
     [Language.Ger]: '__TODO__',
   },
 
+  NoRefreshToken: {
+    [Language.En]: 'no refresh_token',
+    [Language.Ger]: '__TODO__',
+  },
+
   NotFound: {
     [Language.En]: 'not found',
     [Language.Ger]: '__TODO__',

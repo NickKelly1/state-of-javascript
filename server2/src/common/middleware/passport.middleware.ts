@@ -1,37 +1,28 @@
-import { Handler } from "express";
+import { Handler, Request } from "express";
 import { isLeft } from "fp-ts/lib/Either";
 import { ExtractJwt } from "passport-jwt";
 import { LoginExpiredException } from "../exceptions/types/login-expired.exception";
-import { ist } from "../helpers/is.helper";
+import { ist } from "../helpers/ist.helper";
 import { mw } from "../helpers/mw.helper";
 import { prettyQ } from "../helpers/pretty.helper";
 import { logger } from "../logger/logger";
+import { OrNull } from "../types/or-null.type";
+import { OrNullable } from "../types/or-nullable.type";
+import { OrUndefined } from "../types/or-undefined.type";
+
+function authTokenCookieExtractor(req: Request): OrNull<string> {
+  // req.signedCookies.access_token
+  const access_token: OrNullable<string> = req.cookies.access_token;
+  return access_token ?? null;
+}
 
 // if access token is given, verify it
 export const passportMw = (): Handler => mw((ctx, next) => {
   const { req } = ctx;
-  const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 
-  if (ist.nullable(token)) {
-    // no token...
-    return void next();
-  }
+  const access = ctx.services.authService().getAccessToken({ req });
 
-  const mbAccess = ctx.services.jwtService().decodeAccessToken({ token });
-
-  if (isLeft(mbAccess)) {
-    // failed to validate token
-    // throw mbAccess.left;
-    // don't throw - let route handler throw if required...
-    logger.warn(`Failed to validate access token: "${token}: ${prettyQ(mbAccess.left.toJsonDev())}"`);
-    return void next();
-  }
-
-  const access = mbAccess.right;
-
-  if (ctx.services.jwtService().isExpired(access)) {
-    // throw ctx.except(LoginExpiredException());
-    // don't throw - let route handler throw if required...
+  if (ist.nullable(access)) {
     return void next();
   }
 
