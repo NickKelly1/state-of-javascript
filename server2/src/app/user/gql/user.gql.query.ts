@@ -1,6 +1,5 @@
-import { GraphQLList, GraphQLNonNull } from "graphql";
 import { GqlQueryInputFactory } from "../../../common/gql/gql.query";
-import { GqlFilterFieldType, GqlFilterInputFactory } from "../../../common/gql/gql.filter.types";
+import { GqlFilterFieldType } from "../../../common/gql/gql.filter.types";
 
 const GqlUserFilterFields = {
   id: GqlFilterFieldType.Number,

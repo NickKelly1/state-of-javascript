@@ -12,26 +12,53 @@ export class NewsArticlePolicy {
   canFindMany(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowNewsArticle]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNewsArticle,
+      Permission.ShowNewsArticle,
+    ]);
   }
 
   canFindOne(arg: {
     model: NewsArticleModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowNewsArticle]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNewsArticle,
+      Permission.ShowNewsArticle,
+    ]);
   }
 
   canCreate(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateNewsArticle]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNewsArticle,
+      Permission.CreateNewsArticle,
+    ]);
+  }
+
+  canUpdate(arg: {
+    model: NewsArticleModel;
+  }): boolean {
+    const { model } = arg;
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNewsArticle,
+      Permission.CreateNewsArticle,
+    ]);
   }
 
   canDelete(arg: {
     model: NewsArticleModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateNewsArticle]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNewsArticle,
+      Permission.CreateNewsArticle,
+    ]);
   }
 }

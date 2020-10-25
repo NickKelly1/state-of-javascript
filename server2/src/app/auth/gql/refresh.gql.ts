@@ -13,7 +13,7 @@ import { UserPasswordDefinition } from "../../user-password/user-password.defini
 import { UserDefinition } from "../../user/user.definition";
 import { AccessTokenGqlObj, IAccessToken } from "../token/access.token.gql";
 import { IRefreshToken, RefreshTokenGqlObj } from "../token/refresh.token.gql";
-import { IUserGqlNode, UserGqlNode } from "../../user/gql/user.gql.node";
+import { IUserGqlDataSource, UserGqlData } from "../../user/gql/user.gql.data";
 import { OrNull } from "../../../common/types/or-null.type";
 
 // ---------------

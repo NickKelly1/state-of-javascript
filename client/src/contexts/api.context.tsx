@@ -1,13 +1,13 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Api } from '../backend-api/api';
-import { IMe } from '../backend-api/api.credentials';
+import { ApiMe } from '../backend-api/api.me';
 import { ApiFactory } from '../backend-api/api.factory';
 import { PermissionId } from '../backend-api/services/permission/permission.id';
 import { OrNull } from '../types/or-null.type';
 import { PublicEnvContext } from './public-env.context';
 
 interface IApiContext {
-  me: OrNull<IMe>,
+  me: OrNull<ApiMe>,
   api: Api;
 }
 

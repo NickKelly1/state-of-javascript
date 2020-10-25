@@ -7,6 +7,7 @@ import { IRequestContext } from "../../common/interfaces/request-context.interfa
 import { logger } from "../../common/logger/logger";
 import { OrNull } from "../../common/types/or-null.type";
 import { PermissionId } from "../permission/permission-id.type";
+import { PublicPermissions } from "../permission/permission.const";
 import { UserId } from "../user/user.id.type";
 import { UserModel } from "../user/user.model";
 import { IAuthorisationRo } from "./gql/authorisation.gql";
@@ -23,8 +24,9 @@ export class AuthSerivce {
     const { req } = arg;
     // try header
     let token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+
     // try cookie
-    if (!ist.nullable(token)) { token = req.cookies.access_token ?? null; }
+    if (ist.nullable(token)) { token = req.cookies.access_token ?? null; }
 
     // no token...
     if (ist.nullable(token)) return null;
@@ -42,6 +44,7 @@ export class AuthSerivce {
     const access = mbAccess.right;
 
     if (this.ctx.services.jwtService().isExpired(access)) {
+      logger.warn(`Expired access_token for user "${access.user_id}"`);
       // throw ctx.except(LoginExpiredException());
       // don't throw - let route handler throw if required...
       return null;
@@ -63,7 +66,7 @@ export class AuthSerivce {
   }): IAuthorisationRo {
     const { res, user, permissions } = arg;
     const access = this.ctx.services.jwtService().createAccessToken({ partial: {
-      permissions,
+      permissions: permissions.concat(PublicPermissions),
       user_id: user.id,
     }});
     const refresh = this.ctx.services.jwtService().createRefreshToken({ partial: { user_id: user.id } });

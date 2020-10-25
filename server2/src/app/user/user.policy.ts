@@ -12,33 +12,53 @@ export class UserPolicy {
   canFindMany(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowUser]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUser,
+      Permission.ShowUser,
+    ]);
   }
 
   canFindOne(arg: {
     model: UserModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowUser]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUser,
+      Permission.ShowUser,
+    ]);
   }
 
   canCreate(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateUser]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUser,
+      Permission.CreateUser,
+    ]);
   }
 
   canUpdate(arg: {
     model: UserModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateUser]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUser,
+      Permission.CreateUser,
+    ]);
   }
 
   canDelete(arg: {
     model: UserModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateUser]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUser,
+      Permission.CreateUser,
+    ]);
   }
 }

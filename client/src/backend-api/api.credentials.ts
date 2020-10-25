@@ -3,17 +3,13 @@ import { gql, request } from 'graphql-request';
 import { debuglog } from 'util';
 import { Debug } from '../debug/debug';
 import { PublicEnv } from '../env/public-env.helper';
-import {
-  AuthLoginMutation,
-  AuthLoginMutationVariables,
-  AuthSignupMutation,
-  AuthSignupMutationVariables,
-} from '../generated/graphql';
 import { TsEvent } from '../helpers/ts-event';
 import { wait } from '../helpers/wait.helper';
 import { isoFetch } from '../iso-fetch';
 import { $FIXME } from '../types/$fix-me.type';
 import { OrNull } from '../types/or-null.type';
+import { ApiMe } from './api.me';
+import { PermissionId } from './services/permission/permission.id';
 
 export interface IAuthenticationRo {
   access_token: string;
@@ -34,89 +30,28 @@ export interface IAuthenticationRo {
   };
 }
 
-export interface IMe {
-  user_id: number;
-  permissions: number[];
-  access_exp: number;
-  refresh_exp: number;
-  name: string;
-}
-
-function authToMe(auth: IAuthenticationRo): IMe {
-  return {
+function authToMe(auth: IAuthenticationRo): ApiMe {
+  const me = new ApiMe({
     permissions: auth.access_token_object.permissions,
-    user_id: auth.access_token_object.user_id,
+    user: {
+      id: auth.access_token_object.user_id,
+      name: auth.user.name,
+    },
     access_exp: Number(auth.access_token_object.exp),
     refresh_exp: Number(auth.refresh_token_object.exp),
-    name: auth.user.name,
-  };
+  });
+  return me;
 }
-
-const AuthSignup = gql`
-mutation AuthSignup(
-  $name:String!
-  $password:String!
-){
-  signup(
-    dto:{
-      name:$name
-      password:$password
-    }
-  ){
-    access_token
-    refresh_token
-    access_token_object{
-      user_id
-      permissions
-      iat
-      exp
-    }
-    refresh_token_object{
-      user_id
-      iat
-      exp
-    }
-  }
-}
-`
-
-const AuthLogin = gql`
-mutation AuthLogin(
-  $name:String!
-  $password:String!
-){
-  login(
-    dto:{
-      name:$name
-      password:$password
-    }
-  ){
-    access_token
-    refresh_token
-    access_token_object{
-      user_id
-      permissions
-      iat
-      exp
-    }
-    refresh_token_object{
-      user_id
-      iat
-      exp
-    }
-  }
-}
-`
 
 export class ApiCredentials {
   protected readonly syncLock: Mutex = new Mutex();
   protected readonly authenticationLock: Mutex = new Mutex();
 
-  protected _me: OrNull<IMe> = null;
-  get me(): OrNull<IMe> { return this._me; }
+  protected _me: OrNull<ApiMe> = null;
+  get me(): OrNull<ApiMe> { return this._me; }
 
   public readonly event = {
-    authenticated: new TsEvent<IMe>(),
+    authenticated: new TsEvent<ApiMe>(),
     unauthenticated: new TsEvent<undefined>(),
 
     sign_out_start: new TsEvent<undefined>(),
@@ -124,15 +59,15 @@ export class ApiCredentials {
     sign_out_fail: new TsEvent<undefined>(),
 
     sign_in_start: new TsEvent<undefined>(),
-    sign_in_success: new TsEvent<IMe>(),
+    sign_in_success: new TsEvent<ApiMe>(),
     sign_in_fail: new TsEvent<undefined>(),
 
     sign_up_start: new TsEvent<undefined>(),
-    sign_up_success: new TsEvent<IMe>(),
+    sign_up_success: new TsEvent<ApiMe>(),
     sign_up_fail: new TsEvent<undefined>(),
 
     refresh_start: new TsEvent<undefined>(),
-    refresh_success: new TsEvent<IMe>(),
+    refresh_success: new TsEvent<ApiMe>(),
     refresh_fail: new TsEvent<undefined>(),
   } as const;
 
@@ -173,7 +108,7 @@ export class ApiCredentials {
    * 
    * @param me
    */
-  protected handleAuthenticated(me: IMe) {
+  protected handleAuthenticated(me: ApiMe) {
     // minimum refresh 10 sec
     const min = 1000 * 10;
     // 20 sec leeway (refresh before before access_token expiry)
@@ -236,7 +171,7 @@ export class ApiCredentials {
    *
    * @param arg
    */
-  protected async saveAuthentication(arg?: IMe) {
+  protected async saveAuthentication(arg?: ApiMe) {
     if (arg) { this._me = arg; }
     else { this._me = null; }
   }
@@ -253,7 +188,7 @@ export class ApiCredentials {
     try {
       this.event.sign_out_start.fire(undefined);
       const response = await isoFetch(
-        'http://localhost:4000/v1/auth/signout',
+        `${this.publicEnv.API_URL}/v1/auth/signout`,
         {
           credentials: 'include',
           mode: 'cors',
@@ -301,7 +236,7 @@ export class ApiCredentials {
     try {
       this.event.sign_in_start.fire(undefined);
       const response = await isoFetch(
-        'http://localhost:4000/v1/auth/signin',
+        `${this.publicEnv.API_URL}/v1/auth/signin`,
         {
           credentials: 'include',
           mode: 'cors',
@@ -315,7 +250,7 @@ export class ApiCredentials {
       );
       const result: IAuthenticationRo = await response.json();
       if (!response.ok) { throw result; }
-      const me: IMe = authToMe(result);
+      const me: ApiMe = authToMe(result);
       this.saveAuthentication(me);
       this.event.sign_in_success.fire(me);
       this.event.authenticated.fire(me);
@@ -351,7 +286,7 @@ export class ApiCredentials {
     try {
       this.event.sign_up_start.fire(undefined);
       const response = await isoFetch(
-        'http://localhost:4000/v1/auth/signup',
+        `${this.publicEnv.API_URL}/v1/auth/signup`,
         {
           credentials: 'include',
           mode: 'cors',
@@ -365,7 +300,7 @@ export class ApiCredentials {
       );
       const result: IAuthenticationRo = await response.json();
       if (!response.ok) { throw result; }
-      const me: IMe = authToMe(result);
+      const me: ApiMe = authToMe(result);
       this.saveAuthentication(me);
       this.event.sign_up_success.fire(me);
       this.event.authenticated.fire(me);
@@ -395,7 +330,7 @@ export class ApiCredentials {
     try {
       this.event.refresh_start.fire(undefined);
       const response = await isoFetch(
-        'http://localhost:4000/v1/auth/refresh',
+        `${this.publicEnv.API_URL}/v1/auth/refresh`,
         {
           credentials: 'include',
           mode: 'cors',
@@ -408,7 +343,7 @@ export class ApiCredentials {
       );
       const result: IAuthenticationRo = await response.json();
       if (!response.ok) { throw result; }
-      const me: IMe = authToMe(result);
+      const me: ApiMe = authToMe(result);
       this.saveAuthentication(me);
       this.event.refresh_success.fire(me);
       this.event.authenticated.fire(me);

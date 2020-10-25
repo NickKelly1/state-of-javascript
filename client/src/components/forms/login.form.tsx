@@ -7,10 +7,6 @@ import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { ApiContext } from "../../contexts/api.context";
-import { CreateNewsArticlePageQuery, CreateNewsArticlePageQueryVariables } from "../../generated/graphql";
-import { normaliseError } from "../../helpers/normalise-error.helper";
-import { pretty } from "../../helpers/pretty.helper";
-import { serverSidePropsHandler } from "../../helpers/server-side-props-handler.helper";
 import { OrPromise } from "../../types/or-promise.type";
 
 const useStyles = makeStyles((theme) => ({
@@ -49,7 +45,7 @@ export function LoginForm(props: ILoginFormProps) {
 
 
   interface ILoginVars { name: string; password: string; };
-  const [doLogin, loginResult] = useMutation<IAuthenticationRo, IApiException, ILoginVars>(
+  const [doLogin, result] = useMutation<IAuthenticationRo, IApiException, ILoginVars>(
     async (arg: ILoginVars): Promise<IAuthenticationRo> => {
       const { name, password } = arg;
       const result = await api.credentials.signIn({ name, password }).catch(rethrow(normaliseApiException));
@@ -66,7 +62,8 @@ export function LoginForm(props: ILoginFormProps) {
     password: '',
   });
 
-  const isDisabled = loginResult.isLoading || loginResult.isSuccess;
+  const err = result.error;
+  const isDisabled = result.isLoading || result.isSuccess;
 
   return (
     <Paper className={classes.paper}>
@@ -90,8 +87,8 @@ export function LoginForm(props: ILoginFormProps) {
                   disabled={isDisabled}
                   inputProps={{ className: classes.text }}
                   value={signupData.name}
-                  error={!!loginResult.error?.data?.name}
-                  helperText={loginResult.error?.data?.name?.join('\n')}
+                  error={!!err?.data?.name}
+                  helperText={err?.data?.name?.join('\n')}
                   onChange={(evt) => {
                     const value = evt.target.value;
                     setSignupData((prev) => ({ ...prev, name: value }))
@@ -107,18 +104,18 @@ export function LoginForm(props: ILoginFormProps) {
                   inputProps={{ className: classes.text }}
                   type="password"
                   value={signupData.password}
-                  error={!!loginResult.error?.data?.password}
-                  helperText={loginResult.error?.data?.password?.join('\n')}
+                  error={!!err?.data?.password}
+                  helperText={err?.data?.password?.join('\n')}
                   onChange={(evt) => {
                     const value = evt.target.value;
                     setSignupData((prev) => ({ ...prev, password: value }))
                   }}
                 />
               </Grid>
-              {loginResult.error && (
+              {err && (
                 <Grid className={classes.centered} item xs={12} sm={12}>
                   <FormHelperText error>
-                    {loginResult.error.message}
+                    {err.message}
                   </FormHelperText>
                 </Grid>
               )}

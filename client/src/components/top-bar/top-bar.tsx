@@ -25,14 +25,21 @@ interface ITopBarProps {
 }
 
 const useStyles = makeStyles((theme) => ({
-  container: {
+  root: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
   },
+  center: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   logout: {
     cursor: "pointer",
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
   },
   nav: {
     //
@@ -49,6 +56,10 @@ const useStyles = makeStyles((theme) => ({
     height: '100%',
     width: '100%',
   },
+  middle: {
+    display: 'flex',
+    flexDirection: 'row',
+  }
 }));
 
 export function TopBar(props: ITopBarProps) {
@@ -62,18 +73,56 @@ export function TopBar(props: ITopBarProps) {
   });
 
   return (
-    <div className={classes.container}>
+    <div className={classes.root}>
       <div>
-        <Typography component="h1" variant="h6">
-          The State of JavaScript
+        <Typography component="h1" variant="h3">
+          <ListItem>
+            <NextLink href="/" passHref>
+              <MUILink className={classes.center} color="inherit">
+                <img style={{ height: '1em' }} src="/favicon.svg" />
+                &nbsp;
+                <span>
+                  The State of JavaScript
+                </span>
+              </MUILink>
+            </NextLink>
+          </ListItem>
         </Typography>
       </div>
       <nav className={classes.nav}>
         <List className={classes.navList}>
+          <ListItem className={classes.navItem}>
+            <NextLink href="/stats" passHref>
+              <MUILink color="inherit">
+                Stats
+              </MUILink>
+            </NextLink>
+          </ListItem>
+          <ListItem className={classes.navItem}>
+            <NextLink href="/resources" passHref>
+              <MUILink color="inherit">
+                Resources
+              </MUILink>
+            </NextLink>
+          </ListItem>
+          <ListItem className={classes.navItem}>
+            <NextLink href="/news" passHref>
+              <MUILink color="inherit">
+                News
+              </MUILink>
+            </NextLink>
+          </ListItem>
+          <ListItem className={classes.navItem}>
+            <NextLink href="/blog" passHref>
+              <MUILink color="inherit">
+                Blog
+              </MUILink>
+            </NextLink>
+          </ListItem>
           {me && (
             <ListItem className={classes.navItem}>
               <MUILink onClick={() => logout()} className={clsx(classes.navItem, classes.logout)} color="inherit">
-                Logout
+                {`(${me.name}) Logout`}
               </MUILink>
             </ListItem>
           )}
@@ -81,14 +130,14 @@ export function TopBar(props: ITopBarProps) {
             <>
               <ListItem className={classes.navItem}>
                 <NextLink href="/register" passHref>
-                  <MUILink className={classes.navItem} color="inherit">
+                  <MUILink color="inherit">
                     Register
                   </MUILink>
                 </NextLink>
               </ListItem>
               <ListItem className={classes.navItem}>
                 <NextLink href="/login" passHref>
-                  <MUILink className={classes.navItem} color="inherit">
+                  <MUILink color="inherit">
                     Login
                   </MUILink>
                 </NextLink>

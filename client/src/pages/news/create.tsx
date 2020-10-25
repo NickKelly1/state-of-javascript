@@ -1,254 +1,252 @@
-import { Box, Button, Grid, Input, InputLabel, makeStyles, Paper, TextField, Typography } from "@material-ui/core";
-import cookies from 'next-cookies';
+import { Box, Button, ButtonGroup, CircularProgress, Grid, Input, InputLabel, LinearProgress, makeStyles, Paper, Switch, TextField, Typography } from "@material-ui/core";
 import { gql } from "graphql-request";
 import React, { FormEventHandler, useContext, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { IAuthenticationRo } from "../../backend-api/api.credentials";
+import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
+import { IApiException } from "../../backend-api/types/api.exception.interface";
+import { Markdown } from "../../components/markdown/markdown";
 import { ApiContext } from "../../contexts/api.context";
-import { AuthLoginMutation, AuthSignupMutation, CreateNewsArticlePageQuery, CreateNewsArticlePageQueryVariables } from "../../generated/graphql";
+import { CreateNewsArticle, CreateNewsArticleMutationVariables, } from "../../generated/graphql";
 import { pretty } from "../../helpers/pretty.helper";
 import { serverSidePropsHandler } from "../../helpers/server-side-props-handler.helper";
-
-interface ICreateNewsPageProps {
-  //
-}
+import { staticPathsHandler, staticPropsHandler } from "../../helpers/static-props-handler.helper";
 
 
-const pageQuery = gql`
-query CreateNewsArticlePage{
-  newsArticles{
-    meta{
-      limit
-      offset
-      total
-      page_number
-      pages
-      more
+const createNewsQuery = gql`
+mutation CreateNewsArticle(
+  $title:String!
+  $teaser:String!
+  $body:String!
+){
+  createNewsArticle(
+    dto:{
+      title:$title
+      teaser:$teaser
+      body:$body
     }
-    edges{
-      node{
-        id
-        title
-        teaser
-        body
-        created_at
-        updated_at
-        deleted_at
-      }
+  ){
+    data{
+      id,
+      title
+      teaser
+      body
+      author_id
+      created_at
+      updated_at
+      deleted_at
     }
   }
 }
 `
 
 const useStyles = makeStyles((theme) => ({
-  form: {
+  root: {
     //
+  },
+  centered: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
   },
   paper: {
     padding: theme.spacing(2),
   },
+  fullWidth: {
+    width: '100%',
+  },
+  teaserInput: {
+    minHeight: '5em',
+  },
+  bodyInput: {
+    minHeight: '10em',
+  },
+  label: {
+    paddingBottom: theme.spacing(1),
+  },
+  markdownContainer: {
+    paddingTop: '1em',
+  },
 }));
 
+interface ICreateNewsPageProps {
+  //
+}
+
 function CreateNewsPage(props: ICreateNewsPageProps) {
+  const {} = props;
   const { api, me } = useContext(ApiContext);
-
   const classes = useStyles();
+  const [title, setTitle] = useState('');
+  const [teaser, setTeaser] = useState('');
+  const [body, setBody] = useState('');
+  const [autoSave, setAutoSave] = useState(true);
 
-  const { data, isLoading, error } = useQuery('dur', async () => {
-    const result = await api
-      .connector
-      .graphql<CreateNewsArticlePageQuery, CreateNewsArticlePageQueryVariables>(pageQuery);
-    return result;
-  }, {});
+  const [postNewsArticle, result] = useMutation<CreateNewsArticle, IApiException, CreateNewsArticleMutationVariables>(
+    async (vars: CreateNewsArticleMutationVariables): Promise<CreateNewsArticle> => {
+      console.log('test 1');
+      const result = await api
+        .connector
+        .graphql<CreateNewsArticle, CreateNewsArticleMutationVariables>(createNewsQuery, vars)
+        .catch(rethrow(normaliseApiException));
+      console.log('test 2');
+      return result;
+    },
+  );
 
-  const [signup, signupResult] = useMutation(async (arg: { name: string; password: string; } ): Promise<IAuthenticationRo> => {
-    const { name, password } = arg;
-    const result = await api.credentials.signUp({ name, password });
-    return result;
-  });
-
-  const [login, loginResult] = useMutation(async (arg: { name: string; password: string; }): Promise<IAuthenticationRo> => {
-    const { name, password } = arg;
-    const result = await api.credentials.signIn({ name, password });
-    return result;
-  });
-
-  const [signupData, setSignupData] = useState({ name: '', password: '' });
-  const [loginData, setLoginData] = useState({ name: '', password: '' });
+  const err = result.error;
+  const isDisabled = result.isLoading;
 
   return (
-    <div>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Typography variant="h5" component="h2">
-            me
-          </Typography>
-          <pre>
-            {pretty(me)}
-          </pre>
-        </Grid>
-        {/* signup */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Paper className={classes.paper}>
-            <Grid container spacing={2} className={classes.form}>
-              <Grid item xs={12}>
-                <Typography variant="h5" component="h2">
-                  Sign up
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <form onSubmit={(evt) => {
-                  evt.preventDefault();
-                  signup(signupData);
-                }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={12}>
-                      <InputLabel htmlFor="signup_name">name</InputLabel>
-                      <Input
-                        id="signup_name"
-                        value={signupData.name}
-                        onChange={(evt) => {
-                          const value = evt.target.value;
-                          setSignupData((prev) => ({ ...prev, name: value }))
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={12}>
-                      <InputLabel htmlFor="signup_password">password</InputLabel>
-                      <Input
-                        id="signup_password"
-                        type="password"
-                        value={signupData.password}
-                        onChange={(evt) => {
-                          const value = evt.target.value;
-                          setSignupData((prev) => ({ ...prev, password: value }))
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={12}>
-                      <Button type="submit">
-                        Sumbit
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </form>
-              </Grid>
-              <Grid item xs={12}>
-                <pre>
-                  {pretty(signupResult)}
-                </pre>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <Paper className={classes.paper}>
+          <form
+            onSubmit={(evt) => {
+              evt.preventDefault();
+              postNewsArticle({ title, teaser, body });
+            }}>
 
-        {/* login */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Paper className={classes.paper}>
-            <Grid container spacing={2} className={classes.form}>
-              <Grid item xs={12}>
-                <Typography variant="h5" component="h2">
-                  Log in
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <form onSubmit={(evt) => {
-                  evt.preventDefault();
-                  login(loginData);
-                }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={12}>
-                      <InputLabel htmlFor="login_name">name</InputLabel>
-                      <Input
-                        id="login_name"
-                        value={loginData.name}
-                        onChange={(evt) => {
-                          const value = evt.target.value;
-                          setLoginData((prev) => ({ ...prev, name: value }));
-                        }}
+            <Grid container spacing={2}>
+              {/* settings & actions */}
+              <Grid item xs={12} sm={6}>
+                <Box display="flex" justifyContent="space-around" alignItems="center">
+                  <Box>
+                    <Box display="flex" justifyContent="flex-start" alignItems="between" textAlign="center">
+                      <Typography className={classes.centered} component="span" variant="body2">
+                        autosave
+                      </Typography>
+                      <Switch
+                        color="primary"
+                        checked={autoSave}
+                        onChange={() => setAutoSave(!autoSave)}
+                        name="auto save"
+                        inputProps={{ 'aria-label': 'auto save' }}
                       />
-                    </Grid>
-                    <Grid item xs={12} sm={12}>
-                      <InputLabel htmlFor="login_password">password</InputLabel>
-                      <Input
-                        id="login_password"
-                        type="password"
-                        value={loginData.password}
-                        onChange={(evt) => {
-                          const value = evt.target.value;
-                          setLoginData((prev) => ({ ...prev, password: value }))
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={12}>
-                      <Button type="submit">
-                        Sumbit
+                    </Box>
+                    <Typography className={classes.centered} component="div" variant="body2" color="textSecondary">
+                      not saved
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <ButtonGroup>
+                      <Button disabled={isDisabled} type="submit" color="primary" variant="outlined">
+                        {'Save'}
                       </Button>
-                    </Grid>
-                  </Grid>
-                </form>
+                      <Button disabled={isDisabled} type="submit" color="secondary" variant="outlined">
+                        {'Delete'}
+                      </Button>
+                    </ButtonGroup>
+                  </Box>
+                </Box>
               </Grid>
-              <Grid item xs={12}>
-                <pre>
-                  {pretty(loginResult)}
-                </pre>
+              <Grid item xs={12} sm={6} />
+
+
+              {/* progress */}
+              {isDisabled && (
+                <>
+                  <Grid item xs={12} sm={6}><LinearProgress /></Grid>
+                  <Grid item xs={12} sm={6} />
+                </>
+              )}
+
+              {/* title */}
+              <Grid item xs={12} sm={6}>
+                  <InputLabel
+                    className={classes.label}
+                    htmlFor="news_article_title">title</InputLabel>
+                  <TextField
+                    id="news_article_title"
+                    variant="standard"
+                    error={!!err?.data?.title}
+                    helperText={err?.data?.title?.join('\n')}
+                    disabled={isDisabled}
+                    className={classes.fullWidth}
+                    onChange={(evt) => setTitle(evt.target.value)}
+                    value={title}
+                  />
+              </Grid>
+              <Grid item xs={12} sm={6} />
+
+
+              {/* teaser */}
+              <Grid item xs={12} sm={6}>
+                <InputLabel
+                  className={classes.label}
+                  htmlFor="news_article_teaser">teaser</InputLabel>
+                <TextField
+                  id="news_article_teaser"
+                  variant="outlined"
+                  helperText={err?.data?.teaser?.join('\n')}
+                  disabled={isDisabled}
+                  className={classes.fullWidth}
+                  inputProps={{ className: classes.bodyInput }}
+                  multiline
+                  onChange={(evt) => setTeaser(evt.target.value)}
+                  value={teaser}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Box className={classes.markdownContainer}>
+                  <Markdown>
+                    {teaser}
+                  </Markdown>
+                </Box>
               </Grid>
             </Grid>
-          </Paper>
-        </Grid>
+
+            {/* body */}
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <InputLabel
+                  className={classes.label}
+                  htmlFor="news_article_body">body</InputLabel>
+                <TextField
+                  id="news_article_body"
+                  variant="outlined"
+                  helperText={err?.data?.body?.join('\n')}
+                  disabled={isDisabled}
+                  className={classes.fullWidth}
+                  inputProps={{ className: classes.bodyInput }}
+                  multiline
+                  onChange={(evt) => setBody(evt.target.value)}
+                  value={body}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Box className={classes.markdownContainer}>
+                  <Markdown>
+                    {body}
+                  </Markdown>
+                </Box>
+              </Grid>
+            </Grid>
+          </form>
+        </Paper>
       </Grid>
-
-      {/* <pre>
-        {pretty(me)}
-      </pre>
-      <h1>
-        error
-      </h1>
-      <pre>
-        {pretty({ error })}
-      </pre>
-      <br />
-
-      <h1>
-        loading
-      </h1>
-      <pre>
-        {pretty({ isLoading })}
-      </pre>
-      <br />
-
-      <h1>
-        data
-      </h1>
-      <pre>
-        {pretty({ data })}
-      </pre>
-      <br /> */}
-
-    </div>
+    </Grid>
   );
 }
 
-export const getServerSideProps = serverSidePropsHandler<ICreateNewsPageProps>(async ({ ctx, cms, npmsApi, api, }) => {
+export const getStaticProps = staticPropsHandler<ICreateNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {
+  const props: ICreateNewsPageProps = {
+    //
+  };
 
 
   return {
-    props: {
-      //
-    },
-  }
-  // const props: ICreateNewsPageProps = {
-  //   users,
-  //   roles,
-  //   userRoles,
-  //   rolePermissions,
-  //   permissions,
-  // };
-
-  // return {
-  //   props,
-  //   // revalidate: false,
-  // };
+    props,
+    // revalidate: false,
+  };
 });
+
+export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
+  return {
+    fallback: false,
+    paths: [],
+  };
+})
 
 export default CreateNewsPage;

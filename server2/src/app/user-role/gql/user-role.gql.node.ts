@@ -1,39 +1,30 @@
-import { GraphQLInt, GraphQLNonNull, GraphQLObjectType } from "graphql";
-import { UserRoleModel } from "../user-role.model";
-import { IUserGqlEdge, UserGqlEdge } from "../../user/gql/user.gql.edge";
+import { GraphQLNonNull, GraphQLObjectType, GraphQLString  } from "graphql";
+import { GqlEdge, IGqlEdge } from "../../../common/gql/gql.edge";
+import { IUserRoleGqlDataSource, UserRoleGqlData } from "./user-role.gql.data";
+import { UserModel, UserRoleModel } from "../../../circle";
 import { GqlContext } from "../../../common/classes/gql.context";
-import { IRoleGqlEdge, RoleGqlEdge } from "../../role/gql/role.gql.edge";
-import { AuditableGql } from "../../../common/gql/gql.auditable";
-import { OrNull } from "../../../common/types/or-null.type";
+import { IUserRoleGqlActionsSource, UserRoleGqlActions } from "./user-role.gql.actions";
+import { IUserRoleGqlRelationsSource, UserRoleGqlRelations } from "./user-role.gql.relations";
 
-
-export type IUserRoleGqlNode = UserRoleModel;
-export const UserRoleGqlNode: GraphQLObjectType<IUserRoleGqlNode, GqlContext> = new GraphQLObjectType<IUserRoleGqlNode, GqlContext>({
-  name: 'UserRole',
+export type IUserRoleGqlNodeSource = UserRoleModel;
+export const UserRoleGqlNode: GraphQLObjectType<IUserRoleGqlNodeSource, GqlContext> = new GraphQLObjectType({
+  name: 'UserRoleNode',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt), },
-    user_id: { type: GraphQLNonNull(GraphQLInt), },
-    role_id: { type: GraphQLNonNull(GraphQLInt), },
-    ...AuditableGql,
-
-    user: {
-      type: UserGqlEdge,
-      resolve: async (parent, args, ctx): Promise<OrNull<IUserGqlEdge>> => {
-        const model = await ctx.loader.users.load(parent.user_id);
-        const edge: IUserGqlEdge = { node: model, cursor: model.id.toString(), };
-        if (!ctx.services.userPolicy().canFindOne({ model })) return null;
-        return edge;
-      },
+    cursor: {
+      type: GraphQLNonNull(GraphQLString),
+      resolve: (parent): string => `user_role_${parent.id.toString()}`,
     },
-
-    role: {
-      type: RoleGqlEdge,
-      resolve: async (parent, args, ctx): Promise<OrNull<IRoleGqlEdge>> => {
-        const model = await ctx.loader.roles.load(parent.role_id);
-        const edge: IRoleGqlEdge = { node: model, cursor: model.id.toString(), };
-        if (!ctx.services.rolePolicy().canFindOne({ model })) return null;
-        return edge;
-      },
+    data: {
+      type: GraphQLNonNull(UserRoleGqlData),
+      resolve: (parent): IUserRoleGqlDataSource => parent,
+    },
+    can: {
+      type: GraphQLNonNull(UserRoleGqlActions),
+      resolve: (parent): IUserRoleGqlActionsSource => parent,
+    },
+    relations: {
+      type: GraphQLNonNull(UserRoleGqlRelations),
+      resolve: (parent): IUserRoleGqlRelationsSource => parent,
     },
   }),
 });

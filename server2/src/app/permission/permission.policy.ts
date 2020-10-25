@@ -12,13 +12,19 @@ export class PermissionPolicy {
   canFindMany(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowPermission]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ShowPermission,
+    ]);
   }
 
   canFindOne(arg: {
     model: PermissionModel;
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowPermission]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ShowPermission,
+    ]);
   }
 
   canCreate(arg?: {

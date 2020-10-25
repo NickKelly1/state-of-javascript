@@ -2,7 +2,9 @@ import { PublicEnv } from "../env/public-env.helper";
 import { Debug } from "../debug/debug";
 import { RequestDocument, Variables } from "graphql-request/dist/types";
 import { ApiCredentials } from "./api.credentials";
-import { request } from "graphql-request";
+import { GraphQLClient, request } from "graphql-request";
+import { normaliseApiException } from "./make-api-exception.helper";
+import { isoFetch } from "../iso-fetch";
 
 export class ApiConnector {
   static create(arg: {
@@ -13,11 +15,20 @@ export class ApiConnector {
     return new ApiConnector(publicEnv, credentials);
   }
 
+  protected readonly gqlCLient: GraphQLClient;
+
 
   constructor(
     protected readonly publicEnv: PublicEnv,
     protected readonly credentials: ApiCredentials,
-  ) {}
+  ) {
+    const client = new GraphQLClient(`${this.publicEnv.API_URL}/v1/graphql`, {
+      fetch: isoFetch,
+      credentials: 'include',
+      mode: 'cors',
+    });
+    this.gqlCLient = client;
+  }
 
 
   /**
@@ -54,21 +65,21 @@ export class ApiConnector {
    * @param variables
    */
   async graphql<T = any, V = Variables>(document: RequestDocument, variables?: V): Promise<T> {
-    const doTry = () => request<T, V>('http://localhost:4000/v1/graphql', document, variables);
+    const doTry = () => this.gqlCLient.request<T, V>(document, variables);
     try {
       await this.credentials.sync();
       const result = await doTry();
       return result;
     } catch(error) {
-      const exception = error?.extensions?.exception;
-      if (!exception) throw error;
+      // const exception = 
+      const exception = normaliseApiException(error);
       if (exception?.code !== 401) throw error;
       const { authenticated } = await this.credentials.forceSync();
       if (authenticated) {
         const result = await doTry();
         return result;
       }
-      throw exception;
+      throw error;
     }
   }
 }

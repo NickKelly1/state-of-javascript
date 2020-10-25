@@ -12,33 +12,53 @@ export class RolePolicy {
   canFindMany(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowRole]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageRole,
+      Permission.ShowRole,
+    ]);
   }
 
   canFindOne(arg: {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.ShowRole]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageRole,
+      Permission.ShowRole,
+    ]);
   }
 
   canCreate(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateRole]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageRole,
+      Permission.CreateRole,
+    ]);
   }
 
   canUpdate(arg: {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateRole]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageRole,
+      Permission.CreateRole,
+    ]);
   }
 
   canDelete(arg: {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([Permission.CreateRole]);
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageRole,
+      Permission.CreateRole,
+    ]);
   }
 }

@@ -1,7 +1,7 @@
 import { GqlQueryInputFactory } from "../../../common/gql/gql.query";
 import { GqlFilterFieldType } from "../../../common/gql/gql.filter.types";
 
-const GqlRolePermissionFilterFields = {
+const RolePermissionGqlFilterFields = {
   id: GqlFilterFieldType.Number,
   role_id: GqlFilterFieldType.Number,
   user_id: GqlFilterFieldType.Number,
@@ -10,7 +10,7 @@ const GqlRolePermissionFilterFields = {
   deleted_at: GqlFilterFieldType.DateTime,
 }
 
-export const GqlRolePermissionQuery = GqlQueryInputFactory({
+export const RolePermissionGqlQuery = GqlQueryInputFactory({
   name: 'RolePermission',
-  filters: GqlRolePermissionFilterFields,
+  filters: RolePermissionGqlFilterFields,
 })

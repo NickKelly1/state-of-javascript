@@ -1,7 +1,8 @@
 import { GraphQLBoolean, GraphQLInt, GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { ICollectionMeta } from "../interfaces/collection-meta.interface";
 
-export const GqlMeta = new GraphQLObjectType<ICollectionMeta>({
+export type IGqlMetaSource = ICollectionMeta;
+export const GqlMeta = new GraphQLObjectType<IGqlMetaSource>({
   name: 'meta',
   fields: {
     limit: { type: new GraphQLNonNull(GraphQLInt), },

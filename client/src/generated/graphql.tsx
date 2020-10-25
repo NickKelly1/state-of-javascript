@@ -13,11 +13,11 @@ export type Scalars = {
 
 export type RootQueryType = {
   __typename?: 'RootQueryType';
-  newsArticles: NewsArticleConnection;
-  users: UserConnection;
-  userRoles: UserRoleConnection;
-  roles: RoleGqlConnection;
-  rolePermissions: RolePermissionConnection;
+  newsArticles: NewsArticleCollectionNode;
+  users: UserCollectionNode;
+  userRoles: UserRoleCollectionNode;
+  roles: RoleCollectionNode;
+  rolePermissions: RolePermissionCollectionNode;
 };
 
 
@@ -45,20 +45,23 @@ export type RootQueryTypeRolePermissionsArgs = {
   query?: Maybe<RolePermissionQuery>;
 };
 
-export type NewsArticleConnection = {
-  __typename?: 'NewsArticleConnection';
-  edges: Array<Maybe<NewsArticleEdge>>;
-  meta: Meta;
+export type NewsArticleCollectionNode = {
+  __typename?: 'NewsArticleCollectionNode';
+  nodes: Array<Maybe<NewsArticleNode>>;
+  can: NewsArticleCollectionActions;
+  pagination: Meta;
 };
 
-export type NewsArticleEdge = {
-  __typename?: 'NewsArticleEdge';
-  node: NewsArticle;
+export type NewsArticleNode = {
+  __typename?: 'NewsArticleNode';
   cursor: Scalars['String'];
+  data: NewsArticleData;
+  can: NewsArticleActions;
+  relations: NewsArticleRelations;
 };
 
-export type NewsArticle = {
-  __typename?: 'NewsArticle';
+export type NewsArticleData = {
+  __typename?: 'NewsArticleData';
   id: Scalars['Int'];
   title: Scalars['String'];
   teaser: Scalars['String'];
@@ -67,84 +70,134 @@ export type NewsArticle = {
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
-  author: UserEdge;
 };
 
 
-export type UserEdge = {
-  __typename?: 'UserEdge';
-  node: User;
+export type NewsArticleActions = {
+  __typename?: 'NewsArticleActions';
+  show: Scalars['Boolean'];
+  update: Scalars['Boolean'];
+  delete: Scalars['Boolean'];
+};
+
+export type NewsArticleRelations = {
+  __typename?: 'NewsArticleRelations';
+  author?: Maybe<UserNode>;
+};
+
+export type UserNode = {
+  __typename?: 'UserNode';
   cursor: Scalars['String'];
+  data: UserData;
+  can: UserActions;
+  relations: UserRelations;
 };
 
-export type User = {
-  __typename?: 'User';
+export type UserData = {
+  __typename?: 'UserData';
   id: Scalars['Int'];
   name: Scalars['String'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
-  userRoleConnection: UserRoleConnection;
-  newsArticleConnection: NewsArticleConnection;
+};
+
+export type UserActions = {
+  __typename?: 'UserActions';
+  show: Scalars['Boolean'];
+  update: Scalars['Boolean'];
+  delete: Scalars['Boolean'];
+};
+
+export type UserRelations = {
+  __typename?: 'UserRelations';
+  userRoles: UserRoleCollectionNode;
+  newsArticles: NewsArticleCollectionNode;
 };
 
 
-export type UserUserRoleConnectionArgs = {
+export type UserRelationsUserRolesArgs = {
   query?: Maybe<UserRoleQuery>;
 };
 
 
-export type UserNewsArticleConnectionArgs = {
+export type UserRelationsNewsArticlesArgs = {
   query?: Maybe<NewsArticleQuery>;
 };
 
-export type UserRoleConnection = {
-  __typename?: 'UserRoleConnection';
-  edges: Array<Maybe<UserRoleEdge>>;
-  meta: Meta;
+export type UserRoleCollectionNode = {
+  __typename?: 'UserRoleCollectionNode';
+  nodes: Array<Maybe<UserRoleNode>>;
+  can: UserRoleCollectionActions;
+  pagination: Meta;
 };
 
-export type UserRoleEdge = {
-  __typename?: 'UserRoleEdge';
-  node: UserRole;
+export type UserRoleNode = {
+  __typename?: 'UserRoleNode';
   cursor: Scalars['String'];
+  data: UserRoleData;
+  can: UserRoleActions;
+  relations: UserRoleRelations;
 };
 
-export type UserRole = {
-  __typename?: 'UserRole';
+export type UserRoleData = {
+  __typename?: 'UserRoleData';
   id: Scalars['Int'];
   user_id: Scalars['Int'];
   role_id: Scalars['Int'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
-  user?: Maybe<UserEdge>;
-  role?: Maybe<RoleEdge>;
 };
 
-export type RoleEdge = {
-  __typename?: 'RoleEdge';
-  node: Role;
+export type UserRoleActions = {
+  __typename?: 'UserRoleActions';
+  show: Scalars['Boolean'];
+  delete: Scalars['Boolean'];
+};
+
+export type UserRoleRelations = {
+  __typename?: 'UserRoleRelations';
+  user?: Maybe<UserNode>;
+  role?: Maybe<RoleNode>;
+};
+
+export type RoleNode = {
+  __typename?: 'RoleNode';
   cursor: Scalars['String'];
+  data: RoleData;
+  can: RoleActions;
+  relations: RoleRelations;
 };
 
-export type Role = {
-  __typename?: 'Role';
+export type RoleData = {
+  __typename?: 'RoleData';
   id: Scalars['Int'];
   name: Scalars['String'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
-  userRoleConnection: UserRoleConnection;
-  rolePermissionConnection: RolePermissionConnection;
+};
+
+export type RoleActions = {
+  __typename?: 'RoleActions';
+  show: Scalars['Boolean'];
+  update: Scalars['Boolean'];
+  delete: Scalars['Boolean'];
+};
+
+export type RoleRelations = {
+  __typename?: 'RoleRelations';
+  userRoles: UserRoleCollectionNode;
+  rolePermissions: RolePermissionCollectionNode;
 };
 
 
-export type RoleUserRoleConnectionArgs = {
+export type RoleRelationsUserRolesArgs = {
   query?: Maybe<UserRoleQuery>;
 };
 
 
-export type RoleRolePermissionConnectionArgs = {
+export type RoleRelationsRolePermissionsArgs = {
   query?: Maybe<RolePermissionQuery>;
 };
 
@@ -221,69 +274,60 @@ export type FilterRangeDateTime = {
   to: Scalars['DateTime'];
 };
 
-export type RolePermissionConnection = {
-  __typename?: 'RolePermissionConnection';
-  edges: Array<Maybe<RolePermissionEdge>>;
-  meta: Meta;
+export type RolePermissionCollectionNode = {
+  __typename?: 'RolePermissionCollectionNode';
+  nodes: Array<Maybe<RolePermissionNode>>;
+  actions: RolePermissionCollectionActions;
+  pagination: Meta;
 };
 
-export type RolePermissionEdge = {
-  __typename?: 'RolePermissionEdge';
-  node: RolePermission;
+export type RolePermissionNode = {
+  __typename?: 'RolePermissionNode';
   cursor: Scalars['String'];
+  data: RolePermissionData;
+  can: RolePermissionActions;
+  relations: RolePermissionRelations;
 };
 
-export type RolePermission = {
-  __typename?: 'RolePermission';
+export type RolePermissionData = {
+  __typename?: 'RolePermissionData';
   id: Scalars['Int'];
   role_id: Scalars['Int'];
   permission_id: Scalars['Int'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
-  role: RoleEdge;
-  permission: PermissionEdge;
 };
 
-export type PermissionEdge = {
-  __typename?: 'PermissionEdge';
-  node: Permission;
-  cursor: Scalars['String'];
+export type RolePermissionActions = {
+  __typename?: 'RolePermissionActions';
+  show: Scalars['Boolean'];
+  delete: Scalars['Boolean'];
 };
 
-export type Permission = {
-  __typename?: 'Permission';
+export type RolePermissionRelations = {
+  __typename?: 'RolePermissionRelations';
+  role?: Maybe<RoleNode>;
+  permission?: Maybe<PermissionData>;
+};
+
+export type PermissionData = {
+  __typename?: 'PermissionData';
   id: Scalars['Int'];
   name: Scalars['String'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
-  rolePermissionConnection: RolePermissionConnection;
 };
 
-
-export type PermissionRolePermissionConnectionArgs = {
-  query?: Maybe<PermissionQuery>;
+export type RolePermissionCollectionActions = {
+  __typename?: 'RolePermissionCollectionActions';
+  show: Action;
+  create: Action;
 };
 
-export type PermissionQuery = {
-  offset?: Maybe<Scalars['Int']>;
-  limit?: Maybe<Scalars['Int']>;
-  sorts?: Maybe<Array<QuerySort>>;
-  filter?: Maybe<Array<PermissionQueryFilterFilterConditionGroup>>;
-};
-
-export type PermissionQueryFilterFilterConditionGroup = {
-  attr?: Maybe<PermissionQueryFilterFilterAttributes>;
-  or?: Maybe<Array<PermissionQueryFilterFilterConditionGroup>>;
-  and?: Maybe<Array<PermissionQueryFilterFilterConditionGroup>>;
-};
-
-export type PermissionQueryFilterFilterAttributes = {
-  id?: Maybe<FilterFieldNumber>;
-  role_id?: Maybe<FilterFieldNumber>;
-  permission_id?: Maybe<FilterFieldNumber>;
-  created_at?: Maybe<FilterFieldDateTime>;
-  updated_at?: Maybe<FilterFieldDateTime>;
+export type Action = {
+  __typename?: 'Action';
+  can: Scalars['Boolean'];
 };
 
 export type Meta = {
@@ -316,6 +360,12 @@ export type RolePermissionQueryFilterFilterAttributes = {
   created_at?: Maybe<FilterFieldDateTime>;
   updated_at?: Maybe<FilterFieldDateTime>;
   deleted_at?: Maybe<FilterFieldDateTime>;
+};
+
+export type UserRoleCollectionActions = {
+  __typename?: 'UserRoleCollectionActions';
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
 };
 
 export type NewsArticleQuery = {
@@ -370,10 +420,23 @@ export type FilterRangeString = {
   to: Scalars['String'];
 };
 
-export type UserConnection = {
-  __typename?: 'UserConnection';
-  edges: Array<Maybe<UserEdge>>;
-  meta: Meta;
+export type NewsArticleCollectionActions = {
+  __typename?: 'NewsArticleCollectionActions';
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
+};
+
+export type UserCollectionNode = {
+  __typename?: 'UserCollectionNode';
+  nodes: Array<Maybe<UserNode>>;
+  can: UserCollectionActions;
+  pagination: Meta;
+};
+
+export type UserCollectionActions = {
+  __typename?: 'UserCollectionActions';
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
 };
 
 export type UserQuery = {
@@ -397,10 +460,17 @@ export type UserQueryFilterFilterAttributes = {
   deleted_at?: Maybe<FilterFieldDateTime>;
 };
 
-export type RoleGqlConnection = {
-  __typename?: 'RoleGqlConnection';
-  edges: Array<Maybe<RoleEdge>>;
-  meta: Meta;
+export type RoleCollectionNode = {
+  __typename?: 'RoleCollectionNode';
+  nodes: Array<Maybe<RoleNode>>;
+  can: RoleCollectionActions;
+  pagination: Meta;
+};
+
+export type RoleCollectionActions = {
+  __typename?: 'RoleCollectionActions';
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
 };
 
 export type RoleQuery = {
@@ -426,24 +496,12 @@ export type RoleQueryFilterFilterAttributes = {
 
 export type RootMutationType = {
   __typename?: 'RootMutationType';
-  createNewsArticle: NewsArticle;
-  login: AuthorisationObject;
-  signup: AuthorisationObject;
+  createNewsArticle: NewsArticleNode;
 };
 
 
 export type RootMutationTypeCreateNewsArticleArgs = {
   dto: CreateNewsArticle;
-};
-
-
-export type RootMutationTypeLoginArgs = {
-  dto: LoginInput;
-};
-
-
-export type RootMutationTypeSignupArgs = {
-  dto: SignupInput;
 };
 
 export type CreateNewsArticle = {
@@ -452,96 +510,88 @@ export type CreateNewsArticle = {
   body: Scalars['String'];
 };
 
-export type AuthorisationObject = {
-  __typename?: 'AuthorisationObject';
-  access_token: Scalars['String'];
-  refresh_token: Scalars['String'];
-  access_token_object: AccessTokenObject;
-  refresh_token_object: RefreshTokenObject;
-};
-
-export type AccessTokenObject = {
-  __typename?: 'AccessTokenObject';
-  user_id: Scalars['Int'];
-  permissions: Array<Scalars['Int']>;
-  iat: Scalars['String'];
-  exp: Scalars['String'];
-};
-
-export type RefreshTokenObject = {
-  __typename?: 'RefreshTokenObject';
-  user_id: Scalars['Int'];
-  iat: Scalars['String'];
-  exp: Scalars['String'];
-};
-
-export type LoginInput = {
-  name: Scalars['String'];
-  password: Scalars['String'];
-};
-
-export type SignupInput = {
-  name: Scalars['String'];
-  password: Scalars['String'];
-};
-
-export type AuthSignupMutationVariables = Exact<{
-  name: Scalars['String'];
-  password: Scalars['String'];
+export type CreateNewsArticleMutationVariables = Exact<{
+  title: Scalars['String'];
+  teaser: Scalars['String'];
+  body: Scalars['String'];
 }>;
 
 
-export type AuthSignupMutation = (
+export type CreateNewsArticleMutation = (
   { __typename?: 'RootMutationType' }
-  & { signup: (
-    { __typename?: 'AuthorisationObject' }
-    & Pick<AuthorisationObject, 'access_token' | 'refresh_token'>
-    & { access_token_object: (
-      { __typename?: 'AccessTokenObject' }
-      & Pick<AccessTokenObject, 'user_id' | 'permissions' | 'iat' | 'exp'>
-    ), refresh_token_object: (
-      { __typename?: 'RefreshTokenObject' }
-      & Pick<RefreshTokenObject, 'user_id' | 'iat' | 'exp'>
+  & { createNewsArticle: (
+    { __typename?: 'NewsArticleNode' }
+    & { data: (
+      { __typename?: 'NewsArticleData' }
+      & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
     ) }
   ) }
 );
 
-export type AuthLoginMutationVariables = Exact<{
-  name: Scalars['String'];
-  password: Scalars['String'];
+export type IndexNewsPageQueryVariables = Exact<{
+  news_offset?: Maybe<Scalars['Int']>;
+  news_limit?: Maybe<Scalars['Int']>;
 }>;
 
 
-export type AuthLoginMutation = (
-  { __typename?: 'RootMutationType' }
-  & { login: (
-    { __typename?: 'AuthorisationObject' }
-    & Pick<AuthorisationObject, 'access_token' | 'refresh_token'>
-    & { access_token_object: (
-      { __typename?: 'AccessTokenObject' }
-      & Pick<AccessTokenObject, 'user_id' | 'permissions' | 'iat' | 'exp'>
-    ), refresh_token_object: (
-      { __typename?: 'RefreshTokenObject' }
-      & Pick<RefreshTokenObject, 'user_id' | 'iat' | 'exp'>
-    ) }
-  ) }
-);
-
-export type CreateNewsArticlePageQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type CreateNewsArticlePageQuery = (
+export type IndexNewsPageQuery = (
   { __typename?: 'RootQueryType' }
   & { newsArticles: (
-    { __typename?: 'NewsArticleConnection' }
-    & { meta: (
+    { __typename?: 'NewsArticleCollectionNode' }
+    & { pagination: (
       { __typename?: 'meta' }
       & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
-    ), edges: Array<Maybe<(
-      { __typename?: 'NewsArticleEdge' }
-      & { node: (
-        { __typename?: 'NewsArticle' }
-        & Pick<NewsArticle, 'id' | 'title' | 'teaser' | 'body' | 'created_at' | 'updated_at' | 'deleted_at'>
+    ), can: (
+      { __typename?: 'NewsArticleCollectionActions' }
+      & Pick<NewsArticleCollectionActions, 'show' | 'create'>
+    ), nodes: Array<Maybe<(
+      { __typename?: 'NewsArticleNode' }
+      & Pick<NewsArticleNode, 'cursor'>
+      & { can: (
+        { __typename?: 'NewsArticleActions' }
+        & Pick<NewsArticleActions, 'show' | 'update' | 'delete'>
+      ), data: (
+        { __typename?: 'NewsArticleData' }
+        & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
+      ), relations: (
+        { __typename?: 'NewsArticleRelations' }
+        & { author?: Maybe<(
+          { __typename?: 'UserNode' }
+          & Pick<UserNode, 'cursor'>
+          & { can: (
+            { __typename?: 'UserActions' }
+            & Pick<UserActions, 'show' | 'update'>
+          ), data: (
+            { __typename?: 'UserData' }
+            & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+          ) }
+        )> }
+      ) }
+    )>> }
+  ) }
+);
+
+export type ViewNewsPageQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ViewNewsPageQuery = (
+  { __typename?: 'RootQueryType' }
+  & { newsArticles: (
+    { __typename?: 'NewsArticleCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'NewsArticleNode' }
+      & { data: (
+        { __typename?: 'NewsArticleData' }
+        & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
+      ), relations: (
+        { __typename?: 'NewsArticleRelations' }
+        & { author?: Maybe<(
+          { __typename?: 'UserNode' }
+          & { data: (
+            { __typename?: 'UserData' }
+            & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+          ) }
+        )> }
       ) }
     )>> }
   ) }

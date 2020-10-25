@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import React, { CSSProperties, ReactNode } from 'react';
 
 const useStyles = makeStyles((theme) => ({
-  centered: {
+  root: {
     padding: theme.spacing(2),
   },
 }));

@@ -1,4 +1,15 @@
-import { Box, Button, Grid, Input, InputLabel, makeStyles, Paper, TextField, Typography, FormHelperText, CircularProgress } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Grid,
+  Input,
+  InputLabel,
+  makeStyles,
+  Paper,
+  TextField,
+  Typography,
+  FormHelperText,
+  CircularProgress } from "@material-ui/core";
 import clsx from 'clsx';
 import { gql } from "graphql-request";
 import React, { useContext, useState } from "react";
@@ -7,10 +18,6 @@ import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { ApiContext } from "../../contexts/api.context";
-import { CreateNewsArticlePageQuery, CreateNewsArticlePageQueryVariables } from "../../generated/graphql";
-import { normaliseError } from "../../helpers/normalise-error.helper";
-import { pretty } from "../../helpers/pretty.helper";
-import { serverSidePropsHandler } from "../../helpers/server-side-props-handler.helper";
 import { OrPromise } from "../../types/or-promise.type";
 
 const useStyles = makeStyles((theme) => ({
@@ -47,9 +54,8 @@ export function RegisterForm(props: IRegisterFormProps) {
 
   const classes = useStyles();
 
-
   interface IRegisterVars { name: string; password: string; };
-  const [doRegister, registerResult] = useMutation<IAuthenticationRo, IApiException, IRegisterVars>(
+  const [doRegister, result] = useMutation<IAuthenticationRo, IApiException, IRegisterVars>(
     async (arg: IRegisterVars): Promise<IAuthenticationRo> => {
       const { name, password } = arg;
       const result = await api.credentials.signUp({ name, password }).catch(rethrow(normaliseApiException));
@@ -66,7 +72,8 @@ export function RegisterForm(props: IRegisterFormProps) {
     password: '',
   });
 
-  const isDisabled = registerResult.isLoading || registerResult.isSuccess;
+  const err = result.error;
+  const isDisabled = result.isLoading || result.isSuccess;
 
   return (
     <Paper className={classes.paper}>
@@ -90,8 +97,8 @@ export function RegisterForm(props: IRegisterFormProps) {
                   disabled={isDisabled}
                   inputProps={{ className: classes.text }}
                   value={signupData.name}
-                  error={!!registerResult.error?.data?.name}
-                  helperText={registerResult.error?.data?.name?.join('\n')}
+                  error={!!err?.data?.name}
+                  helperText={err?.data?.name?.join('\n')}
                   onChange={(evt) => {
                     const value = evt.target.value;
                     setSignupData((prev) => ({ ...prev, name: value }))
@@ -107,18 +114,18 @@ export function RegisterForm(props: IRegisterFormProps) {
                   inputProps={{ className: classes.text }}
                   type="password"
                   value={signupData.password}
-                  error={!!registerResult.error?.data?.password}
-                  helperText={registerResult.error?.data?.password?.join('\n')}
+                  error={!!err?.data?.password}
+                  helperText={err?.data?.password?.join('\n')}
                   onChange={(evt) => {
                     const value = evt.target.value;
                     setSignupData((prev) => ({ ...prev, password: value }))
                   }}
                 />
               </Grid>
-              {registerResult.error && (
+              {err && (
                 <Grid className={classes.centered} item xs={12} sm={12}>
                   <FormHelperText error>
-                    {registerResult.error.message}
+                    {err.message}
                   </FormHelperText>
                 </Grid>
               )}

@@ -1,39 +1,30 @@
-import { GraphQLInt, GraphQLNonNull, GraphQLObjectType } from "graphql";
+import { GraphQLNonNull } from "graphql";
+import { IRolePermissionGqlRelationsSource, RolePermissionGqlRelations } from "./role-permission.gql.relations";
+import { GraphQLObjectType, GraphQLString  } from "graphql";
 import { GqlContext } from "../../../common/classes/gql.context";
 import { RolePermissionModel } from "../role-permission.model";
-import { IRoleGqlEdge, RoleGqlEdge } from "../../role/gql/role.gql.edge";
-import { IPermissionGqlEdge, PermissionGqlEdge } from "../../permission/gql/permission.gql.edge";
-import { AuditableGql } from "../../../common/gql/gql.auditable";
-import { OrNull } from "../../../common/types/or-null.type";
+import { IRolePermissionGqlDataSource, RolePermissionGqlData } from "./role-permission.gql.data";
+import { IRolePermissionGqlActionsSource, RolePermissionGqlActions } from "./role-permission.gql.actions";
 
-
-export type IRolePermissionGqlNode = RolePermissionModel;
-export const RolePermissionGqlNode: GraphQLObjectType<RolePermissionModel, GqlContext> = new GraphQLObjectType<RolePermissionModel, GqlContext>({
-  name: 'RolePermission',
+export type IRolePermissionGqlNodeSource = RolePermissionModel;
+export const RolePermissionGqlNode: GraphQLObjectType<IRolePermissionGqlNodeSource, GqlContext> = new GraphQLObjectType({
+  name: 'RolePermissionNode',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt), },
-    role_id: { type: GraphQLNonNull(GraphQLInt), },
-    permission_id: { type: GraphQLNonNull(GraphQLInt), },
-    ...AuditableGql,
-
-    role: {
-      type: GraphQLNonNull(RoleGqlEdge),
-      resolve: async (parent, args, ctx): Promise<OrNull<IRoleGqlEdge>> => {
-        const model = await ctx.loader.roles.load(parent.role_id);
-        const edge: IRoleGqlEdge = { node: model, cursor: model.id.toString(), };
-        if (!ctx.services.rolePolicy().canFindOne({ model })) return null;
-        return edge;
-      },
+    cursor: {
+      type: GraphQLNonNull(GraphQLString),
+      resolve: (parent): string => `role_permission_${parent.id.toString()}`,
     },
-
-    permission: {
-      type: GraphQLNonNull(PermissionGqlEdge),
-      resolve: async (parent, args, ctx): Promise<OrNull<IPermissionGqlEdge>> => {
-        const model = await ctx.loader.permissions.load(parent.permission_id);
-        const edge: IPermissionGqlEdge = { node: model, cursor: model.id.toString(), };
-        if (!ctx.services.permissionPolicy().canFindOne({ model })) return null;
-        return edge;
-      },
+    data: {
+      type: GraphQLNonNull(RolePermissionGqlData),
+      resolve: (parent): IRolePermissionGqlDataSource => parent,
+    },
+    can: {
+      type: GraphQLNonNull(RolePermissionGqlActions),
+      resolve: (parent): IRolePermissionGqlActionsSource => parent,
+    },
+    relations: {
+      type: GraphQLNonNull(RolePermissionGqlRelations),
+      resolve: (parent): IRolePermissionGqlRelationsSource => parent,
     },
   }),
 });

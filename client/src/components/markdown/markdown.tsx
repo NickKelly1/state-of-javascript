@@ -8,7 +8,7 @@ interface IMarkdownProps {
 
 
 const useStyles = makeStyles((theme) => ({
-  centered: {
+  root: {
     '& a': {
       color: theme.palette.primary.main,
     },

@@ -28,7 +28,7 @@ import { Attempt, attemptAsync, } from '../../helpers/attempted.helper';
 import { NormalisedError } from '../../helpers/normalise-error.helper';
 import { NpmPackagesDashboard } from '../../components/npm-packages-dashboard/npm-packages-dashboard';
 import { WithAttempted } from '../../components/with-attempted/with-attempted';
-import { staticPropsHandler } from '../../helpers/static-props-handler.helper';
+import { staticPathsHandler, staticPropsHandler } from '../../helpers/static-props-handler.helper';
 import { Cms } from '../../cms/cms';
 import { NpmsApi } from '../../npms-api/npms-api';
 
@@ -307,5 +307,12 @@ export const getStaticProps = staticPropsHandler<IHomeProps>(async ({ ctx, cms, 
     // revalidate: false,
   };
 });
+
+export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
+  return {
+    fallback: false,
+    paths: [],
+  };
+})
 
 export default HomePage;

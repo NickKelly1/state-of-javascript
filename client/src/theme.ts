@@ -1,5 +1,21 @@
 import { createMuiTheme } from '@material-ui/core/styles';
 
+
+
+// h1	6rem
+// h2	3.75rem
+// h3	3rem
+// h4	2.125rem
+// h5	1.5rem
+// h6	1.25rem
+
+
+// GitHub
+
+// h1	2em
+// h2	1.5em
+
+
 export enum ThemeColourType {
   primary,
   secondary,
@@ -40,12 +56,29 @@ const bgDark = '#111111';
 const paperDark = '#1E1E1E';
 
 // Create a theme instance.
-const theme = createMuiTheme({
-  // fon
+const theme = createMuiTheme(({
   typography: {
-    fontFamily: [
-      'CascadiaCode',
-    ].join(','),
+    fontFamily: [ 'CascadiaCode', ].join(','),
+
+    h1: { fontSize: '2rem' },
+    h2: { fontSize: '1.75rem' },
+    h3: { fontSize: '1.5rem' },
+    h4: { fontSize: '1.3rem' },
+    h5: { fontSize: '1.25rem' },
+    h6: { fontSize: '1.2rem' },
+    
+    // h1: {
+    //   fontSize: '2.5rem',
+    // },
+    // h2: {
+    //   fontSize: '2rem',
+    // },
+    // h3: {
+    //   fontSize: '1.5rem',
+    // },
+    // h4: {
+    //   fontSize: '2rem',
+    // },
   },
   palette: {
     type: 'dark',
@@ -91,6 +124,13 @@ const theme = createMuiTheme({
     //   // default: '#fff',
     // },
   },
-});
+}));
+
+// theme.overrides = {
+//   ...theme.overrides,
+//   MuiInputLabel: {
+//     ...theme.overrides?.MuiInputLabel,
+//   },
+// }
 
 export default theme;

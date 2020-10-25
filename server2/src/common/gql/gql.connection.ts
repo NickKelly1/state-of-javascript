@@ -7,7 +7,7 @@ import { str } from '../helpers/str';
 
 export interface IGqlConnection<T> {
   edges: T[];
-  meta: ICollectionMeta;
+  pagination: ICollectionMeta;
 }
 
 export const GqlConnection = <TSource, TContext>(arg: {

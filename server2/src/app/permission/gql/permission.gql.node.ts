@@ -1,53 +1,32 @@
-import { GraphQLInt, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
-import { Op } from "sequelize";
-import { PermissionModel } from "../../../circle";
+
+import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
+import { UserModel } from "../../../circle";
 import { GqlContext } from "../../../common/classes/gql.context";
-import { AuditableGql } from "../../../common/gql/gql.auditable";
-import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
-import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
-import { SoftDeleteableGql } from "../../../common/gql/gql.soft-deleteable";
-import { andWhere } from "../../../common/helpers/and-where.helper.ts";
-import { collectionMeta } from "../../../common/responses/collection-meta";
-import { OrNull } from "../../../common/types/or-null.type";
-import { IRolePermissionGqlConnection, RolePermissionGqlConnection } from "../../role-permission/gql/role-permission.gql.connection";
-import { IRolePermissionGqlEdge } from "../../role-permission/gql/role-permission.gql.edge";
-import { RolePermissionField } from "../../role-permission/role-permission.attributes";
-import { GqlPermissionQuery } from "./permission.gql.query";
+import { PermissionModel } from "../permission.model";
+import { IPermissionGqlActionsSource, PermissionGqlActions } from "./permission.gql.actions";
+import { IPermissionGqlRelationsSource, PermissionGqlRelations } from "./permission.gql.relations";
+import { IPermissionGqlDataSource, PermissionGqlData } from "./permission.gql.data";
 
-export type IPermissionGqlNode = PermissionModel;
-export const PermissionGqlNode = new GraphQLObjectType<IPermissionGqlNode, GqlContext>({
-  name: 'Permission',
+export type IPermissionGqlNodeSource = PermissionModel;
+export const PermissionGqlNode: GraphQLObjectType<IPermissionGqlNodeSource, GqlContext> = new GraphQLObjectType({
+  name: 'PermissionNode',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt), },
-    name: { type: GraphQLNonNull(GraphQLString), },
-    ...AuditableGql,
-    ...SoftDeleteableGql,
-
-    rolePermissionConnection: {
-      type: GraphQLNonNull(RolePermissionGqlConnection),
-      args: gqlQueryArg(GqlPermissionQuery),
-      resolve: async (parent, args, ctx): Promise<IRolePermissionGqlConnection> => {
-        const { page, options } = transformGqlQuery(args);
-        const { rows, count } = await ctx.services.rolePermissionRepository().findAllAndCount({
-          runner: null,
-          options: {
-            ...options,
-            where: andWhere([
-              options.where,
-              { [RolePermissionField.permission_id]: { [Op.eq]: parent.id } },
-            ]),
-          }
-        });
-        const meta = collectionMeta({ data: rows, total: count, page });
-        const connection: IRolePermissionGqlConnection = {
-          edges: rows.map((model): OrNull<IRolePermissionGqlEdge> =>
-            ctx.services.rolePermissionPolicy().canFindOne({ model })
-              ? ({ cursor: model.id.toString(), node: model, })
-              : null
-          ),
-          meta,
-        };
-        return connection;
+    cursor: {
+      type: GraphQLNonNull(GraphQLString),
+      resolve: (parent): string => `permission_${parent.id.toString()}`,
+    },
+    data: {
+      type: GraphQLNonNull(PermissionGqlData),
+      resolve: (parent): IPermissionGqlDataSource => parent,
+    },
+    actions: {
+      type: GraphQLNonNull(PermissionGqlActions),
+      resolve: (parent): IPermissionGqlActionsSource => parent,
+    },
+    relations: {
+      type: GraphQLNonNull(PermissionGqlRelations),
+      resolve: function (parent): IPermissionGqlRelationsSource {
+        return parent;
       },
     },
   }),

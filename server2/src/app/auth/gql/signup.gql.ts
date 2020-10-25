@@ -2,7 +2,7 @@ import { GraphQLInputObjectType, GraphQLNonNull, GraphQLObjectType, GraphQLStrin
 import Joi from "joi";
 import { OrNull } from "../../../common/types/or-null.type";
 import { UserPasswordDefinition } from "../../user-password/user-password.definition";
-import { IUserGqlNode, UserGqlNode } from "../../user/gql/user.gql.node";
+import { IUserGqlDataSource, UserGqlData } from "../../user/gql/user.gql.data";
 import { UserDefinition } from "../../user/user.definition";
 import { AccessTokenGqlObj, IAccessToken } from "../token/access.token.gql";
 import { IRefreshToken, RefreshTokenGqlObj } from "../token/refresh.token.gql";
