@@ -1,23 +1,43 @@
-import { Box, Button, Grid, Input, InputLabel, ListItem, makeStyles, Paper, TextField, Typography } from "@material-ui/core";
+import { Box, Button, ButtonGroup, Grid, Input, InputLabel, ListItem, makeStyles, Paper, TextField, Typography } from "@material-ui/core";
 import NextLink from 'next/link';
 import MUILink from '@material-ui/core/Link';
 import { gql } from "graphql-request";
 import React, { useContext, } from "react";
 import { Permission } from "../../../backend-api/services/permission/permission.const";
 import { ApiContext } from "../../../contexts/api.context";
-import { IndexNewsPageQuery as ViewNewsPageQuery, IndexNewsPageQueryVariables } from "../../../generated/graphql";
+import { ViewNewsArticlePageQuery, ViewNewsArticlePageQueryVariables } from "../../../generated/graphql";
 import { ist } from "../../../helpers/ist.helper";
 import { staticPathsHandler, staticPropsHandler } from "../../../helpers/static-props-handler.helper";
+import { Api } from "../../../backend-api/api";
+import { serverSidePropsHandler } from "../../../helpers/server-side-props-handler.helper";
+import { Markdown } from "../../../components/markdown/markdown";
+import { OrNull } from "../../../types/or-null.type";
+import { GetServerSidePropsResult } from "next";
 
 const pageQuery = gql`
-query ViewNewsPage{
+query ViewNewsArticlePage(
+  $news_article_id:Float!
+){
   newsArticles(
     query:{
       offset:0
       limit:1
+      filter:{
+        attr:{
+          id:{
+            eq:$news_article_id
+          }
+        }
+      }
     }
   ){
     nodes{
+      cursor
+      can{
+        show
+        update
+        delete
+      }
       data{
         id
         title
@@ -44,22 +64,17 @@ query ViewNewsPage{
 }
 `;
 
-function ViewNewsArticlePage() {
-  //
-}
-
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    // textAlign: 'center',
   },
   paper: {
     padding: theme.spacing(2),
   },
-  create_btn: {
+  btn_link: {
     '&:hover': {
       textDecoration: 'none',
     },
@@ -67,86 +82,88 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-interface IViewNewsPageProps {
-  query: ViewNewsPageQuery;
+interface IViewNewsArticlePageProps {
+  query: OrNull<ViewNewsArticlePageQuery>;
 }
 
-function ViewNewsPage(props: IViewNewsPageProps) {
+function ViewNewsArticlePage(props: IViewNewsArticlePageProps) {
   const { query } = props;
   const { api, me } = useContext(ApiContext);
-
   const classes = useStyles();
+  const article = query?.newsArticles.nodes[0];
+
+  if (!article) {
+    return (
+      <div>
+        nothing...
+      </div>
+    );
+  }
+
+  // TODO:
+  //  if not found & on client, try to find again after authorizing
+  // const article = query.newsArticles.nodes.forEach(node => node?.relations.)
 
   return (
     <Grid className={classes.root} container spacing={2}>
       <Grid item xs={12}>
-        <Typography component="h1" variant="h1">News</Typography>
-      </Grid>
-      {me?.hasSomePermissions([Permission.CreateNewsArticle]) && (
-        <Grid item xs={12}>
-          <ListItem>
-            <NextLink href="/news/create" passHref>
-              <MUILink className={classes.create_btn} color="inherit">
-                <Button color="primary">
-                  Create article
-                </Button>
-              </MUILink>
-            </NextLink>
-          </ListItem>
-        </Grid>
-      )}
-      <Grid item xs={12}>
         <Grid container spacing={2}>
-          {query.newsArticles.edges.filter(ist.notNullable).map(edge => (
-            <Grid key={edge.node.id} item xs={12}>
-              <Paper>
-                <div>
-                  {edge.node.title}
-                </div>
-                <div>
-                  {edge.node.created_at}
-                </div>
-                <div>
-                  {edge.node.teaser}
-                </div>
-                <div>
-                  {edge.node.body}
-                </div>
-              </Paper>
-            </Grid>
-          ))}
+          <Grid className="centered" item xs={12}>
+            <Typography component="h1" variant="h1">
+              {article.data.title}
+            </Typography>
+          </Grid>
+          <Grid className="centered" item xs={12}>
+            {article.can.update && (
+              <Box m={1}>
+                <NextLink href={`/news/edit/${article.data.id}`} passHref>
+                  <MUILink className={classes.btn_link} color="inherit">
+                    <Button variant="outlined" color="primary">
+                      Edit
+                    </Button>
+                  </MUILink>
+                </NextLink>
+              </Box>
+            )}
+            {article.can.delete && (
+              <Box m={1}>
+                <Button variant="outlined" color="secondary">
+                  Delete
+                </Button>
+              </Box>
+            )}
+          </Grid>
+          <Grid item xs={12}>
+            <Paper className={classes.paper}>
+              <Markdown>
+                {article.data.body}
+              </Markdown>
+            </Paper>
+          </Grid>
         </Grid>
       </Grid>
     </Grid>
   );
 }
 
+async function runPageQuery(arg: { id: number, api: Api }): Promise<ViewNewsArticlePageQuery> {
+  const { id, api } = arg;
+  const query = await api
+    .connector
+    .graphql<ViewNewsArticlePageQuery, ViewNewsArticlePageQueryVariables>(pageQuery, { news_article_id: id });
+  return query;
+}
 
-export const getStaticProps = staticPropsHandler<IViewNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {
-  const query = await api.connector.graphql<ViewNewsPageQuery, IndexNewsPageQueryVariables>(
-    pageQuery,
-    {
-      news_limit: 10,
-      news_offset: 0,
-    },
-  );
-
-  const props: IViewNewsPageProps = {
-    query,
-  };
-
-
-  return {
-    props,
-    // revalidate: false,
-  };
+export const getServerSideProps = serverSidePropsHandler<IViewNewsArticlePageProps>(async ({ api, ctx }) => {
+  let id: OrNull<number> = null;
+  const pId = ctx?.params?.id
+  if (ist.defined(pId)) {
+    if (Array.isArray(pId)) { id = parseInt(pId[0], 10); }
+    else { id = parseInt(pId, 10); }
+  }
+  let query: OrNull<ViewNewsArticlePageQuery> = null;
+  if (ist.defined(id) && Number.isFinite(id)) { query = await runPageQuery({ id, api }); }
+  return { props: { query }, };
 });
 
-export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
-  return {
-    fallback: false,
-    paths: [],
-  };
-})
-
-export default ViewNewsPage;
+export default ViewNewsArticlePage;

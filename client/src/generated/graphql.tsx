@@ -497,6 +497,7 @@ export type RoleQueryFilterFilterAttributes = {
 export type RootMutationType = {
   __typename?: 'RootMutationType';
   createNewsArticle: NewsArticleNode;
+  updateNewsArticle: NewsArticleNode;
 };
 
 
@@ -504,10 +505,22 @@ export type RootMutationTypeCreateNewsArticleArgs = {
   dto: CreateNewsArticle;
 };
 
+
+export type RootMutationTypeUpdateNewsArticleArgs = {
+  dto: UpdateNewsArticle;
+};
+
 export type CreateNewsArticle = {
   title: Scalars['String'];
   teaser: Scalars['String'];
   body: Scalars['String'];
+};
+
+export type UpdateNewsArticle = {
+  id: Scalars['Int'];
+  title?: Maybe<Scalars['String']>;
+  teaser?: Maybe<Scalars['String']>;
+  body?: Maybe<Scalars['String']>;
 };
 
 export type CreateNewsArticleMutationVariables = Exact<{
@@ -520,6 +533,57 @@ export type CreateNewsArticleMutationVariables = Exact<{
 export type CreateNewsArticleMutation = (
   { __typename?: 'RootMutationType' }
   & { createNewsArticle: (
+    { __typename?: 'NewsArticleNode' }
+    & { data: (
+      { __typename?: 'NewsArticleData' }
+      & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
+    ) }
+  ) }
+);
+
+export type EditNewsArticlePageQueryVariables = Exact<{
+  news_article_id: Scalars['Float'];
+}>;
+
+
+export type EditNewsArticlePageQuery = (
+  { __typename?: 'RootQueryType' }
+  & { newsArticles: (
+    { __typename?: 'NewsArticleCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'NewsArticleNode' }
+      & Pick<NewsArticleNode, 'cursor'>
+      & { can: (
+        { __typename?: 'NewsArticleActions' }
+        & Pick<NewsArticleActions, 'show' | 'update' | 'delete'>
+      ), data: (
+        { __typename?: 'NewsArticleData' }
+        & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
+      ), relations: (
+        { __typename?: 'NewsArticleRelations' }
+        & { author?: Maybe<(
+          { __typename?: 'UserNode' }
+          & { data: (
+            { __typename?: 'UserData' }
+            & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+          ) }
+        )> }
+      ) }
+    )>> }
+  ) }
+);
+
+export type UpdateNewsArticleMutationVariables = Exact<{
+  id: Scalars['Int'];
+  title?: Maybe<Scalars['String']>;
+  teaser?: Maybe<Scalars['String']>;
+  body?: Maybe<Scalars['String']>;
+}>;
+
+
+export type UpdateNewsArticleMutation = (
+  { __typename?: 'RootMutationType' }
+  & { updateNewsArticle: (
     { __typename?: 'NewsArticleNode' }
     & { data: (
       { __typename?: 'NewsArticleData' }
@@ -571,16 +635,22 @@ export type IndexNewsPageQuery = (
   ) }
 );
 
-export type ViewNewsPageQueryVariables = Exact<{ [key: string]: never; }>;
+export type ViewNewsArticlePageQueryVariables = Exact<{
+  news_article_id: Scalars['Float'];
+}>;
 
 
-export type ViewNewsPageQuery = (
+export type ViewNewsArticlePageQuery = (
   { __typename?: 'RootQueryType' }
   & { newsArticles: (
     { __typename?: 'NewsArticleCollectionNode' }
     & { nodes: Array<Maybe<(
       { __typename?: 'NewsArticleNode' }
-      & { data: (
+      & Pick<NewsArticleNode, 'cursor'>
+      & { can: (
+        { __typename?: 'NewsArticleActions' }
+        & Pick<NewsArticleActions, 'show' | 'update' | 'delete'>
+      ), data: (
         { __typename?: 'NewsArticleData' }
         & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
       ), relations: (

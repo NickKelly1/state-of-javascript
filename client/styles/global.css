@@ -5,6 +5,14 @@
   align-items: center;
 }
 
+.btn-link:hover {
+  text-decoration: none !important;
+}
+
+.col {
+  flex-direction: column;
+}
+
 .d-flex {
   display: flex;
 }

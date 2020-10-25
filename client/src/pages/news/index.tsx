@@ -13,7 +13,7 @@ import { formatRelative } from 'date-fns';
 import { OrNull } from "../../types/or-null.type";
 import { DateString } from "../../types/date-string.type";
 import { WithMemo } from "../../components/with-memo/with-memo";
-import { INewsArticleTeaserProps, NewsTeaser } from "../../components/news/news-teaser";
+import { INewsArticleTeaserProps, NewsArticleTeaser } from "../../components/news/news-article.teaser";
 
 const pageQuery = gql`
 query IndexNewsPage(
@@ -154,7 +154,7 @@ function IndexNewsPage(props: IIndexNewsPageProps) {
                     },
                   },
                 })}>
-                {(teaserProps) => (<NewsTeaser {...teaserProps} />)}
+                {(teaserProps) => (<NewsArticleTeaser {...teaserProps} />)}
               </WithMemo>
             </Grid>
           ))}

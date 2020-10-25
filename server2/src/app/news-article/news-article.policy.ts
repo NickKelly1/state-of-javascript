@@ -1,5 +1,8 @@
 import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { OrNull } from "../../common/types/or-null.type";
+import { OrNullable } from "../../common/types/or-nullable.type";
 import { Permission } from "../permission/permission.const";
+import { UserModel } from "../user/user.model";
 import { NewsArticleModel } from "./news-article.model";
 
 export class NewsArticlePolicy {
@@ -41,24 +44,54 @@ export class NewsArticlePolicy {
   }
 
   canUpdate(arg: {
+    author: OrNullable<UserModel>;
     model: NewsArticleModel;
   }): boolean {
-    const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([
+    const { author, model } = arg;
+
+    // admin
+    if (this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageNewsArticle,
-      Permission.CreateNewsArticle,
-    ]);
+    ])) {
+      return true;
+    };
+
+    if (!author) return false;
+
+    // is author
+    if (this.ctx.auth.hasAnyPermissions([ Permission.UpdateNewsArticle ])
+      && this.ctx.auth.user_id === author.id
+    ) {
+      return true;
+    }
+
+    return false;
   }
 
   canDelete(arg: {
+    author: OrNullable<UserModel>;
     model: NewsArticleModel;
   }): boolean {
-    const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([
+    const { author, model } = arg;
+
+    // admin
+    if (this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageNewsArticle,
-      Permission.CreateNewsArticle,
-    ]);
+    ])) {
+      return true;
+    };
+
+    if (!author) return false;
+
+    // is author
+    if (this.ctx.auth.hasAnyPermissions([ Permission.DeleteNewsArticle ])
+      && this.ctx.auth.user_id === author.id
+    ) {
+      return true;
+    }
+
+    return false;
   }
 }

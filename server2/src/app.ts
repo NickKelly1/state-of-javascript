@@ -51,7 +51,7 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
     throw error;
   }
 
-  modelsInit({ sequelize });
+  await modelsInit({ sequelize });
 
   // TODO: don't synchronise
   logger.info('syncing...')

@@ -14,6 +14,9 @@ export const ist = {
   undefined: (arg: unknown): arg is undefined => {
     return typeof arg === 'undefined';
   },
+  defined: <T>(arg: T | null | undefined): arg is T => {
+    return typeof arg !== 'undefined' && arg !== null;
+  },
   notUndefined<T>(arg: undefined | T): arg is T {
     return arg !== undefined;
   },

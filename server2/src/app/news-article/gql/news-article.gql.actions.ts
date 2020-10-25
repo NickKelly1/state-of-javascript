@@ -19,14 +19,16 @@ export const NewsArticleGqlActions = new GraphQLObjectType<INewsArticleGqlAction
     },
     update: {
       type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.newsArticlePolicy().canUpdate({ model: parent });
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        const author = await ctx.loader.users.load(parent.author_id);
+        return ctx.services.newsArticlePolicy().canUpdate({ model: parent, author });
       },
     },
     delete: {
       type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.newsArticlePolicy().canDelete({ model: parent });
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        const author = await ctx.loader.users.load(parent.author_id);
+        return ctx.services.newsArticlePolicy().canDelete({ model: parent, author });
       },
     },
   },

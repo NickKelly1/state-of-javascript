@@ -1,8 +1,10 @@
 import { NewsArticleModel } from '../../circle';
+import { ist } from '../../common/helpers/ist.helper';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { UserModel } from '../user/user.model';
 import { ICreateNewsArticleInput } from './dtos/create-news-article.gql';
+import { IUpdateNewsArticleInput } from './dtos/update-news-article.gql';
 
 export class NewsArticleService {
   constructor(
@@ -28,6 +30,23 @@ export class NewsArticleService {
 
     await NewsArticle.save({ transaction });
     return NewsArticle;
+  }
+
+  async update(arg: {
+    runner: QueryRunner;
+    author: UserModel,
+    model: NewsArticleModel;
+    dto: IUpdateNewsArticleInput,
+  }): Promise<NewsArticleModel> {
+    const { runner, author, model, dto } = arg;
+    const { transaction } = runner;
+
+    if (ist.notUndefined(dto.title)) model.title = dto.title;
+    if (ist.notUndefined(dto.teaser)) model.teaser = dto.teaser;
+    if (ist.notUndefined(dto.body)) model.body = dto.body;
+
+    await model.save({ transaction });
+    return model;
   }
 
 

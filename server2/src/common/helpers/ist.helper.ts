@@ -23,6 +23,9 @@ export const ist = {
   notNullable: <T>(arg: OrNullable<T>): arg is T => {
     return arg !== null && arg !== undefined;
   },
+  defined: <T>(arg: OrNullable<T>): arg is T => {
+    return ist.notNullable(arg);
+  },
   null: (arg: unknown): arg is null => {
     return arg === null;
   },

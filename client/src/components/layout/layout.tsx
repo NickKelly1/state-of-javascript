@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(2),
+    paddingBottom: theme.spacing(4),
   },
   footer: {
     top: 'auto',
