@@ -32,6 +32,8 @@ export const Permission = {
   UpdateNewsArticle: 620,
   DeleteNewsArticle: 630,
   ManageNewsArticle: 630,
+
+  ShowNewsArticleStatus: 700,
 } as const;
 export type Permission = typeof Permission;
 export type APermission = Permission[keyof Permission];
@@ -71,4 +73,6 @@ export const PublicPermissions = [
   Permission.UpdateNewsArticle,
   Permission.DeleteNewsArticle,
   Permission.ManageNewsArticle,
+
+  Permission.ShowNewsArticleStatus,
 ];

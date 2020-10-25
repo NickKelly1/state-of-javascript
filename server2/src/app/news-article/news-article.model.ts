@@ -15,15 +15,18 @@ import { UserModel } from '../user/user.model';
 import { pretendSoftDeleteable } from '../../common/schemas/helpers/pretend-soft-deleteable.helper';
 import { NewsArticleDefinition } from './news-article.definition';
 import { SoftDeleteableSchema } from '../../common/schemas/soft-deleteable.schema';
+import { NewsArticleStatusId } from '../news-article-status/news-article-status.id.type';
 
 
 export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticleCreationAttributes> implements INewsArticleAttributes {
   // fields
   [NewsArticleField.id]!: NewsArticleId;
   [NewsArticleField.author_id]!: UserId;
+  [NewsArticleField.status_id]!: NewsArticleStatusId;
   [NewsArticleField.title]!: string;
   [NewsArticleField.teaser]!: string;
   [NewsArticleField.body]!: string;
+  [NewsArticleField.scheduled_for]!: Date;
 
   [NewsArticleField.created_at]!: Date;
   [NewsArticleField.updated_at]!: Date;
@@ -35,6 +38,7 @@ export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticle
 
   // eager loaded associations
   [NewsArticleAssociation.author]?: UserModel;
+  [NewsArticleAssociation.status]?: NewsArticleStatusId;
 
   // associations
   getUser!: BelongsToGetAssociationMixin<UserModel>;
@@ -46,9 +50,11 @@ export const initNewsArticleModel: ModelInitFn = (arg) => {
   NewsArticleModel.init({
     id: AutoIncrementingId,
     author_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, },
+    status_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, },
     title: { type: DataTypes.STRING(NewsArticleDefinition.title.max), allowNull: false, },
     teaser: { type: DataTypes.STRING(NewsArticleDefinition.teaser.max), allowNull: false, },
     body: { type: DataTypes.STRING(NewsArticleDefinition.body.max), allowNull: false, },
+    scheduled_for: { type: DataTypes.DATE, allowNull: true, },
     ...pretendAuditable,
     ...pretendSoftDeleteable,
   }, {

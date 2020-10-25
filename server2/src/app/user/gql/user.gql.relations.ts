@@ -14,6 +14,7 @@ import { IUserRoleCollectionGqlNodeSource, UserRoleCollectionGqlNode } from "../
 import { UserRoleModel } from "../../user-role/user-role.model";
 import { INewsArticleCollectionGqlNodeSource, NewsArticleCollectionGqlNode } from "../../news-article/gql/news-article.collection.gql.node";
 import { NewsArticleModel } from "../../news-article/news-article.model";
+import { NewsArticleField } from "../../news-article/news-article.attributes";
 
 export type IUserGqlRelationsSource = UserModel;
 export const UserGqlRelations = new GraphQLObjectType<IUserGqlRelationsSource, GqlContext>({
@@ -58,7 +59,7 @@ export const UserGqlRelations = new GraphQLObjectType<IUserGqlRelationsSource, G
             ...options,
             where: andWhere([
               options.where,
-              { [UserRoleField.user_id]: { [Op.eq]: parent.id } }
+              { [NewsArticleField.author_id]: { [Op.eq]: parent.id } }
             ]),
           },
         });

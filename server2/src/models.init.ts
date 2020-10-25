@@ -1,4 +1,7 @@
 import { Association, Model, Sequelize } from 'sequelize';
+import { NewsArticleStatusAssociation } from './app/news-article-status/news-article-status.associations';
+import { NewsArticleStatusField } from './app/news-article-status/news-article-status.attributes';
+import { initNewsArticleStatusModel, NewsArticleStatusModel } from './app/news-article-status/news-article-status.model';
 import { NewsArticleAssociation } from './app/news-article/news-article.associations';
 import { NewsArticleField } from './app/news-article/news-article.attributes';
 import { PermissionAssociation } from './app/permission/permission.associations';
@@ -41,6 +44,7 @@ export function modelsInit(arg: { sequelize: Sequelize }) {
   initUserRoleModel({ sequelize });
   initRolePermissionModel({ sequelize });
   initNewsArticleModel({ sequelize });
+  initNewsArticleStatusModel({ sequelize });
 
 
   // user
@@ -72,4 +76,8 @@ export function modelsInit(arg: { sequelize: Sequelize }) {
 
   // news article
   NewsArticleModel.belongsTo(UserModel, { as: NewsArticleAssociation.author, targetKey: UserField.id, foreignKey: NewsArticleField.author_id, })
+  NewsArticleModel.belongsTo(NewsArticleStatusModel, { as: NewsArticleAssociation.status, targetKey: NewsArticleStatusField.id, foreignKey: NewsArticleField.status_id, })
+
+  // news article status
+  NewsArticleStatusModel.hasMany(NewsArticleModel, { as: NewsArticleStatusAssociation.articles, sourceKey: NewsArticleStatusField.id, foreignKey: NewsArticleField.status_id, })
 }

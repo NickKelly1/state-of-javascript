@@ -1,6 +1,6 @@
 import { GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import { CreateNewsArticleValidator, CreateNewsArticleGqlInput } from './app/news-article/dtos/create-news-article.gql';
-import { IUpdateNewsArticleInput, UpdateNewsArticleGqlInput, UpdateNewsArticleValidator } from './app/news-article/dtos/update-news-article.gql';
+import { UpdateNewsArticleGqlInput, UpdateNewsArticleValidator } from './app/news-article/dtos/update-news-article.gql';
 import { INewsArticleGqlNodeSource, NewsArticleGqlNode } from './app/news-article/gql/news-article.gql.node';
 import { NewsArticleAssociation } from './app/news-article/news-article.associations';
 import { NewsArticleModel } from './app/news-article/news-article.model';

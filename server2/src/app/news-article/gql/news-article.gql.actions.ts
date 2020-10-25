@@ -31,5 +31,41 @@ export const NewsArticleGqlActions = new GraphQLObjectType<INewsArticleGqlAction
         return ctx.services.newsArticlePolicy().canDelete({ model: parent, author });
       },
     },
+    submit: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.newsArticlePolicy().canSubmit({ model: parent });
+      },
+    },
+    reject: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.newsArticlePolicy().canReject({ model: parent });
+      },
+    },
+    approve: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.newsArticlePolicy().canApprove({ model: parent });
+      },
+    },
+    publish: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.newsArticlePolicy().canPublish({ model: parent, });
+      },
+    },
+    unpublish: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.newsArticlePolicy().canUnpublish({ model: parent, });
+      },
+    },
+    schedule: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.newsArticlePolicy().canSchedule({ model: parent, });
+      },
+    },
   },
 });

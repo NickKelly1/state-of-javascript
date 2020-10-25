@@ -24,6 +24,9 @@ import { NewsArticleService } from "../../app/news-article/news-article.service"
 import { NewsArticleRepository } from "../../app/news-article/news-article.repository";
 import { NewsArticlePolicy } from "../../app/news-article/news-article.policy";
 import { AuthSerivce } from "../../app/auth/auth.service";
+import { NewsArticleStatusService } from "../../app/news-article-status/news-article-status.service";
+import { NewsArticleStatusRepository } from "../../app/news-article-status/news-article-status.repository";
+import { NewsArticleStatusPolicy } from "../../app/news-article-status/news-article-status.policy";
 
 export interface IServices {
   userService: () => UserService;
@@ -49,6 +52,10 @@ export interface IServices {
   newsArticleService: () => NewsArticleService;
   newsArticleRepository: () => NewsArticleRepository;
   newsArticlePolicy: () => NewsArticlePolicy;
+
+  newsArticleStatusService: () => NewsArticleStatusService;
+  newsArticleStatusRepository: () => NewsArticleStatusRepository;
+  newsArticleStatusPolicy: () => NewsArticleStatusPolicy;
 
   userPasswordService: () => UserPasswordService,
   userPasswordRepository: () => UserPasswordRepository;
