@@ -1,6 +1,6 @@
 export const UserDefinition = {
   name: {
     min: 3,
-    max: 20,
+    max: 50,
   },
 }

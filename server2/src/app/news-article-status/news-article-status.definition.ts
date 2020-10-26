@@ -1,6 +1,6 @@
 export const NewsArticleStatusDefinition = {
   name: {
     min: 0,
-    max: 50,
+    max: 100,
   },
 };

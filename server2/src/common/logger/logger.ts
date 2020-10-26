@@ -1,5 +1,5 @@
 import 'winston-daily-rotate-file';
-import { ROOT_DIR } from '../../root-dir';
+import { ROOT_DIR } from '../../dir';
 import { Writable } from 'stream';
 import winston from 'winston';
 import path from 'path';

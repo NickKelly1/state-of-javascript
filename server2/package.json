@@ -51,6 +51,7 @@
     "@types/passport-local": "^1.0.33",
     "nodemon": "^2.0.4",
     "rimraf": "^3.0.2",
+    "sequelize-cli": "^6.2.0",
     "sqlite3": "^5.0.0",
     "ts-node": "^9.0.0",
     "ts-node-dev": "^1.0.0-pre.63",

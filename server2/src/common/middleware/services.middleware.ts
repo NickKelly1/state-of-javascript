@@ -30,6 +30,9 @@ import { NewsArticleService } from "../../app/news-article/news-article.service"
 import { NewsArticleRepository } from "../../app/news-article/news-article.repository";
 import { NewsArticlePolicy } from "../../app/news-article/news-article.policy";
 import { AuthSerivce } from "../../app/auth/auth.service";
+import { NewsArticleStatusService } from "../../app/news-article-status/news-article-status.service";
+import { NewsArticleStatusRepository } from "../../app/news-article-status/news-article-status.repository";
+import { NewsArticleStatusPolicy } from "../../app/news-article-status/news-article-status.policy";
 
 export const servicesMw = (arg: { env: EnvService, sequelize: Sequelize }) => handler((req: Request, res: Response, next: NextFunction) => {
   // initialise req locals
@@ -62,6 +65,10 @@ export const servicesMw = (arg: { env: EnvService, sequelize: Sequelize }) => ha
       newsArticleService: lazy(() => new NewsArticleService(ctx)),
       newsArticleRepository: lazy(() => new NewsArticleRepository(ctx)),
       newsArticlePolicy: lazy(() => new NewsArticlePolicy(ctx)),
+
+      newsArticleStatusService: lazy(() => new NewsArticleStatusService(ctx)),
+      newsArticleStatusRepository: lazy(() => new NewsArticleStatusRepository(ctx)),
+      newsArticleStatusPolicy: lazy(() => new NewsArticleStatusPolicy(ctx)),
 
       userPasswordService: lazy(() => new UserPasswordService(ctx)),
       userPasswordRepository: lazy(() => new UserPasswordRepository(ctx)),

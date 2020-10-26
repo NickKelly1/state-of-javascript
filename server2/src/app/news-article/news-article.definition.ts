@@ -2,7 +2,7 @@ export const NewsArticleDefinition = {
   title: {
     min: 0,
     // 50 words max
-    max: 50,
+    max: 100,
   },
   teaser: {
     min: 0,

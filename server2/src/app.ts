@@ -15,7 +15,7 @@ import { NotFoundException } from './common/exceptions/types/not-found.exception
 import { logger, loggerStream } from './common/logger/logger';
 import { servicesMw } from './common/middleware/services.middleware';
 import { errorHandlerMw } from './common/middleware/error-handler.middleware';
-import { modelsInit } from './models.init';
+import { initialiseDb } from './initialise-db';
 import { passportMw } from './common/middleware/passport.middleware';
 import { handler } from './common/helpers/handler.helper';
 import { delay } from './common/helpers/delay.helper';
@@ -42,76 +42,19 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   logger.info('booting...');
 
   const sequelize = createSequelize({ env });
-
-  try {
-    // make sure db creds work...
-    const auth = await sequelize.authenticate();
-  } catch (error) {
-    logger.debug('Failed to authenticate...');
-    throw error;
-  }
-
-  await modelsInit({ sequelize });
+  await initialiseDb({ sequelize, env });
 
   // TODO: don't synchronise
-  logger.info('syncing...')
-  await sequelize.sync();
-
-  // initialise domains
-  await sequelize.transaction(async transaction => {
-    const runner = new QueryRunner(transaction);
-    logger.info('Initialising Permissions...');
-    await permissionsInitialise({ env, runner });
-
-    logger.info('Initialising Roles...');
-    await rolesInitialise({ env, runner });
-
-    logger.info('Initialising RolePermissions...');
-    await rolePermissionsInitialise({ env, runner });
-
-    logger.info('Initialising Users...');
-    await usersInitialise({ env, runner });
-
-    logger.info('Initialising UserRoles...');
-    await userRolesInitialise({ env, runner });
-  });
-
+  // logger.info('syncing...')
+  // await sequelize.sync();
 
   const app = new ExpressContext({ root: express() });
 
-  // app.use('/zing', handler(async ()))
-
-  // app.use(function (req, res, next) {
-  //   res.cookie(
-  //     'fuckzaaa',
-  //     'you',
-  //     {
-  //       maxAge: 10,
-  //     },
-  //   );
-  //   next();
-  //   // res
-  //   //   .status(200)
-  //   //   .contentType('json')
-  //   //   .send(prettyQ(JSON.stringify({ hello: ':)' })));
-  // });
-  // app.use(cors({ origin: true, credentials: true }));
-  // app.use(cors({
-  //   origin: '*',
-  //   credentials: true,
-  // }));
+  // TODO: only allow cors @ specific origins...
   app.use(cors((req, done) => done(null, ({
     credentials: true,
     origin: req.headers.origin,
   }))));
-  // app.use(function(req, res, next) {
-  //   res.header('Access-Control-Allow-Credentials', 'true');
-  //   res.header('Access-Control-Allow-Origin', req.headers.origin);
-  //   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS');
-  //   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Set-Cookie');
-  //   next();
-  // });
-  // app.use(cors({ origin: true, credentials: true }));
   app.use(handler(async (req, res, next) => {
     if (env.DELAY) await delay(env.DELAY);
     next();

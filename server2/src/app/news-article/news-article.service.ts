@@ -35,6 +35,11 @@ export class NewsArticleService {
     return NewsArticle;
   }
 
+  /**
+   * Update the model
+   *
+   * @param arg
+   */
   async update(arg: {
     runner: QueryRunner;
     author: UserModel,
@@ -64,6 +69,7 @@ export class NewsArticleService {
     await model.destroy({ transaction });
     return model;
   }
+
 
   /**
    * Submit the news article for approval
@@ -95,6 +101,7 @@ export class NewsArticleService {
     return model;
   }
 
+
   /**
    * Approve the news article for publishing
    *
@@ -110,6 +117,7 @@ export class NewsArticleService {
     await model.save({ transaction });
     return model;
   }
+
 
   /**
    * Schedule the news article for publishing
@@ -128,6 +136,7 @@ export class NewsArticleService {
     return model;
   }
 
+
   /**
    * Publish the news article
    *
@@ -143,6 +152,7 @@ export class NewsArticleService {
     await model.save({ transaction });
     return model;
   }
+
 
   /**
    * Unpublish the news article
