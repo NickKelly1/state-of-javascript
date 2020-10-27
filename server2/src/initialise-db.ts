@@ -33,10 +33,9 @@ import {
   initNewsArticleModel,
 } from './circle';
 import { logger } from './common/logger/logger';
-import fs, { Dirent } from 'fs';
 import path from 'path';
 import { EnvService } from './common/environment/env';
-import { IMigration } from './common/interfaces/migration.interface';
+import { IMigration } from './common/migration/interfaces/migration.interface';
 import { $TS_DANGER } from './common/types/$ts-danger.type';
 import { usersInitialise } from './app/user/users.initialise';
 import { userRolesInitialise } from './app/user-role/user-roles.initialise';
@@ -55,7 +54,59 @@ import { id } from './common/schemas/constants/id.const';
 import { AutoIncrementingId } from './common/schemas/auto-incrementing-id.schema';
 import { AuditableSchema } from './common/schemas/auditable.schema';
 import { OrUndefined } from './common/types/or-undefined.type';
-import { lstat, readdir } from 'fs/promises';
+import fs from 'fs/promises';
+import { Dirent } from 'fs';
+import { prettyQ } from './common/helpers/pretty.helper';
+
+// interface IMigrationDescriptor {
+//   number: number;
+//   name: string;
+//   file: string;
+//   Ctor: IConstructor<IMigration>
+// }
+
+
+// async function deepScanMigrationDescriptors(currentDirectory: string): Promise<IMigrationDescriptor[]> {
+//   logger.debug(`scanning for migrations "${currentDirectory}"...`);
+//   const topLevelFiles = await fs.readdir(currentDirectory, { withFileTypes: true });
+//   const nestedDescriptors = await Promise.all(topLevelFiles.map(async (file): Promise<IMigrationDescriptor[]> => {
+//     const filePath = path.join(currentDirectory, file.name);
+
+//     // file -> get migration descriptor
+//     if (file.isFile()) {
+//       const match = file.name.match(/^\d+/);
+//       if (!match?.[0]) { throw new TypeError(`File name "${file.name}" does not start with a number`) }
+//       const number = parseInt(match.toString(), 10);
+//       if (!Number.isFinite(number)) throw new Error(`Unexpected migration number "${match[0][0]}" for file "${filePath}"`);
+//       const imp = await import(filePath);
+//       let mig: IMigrationDescriptor;
+//       // assume import is ctor
+//       if (imp instanceof Function) { mig = { number, file: filePath, name: file.name, Ctor: imp, } }
+//       // import might have a .default with the default import
+//       else if (ist.obj(imp)) {
+//         if (ist.keyof(imp, 'default')) { mig = { number, file: filePath, name: file.name, Ctor: imp.default }; }
+//         else { throw new Error(`Unexpected migration file import ${prettyQ(imp)}`); }
+//       }
+//       // import is not a function or object
+//       else { throw new Error(`Unexpected migration file import ${prettyQ(imp)}`) }
+//       logger.debug(`parsed migration "${number}" - "${file.name}"`);
+//       const result: IMigrationDescriptor[] = [mig];
+//       return result;
+//     }
+
+//     // directory -> go deeper
+//     else if (file.isDirectory()) {
+//       const result = await deepScanMigrationDescriptors(filePath);
+//       return result;
+//     }
+
+//     // not directory or file -> throw
+//     else { throw new Error(`Unexpected migration file type "${filePath}"`); }
+//   }));
+
+//   // sort numerically on "MigrationDescriptor.number"
+//   return nestedDescriptors.flat().sort((a, b) => a.number - b.number);
+// }
 
 
 /**
@@ -85,9 +136,14 @@ export async function initialiseDb(arg: {
   }
 
   await sequelize.transaction(async (transaction) => {
-    const qInterface = sequelize.getQueryInterface();
-    await qInterface.startTransaction(transaction);
-    await initialiseWithTransaction({ sequelize, qInterface, transaction, env });
+    try {
+      const qInterface = sequelize.getQueryInterface();
+      await qInterface.startTransaction(transaction);
+      await initialiseWithTransaction({ sequelize, qInterface, transaction, env });
+    } catch (error) {
+      logger.error(`Failed to initialise database: ${prettyQ(error)}`);
+      throw error;
+    }
   });
 }
 
@@ -114,118 +170,7 @@ async function initialiseWithTransaction(arg: {
   // --- run migrations ---
   // ----------------------
 
-  // initialise the migrations table
-  interface IMigrationAttributes extends IAuditable {
-    id: number;
-    path: string;
-    file: string;
-    number: number;
-    batch: number;
-  }
 
-  interface IMigrationCreationAttributes extends Optional<IMigrationAttributes, | id | created_at | updated_at > {};
-
-  class MigrationModel extends Model<IMigrationAttributes, IMigrationCreationAttributes> implements IMigrationAttributes {
-    id!: number;
-    path!: string;
-    file!: string;
-    number!: number;
-    batch!: number;
-    [created_at]!: Date;
-    [updated_at]!: Date;
-  }
-
-  type _migrations = '_migrations';
-  const _migrations: _migrations = '_migrations'
-
-  // initialise in database
-  const allTables = await qInterface.showAllTables({ transaction });
-  const migrationsTable = allTables.find(table => table === _migrations);
-  if (ist.nullable(migrationsTable)) {
-    logger.info(`creating ${_migrations} table...`);
-    await qInterface.createTable<Model<IMigrationAttributes>>(
-      { tableName: _migrations, },
-      {
-        id: { primaryKey: true, autoIncrement: true, type: DataTypes.INTEGER.UNSIGNED },
-        path: { type: DataTypes.STRING(600), unique: true, allowNull: false },
-        file: { type: DataTypes.STRING(300), unique: true, allowNull: false },
-        number: { type: DataTypes.INTEGER, unique: true, allowNull: false },
-        batch: { type: DataTypes.INTEGER, allowNull: false },
-        [created_at]: { type: DataTypes.DATE, allowNull: false, },
-        [updated_at]: { type: DataTypes.DATE, allowNull: false, },
-      },
-      { transaction, },
-    );
-  }
-
-  // initialise in sequelize
-  MigrationModel.init({
-    id: AutoIncrementingId,
-    file: { type: DataTypes.STRING(600), unique: true, allowNull: false, },
-    path: { type: DataTypes.STRING(300), unique: true, allowNull: false, },
-    number: { type: DataTypes.INTEGER, unique: true, allowNull: false, },
-    batch: { type: DataTypes.INTEGER, unique: true, allowNull: false, },
-    ...pretendAuditable,
-  }, {
-    sequelize,
-    tableName: _migrations,
-    ...AuditableSchema,
-  });
-
-  // find previous migraitons
-  const pastMigrations = await MigrationModel.findAll({ transaction });
-  const maxPastMigration: OrUndefined<MigrationModel> = pastMigrations.sort()[pastMigrations.length - 1];
-
-  // scan for useable migrations
-
-  async function getAllFiles(arg: { file: string, dirent: Dirent }): Promise<string[]> {
-    const { file, dirent } = arg;
-
-    if (dirent.isDirectory()) {
-      const dirs = await readdir(file, { withFileTypes: true });
-      const subFiles = await Promise.all(dirs.map(dirent => getAllFiles({
-        file: path.join(file, dirent.name),
-        dirent,
-      })));
-      return subFiles.flat();
-    }
-
-    if (dirent.isFile()) {
-      return [file];
-    }
-
-    // don't go into symbolic links...
-
-    throw new Error('unhandled...');
-  }
-
-  // readdir()
-
-
-
-  const migrationFiles = await new Promise<string[]>((res, rej) => fs.readdir(
-    env.MIGRATIONS_DIR,
-    (err, files) => err
-      ? rej(err)
-      : res(files
-        // only include migrations newer than the most recently run migraiton
-        .filter((file) => ist.nullable(maxPastMigration) || (file > maxPastMigration.file))
-        // get absolute path
-        .map(file => path.join(env.MIGRATIONS_DIR, `/${file}`))
-        // sort files alphabetically
-        .sort()
-      )),
-  );
-
-  logger.info(`found "${pastMigrations.length}" ran migrations and "${migrationFiles.length}" pending migrations`);
-
-  // extract migrations classes
-  const migrations: IConstructor<IMigration>[] = await Promise.all(migrationFiles.map(file => import(file).then(result => result.default) as $TS_DANGER<Promise<IConstructor<IMigration>>>));
-
-  for (const Migration of migrations) {
-    const migration = new Migration();
-    await migration.up(qInterface, transaction, sequelize);
-  }
 
 
   // --------------

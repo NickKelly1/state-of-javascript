@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./dist/www.js",
+    "start": "node ./dist/scripts/www.js",
     "build": "rimraf ./dist && tsc",
-    "dev": "ts-node-dev --notify false --respawn src/www.ts"
+    "dev": "ts-node-dev --notify false --respawn src/scripts/www.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

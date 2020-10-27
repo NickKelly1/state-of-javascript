@@ -31,7 +31,7 @@ export const Permission = {
   CreateNewsArticle: 610,
   UpdateNewsArticle: 620,
   DeleteNewsArticle: 630,
-  ManageNewsArticle: 630,
+  ManageNewsArticle: 640,
 
   ShowNewsArticleStatus: 700,
 } as const;

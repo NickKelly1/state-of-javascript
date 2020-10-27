@@ -3,11 +3,11 @@
  */
 
 import http from 'http';
-import { bootApp } from './app';
-import { ExpressContext } from './common/classes/express-context';
-import { $TS_FIX_ME } from './common/types/$ts-fix-me.type';
-import { EnvService, EnvServiceSingleton } from './common/environment/env';
-import { logger } from './common/logger/logger';
+import { bootApp } from '../app';
+import { ExpressContext } from '../common/classes/express-context';
+import { $TS_FIX_ME } from '../common/types/$ts-fix-me.type';
+import { EnvService, EnvServiceSingleton } from '../common/environment/env';
+import { logger } from '../common/logger/logger';
 
 async function bootServer(arg: { env: EnvService }) {
   const { env } = arg;

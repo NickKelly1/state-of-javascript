@@ -1,5 +1,5 @@
 import { QueryInterface, Sequelize, DataTypes, Transaction } from "sequelize";
-import { IMigration } from "../../common/interfaces/migration.interface";
+import { IMigration } from "../../common/migration/interfaces/migration.interface";
 import { AutoIncrementingId } from "../../common/schemas/auto-incrementing-id.schema";
 
 // name for debugging purposes only

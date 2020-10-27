@@ -1,5 +1,5 @@
 import { QueryInterface, Sequelize, DataTypes, Transaction } from "sequelize";
-import { IMigration } from "../../common/interfaces/migration.interface";
+import { IMigration } from "../../common/migration/interfaces/migration.interface";
 import { AutoIncrementingId } from "../../common/schemas/auto-incrementing-id.schema";
 
 // name for debugging purposes only
@@ -7,9 +7,10 @@ export default class implements IMigration {
   tag = __filename;
 
   up = async (qInterface: QueryInterface, transaction: Transaction, sequelize: Sequelize) => {
-    await qInterface.createTable('news_article_statuses', {
-      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false },
-      name: { type: DataTypes.STRING(100), allowNull: false },
+    await qInterface.createTable('user_roles', {
+      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false, },
+      user_id: { type: DataTypes.INTEGER, references: { model: 'users', key: 'id' }, allowNull: false, },
+      role_id: { type: DataTypes.INTEGER, references: { model: 'roles', key: 'id' }, allowNull: false, },
       created_at: { type: DataTypes.DATE, allowNull: false },
       updated_at: { type: DataTypes.DATE, allowNull: false },
     }, { transaction });
@@ -17,7 +18,7 @@ export default class implements IMigration {
 
   down = async (qInterface: QueryInterface, transaction: Transaction, sequelize: Sequelize) => {
     await qInterface.dropTable(
-      'news_article_statuses',
+      'user_roles',
       { transaction },
     );
   };
