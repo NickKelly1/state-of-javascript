@@ -33,80 +33,15 @@ import {
   initNewsArticleModel,
 } from './circle';
 import { logger } from './common/logger/logger';
-import path from 'path';
 import { EnvService } from './common/environment/env';
-import { IMigration } from './common/migration/interfaces/migration.interface';
-import { $TS_DANGER } from './common/types/$ts-danger.type';
 import { usersInitialise } from './app/user/users.initialise';
 import { userRolesInitialise } from './app/user-role/user-roles.initialise';
 import { rolePermissionsInitialise } from './app/role-permission/role-permissions.initialise';
 import { rolesInitialise } from './app/role/roles.initialise';
 import { permissionsInitialise } from './app/permission/permissions.initialise';
 import { QueryRunner } from './app/db/query-runner';
-import { IConstructor } from './common/interfaces/constructor.interface';
-import { OrNullable } from './common/types/or-nullable.type';
-import { ist } from './common/helpers/ist.helper';
-import { pretendAuditable } from './common/schemas/helpers/pretend-auditable.helper';
-import { created_at } from './common/schemas/constants/created_at.const';
-import { updated_at } from './common/schemas/constants/updated_at.const';
-import { IAuditable } from './common/interfaces/auditable.interface';
-import { id } from './common/schemas/constants/id.const';
-import { AutoIncrementingId } from './common/schemas/auto-incrementing-id.schema';
-import { AuditableSchema } from './common/schemas/auditable.schema';
-import { OrUndefined } from './common/types/or-undefined.type';
-import fs from 'fs/promises';
-import { Dirent } from 'fs';
 import { prettyQ } from './common/helpers/pretty.helper';
-
-// interface IMigrationDescriptor {
-//   number: number;
-//   name: string;
-//   file: string;
-//   Ctor: IConstructor<IMigration>
-// }
-
-
-// async function deepScanMigrationDescriptors(currentDirectory: string): Promise<IMigrationDescriptor[]> {
-//   logger.debug(`scanning for migrations "${currentDirectory}"...`);
-//   const topLevelFiles = await fs.readdir(currentDirectory, { withFileTypes: true });
-//   const nestedDescriptors = await Promise.all(topLevelFiles.map(async (file): Promise<IMigrationDescriptor[]> => {
-//     const filePath = path.join(currentDirectory, file.name);
-
-//     // file -> get migration descriptor
-//     if (file.isFile()) {
-//       const match = file.name.match(/^\d+/);
-//       if (!match?.[0]) { throw new TypeError(`File name "${file.name}" does not start with a number`) }
-//       const number = parseInt(match.toString(), 10);
-//       if (!Number.isFinite(number)) throw new Error(`Unexpected migration number "${match[0][0]}" for file "${filePath}"`);
-//       const imp = await import(filePath);
-//       let mig: IMigrationDescriptor;
-//       // assume import is ctor
-//       if (imp instanceof Function) { mig = { number, file: filePath, name: file.name, Ctor: imp, } }
-//       // import might have a .default with the default import
-//       else if (ist.obj(imp)) {
-//         if (ist.keyof(imp, 'default')) { mig = { number, file: filePath, name: file.name, Ctor: imp.default }; }
-//         else { throw new Error(`Unexpected migration file import ${prettyQ(imp)}`); }
-//       }
-//       // import is not a function or object
-//       else { throw new Error(`Unexpected migration file import ${prettyQ(imp)}`) }
-//       logger.debug(`parsed migration "${number}" - "${file.name}"`);
-//       const result: IMigrationDescriptor[] = [mig];
-//       return result;
-//     }
-
-//     // directory -> go deeper
-//     else if (file.isDirectory()) {
-//       const result = await deepScanMigrationDescriptors(filePath);
-//       return result;
-//     }
-
-//     // not directory or file -> throw
-//     else { throw new Error(`Unexpected migration file type "${filePath}"`); }
-//   }));
-
-//   // sort numerically on "MigrationDescriptor.number"
-//   return nestedDescriptors.flat().sort((a, b) => a.number - b.number);
-// }
+import { migrateScriptUp } from './common/migration/migration.script.up';
 
 
 /**
@@ -167,11 +102,9 @@ async function initialiseWithTransaction(arg: {
   } = arg;
 
   // ----------------------
-  // --- run migrations ---
+  // --- run all migrations ---
   // ----------------------
-
-
-
+  await migrateScriptUp();
 
   // --------------
   // --- models ---

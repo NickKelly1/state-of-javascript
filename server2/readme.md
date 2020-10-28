@@ -16,3 +16,16 @@ TODO:
 
 Creating migration
   
+## Migrations
+
+Migration scripts are inside `src/scripts`
+
+### Migration:up
+
+To run migrations up, use the npm cli to run the `package.json` script: `npm run migrate:up -- --step=2`
+
+### MIgrations::down
+
+To run migrations down, use the npm cli to run the `package.json` script: `npm run migrate:down -- --step=2`
+
+To run migrations up, use the npm cli to run the `package.json` script: `npm run migrate:up -- --step=2`

@@ -1,5 +1,5 @@
 import { QueryInterface, Sequelize, DataTypes, Transaction } from "sequelize";
-import { IMigration } from "../../common/migration/interfaces/migration.interface";
+import { IMigration } from "../../common/migration/migration.interface";
 
 // name for debugging purposes only
 export default class implements IMigration {
