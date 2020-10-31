@@ -9,7 +9,7 @@ const GqlUserFilterFields = {
   deleted_at: GqlFilterFieldType.DateTime,
 }
 
-export const GqlUserCollectionOptionsGqlInput = GqlCollectionOptionsInputFactory({
+export const UserCollectionOptionsGqlInput = GqlCollectionOptionsInputFactory({
   name: 'User',
   filters: GqlUserFilterFields,
 })

@@ -1,4 +1,4 @@
-import { RoleModel, UserRoleModel } from "../../../circle";
+import { PermissionModel, RoleModel, UserModel, UserRoleModel } from "../../../circle";
 import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
 import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
 import { andWhere } from "../../../common/helpers/and-where.helper.ts";
@@ -14,6 +14,13 @@ import { RolePermissionCollectionOptionsGqlInput } from "../../role-permission/g
 import { RolePermissionField } from "../../role-permission/role-permission.attributes";
 import { RolePermissionModel } from "../../role-permission/role-permission.model";
 import { GqlContext } from "../../../common/context/gql.context";
+import { PermissionAssociation } from "../../permission/permission.associations";
+import { RoleField } from "../role.attributes";
+import { PermissionCollectionGqlNode, IPermissionCollectionGqlNodeSource } from "../../permission/gql/permission.collection.gql.node";
+import { PermissionCollectionOptionsGqlInput } from "../../permission/gql/permission.collection.gql.options";
+import { UserCollectionGqlNode, IUserCollectionGqlNodeSource } from "../../user/gql/user.collection.gql.node";
+import { UserAssociation } from "../../user/user.associations";
+import { UserCollectionOptionsGqlInput } from "../../user/gql/user.collection.gql.options";
 
 export type IRoleGqlRelationsSource = RoleModel;
 export const RoleGqlRelations = new GraphQLObjectType<IRoleGqlRelationsSource, GqlContext>({
@@ -76,5 +83,62 @@ export const RoleGqlRelations = new GraphQLObjectType<IRoleGqlRelationsSource, G
       },
     },
 
+    permissions: {
+      type: GraphQLNonNull(PermissionCollectionGqlNode),
+      args: gqlQueryArg(PermissionCollectionOptionsGqlInput),
+      resolve: async (parent, args, ctx): Promise<IPermissionCollectionGqlNodeSource> => {
+        const { page, options } = transformGqlQuery(args);
+        const { rows, count } = await ctx.services.permissionRepository.findAllAndCount({
+          runner: null,
+          options: {
+            ...options,
+            where: andWhere([ options.where, ]),
+            include: [{
+              association: PermissionAssociation.roles,
+              where: { [RoleField.id]: { [Op.eq]: parent.id }, },
+            }]
+          },
+        });
+        const pagination = collectionMeta({ data: rows, total: count, page });
+        const connection: IPermissionCollectionGqlNodeSource = {
+          models: rows.map((model): OrNull<PermissionModel> =>
+            ctx.services.permissionPolicy.canFindOne({ model })
+              ? model
+              : null
+          ),
+          pagination,
+        };
+        return connection;
+      },
+    },
+
+    users: {
+      type: GraphQLNonNull(UserCollectionGqlNode),
+      args: gqlQueryArg(UserCollectionOptionsGqlInput),
+      resolve: async (parent, args, ctx): Promise<IUserCollectionGqlNodeSource> => {
+        const { page, options } = transformGqlQuery(args);
+        const { rows, count } = await ctx.services.userRepository.findAllAndCount({
+          runner: null,
+          options: {
+            ...options,
+            where: andWhere([ options.where, ]),
+            include: [{
+              association: UserAssociation.roles,
+              where: { [RoleField.id]: { [Op.eq]: parent.id }, },
+            }]
+          },
+        });
+        const pagination = collectionMeta({ data: rows, total: count, page });
+        const connection: IUserCollectionGqlNodeSource = {
+          models: rows.map((model): OrNull<UserModel> =>
+            ctx.services.userPolicy.canFindOne({ model })
+              ? model
+              : null
+          ),
+          pagination,
+        };
+        return connection;
+      },
+    },
   }),
 });

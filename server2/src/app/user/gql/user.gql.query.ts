@@ -6,12 +6,12 @@ import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
 import { collectionMeta } from "../../../common/responses/collection-meta";
 import { OrNull } from "../../../common/types/or-null.type";
 import { IUserCollectionGqlNodeSource, UserCollectionGqlNode } from "./user.collection.gql.node";
-import { GqlUserCollectionOptionsGqlInput } from "./user.collection.gql.options";
+import { UserCollectionOptionsGqlInput } from "./user.collection.gql.options";
 
 export const UserGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = () => ({
   users: {
     type: GraphQLNonNull(UserCollectionGqlNode),
-    args: gqlQueryArg(GqlUserCollectionOptionsGqlInput),
+    args: gqlQueryArg(UserCollectionOptionsGqlInput),
     resolve: async (parent, args, ctx): Promise<IUserCollectionGqlNodeSource> => {
       ctx.authorize(ctx.services.userPolicy.canFindMany());
       const { page, options } = transformGqlQuery(args);

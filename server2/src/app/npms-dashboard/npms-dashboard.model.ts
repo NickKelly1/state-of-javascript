@@ -30,7 +30,7 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
 
   // associations
   getItems!: HasManyGetAssociationsMixin<NpmsDashboardItemModel>;
-  getPackages!: BelongsToManyGetAssociationsMixin<NpmsDashboardModel>;
+  getNpmsPackages!: BelongsToManyGetAssociationsMixin<NpmsDashboardModel>;
 }
 
 
