@@ -34,45 +34,25 @@ export const Permission = {
   ManageNewsArticle: 640,
 
   ShowNewsArticleStatus: 700,
+
+  ShowNpmsRecord: 800,
+  CreateNpmsRecord: 810,
+  UpdateNpmsRecord: 820,
+  DeleteNpmsRecord: 830,
+  ManageNpmsRecords: 840,
+
+  ShowNpmsDashboard: 900,
+  CreateNpmsDashboard: 910,
+  UpdateNpmsDashboard: 920,
+  DeleteNpmsDashboard: 930,
+  ManageNpmsDashboard: 940,
+
+  ShowNpmsDashboardItem: 1000,
+  CreateNpmsDashboardItem: 1010,
+  UpdateNpmsDashboardItem: 1020,
+  DeleteNpmsDashboardItem: 1030,
+  ManageNpmsDashboardItem: 1040,
 } as const;
 export type Permission = typeof Permission;
 export type APermission = Permission[keyof Permission];
 
-
-export const PublicPermissions = [
-  Permission.SuperAdmin,
-
-  Permission.ShowUser,
-  Permission.CreateUser,
-  Permission.UpdateUser,
-  Permission.DeleteUser,
-  Permission.ManageUser,
-
-  Permission.ShowRole,
-  Permission.CreateRole,
-  Permission.UpdateRole,
-  Permission.DeleteRole,
-  Permission.ManageRole,
-
-  Permission.ShowPermission,
-
-  Permission.ShowUserRole,
-  Permission.CreateUserRole,
-  Permission.UpdateUserRole,
-  Permission.DeleteUserRole,
-  Permission.ManageUserRole,
-
-  Permission.ShowRolePermission,
-  Permission.CreateRolePermission,
-  Permission.UpdateRolePermission,
-  Permission.DeleteRolePermission,
-  Permission.ManageRolePermission,
-
-  Permission.ShowNewsArticle,
-  Permission.CreateNewsArticle,
-  Permission.UpdateNewsArticle,
-  Permission.DeleteNewsArticle,
-  Permission.ManageNewsArticle,
-
-  Permission.ShowNewsArticleStatus,
-];

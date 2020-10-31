@@ -1,5 +1,5 @@
 import { GraphQLInt, GraphQLNonNull, GraphQLObjectType } from "graphql";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { RolePermissionModel } from "../role-permission.model";
 import { AuditableGql } from "../../../common/gql/gql.auditable";
 import { OrNull } from "../../../common/types/or-null.type";

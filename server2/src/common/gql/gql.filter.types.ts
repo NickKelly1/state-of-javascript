@@ -8,7 +8,7 @@ import {
   GraphQLString,
 } from "graphql";
 import { ucFirst } from "../helpers/uc-first.helper";
-import { GqlDateTimeScalar } from "./gql.date-time";
+import { GqlDateTimeScalar } from "./gql.date-time.scalar";
 
 export const GqlFilterRangeDateTime: GraphQLInputObjectType = new GraphQLInputObjectType({
   name: 'FilterRangeDateTime',

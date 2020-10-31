@@ -3,7 +3,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
 } from "graphql";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { GqlAction, IGqlActionSource } from "../../../common/gql/gql.action";
 import { RolePermissionModel } from "../role-permission.model";
 
@@ -15,13 +15,13 @@ export const RolePermissionGqlActions = new GraphQLObjectType<IRolePermissionGql
     show: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.rolePermissionPolicy().canFindOne({ model: parent });
+        return ctx.services.rolePermissionPolicy.canFindOne({ model: parent });
       },
     },
     delete: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.rolePermissionPolicy().canDelete({ model: parent });
+        return ctx.services.rolePermissionPolicy.canDelete({ model: parent });
       },
     },
   },

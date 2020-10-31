@@ -6,3 +6,6 @@ export * from './app/user-role/user-role.model';
 export * from './app/role-permission/role-permission.model';
 export * from './app/news-article/news-article.model';
 export * from './app/news-article-status/news-article-status.model';
+export * from './app/npms-package/npms-package.model';
+export * from './app/npms-dashboard/npms-dashboard.model';
+export * from './app/npms-dashboard-item/npms-dashboard-item.model';

@@ -4,7 +4,7 @@ import { IRequestContext } from '../../common/interfaces/request-context.interfa
 
 export class HashService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    //
   ) {
     //
   }

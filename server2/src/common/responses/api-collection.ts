@@ -9,6 +9,6 @@ export function apiCollection<T>(arg: {
   page: IPaginateInput,
 }): IApiCollection<T> {
   const { data, page, total } = arg;
-  const meta = collectionMeta({ data, total, page });
-  return { data, meta };
+  const pagination = collectionMeta({ data, total, page });
+  return { data, pagination };
 }

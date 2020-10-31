@@ -59,7 +59,7 @@ export class Exception extends Error {
   }
 
   toJson(): IJson {
-    if (this.ctx.services.env().is_prod()) {
+    if (this.ctx.services.universal.env.is_prod()) {
       return this.toJsonProd();
     }
     return this.toJsonDev();

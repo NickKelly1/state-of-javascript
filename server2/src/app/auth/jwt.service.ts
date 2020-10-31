@@ -18,16 +18,34 @@ export class JwtService {
     //
   }
 
+
+  /**
+   * In how many seconds does the thing expire?
+   *
+   * @param hasExp
+   */
   protected expiresInSeconds(hasExp: { exp: number }): number {
     const { exp } = hasExp;
     return Math.round(exp - Date.now());
   }
 
+
+  /**
+   * Is the thing expired?
+   *
+   * @param hasExp
+   */
   isExpired(hasExp: { exp: number }): boolean {
     const { exp } = hasExp;
     return this.expiresInSeconds({ exp }) <= 0;
   }
 
+
+  /**
+   * Decode the access token
+   *
+   * @param arg
+   */
   decodeAccessToken(arg: { token: string }): Either<Exception, IAccessToken> {
     const { token } = arg;
 
@@ -51,6 +69,12 @@ export class JwtService {
     return validation;
   }
 
+
+  /**
+   * Decode the refresh token
+   *
+   * @param arg
+   */
   decodeRefreshToken(arg: { token: string }): Either<Exception, IRefreshToken> {
     const { token } = arg;
 
@@ -74,10 +98,16 @@ export class JwtService {
     return validation;
   }
 
+
+  /**
+   * Create a access token
+   *
+   * @param arg
+   */
   createAccessToken(arg: { partial: IAccessTokenData }): IAccessToken {
     const { partial } = arg;
     const now = Date.now()
-    const exp = now + this.ctx.services.env().ACCESS_TOKEN_EXPIRES_IN_MS;
+    const exp = now + this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS;
     const iat = now;
     const full: IAccessToken = {
       exp,
@@ -88,10 +118,16 @@ export class JwtService {
     return full;
   }
 
+
+  /**
+   * Create a refresh token
+   *
+   * @param arg
+   */
   createRefreshToken(arg: { partial: IRefreshTokenData }): IRefreshToken {
     const { partial } = arg;
     const now = Date.now()
-    const exp = now + this.ctx.services.env().REFRESH_TOKEN_EXPIRES_IN_MS;
+    const exp = now + this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS;
     const iat = now;
     const full: IRefreshToken = {
       exp,
@@ -101,15 +137,27 @@ export class JwtService {
     return full;
   }
 
+
+  /**
+   * Sign the access token
+   *
+   * @param arg
+   */
   signAccessToken(arg: { access: IAccessToken }): string {
     const { access } = arg;
-    const signed = jsonwebtoken.sign(access, this.ctx.services.env().JWT_SECRET);
+    const signed = jsonwebtoken.sign(access, this.ctx.services.universal.env.JWT_SECRET);
     return signed;
   }
 
+
+  /**
+   * Sign the refresh token
+   *
+   * @param arg
+   */
   signRefreshToken(arg: { refresh: IRefreshToken }): string {
     const { refresh } = arg;
-    const signed = jsonwebtoken.sign(refresh, this.ctx.services.env().JWT_SECRET);
+    const signed = jsonwebtoken.sign(refresh, this.ctx.services.universal.env.JWT_SECRET);
     return signed;
   }
 }

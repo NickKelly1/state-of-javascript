@@ -19,13 +19,34 @@ export function pretty(json: Printable | $TS_FIX_ME<any>): string {
  * https://codereview.stackexchange.com/questions/214947/pretty-print-an-object-javascript
  */
 export function prettyQ(obj: Printable | $TS_FIX_ME<any>): string {
+  const printed: Set<any> = new Set();
+
+  // if object has already been printed, show [Circular...] instead
+  // stops circular references from destroying everything
+  const singular = <A extends object>(fn: (value: A) => string) => (value: A): string => {
+    if (printed.has(value)) {
+      try {
+        let print: string | null | undefined = (value as any)?.name;
+        if (print == null) { print = Object.getPrototypeOf(value)?.contructor?.name; }
+        // can throw errors on null-prototype objects
+        if (print == null) { print = value?.toString?.(); }
+        if (print == null) { print = '_unprintable_'; }
+        return `[Circular... ${print}]`;
+      } catch (error) {
+        return `[Circular... _unprintable_]`;
+      }
+    }
+    printed.add(value);
+    return fn(value);
+  }
+
   const stringify = {
     undefined: (x: undefined) => "undefined",
     boolean:   (x: boolean) => x.toString(),
     number:    (x: number) => x,
     bigint:    (x: number) => `__bigint__${x.toString()}__`,
     string:    (x: string) => enquote(x),
-    object:    (x: object | null) => x === null ? 'null' : traverse(x),
+    object:    (x: object | null) => x === null ? 'null' : singular(traverse)(x),
     function:  (x: Function) => x.toString(),
     symbol:    (x: symbol) => x.toString()
   };

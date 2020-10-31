@@ -62,9 +62,10 @@ export class NewsArticleService {
    */
   async delete(arg: {
     model: NewsArticleModel;
+    author: UserModel,
     runner: QueryRunner;
   }): Promise<NewsArticleModel> {
-    const { model, runner } = arg;
+    const { model, author, runner } = arg;
     const { transaction } = runner;
     await model.destroy({ transaction });
     return model;

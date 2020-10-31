@@ -1,5 +1,5 @@
 import { ErrorRequestHandler, NextFunction, Request, Response, } from 'express';
-import { HttpContext } from '../classes/http.context';
+import { HttpContext } from '../context/http.context';
 import { makeException } from '../helpers/make-exception.helper';
 import { logger } from '../logger/logger';
 

@@ -3,9 +3,8 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
 } from "graphql";
-import { GqlContext } from "../../../common/classes/gql.context";
 import { UserRoleModel } from "../../../circle";
-import { GqlAction, IGqlActionSource } from "../../../common/gql/gql.action";
+import { GqlContext } from "../../../common/context/gql.context";
 
 
 export type IUserRoleGqlActionsSource = UserRoleModel;
@@ -15,13 +14,13 @@ export const UserRoleGqlActions = new GraphQLObjectType<IUserRoleGqlActionsSourc
     show: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userRolePolicy().canFindOne({ model: parent });
+        return ctx.services.userRolePolicy.canFindOne({ model: parent });
       },
     },
     delete: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userRolePolicy().canDelete({ model: parent });
+        return ctx.services.userRolePolicy.canDelete({ model: parent });
       },
     },
   },

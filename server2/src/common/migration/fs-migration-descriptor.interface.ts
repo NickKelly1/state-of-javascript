@@ -1,4 +1,4 @@
-import { IConstructor } from "../../interfaces/constructor.interface";
+import { IConstructor } from "../interfaces/constructor.interface";
 import { IMigration } from "./migration.interface";
 
 export interface IFsMigrationDescriptor {

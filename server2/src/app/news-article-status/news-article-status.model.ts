@@ -39,7 +39,7 @@ export class NewsArticleStatusModel extends Model<INewsArticleStatusAttributes, 
 
 
 export const initNewsArticleStatusModel: ModelInitFn = (arg) => {
-  const { sequelize } = arg;
+  const { sequelize, env } = arg;
   NewsArticleStatusModel.init({
     id: AutoIncrementingId,
     name: { type: DataTypes.STRING(NewsArticleStatusDefinition.name.max), allowNull: false, },

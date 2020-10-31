@@ -31,17 +31,19 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
     const { res } = ctx;
     const dto = ctx.body(SignupGqlInputValidator);
 
-    const { user } = await ctx.services.dbService().transact(async ({ runner }) => {
+    const { user } = await ctx.services.universal.db.transact(async ({ runner }) => {
       const userDto: ICreateUserDto = { name: dto.name };
-      const user = await ctx.services.userService().create({ runner, dto: userDto, });
+      const user = await ctx.services.userService.create({ runner, dto: userDto, });
       const passwordDto: ICreateUserPasswordDto = { password: dto.password };
-      const password = await ctx.services.userPasswordService().create({ runner, user, dto: passwordDto });
+      const password = await ctx.services.userPasswordService.create({ runner, user, dto: passwordDto });
       return { user };
     });
 
-    const auth = ctx.services.authService().authenticate({
+    // grant public permissions...
+    const publicAuth = await ctx.services.universal.publicAuthorisation.retrieve();
+    const auth = ctx.services.authService.authenticate({
       res,
-      permissions: [],
+      permissions: publicAuth.permissions.map(perm => perm.id),
       user,
     });
 
@@ -50,7 +52,7 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
 
   router.post('/signout', mw<JsonResponder<null>>(async (ctx, next) => {
     const { req, res } = ctx;
-    ctx.services.authService().unauthenticate({ res })
+    ctx.services.authService.unauthenticate({ res })
     return new JsonResponder(HttpCode.OK, null);
   }));
 
@@ -61,8 +63,8 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
     const { res } = ctx;
     const dto = ctx.body(LoginGqlInputValidator);
 
-    const { user, roles, permissions } = await ctx.services.dbService().transact(async ({ runner }) => {
-      const user = await ctx.services.userRepository().findOneOrfail({
+    const { user, roles, permissions } = await ctx.services.universal.db.transact(async ({ runner }) => {
+      const user = await ctx.services.userRepository.findOneOrfail({
         runner,
         options: {
           where: { [UserField.name]: { [Op.eq]: dto.name } },
@@ -84,15 +86,17 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
       if (!password) {
         throw ctx.except(BadRequestException({ message: ctx.lang(ExceptionLang.CannotLogIn({ user: user.name, })), }));
       }
-      const same = await ctx.services.userPasswordService().compare({ password, raw: dto.password, });
+      const same = await ctx.services.userPasswordService.compare({ password, raw: dto.password, });
       if (!same) { throw ctx.except(BadRequestException({ message: ctx.lang(ExceptionLang.IncorrectPassword), })); }
       return { user, roles, permissions, };
     });
 
-    const auth = ctx.services.authService().authenticate({
+    // grant public permissions...
+    const publicAuth = await ctx.services.universal.publicAuthorisation.retrieve();
+    const auth = ctx.services.authService.authenticate({
       user,
       res,
-      permissions: permissions.map(perm => perm.id),
+      permissions: Array.from(new Set(permissions.concat(publicAuth.permissions).map(perm => perm.id))),
     })
 
     return new JsonResponder(HttpCode.OK, auth);
@@ -125,18 +129,18 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
     }
 
     // decode
-    const maybeValidatedRefresh = ctx.services.jwtService().decodeRefreshToken({ token: maybeIncomingRefresh });
+    const maybeValidatedRefresh = ctx.services.jwtService.decodeRefreshToken({ token: maybeIncomingRefresh });
     if (isLeft(maybeValidatedRefresh)) { throw maybeValidatedRefresh.left; }
     const receivedRefresh = maybeValidatedRefresh.right;
 
     // check expiry
-    if (ctx.services.jwtService().isExpired(receivedRefresh)) {
+    if (ctx.services.jwtService.isExpired(receivedRefresh)) {
       throw ctx.except(LoginExpiredException());
     }
 
     // success - do refresh
-    const { user, roles, permissions } = await ctx.services.dbService().transact(async ({ runner }) => {
-      const user = await ctx.services.userRepository().findByPkOrfail(receivedRefresh.user_id, {
+    const { user, roles, permissions } = await ctx.services.universal.db.transact(async ({ runner }) => {
+      const user = await ctx.services.userRepository.findByPkOrfail(receivedRefresh.user_id, {
         runner,
         options: {
           include: [{
@@ -152,9 +156,11 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
       return { user, roles, permissions, };
     });
 
-    const auth = ctx.services.authService().authenticate({
+    // grant public permissions...
+    const publicAuth = await ctx.services.universal.publicAuthorisation.retrieve();
+    const auth = ctx.services.authService.authenticate({
       res,
-      permissions: permissions.map(perm => perm.id),
+      permissions: Array.from(new Set(permissions.concat(publicAuth.permissions).map(perm => perm.id))),
       user,
     })
 

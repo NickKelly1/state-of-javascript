@@ -1,7 +1,7 @@
 import { GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { Op } from "sequelize";
 import { PermissionModel, RolePermissionModel } from "../../../circle";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
 import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
 import { andWhere } from "../../../common/helpers/and-where.helper.ts";
@@ -9,7 +9,7 @@ import { collectionMeta } from "../../../common/responses/collection-meta";
 import { OrNull } from "../../../common/types/or-null.type";
 import { IRolePermissionCollectionGqlNodeSource, RolePermissionCollectionGqlNode } from "../../role-permission/gql/role-permission.collection.gql.node";
 import { RolePermissionField } from "../../role-permission/role-permission.attributes";
-import { GqlPermissionQuery } from "./permission.gql.query";
+import { PermissionCollectionOptionsGqlInput } from "./permission.collection.gql.options";
 
 export type IPermissionGqlRelationsSource = PermissionModel;
 export const PermissionGqlRelations = new GraphQLObjectType<IPermissionGqlRelationsSource, GqlContext>({
@@ -17,10 +17,10 @@ export const PermissionGqlRelations = new GraphQLObjectType<IPermissionGqlRelati
   fields: () => ({
     rolePermissions: {
       type: GraphQLNonNull(RolePermissionCollectionGqlNode),
-      args: gqlQueryArg(GqlPermissionQuery),
+      args: gqlQueryArg(PermissionCollectionOptionsGqlInput),
       resolve: async (parent, args, ctx): Promise<IRolePermissionCollectionGqlNodeSource> => {
         const { page, options } = transformGqlQuery(args);
-        const { rows, count } = await ctx.services.rolePermissionRepository().findAllAndCount({
+        const { rows, count } = await ctx.services.rolePermissionRepository.findAllAndCount({
           runner: null,
           options: {
             ...options,
@@ -33,7 +33,7 @@ export const PermissionGqlRelations = new GraphQLObjectType<IPermissionGqlRelati
         const pagination = collectionMeta({ data: rows, total: count, page });
         const connection: IRolePermissionCollectionGqlNodeSource = {
           models: rows.map((model): OrNull<RolePermissionModel> =>
-            ctx.services.rolePermissionPolicy().canFindOne({ model })
+            ctx.services.rolePermissionPolicy.canFindOne({ model })
               ? model
               : null
           ),

@@ -1,7 +1,5 @@
 import { GraphQLInputObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
 import Joi from 'joi';
-import { PermissionId } from '../../permission/permission-id.type';
-import { RoleId } from '../../role/role.id.type';
 import { NewsArticleDefinition } from '../news-article.definition';
 
 export interface ICreateNewsArticleInput {

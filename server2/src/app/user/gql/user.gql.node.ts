@@ -1,9 +1,9 @@
 import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
 import { UserModel } from "../../../circle";
-import { GqlContext } from "../../../common/classes/gql.context";
 import { IUserGqlActionsSource, UserGqlActions } from "./user.gql.actions";
 import { IUserGqlRelationsSource, UserGqlRelations } from "./user.gql.relations";
 import { IUserGqlDataSource, UserGqlData } from "./user.gql.data";
+import { GqlContext } from "../../../common/context/gql.context";
 
 export type IUserGqlNodeSource = UserModel;
 export const UserGqlNode: GraphQLObjectType<IUserGqlNodeSource, GqlContext> = new GraphQLObjectType({

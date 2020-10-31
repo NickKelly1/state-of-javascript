@@ -1,7 +1,7 @@
 import { GraphQLInt, GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { UserRoleModel } from "../user-role.model";
-import { GqlContext } from "../../../common/classes/gql.context";
 import { AuditableGql } from "../../../common/gql/gql.auditable";
+import { GqlContext } from "../../../common/context/gql.context";
 
 
 export type IUserRoleGqlDataSource = UserRoleModel;

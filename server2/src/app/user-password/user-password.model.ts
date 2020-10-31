@@ -30,22 +30,13 @@ export class UserPasswordModel extends Model<IUserPasswordAttributes, IUserPassw
 
 
 export const initUserPasswordModel: ModelInitFn = (arg) => {
-  const { sequelize } = arg;
+  const { env, sequelize } = arg;
 
   UserPasswordModel.init({
     id: AutoIncrementingId,
-    user_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    salt: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    hash: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+    user_id: { type: DataTypes.INTEGER, allowNull: false, },
+    salt: { type: DataTypes.TEXT, allowNull: false, },
+    hash: { type: DataTypes.TEXT, allowNull: false, },
     ...pretendAuditable,
   }, {
     sequelize: sequelize,

@@ -1,7 +1,7 @@
 
 import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
 import { UserModel } from "../../../circle";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { PermissionModel } from "../permission.model";
 import { IPermissionGqlActionsSource, PermissionGqlActions } from "./permission.gql.actions";
 import { IPermissionGqlRelationsSource, PermissionGqlRelations } from "./permission.gql.relations";

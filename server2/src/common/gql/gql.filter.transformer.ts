@@ -2,7 +2,6 @@ import { Op, Rangable, WhereAttributeHash, WhereOperators, WhereOptions } from "
 import { ist } from "../helpers/ist.helper";
 import { OrUndefined } from "../types/or-undefined.type";
 import { IGqlFilterField, IGqlFilterGroup, IGqlFilterRange } from "./gql.filter.types";
-import { IGqlQuery } from "./gql.query";
 
 export function transformGqlRange(range: IGqlFilterRange): Rangable {
   return [range.from, range.to] as Rangable;

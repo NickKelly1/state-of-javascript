@@ -21,19 +21,19 @@ import { Str } from '../helpers/str.helper';
 export class MigrationRunner {
   protected readonly sequelize: Sequelize;
   protected readonly transaction: Transaction;
-  protected readonly qInterface :QueryInterface;
+  protected readonly queryInterface :QueryInterface;
   protected readonly env: EnvService;
 
 
   constructor(arg: {
     sequelize: Sequelize;
     transaction: Transaction;
-    qInterface :QueryInterface;
+    queryInterface :QueryInterface;
     env: EnvService;
   }) {
     this.sequelize = arg.sequelize;
     this.transaction = arg.transaction;
-    this.qInterface = arg.qInterface;
+    this.queryInterface = arg.queryInterface;
     this.env = arg.env;
   }
 
@@ -45,11 +45,11 @@ export class MigrationRunner {
    */
   protected async _ensureMigrationTable(): Promise<void> {
     // initialise in database
-    const allTables = await this.qInterface.showAllTables({ transaction: this.transaction });
+    const allTables = await this.queryInterface.showAllTables({ transaction: this.transaction });
     const migrationsTable = allTables.find(table => table === _migrations);
     if (ist.nullable(migrationsTable)) {
       logger.info(`creating "${_migrations}" table...`);
-      await this.qInterface.createTable<Model<IMigrationAttributes>>(
+      await this.queryInterface.createTable<Model<IMigrationAttributes>>(
         { tableName: _migrations, },
         {
           id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, },
@@ -64,7 +64,7 @@ export class MigrationRunner {
       );
       logger.info(`finished creating "${_migrations}" table...`);
     }
-    initMigrationModel({ sequelize: this.sequelize });
+    initMigrationModel({ env: this.env, sequelize: this.sequelize });
   }
 
 
@@ -84,7 +84,7 @@ export class MigrationRunner {
         const match = file.name.match(/^\d+/);
         if (!match?.[0]) { throw new TypeError(`File name "${file.name}" does not start with a number`) }
         const number = parseInt(match.toString(), 10);
-        if (!Number.isFinite(number)) throw new Error(`Unexpected migration number "${match[0][0]}" for file "${filePath}"`);
+        if (!Number.isFinite(number)) throw new Error(`Unexpected migration number "${match.toString()}" for file "${filePath}"`);
         const imp = await import(filePath);
         let mig: IFsMigrationDescriptor;
         // assume import is ctor
@@ -256,7 +256,12 @@ export class MigrationRunner {
       });
       logger.info(`migrating up (${(i + 1).toString().padStart(2, ' ')} / ${runCount.toString().padStart(2, ' ')}): ${descriptor.number} - ${descriptor.name}`);
       await migrationRecord.save({ transaction: this.transaction });
-      await new descriptor.Ctor().up(this.qInterface, this.transaction, this.sequelize);
+      await new descriptor.Ctor().up({
+        env: this.env,
+        queryInterface: this.queryInterface,
+        sequelize: this.sequelize,
+        transaction: this.transaction,
+      });
     }
   }
 
@@ -296,7 +301,12 @@ export class MigrationRunner {
             logger.info(`migrating down [(${i.toString().padStart(2, ' ')}) / (${downCount.toString().padStart(2, ' ')})] - [(${(j + 1).toString().padStart(2, ' ')} / ${inBatch.length.toString().padStart(2, ' ')})]: ${dbm.number} - ${dbm.name}`);
             const fsm = assertDefined(fsMigrationsMap.get(dbm.number));
             await dbm.destroy({ transaction: this.transaction });
-            await new fsm.Ctor().down(this.qInterface, this.transaction, this.sequelize);
+            await new fsm.Ctor().down({
+              env: this.env,
+              queryInterface: this.queryInterface,
+              sequelize: this.sequelize,
+              transaction: this.transaction,
+            });
           }
         }
         break;
@@ -308,7 +318,12 @@ export class MigrationRunner {
           logger.info(`migrating down (${i.toString().padStart(2, ' ')}) / (${downCount.toString().padStart(2, ' ')}): ${dbm.number} - ${dbm.name}`);
           const fsm = assertDefined(fsMigrationsMap.get(dbm.number));
           await dbm.destroy({ transaction: this.transaction });
-          await new fsm.Ctor().down(this.qInterface, this.transaction, this.sequelize);
+          await new fsm.Ctor().down({
+            env: this.env,
+            queryInterface: this.queryInterface,
+            sequelize: this.sequelize,
+            transaction: this.transaction,
+          });
         }
         break;
       }

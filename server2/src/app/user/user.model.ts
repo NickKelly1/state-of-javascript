@@ -42,7 +42,7 @@ export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> i
 
 
 export const initUserModel: ModelInitFn = (arg) => {
-  const { sequelize } = arg;
+  const { sequelize, env } = arg;
   UserModel.init({
     id: AutoIncrementingId,
     name: {
@@ -53,7 +53,7 @@ export const initUserModel: ModelInitFn = (arg) => {
     ...pretendAuditable,
     ...pretendSoftDeleteable,
   }, {
-    sequelize,
+    sequelize: sequelize,
     tableName: 'users',
     ...AuditableSchema,
     ...SoftDeleteableSchema,

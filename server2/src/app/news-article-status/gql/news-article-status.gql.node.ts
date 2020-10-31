@@ -1,6 +1,6 @@
 import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
 import { NewsArticleStatusModel } from "../../../circle";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { INewsArticleStatusGqlActionsSource, NewsArticleStatusGqlActions } from "./news-article-status.gql.actions";
 import { INewsArticleStatusGqlRelationsSource, NewsArticleStatusGqlRelations } from "./news-article-status.gql.relations";
 import { INewsArticleStatusGqlDataSource, NewsArticleStatusGqlData } from "./news-article-status.gql.data";

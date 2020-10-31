@@ -20,7 +20,7 @@ function authTokenCookieExtractor(req: Request): OrNull<string> {
 export const passportMw = (): Handler => mw((ctx, next) => {
   const { req } = ctx;
 
-  const access = ctx.services.authService().getAccessToken({ req });
+  const access = ctx.services.authService.getAccessToken({ req });
 
   if (ist.nullable(access)) {
     return void next();

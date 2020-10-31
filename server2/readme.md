@@ -29,3 +29,13 @@ To run migrations up, use the npm cli to run the `package.json` script: `npm run
 To run migrations down, use the npm cli to run the `package.json` script: `npm run migrate:down -- --step=2`
 
 To run migrations up, use the npm cli to run the `package.json` script: `npm run migrate:up -- --step=2`
+
+
+### Psql
+
+Use psql from the Postgresql docker container
+
+```sh
+# docker exec -it postgres_container_name psql your_connection_string
+docker exec -it fg4jvsa psql -h localhost -p 5432 -U soj -W soj
+```

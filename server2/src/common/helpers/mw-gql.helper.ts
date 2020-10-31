@@ -2,7 +2,7 @@ import { IRouterHandler, NextFunction, Request, RequestHandler, Response, Handle
 import { OptionsData } from 'express-graphql';
 import { ParamsDictionary, Query, } from 'express-serve-static-core';
 import { IncomingMessage, OutgoingMessage } from 'http';
-import { HttpContext } from '../classes/http.context';
+import { HttpContext } from '../context/http.context';
 import { RequestAuth } from '../classes/request-auth';
 import { $TS_FIX_ME } from '../types/$ts-fix-me.type';
 import { handler } from './handler.helper';

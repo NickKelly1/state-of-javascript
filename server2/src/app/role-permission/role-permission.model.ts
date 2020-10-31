@@ -10,6 +10,8 @@ import { PermissionModel } from '../../circle';
 import { RoleId } from '../role/role.id.type';
 import { RoleModel } from '../role/role.model';
 import { PermissionId } from '../permission/permission-id.type';
+import { RoleField } from '../role/role.attributes';
+import { PermissionField } from '../permission/permission.attributes';
 
 
 export class RolePermissionModel extends Model<IRolePermissionAttributes, IRolePermissionCreationAttributes> implements IRolePermissionAttributes {
@@ -19,7 +21,6 @@ export class RolePermissionModel extends Model<IRolePermissionAttributes, IRoleP
   [RolePermissionField.permission_id]!: PermissionId;
   [RolePermissionField.created_at]!: Date;
   [RolePermissionField.updated_at]!: Date;
-
 
   // acceptable associations
   static associations: RolePermissionAssociations;
@@ -35,15 +36,19 @@ export class RolePermissionModel extends Model<IRolePermissionAttributes, IRoleP
 
 
 export const initRolePermissionModel: ModelInitFn = (arg) => {
-  const { sequelize } = arg;
+  const { sequelize, env, } = arg;
   RolePermissionModel.init({
     id: AutoIncrementingId,
     role_id: {
       type: DataTypes.INTEGER,
+      references: { model: RoleModel as typeof Model, key: RoleField.id },
+      unique: 'role_id_permission_id',
       allowNull: false,
     },
     permission_id: {
       type: DataTypes.INTEGER,
+      references: { model: PermissionModel as typeof Model, key: PermissionField.id },
+      unique: 'role_id_permission_id',
       allowNull: false,
     },
     ...pretendAuditable,

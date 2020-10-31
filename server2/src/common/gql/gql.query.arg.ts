@@ -1,8 +1,8 @@
 import { GraphQLFieldConfigArgumentMap, GraphQLInputObjectType } from "graphql";
-import { IGqlQuery } from "./gql.query";
+import { IGqlCollectionOptions } from "./gql.collection.options";
 
 export interface IGqlQueryArg { 
-  query: IGqlQuery;
+  query: IGqlCollectionOptions;
 }
 
 export function gqlQueryArg(arg: GraphQLInputObjectType): GraphQLFieldConfigArgumentMap {

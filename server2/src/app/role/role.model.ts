@@ -42,7 +42,7 @@ export class RoleModel extends Model<IRoleAttributes, IRoleCreationAttributes> i
 
 
 export const initRoleModel: ModelInitFn = (arg) => {
-  const { sequelize } = arg;
+  const { env, sequelize } = arg;
   RoleModel.init({
     id: AutoIncrementingId,
     name: {
@@ -53,7 +53,7 @@ export const initRoleModel: ModelInitFn = (arg) => {
     ...pretendAuditable,
     ...pretendSoftDeleteable,
   }, {
-    sequelize,
+    sequelize: sequelize,
     tableName: 'roles',
     ...AuditableSchema,
     ...SoftDeleteableSchema,

@@ -1,5 +1,5 @@
 import { GraphQLBoolean, GraphQLNonNull, GraphQLObjectType } from "graphql";
-import { GqlContext } from "../classes/gql.context";
+import { GqlContext } from "../context/gql.context";
 
 export interface IGqlActionSource { can: boolean; }
 export const GqlAction = new GraphQLObjectType<IGqlActionSource, GqlContext>({

@@ -1,11 +1,10 @@
 
 import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
-import { UserModel } from "../../../circle";
-import { GqlContext } from "../../../common/classes/gql.context";
 import { RoleModel } from "../role.model";
 import { IRoleGqlActionsSource, RoleGqlActions } from "./role.gql.actions";
 import { IRoleGqlRelationsSource, RoleGqlRelations } from "./role.gql.relations";
 import { IRoleGqlDataSource, RoleGqlData } from "./role.gql.data";
+import { GqlContext } from "../../../common/context/gql.context";
 
 export type IRoleGqlNodeSource = RoleModel;
 export const RoleGqlNode: GraphQLObjectType<IRoleGqlNodeSource, GqlContext> = new GraphQLObjectType({

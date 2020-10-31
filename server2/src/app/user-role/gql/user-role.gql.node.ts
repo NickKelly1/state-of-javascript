@@ -1,10 +1,9 @@
 import { GraphQLNonNull, GraphQLObjectType, GraphQLString  } from "graphql";
-import { GqlEdge, IGqlEdge } from "../../../common/gql/gql.edge";
 import { IUserRoleGqlDataSource, UserRoleGqlData } from "./user-role.gql.data";
-import { UserModel, UserRoleModel } from "../../../circle";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { UserRoleModel } from "../../../circle";
 import { IUserRoleGqlActionsSource, UserRoleGqlActions } from "./user-role.gql.actions";
 import { IUserRoleGqlRelationsSource, UserRoleGqlRelations } from "./user-role.gql.relations";
+import { GqlContext } from "../../../common/context/gql.context";
 
 export type IUserRoleGqlNodeSource = UserRoleModel;
 export const UserRoleGqlNode: GraphQLObjectType<IUserRoleGqlNodeSource, GqlContext> = new GraphQLObjectType({

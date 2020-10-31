@@ -1,5 +1,5 @@
 import { GraphQLInt, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { NewsArticleModel } from "../news-article.model";
 import { AuditableGql } from "../../../common/gql/gql.auditable";
 import { SoftDeleteableGql } from "../../../common/gql/gql.soft-deleteable";

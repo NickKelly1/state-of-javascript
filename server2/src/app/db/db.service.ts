@@ -9,10 +9,16 @@ export interface ITransactFnArg {
 
 export class DbService {
   constructor(
-    protected readonly ctx: IRequestContext,
     protected readonly sequelize: Sequelize,
   ) {
     //
+  }
+
+  useTransaction(transaction: Transaction) {
+    return async function<T>(fn: (arg: ITransactFnArg) => Promise<T>): Promise<T> {
+      const runner = new QueryRunner(transaction);
+      return fn({ runner });
+    }
   }
 
   async transact<T>(fn: (arg: ITransactFnArg) => Promise<T>): Promise<T> {

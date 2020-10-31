@@ -1,7 +1,7 @@
 import { GraphQLNonNull } from "graphql";
 import { IRolePermissionGqlRelationsSource, RolePermissionGqlRelations } from "./role-permission.gql.relations";
 import { GraphQLObjectType, GraphQLString  } from "graphql";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { RolePermissionModel } from "../role-permission.model";
 import { IRolePermissionGqlDataSource, RolePermissionGqlData } from "./role-permission.gql.data";
 import { IRolePermissionGqlActionsSource, RolePermissionGqlActions } from "./role-permission.gql.actions";

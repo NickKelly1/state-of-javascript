@@ -1,4 +1,4 @@
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
 import { UserModel } from "../user.model";
 import { ICollectionMeta } from "../../../common/interfaces/collection-meta.interface";

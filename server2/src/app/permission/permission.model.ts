@@ -35,7 +35,7 @@ export class PermissionModel extends Model<IPermissionAttributes, IPermissionCre
 }
 
 export const initPermissionModel: ModelInitFn = (arg) => {
-  const { sequelize } = arg;
+  const { env, sequelize } = arg;
   PermissionModel.init({
     id: AutoIncrementingId,
     name: {
@@ -46,7 +46,7 @@ export const initPermissionModel: ModelInitFn = (arg) => {
     ...pretendAuditable,
     ...pretendSoftDeleteable,
   }, {
-    sequelize,
+    sequelize: sequelize,
     tableName: 'permissions',
     ...AuditableSchema,
     ...SoftDeleteableSchema,

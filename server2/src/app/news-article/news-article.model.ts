@@ -16,6 +16,9 @@ import { pretendSoftDeleteable } from '../../common/schemas/helpers/pretend-soft
 import { NewsArticleDefinition } from './news-article.definition';
 import { SoftDeleteableSchema } from '../../common/schemas/soft-deleteable.schema';
 import { NewsArticleStatusId } from '../news-article-status/news-article-status.id.type';
+import { NewsArticleStatusModel } from '../news-article-status/news-article-status.model';
+import { NewsArticleStatusField } from '../news-article-status/news-article-status.attributes';
+import { UserField } from '../user/user.attributes';
 
 
 export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticleCreationAttributes> implements INewsArticleAttributes {
@@ -41,16 +44,24 @@ export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticle
   [NewsArticleAssociation.status]?: NewsArticleStatusId;
 
   // associations
-  getUser!: BelongsToGetAssociationMixin<UserModel>;
+  getAuthor!: BelongsToGetAssociationMixin<UserModel>;
 }
 
 
 export const initNewsArticleModel: ModelInitFn = (arg) => {
-  const { sequelize } = arg;
+  const { sequelize, env } = arg;
   NewsArticleModel.init({
     id: AutoIncrementingId,
-    author_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, },
-    status_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, },
+    author_id: {
+      type: DataTypes.INTEGER,
+      references: { model: UserModel as typeof Model, key: UserField.id },
+      allowNull: false,
+    },
+    status_id: {
+      type: DataTypes.INTEGER,
+      references: { model: NewsArticleStatusModel as typeof Model, key: NewsArticleStatusField.id },
+      allowNull: false,
+    },
     title: { type: DataTypes.STRING(NewsArticleDefinition.title.max), allowNull: false, },
     teaser: { type: DataTypes.STRING(NewsArticleDefinition.teaser.max), allowNull: false, },
     body: { type: DataTypes.STRING(NewsArticleDefinition.body.max), allowNull: false, },

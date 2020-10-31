@@ -1,10 +1,12 @@
 import { Transaction } from 'sequelize';
 import { UserModel, UserPasswordModel } from '../../circle';
+import { EnvService } from '../../common/environment/env';
 import { ist } from '../../common/helpers/ist.helper';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { ICreateUserPasswordDto } from './dtos/create-user-password.dto';
 import { IUpdateUserPasswordDto } from './dtos/update-user-password.dto';
+
 
 export class UserPasswordService {
   constructor(
@@ -13,13 +15,19 @@ export class UserPasswordService {
     //
   }
 
+
+  /**
+   * Compare a raw password
+   *
+   * @param arg
+   */
   async compare(arg: {
     raw: string;
     password: UserPasswordModel;
   }): Promise<boolean> {
     const { raw, password } = arg;
 
-    const comparison = await this.ctx.services.hash().bcryptCompare({
+    const comparison = await this.ctx.services.universal.hash.bcryptCompare({
       raw: `${password.salt}${raw}`,
       hash: password.hash,
     })
@@ -27,24 +35,36 @@ export class UserPasswordService {
     return comparison
   }
 
+
+  /**
+   * Encrypt a user password
+   *
+   * @param arg
+   */
   protected async encrypt(arg: {
     raw: string,
   }): Promise<{ salt: string, hash: string }> {
     const { raw } = arg;
 
-    const salt = await this.ctx.services.hash().bcryptHash({
+    const salt = await this.ctx.services.universal.hash.bcryptHash({
       raw: Math.random().toString(),
-      rounds: this.ctx.services.env().PSW_SALT_ROUNDS,
+      rounds: this.ctx.services.universal.env.PSW_SALT_ROUNDS,
     });
 
-    const hash = await this.ctx.services.hash().bcryptHash({
+    const hash = await this.ctx.services.universal.hash.bcryptHash({
       raw: `${salt}${raw}`,
-      rounds: this.ctx.services.env().PSW_SALT_ROUNDS,
+      rounds: this.ctx.services.universal.env.PSW_SALT_ROUNDS,
     });
 
     return { hash, salt };
   }
 
+
+  /**
+   * Create a password
+   *
+   * @param arg
+   */
   async create(arg: {
     runner: QueryRunner;
     user: UserModel;
@@ -53,7 +73,7 @@ export class UserPasswordService {
     const { dto, runner, user } = arg;
     const { transaction } = runner;
 
-    const { hash, salt } = await this.ctx.services.userPasswordService().encrypt({ raw: dto.password });
+    const { hash, salt } = await this.ctx.services.userPasswordService.encrypt({ raw: dto.password });
     const password = UserPasswordModel.build({
       hash: hash,
       salt,
@@ -64,6 +84,12 @@ export class UserPasswordService {
     return password;
   }
 
+
+  /**
+   * Update a password
+   *
+   * @param arg
+   */
   async update(arg: {
     runner: QueryRunner;
     model: UserPasswordModel;
@@ -80,6 +106,12 @@ export class UserPasswordService {
     return model;
   }
 
+
+  /**
+   * Delete a password
+   *
+   * @param arg
+   */
   async delete(arg: {
     model: UserPasswordModel;
     runner: QueryRunner;

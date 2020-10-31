@@ -1,5 +1,5 @@
 import { GraphQLObjectType } from "graphql";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { RolePermissionModel } from "../role-permission.model";
 import { OrNull } from "../../../common/types/or-null.type";
 import { IRoleGqlNodeSource, RoleGqlNode } from "../../role/gql/role.gql.node";
@@ -16,7 +16,7 @@ export const RolePermissionGqlRelations: GraphQLObjectType<RolePermissionModel, 
       resolve: async (parent, args, ctx): Promise<OrNull<IRoleGqlNodeSource>> => {
         const model: OrNull<IRoleGqlNodeSource> = await ctx.loader.roles.load(parent.role_id);
         if (!model) return null;
-        if (!ctx.services.rolePolicy().canFindOne({ model })) return null;
+        if (!ctx.services.rolePolicy.canFindOne({ model })) return null;
         return model;
       },
     },
@@ -26,7 +26,7 @@ export const RolePermissionGqlRelations: GraphQLObjectType<RolePermissionModel, 
       resolve: async (parent, args, ctx): Promise<OrNull<IPermissionGqlNodeSource>> => {
         const model: OrNull<IPermissionGqlNodeSource> = await ctx.loader.permissions.load(parent.permission_id);
         if (!model) return null;
-        if (!ctx.services.permissionPolicy().canFindOne({ model })) return null;
+        if (!ctx.services.permissionPolicy.canFindOne({ model })) return null;
         return model;
       },
     },

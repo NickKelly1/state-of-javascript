@@ -1,10 +1,5 @@
 import { Router } from 'express';
 import { AuthRoutes } from './app/auth/auth.routes';
-import { PermissionRoutes } from './app/permission/permission.routes';
-import { RolePermissionRoutes } from './app/role-permission/role-permission.routes';
-import { RoleRoutes } from './app/role/role.routes';
-import { UserRoleRoutes } from './app/user-role/user-role.routes';
-import { UserRoutes } from './app/user/user.routes';
 import { ExpressContext } from './common/classes/express-context';
 import { mw } from './common/helpers/mw.helper';
 

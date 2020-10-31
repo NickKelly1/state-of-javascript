@@ -1,4 +1,4 @@
-import { Association, ColumnDescription, ColumnsDescription, DataTypes, Model, Optional, QueryInterface, Sequelize, Transaction } from 'sequelize';
+import { Model, QueryInterface, Sequelize, Transaction } from 'sequelize';
 import { NewsArticleStatusAssociation } from './app/news-article-status/news-article-status.associations';
 import { NewsArticleStatusField } from './app/news-article-status/news-article-status.attributes';
 import { initNewsArticleStatusModel, NewsArticleStatusModel } from './app/news-article-status/news-article-status.model';
@@ -34,14 +34,17 @@ import {
 } from './circle';
 import { logger } from './common/logger/logger';
 import { EnvService } from './common/environment/env';
-import { usersInitialise } from './app/user/users.initialise';
-import { userRolesInitialise } from './app/user-role/user-roles.initialise';
-import { rolePermissionsInitialise } from './app/role-permission/role-permissions.initialise';
-import { rolesInitialise } from './app/role/roles.initialise';
-import { permissionsInitialise } from './app/permission/permissions.initialise';
-import { QueryRunner } from './app/db/query-runner';
 import { prettyQ } from './common/helpers/pretty.helper';
-import { migrateScriptUp } from './common/migration/migration.script.up';
+import { migrateUp } from './common/migration/migrate.up';
+import { initNpmsModel, NpmsPackageModel } from './app/npms-package/npms-package.model';
+import { initNpmsDashboardItemModel, NpmsDashboardItemModel } from './app/npms-dashboard-item/npms-dashboard-item.model';
+import { initNpmsDashboardModel, NpmsDashboardModel } from './app/npms-dashboard/npms-dashboard.model';
+import { NpmsPackageAssociation } from './app/npms-package/npms-package.associations';
+import { NpmsPackageField } from './app/npms-package/npms-package.attributes';
+import { NpmsDashboardItemField } from './app/npms-dashboard-item/npms-dashboard-item.attributes';
+import { NpmsDashboardAssociation } from './app/npms-dashboard/npms-dashboard.associations';
+import { NpmsDashboardField } from './app/npms-dashboard/npms-dashboard.attributes';
+import { NpmsDashboardItemAssociation } from './app/npms-dashboard-item/npms-dashboard-item.associations';
 
 
 /**
@@ -49,14 +52,8 @@ import { migrateScriptUp } from './common/migration/migration.script.up';
  *
  * @param arg
  */
-export async function initialiseDb(arg: {
-  sequelize: Sequelize;
-  env: EnvService;
-}): Promise<void> {
-  const {
-    sequelize,
-    env,
-  } = arg;
+export async function initialiseDb(arg: { sequelize: Sequelize, env: EnvService; }): Promise<void> {
+  const { sequelize, env } = arg;
 
   // -------------------------
   // --- check credentials ---
@@ -72,9 +69,14 @@ export async function initialiseDb(arg: {
 
   await sequelize.transaction(async (transaction) => {
     try {
-      const qInterface = sequelize.getQueryInterface();
-      await qInterface.startTransaction(transaction);
-      await initialiseWithTransaction({ sequelize, qInterface, transaction, env });
+      const queryInterface = sequelize.getQueryInterface();
+      await queryInterface.startTransaction(transaction);
+      await initialiseWithTransaction({
+        env,
+        sequelize,
+        queryInterface,
+        transaction,
+      });
     } catch (error) {
       logger.error(`Failed to initialise database: ${prettyQ(error)}`);
       throw error;
@@ -90,21 +92,21 @@ export async function initialiseDb(arg: {
  */
 async function initialiseWithTransaction(arg: {
   sequelize: Sequelize;
-  qInterface: QueryInterface,
-  transaction: Transaction;
   env: EnvService;
+  queryInterface: QueryInterface;
+  transaction: Transaction;
 }): Promise<void> {
   const {
-    sequelize,
     transaction,
-    qInterface,
     env,
+    sequelize,
+    queryInterface,
   } = arg;
 
   // ----------------------
   // --- run all migrations ---
   // ----------------------
-  await migrateScriptUp();
+  await migrateUp();
 
   // --------------
   // --- models ---
@@ -112,15 +114,17 @@ async function initialiseWithTransaction(arg: {
 
   // boot models
   logger.info('registering models...');
-  initUserPasswordModel({ sequelize });
-  initUserModel({ sequelize });
-  initRoleModel({ sequelize });
-  initPermissionModel({ sequelize });
-  initUserRoleModel({ sequelize });
-  initRolePermissionModel({ sequelize });
-  initNewsArticleModel({ sequelize });
-  initNewsArticleStatusModel({ sequelize });
-
+  initUserPasswordModel({ env, sequelize });
+  initUserModel({ env, sequelize, });
+  initRoleModel({ env, sequelize, });
+  initPermissionModel({ env, sequelize, });
+  initUserRoleModel({ env, sequelize, });
+  initRolePermissionModel({ env, sequelize, });
+  initNewsArticleStatusModel({ env, sequelize, });
+  initNewsArticleModel({ env, sequelize, });
+  initNpmsModel({ env, sequelize, });
+  initNpmsDashboardModel({ env, sequelize, });
+  initNpmsDashboardItemModel({ env, sequelize, });
 
 
   // -----------------------
@@ -162,24 +166,15 @@ async function initialiseWithTransaction(arg: {
   // news article status
   NewsArticleStatusModel.hasMany(NewsArticleModel, { as: NewsArticleStatusAssociation.articles, sourceKey: NewsArticleStatusField.id, foreignKey: NewsArticleField.status_id, })
 
-  // ---------------
-  // --- domains ---
-  // ---------------
+  // npms
+  NpmsPackageModel.hasMany(NpmsDashboardItemModel, { as: NpmsPackageAssociation.dashboard_items, sourceKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })
+  NpmsPackageModel.belongsToMany(NpmsDashboardModel, { as: NpmsPackageAssociation.dashboards, through: NpmsDashboardItemModel as typeof Model, sourceKey: NpmsPackageField.id, targetKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.npms_package_id, otherKey: NpmsDashboardItemField.dashboard_id });
 
-  // initialise domain
-  const runner = new QueryRunner(transaction);
-  logger.info('Initialising Permissions...');
-  await permissionsInitialise({ env, runner });
+  // npms dashboard
+  NpmsDashboardModel.hasMany(NpmsDashboardItemModel, { as: NpmsDashboardAssociation.items, sourceKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, })
+  NpmsDashboardModel.belongsToMany(NpmsPackageModel, { as: NpmsDashboardAssociation.packages, through: NpmsDashboardItemModel as typeof Model, sourceKey: NpmsDashboardField.id, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.dashboard_id, otherKey: NpmsDashboardItemField.npms_package_id });
 
-  logger.info('Initialising Roles...');
-  await rolesInitialise({ env, runner });
-
-  logger.info('Initialising RolePermissions...');
-  await rolePermissionsInitialise({ env, runner });
-
-  logger.info('Initialising Users...');
-  await usersInitialise({ env, runner });
-
-  logger.info('Initialising UserRoles...');
-  await userRolesInitialise({ env, runner });
+  // npms dashboard item
+  NpmsDashboardItemModel.belongsTo(NpmsPackageModel, { as: NpmsDashboardItemAssociation.package, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })
+  NpmsDashboardItemModel.belongsTo(NpmsDashboardModel, { as: NpmsDashboardItemAssociation.dashboard, targetKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, })
 }

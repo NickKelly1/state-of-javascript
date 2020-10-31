@@ -7,8 +7,6 @@ import { IRequestContext } from "../../common/interfaces/request-context.interfa
 import { logger } from "../../common/logger/logger";
 import { OrNull } from "../../common/types/or-null.type";
 import { PermissionId } from "../permission/permission-id.type";
-import { PublicPermissions } from "../permission/permission.const";
-import { UserId } from "../user/user.id.type";
 import { UserModel } from "../user/user.model";
 import { IAuthorisationRo } from "./gql/authorisation.gql";
 import { IAccessToken } from "./token/access.token.gql";
@@ -31,7 +29,7 @@ export class AuthSerivce {
     // no token...
     if (ist.nullable(token)) return null;
 
-    const mbAccess = this.ctx.services.jwtService().decodeAccessToken({ token });
+    const mbAccess = this.ctx.services.jwtService.decodeAccessToken({ token });
 
     if (isLeft(mbAccess)) {
       // failed to validate token
@@ -43,7 +41,7 @@ export class AuthSerivce {
 
     const access = mbAccess.right;
 
-    if (this.ctx.services.jwtService().isExpired(access)) {
+    if (this.ctx.services.jwtService.isExpired(access)) {
       logger.warn(`Expired access_token for user "${access.user_id}"`);
       // throw ctx.except(LoginExpiredException());
       // don't throw - let route handler throw if required...
@@ -65,25 +63,25 @@ export class AuthSerivce {
     permissions: PermissionId[];
   }): IAuthorisationRo {
     const { res, user, permissions } = arg;
-    const access = this.ctx.services.jwtService().createAccessToken({ partial: {
-      permissions: permissions.concat(PublicPermissions),
+    const access = this.ctx.services.jwtService.createAccessToken({ partial: {
+      permissions: permissions,
       user_id: user.id,
     }});
-    const refresh = this.ctx.services.jwtService().createRefreshToken({ partial: { user_id: user.id } });
-    const access_token = this.ctx.services.jwtService().signAccessToken({ access });
-    const refresh_token = this.ctx.services.jwtService().signRefreshToken({ refresh });
+    const refresh = this.ctx.services.jwtService.createRefreshToken({ partial: { user_id: user.id } });
+    const access_token = this.ctx.services.jwtService.signAccessToken({ access });
+    const refresh_token = this.ctx.services.jwtService.signRefreshToken({ refresh });
 
     res.cookie(
       'access_token',
       access_token,
       {
         sameSite: false,
-        domain: this.ctx.services.env().HOST,
-        secure: this.ctx.services.env().is_prod(),
+        domain: this.ctx.services.universal.env.HOST,
+        secure: this.ctx.services.universal.env.is_prod(),
         path: '/',
         httpOnly: true,
-        // expires: new Date(Date.now() + this.ctx.services.env().ACCESS_TOKEN_EXPIRES_IN_MS),
-        maxAge: this.ctx.services.env().ACCESS_TOKEN_EXPIRES_IN_MS,
+        // expires: new Date(Date.now() + this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS),
+        maxAge: this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS,
       },
     );
 
@@ -98,12 +96,12 @@ export class AuthSerivce {
         // by only using this route, we reduce the risk of
         // csrf attack
         sameSite: false,
-        domain: this.ctx.services.env().HOST,
-        secure: this.ctx.services.env().is_prod(),
+        domain: this.ctx.services.universal.env.HOST,
+        secure: this.ctx.services.universal.env.is_prod(),
         path: '/v1/auth/refresh',
         httpOnly: true,
-        // expires: new Date(Date.now() + this.ctx.services.env().REFRESH_TOKEN_EXPIRES_IN_MS),
-        maxAge: this.ctx.services.env().REFRESH_TOKEN_EXPIRES_IN_MS,
+        // expires: new Date(Date.now() + this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS),
+        maxAge: this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS,
       },
     );
 

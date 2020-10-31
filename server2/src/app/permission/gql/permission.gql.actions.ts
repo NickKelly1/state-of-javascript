@@ -2,7 +2,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
 } from "graphql";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { GqlAction, IGqlActionSource } from "../../../common/gql/gql.action";
 import { PermissionModel } from "../permission.model";
 
@@ -13,19 +13,19 @@ export const PermissionGqlActions = new GraphQLObjectType<IPermissionGqlActionsS
     show: {
       type: GraphQLNonNull(GqlAction),
       resolve: async (parent, args, ctx): Promise<IGqlActionSource> => {
-        return { can: ctx.services.permissionPolicy().canFindOne({ model: parent }) };
+        return { can: ctx.services.permissionPolicy.canFindOne({ model: parent }) };
       },
     },
     update: {
       type: GraphQLNonNull(GqlAction),
       resolve: async (parent, args, ctx): Promise<IGqlActionSource> => {
-        return { can: ctx.services.permissionPolicy().canUpdate({ model: parent }) };
+        return { can: ctx.services.permissionPolicy.canUpdate({ model: parent }) };
       },
     },
     delete: {
       type: GraphQLNonNull(GqlAction),
       resolve: async (parent, args, ctx): Promise<IGqlActionSource> => {
-        return { can: ctx.services.permissionPolicy().canDelete({ model: parent }) };
+        return { can: ctx.services.permissionPolicy.canDelete({ model: parent }) };
       },
     },
   },

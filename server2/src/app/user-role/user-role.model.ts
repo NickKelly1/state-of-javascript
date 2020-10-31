@@ -10,6 +10,8 @@ import { PermissionModel, UserModel } from '../../circle';
 import { UserId } from '../user/user.id.type';
 import { RoleId } from '../role/role.id.type';
 import { RoleModel } from '../role/role.model';
+import { UserField } from '../user/user.attributes';
+import { RoleField } from '../role/role.attributes';
 
 
 export class UserRoleModel extends Model<IUserRoleAttributes, IUserRoleCreationAttributes> implements IUserRoleAttributes {
@@ -35,15 +37,19 @@ export class UserRoleModel extends Model<IUserRoleAttributes, IUserRoleCreationA
 
 
 export const initUserRoleModel: ModelInitFn = (arg) => {
-  const { sequelize } = arg;
+  const { sequelize, env } = arg;
   UserRoleModel.init({
     id: AutoIncrementingId,
     user_id: {
       type: DataTypes.INTEGER,
+      references: { model: UserModel as typeof Model, key: UserField.id },
+      unique: 'user_id_role_id',
       allowNull: false,
     },
     role_id: {
       type: DataTypes.INTEGER,
+      references: { model: RoleModel as typeof Model, key: RoleField.id },
+      unique: 'user_id_role_id',
       allowNull: false,
     },
     ...pretendAuditable,

@@ -24,16 +24,19 @@ export const Extractor = (arg: { fromObj: Record<PropertyKey, any>, fromName: st
       const val = extractAssert(name);
       return val;
     },
+
     number(name: string): number {
       const val = Number(extractAssert(name));
       if (!Number.isFinite(val)) throw new TypeError(`${fromName} "${name}" must be a number`);
       return val;
     },
+
     int(name: string): number {
       let val = parseInt(extractAssert(name), 10);
       if (!Number.isFinite(val)) throw new TypeError(`${fromName} "${name}" must be a number`);
       return val;
     },
+
     bool(name: string): boolean {
       let raw = extractAssert(name).trim().toLowerCase();
       if (raw === 'true') return true;
@@ -42,6 +45,7 @@ export const Extractor = (arg: { fromObj: Record<PropertyKey, any>, fromName: st
       if (raw === '0') return false;
       throw new TypeError(`${fromName} "${name}" must be a boolean`);
     },
+
     oneOf: <T extends string>(arg: T[]) => (name: string): T => {
       let val = extractAssert(name);
       if (!arg.some(acceptable => acceptable === val)) {
@@ -49,6 +53,7 @@ export const Extractor = (arg: { fromObj: Record<PropertyKey, any>, fromName: st
       }
       return val as T;
     },
+
     subsetOf: <T extends string>(arg: T[]) => (name: string): T[] => {
       let raw = extract(name) ?? '';
       const strs = raw.split(',').filter(Boolean);

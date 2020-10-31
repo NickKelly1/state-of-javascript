@@ -1,5 +1,5 @@
 import { GraphQLBoolean, GraphQLNonNull, GraphQLObjectType } from "graphql";
-import { GqlContext } from "../../../common/classes/gql.context";
+import { GqlContext } from "../../../common/context/gql.context";
 import { GqlAction, IGqlActionSource } from "../../../common/gql/gql.action";
 import { IGqlNever } from "../../../common/gql/gql.ever";
 
@@ -10,13 +10,13 @@ export const UserCollectionGqlActions = new GraphQLObjectType<IUserCollectionGql
     show: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy().canFindMany();
+        return ctx.services.userPolicy.canFindMany();
       },
     },
     create: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy().canCreate();
+        return ctx.services.userPolicy.canCreate();
       },
     },
   },
