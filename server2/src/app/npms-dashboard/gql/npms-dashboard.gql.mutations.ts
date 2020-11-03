@@ -26,12 +26,17 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
         if (dto.npms_package_ids && dto.npms_package_ids.length) {
           ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate());
           // TODO: verify each individually can be linked...
-          const nextPackages = await ctx.services.npmsPackageRepository.findAll({
-            runner,
-            options: {
-              where: { [NpmsPackageField.id]: { [Op.in]: dto.npms_package_ids, }, },
-            },
-          });
+          const nextPackagesUnsorted = await ctx
+            .services
+            .npmsPackageRepository
+            .findAll({
+              runner,
+              options: {
+                where: { [NpmsPackageField.id]: { [Op.in]: dto.npms_package_ids, }, },
+              },
+            })
+          .then(pkgs => new Map(pkgs.map(pkg => [pkg.id, pkg])));
+          const nextPackages = dto.npms_package_ids.map(id => ctx.assertFound(nextPackagesUnsorted.get(id)));
           await ctx.services.npmsDashboardService.syncItems({
             runner,
             dashboard,
@@ -66,12 +71,17 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
           const prevDashboardItems = assertDefined(dashboard.items);
           ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate());
           // TODO: verify each individually can be linked...
-          const nextPackages = await ctx.services.npmsPackageRepository.findAll({
-            runner,
-            options: {
-              where: { [NpmsPackageField.id]: { [Op.in]: dto.npms_package_ids, }, },
-            },
-          });
+          const nextPackagesUnsorted = await ctx
+            .services
+            .npmsPackageRepository
+            .findAll({
+              runner,
+              options: {
+                where: { [NpmsPackageField.id]: { [Op.in]: dto.npms_package_ids, }, },
+              },
+            })
+          .then(pkgs => new Map(pkgs.map(pkg => [pkg.id, pkg])));
+          const nextPackages = dto.npms_package_ids.map(id => ctx.assertFound(nextPackagesUnsorted.get(id)));
           await ctx.services.npmsDashboardService.syncItems({
             runner,
             dashboard,

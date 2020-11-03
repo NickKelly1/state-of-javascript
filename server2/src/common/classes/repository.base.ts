@@ -185,8 +185,7 @@ export abstract class BaseRepository<M extends Model<any, any>> {
       unscoped?: boolean;
     },
   ): Promise<M> {
-    const result = await this.findByPk(pk, arg);
-    if (!result) throw this.ctx.except(NotFoundException());
+    const result = this.ctx.assertFound(await this.findByPk(pk, arg));
     return result;
   }
 

@@ -27,7 +27,6 @@ export class GqlContext extends BaseContext implements IRequestContext {
   get services(): IRequestServices { return this._req.__locals__.services; }
   get auth(): RequestAuth { return this._req.__locals__.auth; }
 
-
   static create(arg: {
     req: Request;
     res: Response;

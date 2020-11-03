@@ -14,6 +14,8 @@ import { IRequestContext, IThrowable } from "../interfaces/request-context.inter
 import { IRequestServices } from "../interfaces/request.services.interface";
 import { Loader } from "../classes/loader";
 import { RequestAuth } from "../classes/request-auth";
+import { OrNullable } from "../types/or-nullable.type";
+import { NotFoundException } from "../exceptions/types/not-found.exception";
 
 export abstract class BaseContext implements IRequestContext {
   abstract readonly auth: RequestAuth;
@@ -30,6 +32,11 @@ export abstract class BaseContext implements IRequestContext {
 
   authorize(can: boolean): void | never {
     if (!can) throw this.except(ForbiddenException());
+  }
+
+  assertFound<T>(arg: OrNullable<T>): T {
+    if (!arg) throw this.except(NotFoundException());
+    return arg;
   }
 
   except(throwable: IThrowable): Exception {
