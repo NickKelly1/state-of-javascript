@@ -25,7 +25,7 @@ import {
 } from 'recharts';
 import { NpmsPackageInfos } from '../../npms-api/types/npms-package-info.type';
 import { Attempt, attemptAsync, } from '../../helpers/attempted.helper';
-import { NormalisedError } from '../../helpers/normalise-error.helper';
+import { NormalisedError, normaliseError } from '../../helpers/normalise-error.helper';
 import { NpmPackagesDashboard } from '../../components/npm-packages-dashboard/npm-packages-dashboard';
 import { WithAttempted } from '../../components/with-attempted/with-attempted';
 import { staticPathsHandler, staticPropsHandler } from '../../helpers/static-props-handler.helper';
@@ -269,15 +269,15 @@ async function getProps(args: { cms: Cms, npmsApi: NpmsApi }): Promise<IHomeProp
     frontendPackages,
     fullstackPackages,
   ] = await Promise.all([
-    attemptAsync(resourcesRequest),
-    attemptAsync(toolsRequest),
-    attemptAsync(storiesRequest),
-    attemptAsync(httpServerPackagesRequest),
-    // attemptAsync(wssPackagesRequest),
-    attemptAsync(ormPackagesRequest),
-    // attemptAsync(cmsPackagesRequest),
-    attemptAsync(frontendPackagesRequest),
-    attemptAsync(fullstackPackagesRequest),
+    attemptAsync(resourcesRequest, normaliseError),
+    attemptAsync(toolsRequest, normaliseError),
+    attemptAsync(storiesRequest, normaliseError),
+    attemptAsync(httpServerPackagesRequest, normaliseError),
+    // attemptAsync(wssPackagesRequest, normaliseError),
+    attemptAsync(ormPackagesRequest, normaliseError),
+    // attemptAsync(cmsPackagesRequest, normaliseError),
+    attemptAsync(frontendPackagesRequest, normaliseError),
+    attemptAsync(fullstackPackagesRequest, normaliseError),
   ]);
 
   return {

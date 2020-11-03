@@ -2,7 +2,7 @@ import { Language } from "../consts/language.enum";
 
 export const NpmsLang = {
   AlreadyExists: (arg: { names: string[] }) => ({
-    [Language.En]: `npms names "${arg.names.join('", "')}" already exists`,
+    [Language.En]: `"${arg.names.join('", "')}" ${arg.names.length > 1 ? 'are' : 'is' } already linked`,
     [Language.Ger]: '__TODO__',
   }),
 

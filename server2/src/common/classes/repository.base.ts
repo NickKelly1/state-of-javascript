@@ -1,4 +1,4 @@
-import { FindOptions, Identifier, Model, Model as TModelAttributes, ModelCtor, Op, WhereOptions } from "sequelize";
+import { FindOptions, Identifier, Model, ModelCtor, Op, Order, OrderItem, WhereOptions } from "sequelize";
 import { QueryRunner } from "../../app/db/query-runner";
 import { NotFoundException } from "../exceptions/types/not-found.exception";
 import { ist } from "../helpers/ist.helper";
@@ -14,12 +14,21 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     //
   }
 
+
   /**
    * Default dynamic scope for queries
    * Overridable
    * Can reference the ctx
    */
   protected scope(): OrUndefined<WhereOptions<M['_attributes']>> {
+    return undefined;
+  }
+
+
+  /**
+   * Default ordering - overridable
+   */
+  protected order(): OrUndefined<Order> {
     return undefined;
   }
 
@@ -38,26 +47,47 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     const scope = unscoped ? undefined : this.scope?.();
 
     if (definedWheres.length) {
-      if (scope) {
-        // both
-        return { [Op.and]: [...definedWheres, scope] };
-      }
+      // both
+      if (scope) { return { [Op.and]: [...definedWheres, scope] }; }
 
-      if (definedWheres.length > 1) {
-        // more than 1 where
-        return { [Op.and]: definedWheres };
-      }
+      // more than 1 where
+      if (definedWheres.length > 1) { return { [Op.and]: definedWheres }; }
 
       // only 1 where
       return definedWheres[0];
     }
 
     // only scope
-    if (scope) {
-      return scope;
-    }
+    if (scope) { return scope; }
 
     // neither
+    return undefined;
+  }
+
+
+  /**
+   * Build an order clause
+   * 
+   * @param requestOrder 
+   */
+  protected buildOrder(
+    requestOrder?: OrNullable<Order>,
+    opts?: {
+      unordered?: boolean,
+    },
+  ): OrUndefined<Order> {
+    const { unordered } = opts ?? {};
+    const order: OrderItem[] = [];
+    if (Array.isArray(requestOrder)) { order.push(...requestOrder); }
+    else if (ist.defined(requestOrder)) { order.push(requestOrder) }
+    if (!unordered) {
+      const defaultOrder = this.order();
+      if (ist.defined(defaultOrder)) {
+        if (Array.isArray(defaultOrder)) { order.push(...defaultOrder) }
+        else if (ist.defined(defaultOrder)) { order.push(defaultOrder); }
+      }
+    }
+    if (order.length) return order;
     return undefined;
   }
 
@@ -76,7 +106,12 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     const transaction = runner?.transaction;
     const { where: optionsWhere, ...otherFindOpts } = options ?? {};
     const where = this.buildWhere([optionsWhere], { unscoped });
-    const result = await this.Model.findAll({ ...otherFindOpts, transaction, where, });
+    const result = await this.Model.findAll({
+      ...otherFindOpts,
+      transaction,
+      where,
+      order: this.buildOrder(options?.order),
+    });
     return result;
   }
 
@@ -90,12 +125,18 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     runner: OrNull<QueryRunner>,
     options?: Omit<FindOptions<M['_attributes']>, 'transaction'>,
     unscoped?: boolean;
+    unordered?: boolean;
   }): Promise<IRowsWithCount<M>> {
-    const { runner, options, unscoped } = arg;
+    const { runner, options, unscoped, unordered } = arg;
     const transaction = runner?.transaction;
     const { where: optionsWhere, ...otherFindOpts } = options ?? {};
     const where = this.buildWhere([optionsWhere], { unscoped });
-    const result = await this.Model.findAndCountAll({ ...otherFindOpts, transaction, where, });
+    const result = await this.Model.findAndCountAll({
+      ...otherFindOpts,
+      transaction,
+      where,
+      order: this.buildOrder(options?.order, { unordered }),
+    });
     return result;
   }
 
@@ -120,7 +161,12 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     const pkField = this.Model.primaryKeyAttribute;
     const pkWhere: WhereOptions = { [pkField]: { [Op.eq]: pk } };
     const where = this.buildWhere([optionsWhere, pkWhere], { unscoped });
-    const result = await this.Model.findOne({ ...otherFindOpts, transaction, where, });
+    const result = await this.Model.findOne({
+      ...otherFindOpts,
+      transaction,
+      where,
+      order: this.buildOrder(options?.order),
+    });
     return result;
   }
 
@@ -159,7 +205,12 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     const transaction = runner?.transaction;
     const { where: optionsWhere, ...otherFindOpts } = options ?? {};
     const where = this.buildWhere([optionsWhere], { unscoped });
-    const result = await this.Model.findOne({ ...otherFindOpts, transaction, where, });
+    const result = await this.Model.findOne({
+      ...otherFindOpts,
+      transaction,
+      where,
+      order: this.buildOrder(options?.order),
+    });
     return result;
   }
 

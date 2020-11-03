@@ -71,7 +71,6 @@ export class ApiConnector {
       const result = await doTry();
       return result;
     } catch(error) {
-      // const exception = 
       const exception = normaliseApiException(error);
       if (exception?.code !== 401) throw error;
       const { authenticated } = await this.credentials.forceSync();

@@ -19,8 +19,11 @@ export const unwrapAttempt = <T>(attempt: Attempt<T, any>): T => {
   throw new TypeError('Failed asserting that attempt was successful');
 }
 
-export async function attemptAsync<T>(promise: Promise<T>): Promise<Attempt<T, NormalisedError>> {
-  const result = promise.then(success).catch(pipe(normaliseError, fail));
+export async function attemptAsync<T, U>(
+  promise: Promise<T>,
+  normalise: ((unk: unknown) => U),
+): Promise<Attempt<T, U>> {
+  const result = promise.then(success).catch(pipe(normalise, fail));
   return result;
 }
 

@@ -4,7 +4,7 @@ import { NpmsPackageId } from '../../npms-package/npms-package.id.type';
 
 export interface ICreateNpmsDashboardItemInput {
   dashboard_id: number;
-  npms_id: NpmsPackageId;
+  npms_package_id: NpmsPackageId;
 }
 
 export const CreateNpmsDashboardItemGqlInput = new GraphQLInputObjectType({
@@ -17,5 +17,5 @@ export const CreateNpmsDashboardItemGqlInput = new GraphQLInputObjectType({
 
 export const CreateNpmsDashboardItemValidator = Joi.object<ICreateNpmsDashboardItemInput>({
   dashboard_id: Joi.number().integer().positive(),
-  npms_id: Joi.number().integer().positive(),
+  npms_package_id: Joi.number().integer().positive(),
 });

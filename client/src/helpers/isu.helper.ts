@@ -18,4 +18,11 @@ export const isu = {
     if (!ist.obj(unk)) return false;
     return Object.values(unk).every(ist.arrOf(ist.str));
   },
+  hasExtensionException: (unk: unknown): unk is { extensions: { exception: unknown } } => {
+    return (
+      ist.obj(unk)
+      && ist.notNullable((unk as GraphQLError).extensions)
+      && ist.notNullable((unk as GraphQLError).extensions?.exception)
+    );
+  }
 }

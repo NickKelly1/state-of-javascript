@@ -62,9 +62,10 @@ function CreateNewsPage(props: ICreateNewsPageProps) {
     },
   );
 
-  const handleSave = useCallback(async (data: INewsArticleFormData) => {
+  const handleSave = useCallback(async (data: INewsArticleFormData): boolean => {
     const { title, teaser, body } = data;
     await postNewsArticle({ title, teaser, body });
+    return true;
   }, [postNewsArticle]);
 
   return (

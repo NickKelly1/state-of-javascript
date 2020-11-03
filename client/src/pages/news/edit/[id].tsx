@@ -135,11 +135,12 @@ function EditNewsArticlePage(props: IEditNewsArticlePageProps) {
     },
   );
 
-  const handleSave = useCallback(async (data: INewsArticleFormData) => {
+  const handleSave = useCallback(async (data: INewsArticleFormData): boolean => {
     const id = article?.data.id;
     if (ist.nullable(id)) throw new Error('id not defined...');
     const { title, teaser, body } = data;
     await saveNewsArticle({ id, title, teaser, body });
+    return true;
   }, [article?.data.id, saveNewsArticle]);
 
   // TODO:

@@ -1,8 +1,6 @@
-import Home, {
-  // getServerSideProps as reExportgetServerSideProps,
-  getStaticProps as reExportGetStaticProps,
-} from './home/index';
+// import Home, { getStaticProps as reExportGetStaticProps, } from './home/index';
+import Home, { getStaticProps as reExportGetStaticProps, } from './js/index';
 
 export default Home;
-// export const getServerSideProps;
+
 export const getStaticProps = reExportGetStaticProps;

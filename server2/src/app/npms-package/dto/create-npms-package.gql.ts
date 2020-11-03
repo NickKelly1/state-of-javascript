@@ -14,7 +14,6 @@ export const CreateNpmsPackageGqlInput = new GraphQLInputObjectType({
   }),
 })
 
-
 export const CreateNpmsPackageValidator = Joi.object<ICreateNpmsPackageInput>({
   name: Joi.string().min(NpmsPackageDefinition.name.min).max(NpmsPackageDefinition.name.max).required(),
 });

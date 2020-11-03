@@ -22,6 +22,7 @@ import { PieChartDatum } from '../../types/pie-chart-datum.type';
 import { WithoutFirstLoad } from '../without-first-load/without-first-load';
 
 export interface IFittedBarChartProps<T extends string = string> {
+  borderless?: boolean;
   colours: string[];
   height: number;
   definition: MultiDimensionDataDefinition<T>
@@ -29,7 +30,7 @@ export interface IFittedBarChartProps<T extends string = string> {
 
 
 export function FittedBarChart<T extends string = string>(props: IFittedBarChartProps<T>) {
-  const { definition, colours, height, } = props;
+  const { definition, colours, height, borderless, } = props;
 
   const usingColours = colours;
 
@@ -57,7 +58,12 @@ export function FittedBarChart<T extends string = string>(props: IFittedBarChart
           <YAxis />
           {/* <Tooltip /> */}
           {bars.map(bar => (
-            <Bar key={bar.key} dataKey={bar.key} fill={bar.colour} />
+            <Bar
+              stroke={borderless ? "none" : undefined}
+              key={bar.key}
+              dataKey={bar.key}
+              fill={bar.colour}
+            />
           ))}
         </BarChart>
       </ResponsiveContainer>

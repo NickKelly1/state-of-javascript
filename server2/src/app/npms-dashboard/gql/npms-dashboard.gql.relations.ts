@@ -54,13 +54,19 @@ export const NpmsDashboardGqlRelations: GraphQLObjectType<INpmsDashboardGqlRelat
         const { page, options } = transformGqlQuery(args);
         const { rows, count } = await ctx.services.npmsPackageRepository.findAllAndCount({
           runner: null,
+          unordered: true,
           options: {
             ...options,
             where: andWhere([ options.where, ]),
-            include: [{
-              association: NpmsPackageAssociation.dashboards,
-              where: { id: { [Op.eq]: parent.id }, },
-            }],
+            include: [
+              {
+                association: NpmsPackageAssociation.dashboards,
+                where: { id: { [Op.eq]: parent.id }, },
+              }, {
+                association: NpmsPackageAssociation.dashboard_items,
+                order: [[NpmsDashboardItemField.order, 'ASC']],
+              }
+            ],
           },
         });
         const pagination = collectionMeta({ data: rows, total: count, page });

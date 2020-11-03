@@ -31,13 +31,14 @@ const useStyles = makeStyles((theme) => ({
 export interface ILegendProps {
   names: string[];
   colours: string[];
+  className?: string;
 }
 
 export function Legend(props: ILegendProps) {
-  const { colours, names } = props;
+  const { colours, names, className, } = props;
   const classes = useStyles();
   return (
-    <ul className={classes.legend}>
+    <ul className={clsx(className, classes.legend)}>
       {names.map((name, i) => (
         <li className={classes.legend_item} key={i}>
           <Box mr={2} className={classes.legend_item_colour} style={{ backgroundColor: ring(colours, i) }}/>

@@ -16,6 +16,7 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   // fields
   [NpmsDashboardField.id]!: NpmsDashboardId;
   [NpmsDashboardField.name]!: string;
+  [NpmsDashboardField.order]!: number;
 
   [NpmsDashboardField.created_at]!: Date;
   [NpmsDashboardField.updated_at]!: Date;
@@ -39,6 +40,7 @@ export const initNpmsDashboardModel: ModelInitFn = (arg) => {
   NpmsDashboardModel.init({
     id: AutoIncrementingId,
     name: { type: DataTypes.STRING(NpmsDashboardDefinition.name.max), allowNull: false, },
+    order: { type: DataTypes.INTEGER, allowNull: false, },
     ...pretendAuditable,
     ...pretendSoftDeleteable,
   }, {

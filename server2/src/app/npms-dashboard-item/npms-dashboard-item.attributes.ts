@@ -12,12 +12,14 @@ export interface INpmsDashboardItemAttributes extends IAuditable {
   id: NpmsDashboardItemId;
   dashboard_id: NpmsDashboardId;
   npms_package_id: NpmsPackageId;
+  order: number,
 }
 
 export const NpmsDashboardItemField: K2K<INpmsDashboardItemAttributes> = {
   id: 'id',
   dashboard_id: 'dashboard_id',
   npms_package_id: 'npms_package_id',
+  order: 'order',
   [created_at]: created_at,
   [updated_at]: updated_at,
 }

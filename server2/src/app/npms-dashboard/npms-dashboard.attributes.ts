@@ -13,11 +13,13 @@ import { NpmsDashboardId } from "./npms-dashboard.id.type";
 export interface INpmsDashboardAttributes extends IAuditable, ISoftDeleteable {
   id: NpmsDashboardId;
   name: string;
+  order: number;
 }
 
 export const NpmsDashboardField: K2K<INpmsDashboardAttributes> = {
   id: 'id',
   name: 'name',
+  order: 'order',
   [created_at]: created_at,
   [updated_at]: updated_at,
   [deleted_at]: deleted_at,

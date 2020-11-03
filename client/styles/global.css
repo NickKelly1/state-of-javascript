@@ -1,8 +1,29 @@
 
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
 .centered {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  overflow-y: auto;
+  max-width: 80vw;
+  max-height: 100vh;
+  outline: none;
 }
 
 .btn-link:hover {
@@ -11,6 +32,10 @@
 
 .col {
   flex-direction: column;
+}
+
+.row {
+  flex-direction: row;
 }
 
 .d-flex {

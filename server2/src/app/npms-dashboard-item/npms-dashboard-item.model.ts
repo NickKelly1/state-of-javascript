@@ -21,6 +21,7 @@ export class NpmsDashboardItemModel extends Model<INpmsDashboardItemAttributes, 
   [NpmsDashboardItemField.id]!: NpmsDashboardItemId;
   [NpmsDashboardItemField.dashboard_id]!: NpmsDashboardId;
   [NpmsDashboardItemField.npms_package_id]!: NpmsPackageId;
+  [NpmsDashboardItemField.order]!: number;
 
   [NpmsDashboardItemField.created_at]!: Date;
   [NpmsDashboardItemField.updated_at]!: Date;
@@ -53,6 +54,10 @@ export const initNpmsDashboardItemModel: ModelInitFn = (arg) => {
       type: DataTypes.INTEGER,
       references: { model: NpmsPackageModel as typeof Model, key: NpmsPackageField.id },
       unique: 'dashboard_id_npms_package_id',
+      allowNull: false,
+    },
+    order: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     ...pretendAuditable,
