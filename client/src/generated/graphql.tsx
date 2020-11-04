@@ -865,6 +865,7 @@ export type NpmsDashboardItemData = {
   id: Scalars['Int'];
   dashboard_id: Scalars['Int'];
   npms_package_id: Scalars['Int'];
+  order: Scalars['Int'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
@@ -894,6 +895,7 @@ export type NpmsDashboardData = {
   __typename?: 'NpmsDashboardData';
   id: Scalars['Int'];
   name: Scalars['String'];
+  order: Scalars['Int'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
@@ -1099,6 +1101,7 @@ export type CreateNpmsDashboard = {
 export type UpdateNpmsDashboard = {
   id: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
+  npms_package_ids?: Maybe<Array<Scalars['Int']>>;
 };
 
 export type DeleteNpmsDashboard = {
@@ -1123,6 +1126,28 @@ export type CreateNpmsDashboardFormMutationVariables = Exact<{
 export type CreateNpmsDashboardFormMutation = (
   { __typename?: 'RootMutationType' }
   & { createNpmsDashboard: (
+    { __typename?: 'NpmsDashboardNode' }
+    & Pick<NpmsDashboardNode, 'cursor'>
+    & { can: (
+      { __typename?: 'NpmsDashboardActions' }
+      & Pick<NpmsDashboardActions, 'show' | 'update' | 'delete'>
+    ), data: (
+      { __typename?: 'NpmsDashboardData' }
+      & Pick<NpmsDashboardData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
+export type UpdateNpmsDashboardFormMutationVariables = Exact<{
+  id: Scalars['Int'];
+  name: Scalars['String'];
+  npms_package_ids?: Maybe<Array<Scalars['Int']>>;
+}>;
+
+
+export type UpdateNpmsDashboardFormMutation = (
+  { __typename?: 'RootMutationType' }
+  & { updateNpmsDashboard: (
     { __typename?: 'NpmsDashboardNode' }
     & Pick<NpmsDashboardNode, 'cursor'>
     & { can: (
@@ -1174,6 +1199,26 @@ export type SearchNpmsPackageQuery = (
         & Pick<NpmsPackageData, 'id' | 'name'>
       ) }
     )>> }
+  ) }
+);
+
+export type JsPageDeleteDashboardMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type JsPageDeleteDashboardMutation = (
+  { __typename?: 'RootMutationType' }
+  & { deleteNpmsDashboard: (
+    { __typename?: 'NpmsDashboardNode' }
+    & Pick<NpmsDashboardNode, 'cursor'>
+    & { can: (
+      { __typename?: 'NpmsDashboardActions' }
+      & Pick<NpmsDashboardActions, 'show' | 'update' | 'delete'>
+    ), data: (
+      { __typename?: 'NpmsDashboardData' }
+      & Pick<NpmsDashboardData, 'id' | 'name'>
+    ) }
   ) }
 );
 

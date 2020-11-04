@@ -1,4 +1,4 @@
-import { Box, Button, FormHelperText, Grid, InputLabel, makeStyles, Modal, Paper, TextField, Typography } from '@material-ui/core';
+import { Box, Button, CircularProgress, FormHelperText, Grid, InputLabel, makeStyles, Modal, Paper, TextField, Typography } from '@material-ui/core';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import clsx from 'clsx';
 import { gql } from 'graphql-request';
@@ -7,12 +7,12 @@ import { useMutation } from 'react-query';
 import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { ApiContext } from '../../contexts/api.context';
-import { CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables } from '../../generated/graphql';
+import { CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables, UpdateNpmsDashboardFormMutation, UpdateNpmsDashboardFormMutationVariables } from '../../generated/graphql';
 import { ist } from '../../helpers/ist.helper';
 import { useSequence } from '../../hooks/use-sequence.hook';
 import { Id } from '../../types/id.type';
 import { OrNull } from '../../types/or-null.type';
-import { CreateNpmsPackageForm, ICreateNpmsPackageFormOnSuccessFn } from '../create-npms-package/create-npms-package.form';
+import { MutateNpmsPackageForm, IMutateNpmsPackageFormOnSuccessFn } from '../mutate-npms-package/mutate-npms-package.form';
 import { INpmsPackageSearchOption, NpmsPackageComboSearch } from '../npms-package-combo-search/npms-package-combo-search';
 
 // TODO: updating vs creating...
@@ -43,12 +43,14 @@ mutation CreateNpmsDashboardForm(
 
 const UpdateNpmsDashboardQuery = gql`
 mutation UpdateNpmsDashboardForm(
-  $name:String!,
+  $id:Int!,
+  $name:String!
   $npms_package_ids:[Int!]
 ){
   updateNpmsDashboard(
     dto:{
-      name:$name
+      id:$id,
+      name:$name,
       npms_package_ids:$npms_package_ids
     }
   ){
@@ -80,12 +82,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-export interface ICreateNpmsDashboardFormOnSuccessFn {
-  (result: CreateNpmsDashboardFormMutation): any;
+export interface IMutateNpmsDashboardFormOnSuccessFnArg { id: Id; name: string; };
+export interface IMutateNpmsDashboardFormOnSuccessFn {
+  (result: IMutateNpmsDashboardFormOnSuccessFnArg): any;
 }
-
-export interface ICreateNpmsDashboardFormProps {
-  onSuccess?: ICreateNpmsDashboardFormOnSuccessFn;
+export interface IMutateNpmsDashboardFormProps {
+  title: string;
+  onSuccess?: IMutateNpmsDashboardFormOnSuccessFn;
   initial?: {
     id: Id;
     name: string;
@@ -95,14 +98,14 @@ export interface ICreateNpmsDashboardFormProps {
 
 interface IDashboardPackageOption { key: string; option: OrNull<INpmsPackageSearchOption>; };
 
-export function CreateNpmsDashboardForm(props: ICreateNpmsDashboardFormProps) {
-  const { onSuccess, initial } = props;
+export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
+  const { onSuccess, initial, title } = props;
   const classes = useStyles();
   const { api, me } = useContext(ApiContext);
   const seq = useSequence();
 
   const _initial = useMemo(() => initial, []);
-  const [dashboardName, setDashboardName] = useState(_initial?.name);
+  const [dashboardName, setDashboardName] = useState(_initial?.name ?? '');
   const [packages, setPackages] = useState<IDashboardPackageOption[]>(() => [
     ...(_initial?.packages ?? []).map((option): IDashboardPackageOption => ({ key: seq.next().toString(), option, })),
     { key: seq.next().toString(), option: null, },
@@ -138,7 +141,7 @@ export function CreateNpmsDashboardForm(props: ICreateNpmsDashboardFormProps) {
 
   const [createNpmsPackageModalOpen, setCreateNpmsPackageModalOpen] = useState(false);
 
-  const handleNpmsPackageCreated: ICreateNpmsPackageFormOnSuccessFn = useCallback((result) => {
+  const handleNpmsPackageCreated: IMutateNpmsPackageFormOnSuccessFn = useCallback((result) => {
     setPackages((prev): IDashboardPackageOption[] => {
       const option: INpmsPackageSearchOption = { id: result.createNpmsPackage.data.id, name: result.createNpmsPackage.data.name };
       // initialise
@@ -175,16 +178,49 @@ export function CreateNpmsDashboardForm(props: ICreateNpmsDashboardFormProps) {
   }, []);
   
 
-  const [submitForm, formState] = useMutation<CreateNpmsDashboardFormMutation, IApiException, CreateNpmsDashboardFormMutationVariables>(
-    async (vars: CreateNpmsDashboardFormMutationVariables) => {
-      const result = await api
-        .connector
-        .graphql<CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables>(
-          CreateNpmsDashboardQuery,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
-      return result;
+  interface ISubmitFnArgs { name: string; npms_package_ids: number[]; }
+  const [submitForm, formState] = useMutation<IMutateNpmsDashboardFormOnSuccessFnArg, IApiException, ISubmitFnArgs>(
+    async (arg: ISubmitFnArgs) => {
+      if (ist.nullable(_initial)) {
+        // create
+        const vars: CreateNpmsDashboardFormMutationVariables = {
+          name: arg.name,
+          npms_package_ids: arg.npms_package_ids,
+        };
+        const result = await api
+          .connector
+          .graphql<CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables>(
+            CreateNpmsDashboardQuery,
+            vars,
+          )
+          .catch(rethrow(normaliseApiException));
+        const final: IMutateNpmsDashboardFormOnSuccessFnArg = {
+          id: result.createNpmsDashboard.data.id,
+          name: result.createNpmsDashboard.data.name,
+        }
+        return final;
+      }
+
+      else {
+        // update
+        const vars: UpdateNpmsDashboardFormMutationVariables = {
+          id: Number(_initial.id),
+          name: arg.name,
+          npms_package_ids: arg.npms_package_ids,
+        };
+        const result = await api
+          .connector
+          .graphql<UpdateNpmsDashboardFormMutation, UpdateNpmsDashboardFormMutationVariables>(
+            UpdateNpmsDashboardQuery,
+            vars,
+          )
+          .catch(rethrow(normaliseApiException));
+        const final: IMutateNpmsDashboardFormOnSuccessFnArg = {
+          id: result.updateNpmsDashboard.data.id,
+          name: result.updateNpmsDashboard.data.name,
+        }
+        return final;
+      }
     },
     { onSuccess, },
   );
@@ -210,7 +246,7 @@ export function CreateNpmsDashboardForm(props: ICreateNpmsDashboardFormProps) {
         aria-describedby="edit-dashboard"
       >
         <Paper className={clsx('modal-content', classes.paper)}>
-          <CreateNpmsPackageForm onSuccess={handleNpmsPackageCreated} />
+          <MutateNpmsPackageForm onSuccess={handleNpmsPackageCreated} />
         </Paper>
       </Modal>
       <Grid container spacing={2}>
@@ -219,12 +255,11 @@ export function CreateNpmsDashboardForm(props: ICreateNpmsDashboardFormProps) {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Typography component="h2" variant="h2">
-                  Create a new dashboard
+                  {title}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
                 <InputLabel className={classes.label} htmlFor="create_npms_dashboard_name">name</InputLabel>
-                {/* <Input */}
                 <TextField
                   id="create_npms_dashboard_name"
                   disabled={isDisabled}
@@ -233,6 +268,11 @@ export function CreateNpmsDashboardForm(props: ICreateNpmsDashboardFormProps) {
                   helperText={error?.data?.name?.join('\n')}
                   onChange={(evt) => { setDashboardName(evt.target.value); }}
                 />
+                {_initial && (
+                  <FormHelperText>
+                    {`formerly ${_initial.name}`}
+                  </FormHelperText>
+                )}
               </Grid>
               {packages.map((pkg, i) => (
                 <Grid key={pkg.key} item xs={12}>
@@ -283,6 +323,11 @@ export function CreateNpmsDashboardForm(props: ICreateNpmsDashboardFormProps) {
                   <FormHelperText className="centered" error>
                     {error.message}
                   </FormHelperText>
+                </Grid>
+              )}
+              {isDisabled && (
+                <Grid item xs={12} sm={12}>
+                  <CircularProgress />
                 </Grid>
               )}
             </Grid>

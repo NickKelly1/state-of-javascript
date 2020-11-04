@@ -46,16 +46,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export interface ICreateNpmsPackageFormOnSuccessFn {
+export interface IMutateNpmsPackageFormOnSuccessFn {
   (result: CreateNpmsPackageFormMutation): any;
 }
 
 export interface ICreateNpmsPackageFormProps {
-  onSuccess?: ICreateNpmsPackageFormOnSuccessFn;
+  onSuccess?: IMutateNpmsPackageFormOnSuccessFn;
   className?: string;
 }
 
-export function CreateNpmsPackageForm(props: ICreateNpmsPackageFormProps) {
+export function MutateNpmsPackageForm(props: ICreateNpmsPackageFormProps) {
   const { onSuccess, className } = props;
   const { api, me, } = useContext(ApiContext);
   const classes = useStyles();
@@ -73,7 +73,7 @@ export function CreateNpmsPackageForm(props: ICreateNpmsPackageFormProps) {
         .catch(rethrow(normaliseApiException));
       return result;
     },
-    { onSuccess: (result) => { onSuccess?.(result); }, }
+    { onSuccess, }
   );
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback((evt) => {
