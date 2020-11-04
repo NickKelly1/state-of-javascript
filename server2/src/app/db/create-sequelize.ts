@@ -12,7 +12,7 @@ export function createSequelize(arg: { env: EnvService }): Sequelize {
     database: env.PG_DB,
     password: env.PG_PSW,
     username: env.PG_USER,
-    logging: (sql) => { console.log('TEST', sql); logger.info(`sql: ${sql}`) }, // logger.info(pretty({ timing, sql })),
+    logging: (sql) => { logger.info(`sql: ${sql}`) }, // logger.info(pretty({ timing, sql })),
   });
 
   return sequelize;
