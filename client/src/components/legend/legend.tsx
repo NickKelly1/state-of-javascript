@@ -42,9 +42,9 @@ export function Legend(props: ILegendProps) {
       {names.map((name, i) => (
         <li className={classes.legend_item} key={i}>
           <Box mr={2} className={classes.legend_item_colour} style={{ backgroundColor: ring(colours, i) }}/>
-          <span>
+          <Box textAlign="left">
             {name}
-          </span>
+          </Box>
         </li>
       ))}
     </ul>

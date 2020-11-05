@@ -35,7 +35,7 @@ export function serverSidePropsHandler<
     ctx.res.on('finish', () => {
       const end = Date.now();
       const dur = end - start;
-      console.log(`${ctx.req.url}?${params?.toString() ?? ''}\t${ctx.res.statusCode}\t+${dur}ms`)
+      Debug.ServerSideProps(`[${serverSidePropsHandler.name}] ${ctx.req.url}?${params?.toString() ?? ''}\t${ctx.res.statusCode}\t+${dur}ms`)
     });
     const publicEnv = PublicEnvSingleton;
     const cms = CmsFactory({ publicEnv });

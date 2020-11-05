@@ -11,6 +11,7 @@ import { NpmsApiProvider } from '../contexts/npms-api.context';
 import { CmsProvider } from '../contexts/cms.context';
 import { PublicEnvProvider } from '../contexts/public-env.context';
 import { AppProps } from 'next/app';
+import { DebugModeProvider } from '../contexts/debug-mode.context';
 
 interface IMyAppProps extends AppProps {
   //
@@ -34,17 +35,19 @@ export default function MyApp(props: IMyAppProps) {
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
       <PublicEnvProvider>
-        <ApiProvider>
-          <CmsProvider>
-            <NpmsApiProvider>
-              <ThemeProvider theme={theme}>
-                {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-                <CssBaseline />
-                <Layout appProps={props} />
-              </ThemeProvider>
-            </NpmsApiProvider>
-          </CmsProvider>
-        </ApiProvider>
+        <DebugModeProvider>
+          <ApiProvider>
+            <CmsProvider>
+              <NpmsApiProvider>
+                <ThemeProvider theme={theme}>
+                  {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+                  <CssBaseline />
+                  <Layout appProps={props} />
+                </ThemeProvider>
+              </NpmsApiProvider>
+            </CmsProvider>
+          </ApiProvider>
+        </DebugModeProvider>
       </PublicEnvProvider>
     </React.Fragment>
   );

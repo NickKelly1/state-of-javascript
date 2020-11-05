@@ -1,4 +1,12 @@
-import React, { Fragment, MouseEventHandler, PureComponent, useCallback, useContext, useMemo, useState } from 'react';
+import React, {
+  Fragment,
+  MouseEventHandler,
+  PureComponent,
+  useCallback,
+  useContext,
+  useMemo,
+  useState } from 'react';
+import BugReportIcon from '@material-ui/icons/BugReport';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
@@ -6,7 +14,19 @@ import clsx from 'clsx';
 import Next, { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import { serverSidePropsHandler } from '../../helpers/server-side-props-handler.helper';
-import { Box, Button, Grid, Link, makeStyles, Modal, Paper, Typography, withTheme } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Link,
+  makeStyles,
+  Modal,
+  Paper,
+  Typography,
+  withTheme } from '@material-ui/core';
 import { ArticleCmsResource } from '../../cms/types/article.cms.resource';
 import { ResourceCmsResource } from '../../cms/types/resource.cms.resource';
 import { ArticleCard } from '../../components/article-card/article-card';
@@ -56,6 +76,9 @@ import { MutateNpmsDashboardForm, IMutateNpmsDashboardFormOnSuccessFn } from '..
 import { ApiContext } from '../../contexts/api.context';
 import { ist } from '../../helpers/ist.helper';
 import { Id } from '../../types/id.type';
+import { useUpdate } from '../../hooks/use-update.hook';
+import { DebugModeContext } from '../../contexts/debug-mode.context';
+import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms-dashboard/npms-dashboard';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -253,7 +276,7 @@ const defaultQueryVars: JsPageDashboardQueryVariables = {
 
 function JavaScriptPage(props: IJavaScriptPageProps) {
   // do refresh...
-  const { api } = useContext(ApiContext);
+  const { api, me } = useContext(ApiContext);
 
   const [dashboards, setDashboards] = useState<Attempt<JsPageDashboardQuery, IApiException>>(props.dashboards);
 
@@ -261,6 +284,9 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
     const result = await runDashboardsQuery(api, defaultQueryVars);
     setDashboards(result);
   }, []);
+
+  // refresh if user changes
+  useUpdate(() => { refreshDashboards() }, [me?.id]);
 
   return (
     <JavaScriptPageContent
@@ -286,60 +312,9 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
   const { api, me } = useContext(ApiContext);
   const colours = useRandomDashColours();
 
-  interface IDash {
-    original: {
-      id: Id;
-      name: string;
-      packages: INpmsPackageSearchOption[];
-    };
-    name: string;
-    colours: string[];
-    can: {
-      show: boolean,
-      update: boolean,
-      delete: boolean,
-    },
-    overview: {
-      legend: { names: string[]; colours: string[]; };
-      downloads: PieChartDatum[];
-      growth: PieChartDatum[];
-      summary: MultiDimensionDataDefinition;
-    };
-    quality: {
-      carefulness: MultiDimensionDataDefinition;
-      tests: MultiDimensionDataDefinition;
-      health: MultiDimensionDataDefinition;
-      branding: MultiDimensionDataDefinition;
-    };
-    popularity: {
-      communityInterest: MultiDimensionDataDefinition;
-      downloadCount: MultiDimensionDataDefinition;
-      downloadAcceleration: MultiDimensionDataDefinition;
-      dependentCount: MultiDimensionDataDefinition;
-    };
-    maintenance: {
-      releaseFrequency: MultiDimensionDataDefinition;
-      commitFrequency: MultiDimensionDataDefinition;
-      openIssues: MultiDimensionDataDefinition;
-      issuesDistribution: MultiDimensionDataDefinition;
-    };
-    npm: {
-      stars: MultiDimensionDataDefinition;
-      dependents: MultiDimensionDataDefinition;
-    };
-    github: {
-      stars: MultiDimensionDataDefinition;
-      recentCommits: MultiDimensionDataDefinition;
-      openIssues: MultiDimensionDataDefinition;
-      closedIssues: MultiDimensionDataDefinition;
-      forks: MultiDimensionDataDefinition;
-      subscribers: MultiDimensionDataDefinition;
-    };
-  }
-
-  const dashes: OrNull<IDash[]> = useMemo(() => {
+  const dashes: OrNull<INpmsDashboardDatasets[]> = useMemo(() => {
     if (!isSuccess(dashboards)) { return null; }
-    const dashes: IDash[] = dashboards
+    const dashes: INpmsDashboardDatasets[] = dashboards
       .value
       .npmsDashboards
       .nodes
@@ -353,8 +328,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
         const npmsPackages = dashNode.relations.npmsPackages.nodes.filter(ist.notNullable);
         const packageNames = npmsPackages.map(packageNode => packageNode.data?.name ?? _unknown);
 
-        const result: IDash = {
-          name: dashName,
+        const result: INpmsDashboardDatasets = {
           original: {
             id: dashNode.data.id,
             name: dashNode.data.name,
@@ -362,197 +336,201 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
               id: packageNode.data.id,
               name: packageNode.data.name,
             })),
+            source: dashNode,
           },
-          colours,
-          can: {
-            update: dashNode.can.update,
-            delete: dashNode.can.delete,
-            show: dashNode.can.show,
-          },
-          overview: {
-            legend: { names: packageNames, colours },
-            downloads: npmsPackages.map((packageNode): PieChartDatum => ({
-              name: packageNode.data.name ?? _unknown,
-              value: packageNode.data.data?.evaluation?.popularity?.downloadsCount ?? 0,
-            })),
-            growth: npmsPackages.map((packageNode): PieChartDatum => ({
-              name: packageNode.data.name ?? _unknown,
-              value: packageNode.data.data?.evaluation?.popularity?.downloadsAcceleration ?? 0,
-            })),
-            summary: {
-              dimensions: packageNames,
-              points: [{
-                name: 'popularity',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.popularity ?? 0)),
-              }, {
-                name: 'quality',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.quality ?? 0)),
-              }, {
-                name: 'maintenance',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.maintenance ?? 0)),
-              }, {
-                name: 'total',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.final ?? 0)),
-              }],
-            }
-          },
-          quality: {
-            carefulness: {
-              dimensions: packageNames,
-              points: [{
-                name: 'carefulness',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.carefulness ?? 0)),
-              }],
+          graphical: {
+            name: dashName,
+            colours,
+            can: {
+              update: dashNode.can.update,
+              delete: dashNode.can.delete,
+              show: dashNode.can.show,
             },
-            tests: {
-              dimensions: packageNames,
-              points: [{
-                name: 'tests',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.tests ?? 0)),
-              }],
+            overview: {
+              legend: { names: packageNames, colours },
+              downloads: npmsPackages.map((packageNode): PieChartDatum => ({
+                name: packageNode.data.name ?? _unknown,
+                value: packageNode.data.data?.evaluation?.popularity?.downloadsCount ?? 0,
+              })),
+              growth: npmsPackages.map((packageNode): PieChartDatum => ({
+                name: packageNode.data.name ?? _unknown,
+                value: packageNode.data.data?.evaluation?.popularity?.downloadsAcceleration ?? 0,
+              })),
+              summary: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'popularity',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.popularity ?? 0)),
+                }, {
+                  name: 'quality',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.quality ?? 0)),
+                }, {
+                  name: 'maintenance',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.maintenance ?? 0)),
+                }, {
+                  name: 'total',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.final ?? 0)),
+                }],
+              }
             },
-            health: {
-              dimensions: packageNames,
-              points: [{
-                name: 'health',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.health ?? 0)),
-              }],
+            quality: {
+              carefulness: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'carefulness',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.carefulness ?? 0)),
+                }],
+              },
+              tests: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'tests',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.tests ?? 0)),
+                }],
+              },
+              health: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'health',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.health ?? 0)),
+                }],
+              },
+              branding: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'branding',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.branding ?? 0)),
+                }],
+              },
             },
-            branding: {
-              dimensions: packageNames,
-              points: [{
-                name: 'branding',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.branding ?? 0)),
-              }],
+            popularity: {
+              communityInterest: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'community interest',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.communityInterest ?? 0)),
+                }],
+              },
+              downloadCount: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'download count',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.downloadsCount ?? 0)),
+                }],
+              },
+              downloadAcceleration: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'download acceleration',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.downloadsAcceleration ?? 0)),
+                }],
+              },
+              dependentCount: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'dependent count',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.dependentsCount ?? 0)),
+                }],
+              },
             },
-          },
-          popularity: {
-            communityInterest: {
-              dimensions: packageNames,
-              points: [{
-                name: 'community interest',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.communityInterest ?? 0)),
-              }],
+            maintenance: {
+              releaseFrequency: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'release frequency',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.releaseFrequency ?? 0)),
+                }],
+              },
+              commitFrequency: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'commit frequency',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.commitsFrequency ?? 0)),
+                }],
+              },
+              openIssues: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'open issues',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.openIssues ?? 0)),
+                }],
+              },
+              issuesDistribution: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'issues distribution',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.issuesDistribution ?? 0)),
+                }],
+              },
             },
-            downloadCount: {
-              dimensions: packageNames,
-              points: [{
-                name: 'download count',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.downloadsCount ?? 0)),
-              }],
+            npm: {
+              stars: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'stars',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.npm?.starsCount ?? 0)),
+                }],
+              },
+              dependents: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'dependents',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.npm?.dependentsCount ?? 0)),
+                }],
+              },
             },
-            downloadAcceleration: {
-              dimensions: packageNames,
-              points: [{
-                name: 'download acceleration',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.downloadsAcceleration ?? 0)),
-              }],
-            },
-            dependentCount: {
-              dimensions: packageNames,
-              points: [{
-                name: 'dependent count',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.dependentsCount ?? 0)),
-              }],
-            },
-          },
-          maintenance: {
-            releaseFrequency: {
-              dimensions: packageNames,
-              points: [{
-                name: 'release frequency',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.releaseFrequency ?? 0)),
-              }],
-            },
-            commitFrequency: {
-              dimensions: packageNames,
-              points: [{
-                name: 'commit frequency',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.commitsFrequency ?? 0)),
-              }],
-            },
-            openIssues: {
-              dimensions: packageNames,
-              points: [{
-                name: 'open issues',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.openIssues ?? 0)),
-              }],
-            },
-            issuesDistribution: {
-              dimensions: packageNames,
-              points: [{
-                name: 'issues distribution',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.issuesDistribution ?? 0)),
-              }],
-            },
-          },
-          npm: {
-            stars: {
-              dimensions: packageNames,
-              points: [{
-                name: 'stars',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.npm?.starsCount ?? 0)),
-              }],
-            },
-            dependents: {
-              dimensions: packageNames,
-              points: [{
-                name: 'dependents',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.npm?.dependentsCount ?? 0)),
-              }],
-            },
-          },
-          github: {
-            stars: {
-              dimensions: packageNames,
-              points: [{
-                name: 'stars',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.starsCount ?? 0)),
-              }],
-            },
-            recentCommits: {
-              dimensions: packageNames,
-              points: [{
-                name: 'stars',
-                coordinates: npmsPackages.map((packageNode): number => {
-                  let max = 0;
-                  packageNode.data.data?.collected?.github?.commits?.forEach(commit => {
-                    if (commit.count && (commit.count > max)) max = commit.count;
-                  });
-                  return max;
-                }),
-              }],
-            },
-            openIssues: {
-              dimensions: packageNames,
-              points: [{
-                name: 'open issues',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.issues?.openCount ?? 0)),
-              }],
-            },
-            closedIssues: {
-              dimensions: packageNames,
-              points: [{
-                name: 'closed issues',
-                coordinates: npmsPackages.map((packageNode) => Math.max(
-                  0,
-                  (packageNode.data.data?.collected?.github?.issues?.count ?? 0) - (packageNode.data.data?.collected?.github?.issues?.openCount ?? 0),
-                )),
-              }],
-            },
-            forks: {
-              dimensions: packageNames,
-              points: [{
-                name: 'forks',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.forksCount ?? 0)),
-              }],
-            },
-            subscribers: {
-              dimensions: packageNames,
-              points: [{
-                name: 'subscribers',
-                coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.subscribersCount ?? 0)),
-              }],
+            github: {
+              stars: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'stars',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.starsCount ?? 0)),
+                }],
+              },
+              recentCommits: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'stars',
+                  coordinates: npmsPackages.map((packageNode): number => {
+                    let max = 0;
+                    packageNode.data.data?.collected?.github?.commits?.forEach(commit => {
+                      if (commit.count && (commit.count > max)) max = commit.count;
+                    });
+                    return max;
+                  }),
+                }],
+              },
+              openIssues: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'open issues',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.issues?.openCount ?? 0)),
+                }],
+              },
+              closedIssues: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'closed issues',
+                  coordinates: npmsPackages.map((packageNode) => Math.max(
+                    0,
+                    (packageNode.data.data?.collected?.github?.issues?.count ?? 0) - (packageNode.data.data?.collected?.github?.issues?.openCount ?? 0),
+                  )),
+                }],
+              },
+              forks: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'forks',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.forksCount ?? 0)),
+                }],
+              },
+              subscribers: {
+                dimensions: packageNames,
+                points: [{
+                  name: 'subscribers',
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.subscribersCount ?? 0)),
+                }],
+              },
             },
           },
         };
@@ -562,51 +540,24 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
     return dashes;
   }, [dashboards]);
 
-  interface IMutationModalStateInitial { id: Id; name: string; packages: INpmsPackageSearchOption[]; }
-  type IMutationModalState =
-    | { isOpen: false; initial: null }
-    | { isOpen: true; initial: null | IMutationModalStateInitial; }
-  const [mutationModalState, setMutationModalState] = useState<IMutationModalState>({ isOpen: false, initial: null });
-  const handleCloseMutationDashboardModal = useCallback(() => setMutationModalState((prev) => ({ isOpen: false, initial: null })), []);
-  const handleOpenMutationDashboard = useCallback((initial: null | IMutationModalStateInitial) => setMutationModalState((prev) => ({ isOpen: true, initial })), []);
+  const [createDashboardDialogIsOpen, setCreateDashboardDialogIsOpen] = useState<boolean>(false);
+  const closeCreateDashboardDialog = useCallback(() => setCreateDashboardDialogIsOpen(false), []);
+  const openCreateDashboardDialog = useCallback(() => setCreateDashboardDialogIsOpen(true), []);
   const handleNpmsDashboardCreated = useCallback(() => {
-    setMutationModalState((prev) => ({ isOpen: false, initial: null }));
-    refreshDashboards();
-  }, []);
-
-  const handleDeleteDashboard = useCallback(async (id: Id) => {
-    const vars: JsPageDeleteDashboardMutationVariables = { id: Number(id) };
-    const result = await api
-      .connector
-      .graphql<JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables>(
-        jsPageDeleteDashboardQuery,
-        vars,
-      )
-      .catch(rethrow(normaliseApiException));
+    setCreateDashboardDialogIsOpen(false);
     refreshDashboards();
   }, []);
 
   return (
     <>
-      <Modal
-        open={mutationModalState.isOpen}
-        onClose={handleCloseMutationDashboardModal}
-        className="modal"
-        aria-labelledby="mutate-dashboard"
-        aria-describedby="mutate-dashboard"
-      >
-        <>
-          {mutationModalState.isOpen && (
-            <Paper className={clsx('modal-content', classes.paper, classes.editModalContent)}>
-              <MutateNpmsDashboardForm
-                title={mutationModalState.initial?.id ? 'Edit dashboard' : 'Create dashboard'}
-                initial={mutationModalState.initial ?? undefined}
-                onSuccess={handleNpmsDashboardCreated}
-              />
-            </Paper>
-          )}
-        </>
-      </Modal>
+      <Dialog open={createDashboardDialogIsOpen} onClose={closeCreateDashboardDialog}>
+        <DialogTitle>
+          Create Dashboard
+        </DialogTitle>
+        <DialogContent>
+          <MutateNpmsDashboardForm onSuccess={handleNpmsDashboardCreated} />
+        </DialogContent>
+      </Dialog>
       <Grid container spacing={2} className="text-center">
         <Grid item xs={12}>
           <Typography className={clsx(classes.title, 'text-left')} component="h2" variant="h2">
@@ -614,141 +565,20 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
               <Box mr={2}>
                 Dashboards
               </Box>
-              <Button variant="outlined" onClick={() => handleOpenMutationDashboard(null)}>
+              <Button variant="outlined" onClick={openCreateDashboardDialog}>
                 <AddIcon />
               </Button>
             </Box>
           </Typography>
         </Grid>
-        {(dashes ?? []).map(dash => (
-          <Grid item xs={12} sm={6} key={dash.name}>
+        {(dashes ?? []).map(dashboard => (
+          <Grid key={dashboard.original.id.toString()} item xs={12} sm={6}>
             <Paper className={classes.paper}>
-              <Grid container spacing={2}>
-                <Grid container item xs={12}>
-                  <Grid item xs={12} sm={4} />
-                  <Grid item xs={6} sm={4}>
-                    <Typography className="centered" component="h2" variant="h2">
-                      {dash.name}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6} sm={4}>
-                    {dash.can.update && (
-                      <Box component="span">
-                        <Button
-                          onClick={() => handleOpenMutationDashboard({
-                            id: dash.original.id,
-                            name: dash.original.name,
-                            packages: dash.original.packages,
-                          })}
-                        >
-                          <EditIcon />
-                        </Button>
-                      </Box>
-                    )}
-                    {dash.can.delete && (
-                      <Box component="span">
-                        <Button onClick={() => handleDeleteDashboard(dash.original.id)}>
-                          <DeleteIcon />
-                        </Button>
-                      </Box>
-                    )}
-                  </Grid>
-                </Grid>
-                <Grid className="centered col" item xs={12} sm={4}>
-                  <Legend names={dash.overview.legend.names} colours={dash.colours} />
-                </Grid>
-                <Grid className="centered col" item xs={12} sm={4}>
-                  <Typography>
-                    Downloads
-                  </Typography>
-                  <FittedPieChart borderless filled colours={dash.colours} data={dash.overview.downloads} radius={50} />
-                </Grid>
-                <Grid className="centered col" item xs={12} sm={4}>
-                  <Typography>
-                    Growth
-                  </Typography>
-                  <FittedPieChart borderless filled colours={dash.colours} data={dash.overview.growth} radius={50} />
-                </Grid>
-                <Grid className="centered col" item xs={12}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.overview.summary} />
-                </Grid>
-
-                <Grid className="text-left" item xs={12}>
-                  <Typography>
-                    Quality
-                  </Typography>
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.quality.carefulness} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.quality.tests} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.quality.health} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.quality.branding} />
-                </Grid>
-
-                <Grid className="text-left" item xs={12}>
-                  <Typography>
-                    Popularity
-                  </Typography>
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.popularity.communityInterest} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.popularity.downloadCount} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.popularity.downloadAcceleration} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.popularity.dependentCount} />
-                </Grid>
-
-                <Grid className="text-left" item xs={12}>
-                  <Typography>
-                    Maintenance
-                  </Typography>
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.maintenance.releaseFrequency} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.maintenance.commitFrequency} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.maintenance.openIssues} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.maintenance.issuesDistribution} />
-                </Grid>
-
-
-                <Grid className="text-left" item xs={12}>
-                  <Typography>
-                    GitHub
-                  </Typography>
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.github.stars} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.github.openIssues} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.github.closedIssues} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.github.forks} />
-                </Grid>
-                <Grid className="centered col" item xs={6}>
-                  <FittedBarChart borderless height={100} colours={dash.colours} definition={dash.github.subscribers} />
-                </Grid>
-              </Grid>
+              <NpmsDashboard
+                key={dashboard.original.id.toString()}
+                dashboard={dashboard}
+                onChange={refreshDashboards}
+              />
             </Paper>
           </Grid>
         ))}

@@ -57,8 +57,6 @@ function oneOf<T extends string>(name: string, oneOf: T[]): T {
   return raw as T;
 }
 
-// console.log('env', envHost);
-
 export class PublicEnv {
   static create(): PublicEnv { return new PublicEnv(); }
   // public readonly NODE_ENV = oneOf('NODE_ENV', ['development', 'testing', 'production']);

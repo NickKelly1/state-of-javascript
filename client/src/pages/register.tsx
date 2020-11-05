@@ -1,14 +1,9 @@
 
-import { Box, Button, Grid, Input, InputLabel, makeStyles, Paper, TextField, Typography } from "@material-ui/core";
-import { gql } from "graphql-request";
+import { Grid, makeStyles, Paper, TextField, Typography } from "@material-ui/core";
 import { useRouter } from "next/router";
-import React, { useCallback, useContext, useState } from "react";
-import { useMutation, useQuery } from "react-query";
-import { IAuthenticationRo } from "../backend-api/api.credentials";
+import React, { useCallback, useContext, } from "react";
 import { RegisterForm } from "../components/forms/register.form";
 import { ApiContext } from "../contexts/api.context";
-import { CreateNewsArticlePageQuery, CreateNewsArticlePageQueryVariables } from "../generated/graphql";
-import { pretty } from "../helpers/pretty.helper";
 import { serverSidePropsHandler } from "../helpers/server-side-props-handler.helper";
 
 interface ISignupPageProps {
@@ -22,6 +17,9 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     height: '100%',
   },
+  paper: {
+    padding: theme.spacing(2),
+  },
 }));
 
 function SignupPage(props: ISignupPageProps) {
@@ -34,10 +32,12 @@ function SignupPage(props: ISignupPageProps) {
   return (
     <Grid className={classes.root} container spacing={2}>
       <Grid item xs={12} md={6} lg={3}>
-        <RegisterForm
-          onSuccess={onSuccess}
-          title="Register"
-        />
+        <Paper className={classes.paper}>
+          <RegisterForm
+            onSuccess={onSuccess}
+            title="Register"
+          />
+        </Paper>
       </Grid>
     </Grid>
   );

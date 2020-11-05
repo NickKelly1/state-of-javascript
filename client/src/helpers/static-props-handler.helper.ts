@@ -57,7 +57,7 @@ export function staticPropsHandler<
     const result = await handler({ ctx, npmsApi, publicEnv, cms, api, });
     const end = Date.now();
     const dur = end - start;
-    console.log(`static page -\t${params?.toString() ?? '?'}\t${dur}ms`)
+    Debug.StaticGeneration(`[${staticPropsHandler.name}] static page -\t${params?.toString() ?? '?'}\t${dur}ms`)
     return result;
   }
   return wrapper;
@@ -78,7 +78,7 @@ export function staticPathsHandler<
     const result = await handler({ npmsApi, publicEnv, cms, api, });
     const end = Date.now();
     const dur = end - start;
-    console.log(`static paths -\t${dur}ms`)
+    Debug.StaticGeneration(`[${staticPathsHandler.name}] static paths -\t${dur}ms`)
     return result;
   }
   return wrapper;

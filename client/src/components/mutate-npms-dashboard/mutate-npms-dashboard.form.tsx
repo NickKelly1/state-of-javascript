@@ -1,8 +1,10 @@
 import { Box, Button, CircularProgress, FormHelperText, Grid, InputLabel, makeStyles, Modal, Paper, TextField, Typography } from '@material-ui/core';
+import immu from 'immutability-helper';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import clsx from 'clsx';
 import { gql } from 'graphql-request';
 import React, { FormEventHandler, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from 'react-beautiful-dnd';
 import { useMutation } from 'react-query';
 import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
@@ -14,6 +16,9 @@ import { Id } from '../../types/id.type';
 import { OrNull } from '../../types/or-null.type';
 import { MutateNpmsPackageForm, IMutateNpmsPackageFormOnSuccessFn } from '../mutate-npms-package/mutate-npms-package.form';
 import { INpmsPackageSearchOption, NpmsPackageComboSearch } from '../npms-package-combo-search/npms-package-combo-search';
+import { useRandomId } from '../../hooks/use-random-id.hook';
+import { WithRandomId } from '../with-random-id/with-random-id';
+import { pretty } from '../../helpers/pretty.helper';
 
 // TODO: updating vs creating...
 const CreateNpmsDashboardQuery = gql`
@@ -87,7 +92,7 @@ export interface IMutateNpmsDashboardFormOnSuccessFn {
   (result: IMutateNpmsDashboardFormOnSuccessFnArg): any;
 }
 export interface IMutateNpmsDashboardFormProps {
-  title: string;
+  title?: string;
   onSuccess?: IMutateNpmsDashboardFormOnSuccessFn;
   initial?: {
     id: Id;
@@ -116,6 +121,10 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
       ...prev,
       { key: seq.next().toString(), option, },
     ];
+    // make sure theres an empty entry at the end...
+    if (ist.notNullable(next[next.length - 1]?.option)) {
+      next.push({ key: seq.next().toString(), option: null });
+    }
     return next;
   }), []);
 
@@ -124,6 +133,10 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
     const after = prev.slice(index + 1, prev.length);
     const target = prev[index];
     const next: IDashboardPackageOption[] = [ ...before, { key: target.key, option }, ...after, ];
+    // make sure theres an empty entry at the end...
+    if (ist.notNullable(next[next.length - 1]?.option)) {
+      next.push({ key: seq.next().toString(), option: null });
+    }
     return next;
   }), []);
 
@@ -131,6 +144,10 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
     const before = prev.slice(0, index);
     const after = prev.slice(index + 1, prev.length);
     const next = [ ...before, ...after, ];
+    // make sure theres an empty entry at the end...
+    if (ist.notNullable(next[next.length - 1]?.option)) {
+      next.push({ key: seq.next().toString(), option: null });
+    }
     return next;
   }), []);
 
@@ -142,41 +159,9 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
   const [createNpmsPackageModalOpen, setCreateNpmsPackageModalOpen] = useState(false);
 
   const handleNpmsPackageCreated: IMutateNpmsPackageFormOnSuccessFn = useCallback((result) => {
-    setPackages((prev): IDashboardPackageOption[] => {
-      const option: INpmsPackageSearchOption = { id: result.createNpmsPackage.data.id, name: result.createNpmsPackage.data.name };
-      // initialise
-      if (prev.length === 0) {
-        const key = seq.next().toString();
-        const nextOption: IDashboardPackageOption = { key, option };
-        return [
-          nextOption,
-          { key: seq.next().toString(), option: null },
-        ];
-      }
-
-      const before = prev.slice(0, prev.length - 1);
-      const last = prev[prev.length - 1];
-
-      // last option is null - fill it & add another
-      if (ist.nullable(last.option)) {
-        return [
-          ...before,
-          { ...last, option },
-          { key: seq.next().toString(), option: null },
-        ];
-      }
-
-      return [
-        ...before,
-        last,
-        { key: seq.next().toString(), option },
-        { key: seq.next().toString(), option: null },
-      ];
-
-    });
+    addPackage({ id: result.createNpmsPackage.data.id, name: result.createNpmsPackage.data.name, });
     setCreateNpmsPackageModalOpen(false);
   }, []);
-  
 
   interface ISubmitFnArgs { name: string; npms_package_ids: number[]; }
   const [submitForm, formState] = useMutation<IMutateNpmsDashboardFormOnSuccessFnArg, IApiException, ISubmitFnArgs>(
@@ -236,6 +221,25 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
   const isDisabled = formState.isLoading;
   const error = formState.error;
 
+  const handleDragEnd: OnDragEndResponder = useCallback<OnDragEndResponder>((result) => {
+    const { source, destination } = result;
+    // dropped outside of drop-zone
+    if (!destination) { return; }
+    // dropped into different zone...
+    if (source.droppableId !== destination.droppableId) { return; }
+    // didn't move
+    if (source.index === destination.index) { return ; }
+    // update
+    setPackages((prev) => {
+      const next = Array.from(prev);
+      // remove source
+      const [removed] = next.splice(source.index, 1);
+      // add destination
+      next.splice(destination.index, 0, removed);
+      return next;
+    });
+  }, []);
+
   return (
     <>
       <Modal
@@ -253,11 +257,13 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
         <Grid item xs={12}>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography component="h2" variant="h2">
-                  {title}
-                </Typography>
-              </Grid>
+              {title && (
+                <Grid item xs={12}>
+                  <Typography component="h2" variant="h2">
+                    title
+                  </Typography>
+                </Grid>
+              )}
               <Grid item xs={12}>
                 <InputLabel className={classes.label} htmlFor="create_npms_dashboard_name">name</InputLabel>
                 <TextField
@@ -268,27 +274,42 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
                   helperText={error?.data?.name?.join('\n')}
                   onChange={(evt) => { setDashboardName(evt.target.value); }}
                 />
-                {_initial && (
+                {_initial && (_initial.name !== dashboardName) && (
                   <FormHelperText>
                     {`formerly ${_initial.name}`}
                   </FormHelperText>
                 )}
               </Grid>
-              {packages.map((pkg, i) => (
-                <Grid key={pkg.key} item xs={12}>
-                  <NpmsPackageComboSearch
-                    option={pkg.option}
-                    error={!!error?.data?.npms_package_ids}
-                    isDisabled={isDisabled}
-                    onChange={(option) => {
-                      handleChangePackage(i, option);
-                      if (i === (packages.length - 1) && option) {
-                        addPackage(null);
-                      }
-                    }}
-                  />
-                </Grid>
-              ))}
+              <Grid item xs={12}>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                  <WithRandomId>
+                    {(dragDropId) => (
+                      <Droppable droppableId={dragDropId}>
+                        {(provided) => (
+                          <Grid ref={provided.innerRef} container spacing={2} >
+                            {packages.filter(ist.notNullable).map((pkg, i) => (
+                              <Grid key={pkg.key} item xs={12}>
+                                <Draggable draggableId={pkg.key} index={i} >
+                                  {(provided, snapshot) => (
+                                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                      <NpmsPackageComboSearch
+                                        option={pkg.option}
+                                        error={!!error?.data?.npms_package_ids}
+                                        isDisabled={isDisabled}
+                                        onChange={(option) => handleChangePackage(i, option)}
+                                      />
+                                    </div>
+                                  )}
+                                </Draggable>
+                              </Grid>
+                            ))}
+                          </Grid>
+                        )}
+                      </Droppable>
+                    )}
+                  </WithRandomId>
+                </DragDropContext>
+              </Grid>
               {formState.error
                 && formState.error.data?.npms_package_ids
                 && formState.error.data.npms_package_ids.map((desc, i) => (
@@ -326,7 +347,7 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
                 </Grid>
               )}
               {isDisabled && (
-                <Grid item xs={12} sm={12}>
+                <Grid className="centered" item xs={12} sm={12}>
                   <CircularProgress />
                 </Grid>
               )}

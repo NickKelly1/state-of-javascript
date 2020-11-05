@@ -125,7 +125,6 @@ export function MutateNpmsPackageForm(props: ICreateNpmsPackageFormProps) {
             {error && (
               <Grid item xs={12}>
                 <FormHelperText className="centered" error>
-                  {void console.log('supppp', error)}
                   {error.message}
                 </FormHelperText>
               </Grid>

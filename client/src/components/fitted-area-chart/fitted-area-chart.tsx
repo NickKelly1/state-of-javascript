@@ -1,5 +1,5 @@
+import { nanoid } from 'nanoid';
 import React, { useMemo } from 'react';
-import shortid from 'shortid';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ring } from '../../helpers/ring.helper';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
@@ -32,7 +32,7 @@ export function FittedAreaChart(props: IFittedAreaChartProps) {
     return [data, bars];
   }, [definition, colours]);
   const dimensionIds = useMemo(() => definition.dimensions.map((_, i) => ({
-    id: shortid(),
+    id: nanoid(),
     colour: ring(colours, i),
   })), [definition, colours]);
 

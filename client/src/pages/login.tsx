@@ -16,6 +16,9 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     height: '100%',
   },
+  paper: {
+    padding: theme.spacing(2),
+  },
 }));
 
 function LoginPage(props: ILoginPageProps) {
@@ -28,7 +31,9 @@ function LoginPage(props: ILoginPageProps) {
   return (
     <Grid className={classes.root} container spacing={2}>
       <Grid item xs={12} md={6} lg={3}>
-        <LoginForm onSuccess={onSuccess} title="Login" />
+        <Paper className={classes.paper}>
+          <LoginForm onSuccess={onSuccess} title="Login" />
+        </Paper>
       </Grid>
     </Grid>
   );
