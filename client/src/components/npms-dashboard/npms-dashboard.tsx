@@ -37,6 +37,7 @@ import { Id } from '../../types/id.type';
 import { DebugModeContext } from '../../contexts/debug-mode.context';
 import { JsonPretty } from '../json-pretty/json-pretty';
 import { JsonDownloadButton } from '../json-download-button/json-download-button';
+import { WhenDebugMode } from '../when-debug-mode/when-debug-mode';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -157,17 +158,18 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
     onChange?.();
   }, [dashboard.original.id]);
 
+  const [showMore, setShowMore] = useState(false);
   const debugMode = useContext(DebugModeContext);
 
   return (
     <>
 
-    {/* edit */}
+      {/* edit */}
       <Dialog open={mutationDialogState.isOpen} onClose={closeMutationDialog}>
         <DialogTitle>
           Edit Dashboard
         </DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           <MutateNpmsDashboardForm
             initial={{
               id: dashboard.original.id,
@@ -218,13 +220,11 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
       <Grid className="text-center" container spacing={2}>
         <Grid container item xs={12}>
           <Grid item xs={6} sm={4}>
-            {debugMode.isOn && (
-              <Box component="span">
-                <Button onClick={openDebugDialog}>
-                  <BugReportIcon />
-                </Button>
-              </Box>
-            )}
+            <WhenDebugMode>
+              <Button onClick={openDebugDialog}>
+                <BugReportIcon />
+              </Button>
+            </WhenDebugMode>
           </Grid>
           <Grid item xs={6} sm={4}>
             <Typography className="centered" component="h2" variant="h2">
@@ -268,80 +268,89 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
           <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.overview.summary} />
         </Grid>
 
-        <Grid className="text-left" item xs={12}>
-          <Typography>
-            Quality
-          </Typography>
+        <Grid className="centered col" item xs={12}>
+          <Button variant="outlined" onClick={() => setShowMore(prev => !prev)}>
+            {showMore ? 'Show less' : 'Show more'}
+          </Button>
         </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.quality.carefulness} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.quality.tests} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.quality.health} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.quality.branding} />
-        </Grid>
+        {showMore && (
+          <>
+            <Grid className="text-left" item xs={12}>
+              <Typography>
+                Quality
+              </Typography>
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.quality.carefulness} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.quality.tests} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.quality.health} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.quality.branding} />
+            </Grid>
 
-        <Grid className="text-left" item xs={12}>
-          <Typography>
-            Popularity
-          </Typography>
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.popularity.communityInterest} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.popularity.downloadCount} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.popularity.downloadAcceleration} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.popularity.dependentCount} />
-        </Grid>
+            <Grid className="text-left" item xs={12}>
+              <Typography>
+                Popularity
+              </Typography>
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.popularity.communityInterest} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.popularity.downloadCount} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.popularity.downloadAcceleration} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.popularity.dependentCount} />
+            </Grid>
 
-        <Grid className="text-left" item xs={12}>
-          <Typography>
-            Maintenance
-          </Typography>
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.maintenance.releaseFrequency} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.maintenance.commitFrequency} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.maintenance.openIssues} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.maintenance.issuesDistribution} />
-        </Grid>
+            <Grid className="text-left" item xs={12}>
+              <Typography>
+                Maintenance
+              </Typography>
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.maintenance.releaseFrequency} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.maintenance.commitFrequency} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.maintenance.openIssues} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.maintenance.issuesDistribution} />
+            </Grid>
 
-        <Grid className="text-left" item xs={12}>
-          <Typography>
-            GitHub
-          </Typography>
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.stars} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.openIssues} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.closedIssues} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.forks} />
-        </Grid>
-        <Grid className="centered col" item xs={6}>
-          <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.subscribers} />
-        </Grid>
+            <Grid className="text-left" item xs={12}>
+              <Typography>
+                GitHub
+              </Typography>
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.stars} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.openIssues} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.closedIssues} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.forks} />
+            </Grid>
+            <Grid className="centered col" item xs={6}>
+              <FittedBarChart borderless height={100} colours={dashboard.graphical.colours} definition={dashboard.graphical.github.subscribers} />
+            </Grid>
+          </>
+        )}
       </Grid>
     </>
   );

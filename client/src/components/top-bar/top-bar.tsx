@@ -173,9 +173,11 @@ export function TopBar(props: ITopBarProps) {
                 </ListItem>
               </>
             )}
-            <Button onClick={() => debugMode.toggle()}>
-              <BugReportIcon color={debugMode.isOn ? 'primary' : 'inherit'}/>
-            </Button>
+            <ListItem className={classes.navItem}>
+              <Button color={debugMode.isOn ? 'primary' : 'inherit'} onClick={debugMode.toggle}>
+                <BugReportIcon />
+              </Button>
+            </ListItem>
             <ListItem className={classes.navItem}>
               <MUILink
                 className={clsx('centered', classes.icon, classes.navItem)}

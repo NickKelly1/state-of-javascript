@@ -1,9 +1,10 @@
 import { Box, Button, Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import clsx from 'clsx';
 import { FullscreenExitRounded } from '@material-ui/icons';
-import React, { Fragment, useCallback, useMemo, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useMemo, useState } from 'react';
 import seedRandom from 'seed-random';
 import { ring } from '../../helpers/ring.helper';
+import { DebugModeContext } from '../../contexts/debug-mode.context';
 
 const useStyles = makeStyles((theme) => ({
   legend: {
@@ -37,16 +38,20 @@ export interface ILegendProps {
 export function Legend(props: ILegendProps) {
   const { colours, names, className, } = props;
   const classes = useStyles();
+  const debugMode = useContext(DebugModeContext);
+
   return (
-    <ul className={clsx(className, classes.legend)}>
-      {names.map((name, i) => (
-        <li className={classes.legend_item} key={i}>
-          <Box mr={2} className={classes.legend_item_colour} style={{ backgroundColor: ring(colours, i) }}/>
-          <Box textAlign="left">
-            {name}
-          </Box>
-        </li>
-      ))}
-    </ul>
+    // <Box className={className} display="flex" justifyContent="center" alignItems="center" flexDirection="column">
+      <ul className={clsx(className, classes.legend)}>
+        {names.map((name, i) => (
+          <li className={classes.legend_item} key={i}>
+            <Box mr={2} className={classes.legend_item_colour} style={{ backgroundColor: ring(colours, i) }}/>
+            <Box textAlign="left">
+              {name}
+            </Box>
+          </li>
+        ))}
+      </ul>
+    // </Box>
   );
 }

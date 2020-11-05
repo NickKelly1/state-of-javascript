@@ -13,6 +13,7 @@ import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
 import Next, { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import { ParsedUrlQuery } from 'querystring';
+import SortIcon from '@material-ui/icons/Sort';
 import { serverSidePropsHandler } from '../../helpers/server-side-props-handler.helper';
 import {
   Box,
@@ -79,6 +80,7 @@ import { Id } from '../../types/id.type';
 import { useUpdate } from '../../hooks/use-update.hook';
 import { DebugModeContext } from '../../contexts/debug-mode.context';
 import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms-dashboard/npms-dashboard';
+import { NpmsDashboardSortForm } from '../../components/npms-dashboard-sort/npms-dashboard-sort.form';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -190,7 +192,7 @@ query JsPageDashboard(
                     dependentsCount
                   }
                   maintenance{
-                    releaseFrequency
+                    releasesFrequency
                     commitsFrequency
                     openIssues
                     issuesDistribution
@@ -438,7 +440,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 dimensions: packageNames,
                 points: [{
                   name: 'release frequency',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.releaseFrequency ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.releasesFrequency ?? 0)),
                 }],
               },
               commitFrequency: {
@@ -548,14 +550,30 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
     refreshDashboards();
   }, []);
 
+  const [sortDashboardDialogIsOpen, setSortDashboardDialogIsOpen] = useState<boolean>(false);
+  const closeSortDashboardDialog = useCallback(() => setSortDashboardDialogIsOpen(false), []);
+  const openSortDashboardDialog = useCallback(() => setSortDashboardDialogIsOpen(true), []);
+  const handleNpmsDashboardSorted = useCallback(() => {
+    setSortDashboardDialogIsOpen(false);
+    refreshDashboards();
+  }, []);
+
   return (
     <>
       <Dialog open={createDashboardDialogIsOpen} onClose={closeCreateDashboardDialog}>
         <DialogTitle>
           Create Dashboard
         </DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           <MutateNpmsDashboardForm onSuccess={handleNpmsDashboardCreated} />
+        </DialogContent>
+      </Dialog>
+      <Dialog open={sortDashboardDialogIsOpen} onClose={closeSortDashboardDialog}>
+        <DialogTitle>
+          Sort dashboards
+        </DialogTitle>
+        <DialogContent dividers>
+          <NpmsDashboardSortForm onSuccess={handleNpmsDashboardSorted} />
         </DialogContent>
       </Dialog>
       <Grid container spacing={2} className="text-center">
@@ -565,9 +583,16 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
               <Box mr={2}>
                 Dashboards
               </Box>
-              <Button variant="outlined" onClick={openCreateDashboardDialog}>
-                <AddIcon />
-              </Button>
+              <Box mr={2}>
+                <Button variant="outlined" onClick={openCreateDashboardDialog}>
+                  <AddIcon />
+                </Button>
+              </Box>
+              <Box mr={2}>
+                <Button variant="outlined" onClick={openSortDashboardDialog}>
+                  <SortIcon />
+                </Button>
+              </Box>
             </Box>
           </Typography>
         </Grid>

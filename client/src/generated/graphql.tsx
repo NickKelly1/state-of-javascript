@@ -634,6 +634,7 @@ export type NpmsPackageData = {
   __typename?: 'NpmsPackageData';
   id: Scalars['Int'];
   name: Scalars['String'];
+  raw: Scalars['String'];
   data?: Maybe<NpmsPackageDataInfo>;
   last_ran_at: Scalars['DateTime'];
   created_at: Scalars['DateTime'];
@@ -804,7 +805,7 @@ export type NpmsPackageDataInfoEvaluationPopularity = {
 
 export type NpmsPackageDataInfoEvaluationMaintenance = {
   __typename?: 'NpmsPackageDataInfoEvaluationMaintenance';
-  releaseFrequency?: Maybe<Scalars['Float']>;
+  releasesFrequency?: Maybe<Scalars['Float']>;
   commitsFrequency?: Maybe<Scalars['Float']>;
   openIssues?: Maybe<Scalars['Float']>;
   issuesDistribution?: Maybe<Scalars['Float']>;
@@ -1180,23 +1181,31 @@ export type CreateNpmsPackageFormMutation = (
   ) }
 );
 
-export type SearchNpmsPackageQueryVariables = Exact<{
-  likeName?: Maybe<Scalars['String']>;
+export type NpmsDashbortSortFormQueryVariables = Exact<{
+  dashboardOffset?: Maybe<Scalars['Int']>;
+  dashboardLimit?: Maybe<Scalars['Int']>;
 }>;
 
 
-export type SearchNpmsPackageQuery = (
+export type NpmsDashbortSortFormQuery = (
   { __typename?: 'RootQueryType' }
-  & { npmsPackages: (
-    { __typename?: 'NpmsPackageCollectionNode' }
-    & { pagination: (
+  & { npmsDashboards: (
+    { __typename?: 'NpmsDashboardCollectionNode' }
+    & { can: (
+      { __typename?: 'NpmsDashboardCollectionActions' }
+      & Pick<NpmsDashboardCollectionActions, 'show' | 'create'>
+    ), pagination: (
       { __typename?: 'meta' }
       & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), nodes: Array<Maybe<(
-      { __typename?: 'NpmsPackageNode' }
-      & { data: (
-        { __typename?: 'NpmsPackageData' }
-        & Pick<NpmsPackageData, 'id' | 'name'>
+      { __typename?: 'NpmsDashboardNode' }
+      & Pick<NpmsDashboardNode, 'cursor'>
+      & { can: (
+        { __typename?: 'NpmsDashboardActions' }
+        & Pick<NpmsDashboardActions, 'show' | 'update' | 'delete'>
+      ), data: (
+        { __typename?: 'NpmsDashboardData' }
+        & Pick<NpmsDashboardData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
       ) }
     )>> }
   ) }
@@ -1219,6 +1228,28 @@ export type JsPageDeleteDashboardMutation = (
       { __typename?: 'NpmsDashboardData' }
       & Pick<NpmsDashboardData, 'id' | 'name'>
     ) }
+  ) }
+);
+
+export type SearchNpmsPackageQueryVariables = Exact<{
+  likeName?: Maybe<Scalars['String']>;
+}>;
+
+
+export type SearchNpmsPackageQuery = (
+  { __typename?: 'RootQueryType' }
+  & { npmsPackages: (
+    { __typename?: 'NpmsPackageCollectionNode' }
+    & { pagination: (
+      { __typename?: 'meta' }
+      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+    ), nodes: Array<Maybe<(
+      { __typename?: 'NpmsPackageNode' }
+      & { data: (
+        { __typename?: 'NpmsPackageData' }
+        & Pick<NpmsPackageData, 'id' | 'name'>
+      ) }
+    )>> }
   ) }
 );
 
@@ -1287,7 +1318,7 @@ export type JsPageDashboardQuery = (
                     & Pick<NpmsPackageDataInfoEvaluationPopularity, 'communityInterest' | 'downloadsCount' | 'downloadsAcceleration' | 'dependentsCount'>
                   )>, maintenance?: Maybe<(
                     { __typename?: 'NpmsPackageDataInfoEvaluationMaintenance' }
-                    & Pick<NpmsPackageDataInfoEvaluationMaintenance, 'releaseFrequency' | 'commitsFrequency' | 'openIssues' | 'issuesDistribution'>
+                    & Pick<NpmsPackageDataInfoEvaluationMaintenance, 'releasesFrequency' | 'commitsFrequency' | 'openIssues' | 'issuesDistribution'>
                   )> }
                 )>, collected?: Maybe<(
                   { __typename?: 'NpmsPackageDataInfoCollected' }

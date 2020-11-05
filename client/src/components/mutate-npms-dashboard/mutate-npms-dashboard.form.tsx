@@ -1,24 +1,59 @@
-import { Box, Button, CircularProgress, FormHelperText, Grid, InputLabel, makeStyles, Modal, Paper, TextField, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  makeStyles,
+  Modal,
+  Paper,
+  TextField,
+  Typography } from '@material-ui/core';
 import immu from 'immutability-helper';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import clsx from 'clsx';
 import { gql } from 'graphql-request';
-import React, { FormEventHandler, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from 'react-beautiful-dnd';
+import React, {
+  FormEventHandler,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState } from 'react';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  OnDragEndResponder } from 'react-beautiful-dnd';
 import { useMutation } from 'react-query';
-import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
+import {
+  normaliseApiException,
+  rethrow,
+} from '../../backend-api/make-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { ApiContext } from '../../contexts/api.context';
-import { CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables, UpdateNpmsDashboardFormMutation, UpdateNpmsDashboardFormMutationVariables } from '../../generated/graphql';
+import {
+  CreateNpmsDashboardFormMutation,
+  CreateNpmsDashboardFormMutationVariables,
+  UpdateNpmsDashboardFormMutation,
+  UpdateNpmsDashboardFormMutationVariables,
+} from '../../generated/graphql';
 import { ist } from '../../helpers/ist.helper';
 import { useSequence } from '../../hooks/use-sequence.hook';
 import { Id } from '../../types/id.type';
 import { OrNull } from '../../types/or-null.type';
-import { MutateNpmsPackageForm, IMutateNpmsPackageFormOnSuccessFn } from '../mutate-npms-package/mutate-npms-package.form';
-import { INpmsPackageSearchOption, NpmsPackageComboSearch } from '../npms-package-combo-search/npms-package-combo-search';
-import { useRandomId } from '../../hooks/use-random-id.hook';
-import { WithRandomId } from '../with-random-id/with-random-id';
-import { pretty } from '../../helpers/pretty.helper';
+import {
+  MutateNpmsPackageForm,
+  IMutateNpmsPackageFormOnSuccessFn,
+} from '../mutate-npms-package/mutate-npms-package.form';
+import {
+  INpmsPackageSearchOption,
+  NpmsPackageComboSearch,
+} from '../npms-package-combo-search/npms-package-combo-search';
+import {
+  WithRandomId,
+} from '../with-random-id/with-random-id';
 
 // TODO: updating vs creating...
 const CreateNpmsDashboardQuery = gql`
@@ -285,7 +320,7 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
                   <WithRandomId>
                     {(dragDropId) => (
                       <Droppable droppableId={dragDropId}>
-                        {(provided) => (
+                        {(provided, snapshot) => (
                           <Grid ref={provided.innerRef} container spacing={2} >
                             {packages.filter(ist.notNullable).map((pkg, i) => (
                               <Grid key={pkg.key} item xs={12}>
@@ -303,6 +338,7 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
                                 </Draggable>
                               </Grid>
                             ))}
+                            {provided.placeholder}
                           </Grid>
                         )}
                       </Droppable>

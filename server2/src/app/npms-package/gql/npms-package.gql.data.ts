@@ -12,6 +12,7 @@ import { AuditableGql } from "../../../common/gql/gql.auditable";
 import { GqlDateTimeScalar } from "../../../common/gql/gql.date-time.scalar";
 import { GqlJsonObjectScalar } from "../../../common/gql/gql.json.scalar";
 import { SoftDeleteableGql } from "../../../common/gql/gql.soft-deleteable";
+import { pretty } from "../../../common/helpers/pretty.helper";
 import {
   NpmsPackageInfo_Collected_GitHub_Commit,
   NpmsPackageInfo_Collected_GitHub_Contributor,
@@ -58,6 +59,7 @@ export const NpmsPackageGqlData: GraphQLObjectType<NpmsPackageModel, GqlContext>
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), },
     name: { type: GraphQLNonNull(GraphQLString), },
+    raw: { type: new GraphQLNonNull(GraphQLString), resolve: (parent) => JSON.stringify(parent.data ?? null) },
     data: { type: new GraphQLObjectType<NpmsPackageInfo>({ name: 'NpmsPackageDataInfo', fields: () => ({
       analyzedAt: { type: GqlDateTimeScalar },
       collected: { type: new GraphQLObjectType<NpmsPackageInfo_Collected>({ name: 'NpmsPackageDataInfoCollected', fields: () => ({
@@ -155,7 +157,7 @@ export const NpmsPackageGqlData: GraphQLObjectType<NpmsPackageModel, GqlContext>
           dependentsCount: { type: GraphQLFloat },
         })})},
         maintenance: { type: new GraphQLObjectType<NpmsPackageInfo_Evaluation_Maintenance>({ name: 'NpmsPackageDataInfoEvaluationMaintenance', fields: () => ({
-          releaseFrequency: { type: GraphQLFloat },
+          releasesFrequency: { type: GraphQLFloat },
           commitsFrequency: { type: GraphQLFloat },
           openIssues: { type: GraphQLFloat },
           issuesDistribution: { type: GraphQLFloat },
