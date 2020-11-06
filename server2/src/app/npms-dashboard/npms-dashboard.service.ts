@@ -3,6 +3,7 @@ import { ist } from '../../common/helpers/ist.helper';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { OrNull } from '../../common/types/or-null.type';
 import { QueryRunner } from '../db/query-runner';
+import { NpmsDashboardItemField } from '../npms-dashboard-item/npms-dashboard-item.attributes';
 import { NpmsDashboardItemModel } from '../npms-dashboard-item/npms-dashboard-item.model';
 import { NpmsPackageModel } from '../npms-package/npms-package.model';
 import { ICreateNpmsDashboardInput } from './dtos/create-npms-dashboard.gql';
@@ -48,7 +49,18 @@ export class NpmsDashboardService {
     const allDashboardsMap = await this.ctx
       .services
       .npmsDashboardRepository
-      .findAll({ runner, unscoped: true, options: { attributes: [NpmsDashboardField.id, NpmsDashboardField.order] } })
+      .findAll({
+        runner,
+        unscoped: true,
+        options: {
+          attributes: [
+            NpmsDashboardField.id,
+            NpmsDashboardField.order,
+          ],
+          // ensure ordering
+          order: [[NpmsDashboardItemField.order, 'ASC']]
+        },
+      })
       .then(results => new Map(results.map(result => [result.id, result])));
 
     const final: NpmsDashboardModel[] = (Array

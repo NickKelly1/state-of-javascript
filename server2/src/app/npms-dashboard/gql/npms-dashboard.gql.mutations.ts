@@ -57,6 +57,11 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
             nextPackages,
             prevDashboardItems: [],
           });
+          // move this dashboard to the front...
+          await ctx.services.npmsDashboardService.sortDashboards({
+            runner,
+            dto: { dashboard_ids: [dashboard.id], },
+          });
         }
 
         return dashboard;
