@@ -30,7 +30,7 @@ import { useMutation } from 'react-query';
 import {
   normaliseApiException,
   rethrow,
-} from '../../backend-api/make-api-exception.helper';
+} from '../../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { ApiContext } from '../../contexts/api.context';
 import {

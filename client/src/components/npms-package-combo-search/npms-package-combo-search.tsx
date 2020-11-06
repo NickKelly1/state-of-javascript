@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
+import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { ApiContext } from '../../contexts/api.context';
 import { SearchNpmsPackageQuery, SearchNpmsPackageQueryVariables } from '../../generated/graphql';
 import { ist } from '../../helpers/ist.helper';

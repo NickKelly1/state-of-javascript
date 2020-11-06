@@ -21,7 +21,7 @@ import {
 import { gql } from 'graphql-request';
 import { Api } from '../../backend-api/api';
 import { JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables } from '../../generated/graphql';
-import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
+import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { pretty } from '../../helpers/pretty.helper';
 import { FittedPieChart } from '../../components/fitted-pie-chart/fitted-pie-chart';

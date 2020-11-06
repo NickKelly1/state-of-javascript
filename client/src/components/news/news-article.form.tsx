@@ -6,7 +6,7 @@ import { ApiError } from "next/dist/next-server/server/api-utils";
 import React, { ChangeEventHandler, FormEvent, FormEventHandler, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useMutation } from "react-query";
 import { IAuthenticationRo } from "../../backend-api/api.credentials";
-import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
+import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { Markdown } from "../markdown/markdown";
 import { ApiContext } from "../../contexts/api.context";

@@ -16,7 +16,7 @@ import { gql } from "graphql-request";
 import React, { useContext, useState } from "react";
 import { useMutation } from "react-query";
 import { IAuthenticationRo } from "../../backend-api/api.credentials";
-import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
+import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { ApiContext } from "../../contexts/api.context";
 import { OrPromise } from "../../types/or-promise.type";

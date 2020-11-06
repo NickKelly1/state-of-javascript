@@ -5,7 +5,7 @@ import React, { FormEventHandler, useCallback, useContext, useMemo, useState } f
 import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from 'react-beautiful-dnd';
 import { useMutation, useQuery } from 'react-query';
 import { ApiException } from '../../backend-api/api.exception';
-import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
+import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { ApiContext } from '../../contexts/api.context';
 import { DebugModeContext } from '../../contexts/debug-mode.context';
 import { NpmsDashbortSortFormQuery, NpmsDashbortSortFormQueryVariables, NpmsDashbortSortFormSubmitMutation, NpmsDashbortSortFormSubmitMutationVariables } from '../../generated/graphql';

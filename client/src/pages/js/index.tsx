@@ -58,7 +58,6 @@ import { NpmsApi } from '../../npms-api/npms-api';
 import { gql } from 'graphql-request';
 import { Api } from '../../backend-api/api';
 import { JsPageDashboardQuery, JsPageDashboardQueryVariables, JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables } from '../../generated/graphql';
-import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
 import { pretty } from '../../helpers/pretty.helper';
 import { FittedPieChart } from '../../components/fitted-pie-chart/fitted-pie-chart';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
@@ -81,6 +80,8 @@ import { DebugModeContext } from '../../contexts/debug-mode.context';
 import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms-dashboard/npms-dashboard';
 import { NpmsDashboardSortForm } from '../../components/npms-dashboard-sort/npms-dashboard-sort.form';
 import { ApiException } from '../../backend-api/api.exception';
+import { normaliseApiException } from '../../backend-api/normalise-api-exception.helper';
+import { useQuery } from 'react-query';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -276,7 +277,12 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
 
   const [dashboards, setDashboards] = useState<Attempt<JsPageDashboardQuery, ApiException>>(props.dashboards);
 
-  const refreshDashboards = useCallback(async () => {
+  // const { refreshDashboards } = useQuery(
+  //   'js_page_query'
+  // );
+    const refreshDashboards = useCallback(async () => {
+    // TODO: useQuery...
+    // TODO: report on errors...
     const result = await runDashboardsQuery(api, defaultQueryVars);
     setDashboards(result);
   }, []);
@@ -611,10 +617,15 @@ async function runDashboardsQuery(
   api: Api,
   vars: JsPageDashboardQueryVariables,
 ): Promise<Attempt<JsPageDashboardQuery, ApiException>> {
-  const dashboards = await attemptAsync(api.connector.graphql<JsPageDashboardQuery, JsPageDashboardQueryVariables>(
-    jsPageDashboardQuery,
-    vars,
-  ), normaliseApiException);
+  const dashboards = await attemptAsync(
+    api
+      .connector
+      .graphql<JsPageDashboardQuery, JsPageDashboardQueryVariables>(
+        jsPageDashboardQuery,
+        vars,
+      ),
+    normaliseApiException,
+    );
 
   return dashboards;
 }

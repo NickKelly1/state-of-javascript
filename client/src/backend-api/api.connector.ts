@@ -3,7 +3,7 @@ import { Debug } from "../debug/debug";
 import { RequestDocument, Variables } from "graphql-request/dist/types";
 import { ApiCredentials } from "./api.credentials";
 import { GraphQLClient, request } from "graphql-request";
-import { normaliseApiException } from "./make-api-exception.helper";
+import { normaliseApiException } from "./normalise-api-exception.helper";
 import { isoFetch } from "../iso-fetch";
 
 export class ApiConnector {

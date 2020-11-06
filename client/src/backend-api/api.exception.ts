@@ -16,6 +16,8 @@ export class ApiException extends Error implements IApiException {
     this.message = _orig.message;
     this.data = _orig.data;
     this.trace = _orig.trace;
+    // do NOT take the stack from the original (server-side) exception... create a new stack instead
+    // (?)
     this.stack = _orig.stack;
   }
 }

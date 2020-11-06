@@ -123,9 +123,13 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
       const model = await ctx.services.universal.db.transact(async ({ runner }) => {
         const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
           runner,
+          options: {
+            include: [{ association: NpmsDashboardAssociation.items, }],
+          }
         });
         ctx.authorize(ctx.services.npmsDashboardPolicy.canDelete({ model: npmsDashboard }));
-        await ctx.services.npmsDashboardService.delete({ runner, model: npmsDashboard });
+        const items = assertDefined(npmsDashboard.items);
+        await ctx.services.npmsDashboardService.hardDelete({ runner, model: npmsDashboard, items });
         return npmsDashboard;
       });
       return model;

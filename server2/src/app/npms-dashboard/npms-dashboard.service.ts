@@ -161,17 +161,38 @@ export class NpmsDashboardService {
 
 
   /**
-   * Delete the model
+   * Soft delete the model
    * 
    * @param arg
    */
-  async delete(arg: {
+  async softDelete(arg: {
     model: NpmsDashboardModel;
+    items: NpmsDashboardItemModel[];
     runner: QueryRunner;
   }): Promise<NpmsDashboardModel> {
     const { model, runner } = arg;
     const { transaction } = runner;
     await model.destroy({ transaction });
+    return model;
+  }
+
+
+  /**
+   * Hard delete the model
+   * 
+   * @param arg
+   */
+  async hardDelete(arg: {
+    model: NpmsDashboardModel;
+    items: NpmsDashboardItemModel[]
+    runner: QueryRunner;
+  }): Promise<NpmsDashboardModel> {
+    const { model, runner, items } = arg;
+    const { transaction } = runner;
+    // hard delete all associated items..
+    await Promise.all(items.map(item => item.destroy({ transaction, force: true })));
+    // hard delete dashboard
+    await model.destroy({ transaction, force: true });
     return model;
   }
 }

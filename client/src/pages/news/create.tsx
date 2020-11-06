@@ -2,7 +2,7 @@ import { Box, Button, ButtonGroup, CircularProgress, Grid, Input, InputLabel, Li
 import { gql } from "graphql-request";
 import React, { useCallback, useContext, useState } from "react";
 import { useMutation } from "react-query";
-import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
+import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { ApiContext } from "../../contexts/api.context";
 import { CreateNewsArticle, CreateNewsArticleMutationVariables, } from "../../generated/graphql";

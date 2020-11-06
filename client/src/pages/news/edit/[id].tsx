@@ -16,7 +16,7 @@ import { GetServerSidePropsResult } from "next";
 import { useMutation } from "react-query";
 import { INewsArticleFormData, NewsArticleForm } from "../../../components/news/news-article.form";
 import { IApiException } from "../../../backend-api/types/api.exception.interface";
-import { normaliseApiException, rethrow } from "../../../backend-api/make-api-exception.helper";
+import { normaliseApiException, rethrow } from "../../../backend-api/normalise-api-exception.helper";
 import { ApiException } from "../../../backend-api/api.exception";
 
 const pageQuery = gql`
