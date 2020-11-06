@@ -261,12 +261,6 @@ const useStyles = makeStyles((theme) => ({
   logo: {
     maxHeight: '1em',
   },
-  editModalContent: {
-    width: '600px',
-  },
-  category: {
-    //
-  },
 }));
 
 const defaultQueryVars: JsPageDashboardQueryVariables = {
