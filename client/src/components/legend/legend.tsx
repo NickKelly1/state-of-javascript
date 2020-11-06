@@ -7,7 +7,7 @@ import { ring } from '../../helpers/ring.helper';
 import { DebugModeContext } from '../../contexts/debug-mode.context';
 
 const useStyles = makeStyles((theme) => ({
-  legend: {
+  root: {
     paddingLeft: '0',
     listStyle: 'none',
     display: 'flex',
@@ -42,7 +42,7 @@ export function Legend(props: ILegendProps) {
 
   return (
     // <Box className={className} display="flex" justifyContent="center" alignItems="center" flexDirection="column">
-      <ul className={clsx(className, classes.legend)}>
+      <ul className={clsx(className, classes.root)}>
         {names.map((name, i) => (
           <li className={classes.legend_item} key={i}>
             <Box mr={2} className={classes.legend_item_colour} style={{ backgroundColor: ring(colours, i) }}/>

@@ -20,7 +20,7 @@ import {
 } from '@material-ui/core';
 import { gql } from 'graphql-request';
 import { Api } from '../../backend-api/api';
-import { JsPageDashboardQuery, JsPageDashboardQueryVariables, JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables } from '../../generated/graphql';
+import { JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables } from '../../generated/graphql';
 import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { pretty } from '../../helpers/pretty.helper';
@@ -218,37 +218,32 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
         </DialogContent>
       </Dialog>
       <Grid className="text-center" container spacing={2}>
-        <Grid container item xs={12}>
-          <Grid item xs={6} sm={4}>
-            <WhenDebugMode>
-              <Button onClick={openDebugDialog}>
-                <BugReportIcon />
-              </Button>
-            </WhenDebugMode>
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            <Typography className="centered" component="h2" variant="h2">
-              {dashboard.graphical.name}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            {dashboard.graphical.can.update && (
-              <Box component="span">
-                <Button onClick={openMutationDialog}>
-                  <EditIcon />
-                </Button>
-              </Box>
-            )}
-            {dashboard.graphical.can.delete && (
-              <Box component="span">
-                <Button onClick={handleDeleteDashboard}>
-                  <DeleteIcon />
-                </Button>
-              </Box>
-            )}
-          </Grid>
+        <Grid item xs={12}>
+          <Typography className="centered" component="h2" variant="h2">
+            {dashboard.graphical.name}
+          </Typography>
         </Grid>
-
+        <Grid item xs={12}>
+          <WhenDebugMode>
+            <Button onClick={openDebugDialog}>
+              <BugReportIcon />
+            </Button>
+          </WhenDebugMode>
+          {dashboard.graphical.can.update && (
+            <Box component="span">
+              <Button onClick={openMutationDialog}>
+                <EditIcon />
+              </Button>
+            </Box>
+          )}
+          {dashboard.graphical.can.delete && (
+            <Box component="span">
+              <Button onClick={handleDeleteDashboard}>
+                <DeleteIcon />
+              </Button>
+            </Box>
+          )}
+        </Grid>
         <Grid className="centered col" item xs={12} sm={4}>
           <Legend names={dashboard.graphical.overview.legend.names} colours={dashboard.graphical.colours} />
         </Grid>

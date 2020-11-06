@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
 import { ApiContext } from '../../contexts/api.context';
@@ -61,6 +61,7 @@ interface INpmsPackageComboSearchProps {
 export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
   const { className, onChange, error, isDisabled, helperText, option: _optProps } = props
   const { api, me } = useContext(ApiContext);
+  const initialised = useRef(false);
 
   // switch between controlled & uncontrolled...
   const [_optInternal, _setOptInternal] = useState(_optProps ?? null);
@@ -82,9 +83,9 @@ export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
       .catch(rethrow(normaliseApiException));
     return response;
   }, []);
-  const debounce = useDebounce({ ms: 500, abortOnUnmount: true });
+  const debounce = useDebounce({ ms: 300, abortOnUnmount: true });
   const debouncedFetch = useCallback((search: IFetchArg) => debounce.fire(() => io.fire(search)), [debounce.fire, io.fire]);
-  useEffect(() => debouncedFetch(search), [search]);
+  useEffect(() => void (initialised.current ? debouncedFetch(search) : undefined), [search]);
   const options = useMemo<INpmsPackageSearchOption[]>(() => {
     return io
       .data
@@ -108,7 +109,13 @@ export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
       className={className}
       options={options}
       open={open}
-      onOpen={() => setOpen(true)}
+      onOpen={() => {
+        if (!initialised.current) {
+          initialised.current = true;
+          debouncedFetch(search);
+        }
+        setOpen(true)
+      }}
       onClose={() => setOpen(false)}
       getOptionLabel={option => option.name}
       getOptionSelected={(option, value) => option.name === value.name}
@@ -118,7 +125,7 @@ export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
       value={_opt}
       inputValue={search}
       filterOptions={(prefiltered) => prefiltered}
-      onInputChange={(_, value) => setSearch(value)}
+      onInputChange={(_, value) => setSearch(value) }
       onChange={(_, value) => handleOptionChange(value)}
       renderInput={(params) => (
         <>
