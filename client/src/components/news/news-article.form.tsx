@@ -4,7 +4,7 @@ import MUILink from '@material-ui/core/Link';
 import { gql } from "graphql-request";
 import { ApiError } from "next/dist/next-server/server/api-utils";
 import React, { ChangeEventHandler, FormEvent, FormEventHandler, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";

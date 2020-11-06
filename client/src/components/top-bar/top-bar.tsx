@@ -23,7 +23,7 @@ import clsx from 'clsx';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import React, { useCallback, useContext, useState } from "react";
 import { ApiContext } from "../../contexts/api.context";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 import { DebugModeContext } from "../../contexts/debug-mode.context";
 import { LoginForm } from "../forms/login.form";
 import { RegisterForm } from "../forms/register.form";

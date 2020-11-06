@@ -4,6 +4,16 @@ import { IRequestContext } from "../interfaces/request-context.interface";
 import { Printable } from "../types/printable.type";
 import { IExceptionArg } from "./interfaces/exception-arg.interface";
 
+export interface IApiException {
+  name: string;
+  code: number;
+  error: string;
+  message: string;
+  data?: IExceptionArg;
+  stack?: string;
+  trace?: string[];
+}
+
 export interface IExceptionCtorArg {
   name: string;
   code: number;
@@ -14,7 +24,7 @@ export interface IExceptionCtorArg {
   ctx: IRequestContext;
 }
 
-export class Exception extends Error {
+export class Exception extends Error implements IApiException {
   public readonly __is_exception = true;
 
   public readonly code: number;
@@ -22,6 +32,7 @@ export class Exception extends Error {
   public readonly message: string;
   public readonly data?: IExceptionData;
   public readonly debug?: Printable;
+  public trace?: string[];
   protected readonly ctx: IRequestContext;
 
 
@@ -34,6 +45,7 @@ export class Exception extends Error {
     this.data = arg.data;
     this.debug = arg.debug;
     this.ctx = arg.ctx;
+    this.trace = this.stack?.split('\n');
   }
 
   toJsonProd(): IJson {
@@ -52,7 +64,8 @@ export class Exception extends Error {
       code: this.code,
       message: this.message,
       data: this.data,
-      stack: this.stack?.split('\n'),
+      stack: this.stack,
+      trace: this.trace,
       debug: this.debug,
       request: this.ctx.info(),
     }
@@ -65,12 +78,9 @@ export class Exception extends Error {
     return this.toJsonDev();
   }
 
-  shiftStack(by: number) {
+  shiftTrace(by: number) {
     try {
-      if (this.stack) {
-        const split = this.stack.split('\n');
-        this.stack = [split[0]].concat(split.slice(1 + by, split.length)).join('\n');
-      }
+      if (this.trace) { this.trace.splice(0, by); }
     } catch (err) {
       // do nothing..
       console.warn('Failed to trim stack...');

@@ -14,7 +14,7 @@ import {
 import clsx from 'clsx';
 import { gql } from "graphql-request";
 import React, { useContext, useState } from "react";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
@@ -22,12 +22,6 @@ import { ApiContext } from "../../contexts/api.context";
 import { OrPromise } from "../../types/or-promise.type";
 
 const useStyles = makeStyles((theme) => ({
-  centered: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   label: {
     paddingBottom: theme.spacing(1),
   },
@@ -74,11 +68,11 @@ export function LoginForm(props: ILoginFormProps) {
     password: '',
   });
 
-  const err = result.error;
+  const error = result.error;
   const isDisabled = result.isLoading || result.isSuccess;
 
   return (
-    <Grid container spacing={2} className={classes.centered}>
+    <Grid container spacing={2} className="centered col">
       {title && (
         <Grid item xs={12}>
           <Typography variant="h5" component="h2">
@@ -91,7 +85,7 @@ export function LoginForm(props: ILoginFormProps) {
           evt.preventDefault();
           doLogin(signupData);
         }}>
-          <Grid className={classes.centered} container spacing={2}>
+          <Grid className="centered col" container spacing={2}>
             <Grid className={clsx(undefined, classes.group)} item xs={12} sm={12}>
               <InputLabel className={classes.label} htmlFor="signup_name">name</InputLabel>
               {/* <Input */}
@@ -100,8 +94,8 @@ export function LoginForm(props: ILoginFormProps) {
                 disabled={isDisabled}
                 inputProps={{ className: classes.text }}
                 value={signupData.name}
-                error={!!err?.data?.name}
-                helperText={err?.data?.name?.join('\n')}
+                error={!!error?.data?.name}
+                helperText={error?.data?.name?.join('\n')}
                 onChange={(evt) => {
                   const value = evt.target.value;
                   setSignupData((prev) => ({ ...prev, name: value }))
@@ -117,28 +111,28 @@ export function LoginForm(props: ILoginFormProps) {
                 inputProps={{ className: classes.text }}
                 type="password"
                 value={signupData.password}
-                error={!!err?.data?.password}
-                helperText={err?.data?.password?.join('\n')}
+                error={!!error?.data?.password}
+                helperText={error?.data?.password?.join('\n')}
                 onChange={(evt) => {
                   const value = evt.target.value;
                   setSignupData((prev) => ({ ...prev, password: value }))
                 }}
               />
             </Grid>
-            {err && (
-              <Grid className={classes.centered} item xs={12} sm={12}>
-                <FormHelperText error>
-                  {err.message}
-                </FormHelperText>
-              </Grid>
-            )}
             <Grid item xs={12} sm={12}>
               <Button disabled={isDisabled} type="submit">
                 Login
               </Button>
             </Grid>
+            {error && (
+              <Grid className="centered col" item xs={12} sm={12}>
+                <FormHelperText error>
+                  {error.message}
+                </FormHelperText>
+              </Grid>
+            )}
             {isDisabled && (
-              <Grid className="centered" item xs={12} sm={12}>
+              <Grid className="centered col" item xs={12} sm={12}>
                 <CircularProgress />
               </Grid>
             )}

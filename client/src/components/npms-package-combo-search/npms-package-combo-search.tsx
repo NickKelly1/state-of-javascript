@@ -2,7 +2,6 @@ import { gql } from 'graphql-request';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
-import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { ApiContext } from '../../contexts/api.context';
 import { SearchNpmsPackageQuery, SearchNpmsPackageQueryVariables } from '../../generated/graphql';
 import { ist } from '../../helpers/ist.helper';
@@ -14,6 +13,7 @@ import { OrUndefined } from '../../types/or-undefined.type';
 import { CircularProgress, FormHelperText, TextField } from '@material-ui/core';
 import { OrNull } from '../../types/or-null.type';
 import { OrNullable } from '../../types/or-nullable.type';
+import { ApiException } from '../../backend-api/api.exception';
 
 const npmsPackageSearchQuery = gql`
 query SearchNpmsPackage(
@@ -72,7 +72,7 @@ export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
   const [search, setSearch] = useState(() => ist.notNullable(_opt) ? _opt.name : '');
 
   type IFetchArg = string;
-  const io = useAsync<IFetchArg, SearchNpmsPackageQuery, IApiException>((search) => {
+  const io = useAsync<IFetchArg, SearchNpmsPackageQuery, ApiException>((search) => {
     const response = api
       .connector
       .graphql<SearchNpmsPackageQuery, SearchNpmsPackageQueryVariables>(

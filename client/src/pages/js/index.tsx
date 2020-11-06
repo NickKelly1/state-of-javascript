@@ -59,7 +59,6 @@ import { gql } from 'graphql-request';
 import { Api } from '../../backend-api/api';
 import { JsPageDashboardQuery, JsPageDashboardQueryVariables, JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables } from '../../generated/graphql';
 import { normaliseApiException, rethrow } from '../../backend-api/make-api-exception.helper';
-import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { pretty } from '../../helpers/pretty.helper';
 import { FittedPieChart } from '../../components/fitted-pie-chart/fitted-pie-chart';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
@@ -81,6 +80,7 @@ import { useUpdate } from '../../hooks/use-update.hook';
 import { DebugModeContext } from '../../contexts/debug-mode.context';
 import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms-dashboard/npms-dashboard';
 import { NpmsDashboardSortForm } from '../../components/npms-dashboard-sort/npms-dashboard-sort.form';
+import { ApiException } from '../../backend-api/api.exception';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -246,7 +246,7 @@ query JsPageDashboard(
 
 
 interface IJavaScriptPageProps {
-  dashboards: Attempt<JsPageDashboardQuery, IApiException>;
+  dashboards: Attempt<JsPageDashboardQuery, ApiException>;
 }
 
 
@@ -280,7 +280,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
   // do refresh...
   const { api, me } = useContext(ApiContext);
 
-  const [dashboards, setDashboards] = useState<Attempt<JsPageDashboardQuery, IApiException>>(props.dashboards);
+  const [dashboards, setDashboards] = useState<Attempt<JsPageDashboardQuery, ApiException>>(props.dashboards);
 
   const refreshDashboards = useCallback(async () => {
     const result = await runDashboardsQuery(api, defaultQueryVars);
@@ -300,7 +300,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
 }
 
 interface IJavaScriptPageContentProps {
-  dashboards: Attempt<JsPageDashboardQuery, IApiException>;
+  dashboards: Attempt<JsPageDashboardQuery, ApiException>;
   refreshDashboards: () => any;
 }
 
@@ -616,7 +616,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
 async function runDashboardsQuery(
   api: Api,
   vars: JsPageDashboardQueryVariables,
-): Promise<Attempt<JsPageDashboardQuery, IApiException>> {
+): Promise<Attempt<JsPageDashboardQuery, ApiException>> {
   const dashboards = await attemptAsync(api.connector.graphql<JsPageDashboardQuery, JsPageDashboardQueryVariables>(
     jsPageDashboardQuery,
     vars,

@@ -17,6 +17,7 @@ import { useMutation } from "react-query";
 import { INewsArticleFormData, NewsArticleForm } from "../../../components/news/news-article.form";
 import { IApiException } from "../../../backend-api/types/api.exception.interface";
 import { normaliseApiException, rethrow } from "../../../backend-api/make-api-exception.helper";
+import { ApiException } from "../../../backend-api/api.exception";
 
 const pageQuery = gql`
 query EditNewsArticlePage(
@@ -125,7 +126,7 @@ function EditNewsArticlePage(props: IEditNewsArticlePageProps) {
   const classes = useStyles();
   const article = query?.newsArticles.nodes[0];
 
-  const [saveNewsArticle, result] = useMutation<UpdateNewsArticle, IApiException, UpdateNewsArticleMutationVariables>(
+  const [saveNewsArticle, result] = useMutation<UpdateNewsArticle, ApiException, UpdateNewsArticleMutationVariables>(
     async (vars: UpdateNewsArticleMutationVariables): Promise<UpdateNewsArticle> => {
       const result = await api
         .connector
@@ -135,7 +136,7 @@ function EditNewsArticlePage(props: IEditNewsArticlePageProps) {
     },
   );
 
-  const handleSave = useCallback(async (data: INewsArticleFormData): boolean => {
+  const handleSave = useCallback(async (data: INewsArticleFormData): Promise<boolean> => {
     const id = article?.data.id;
     if (ist.nullable(id)) throw new Error('id not defined...');
     const { title, teaser, body } = data;

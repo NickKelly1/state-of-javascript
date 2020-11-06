@@ -10,7 +10,7 @@ export class NpmsDashboardPolicy {
   }
 
   /**
-   * Can the requester view many news articles?
+   * Can the requester view many npms dashboards?
    *
    * @param arg
    */
@@ -25,7 +25,7 @@ export class NpmsDashboardPolicy {
   }
 
   /**
-   * Can the requester view this newsa article?
+   * Can the requester view this npsm dashboard?
    *
    * @param arg
    */
@@ -41,7 +41,22 @@ export class NpmsDashboardPolicy {
   }
 
   /**
-   * Can the requester create this news article?
+   * Can the requester sort npms dashboards?
+   *
+   * @param arg
+   */
+  canSort(arg?: {
+    //
+  }): boolean {
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNpmsDashboard,
+    ]);
+  }
+
+
+  /**
+   * Can the requester create this sort this npms dashboard?
    *
    * @param arg
    */
@@ -57,7 +72,7 @@ export class NpmsDashboardPolicy {
 
 
   /**
-   * Can the request update this news article?
+   * Can the request update this npms dashboard?
    *
    * @param arg
    */
@@ -74,7 +89,7 @@ export class NpmsDashboardPolicy {
   }
 
   /**
-   * Can the requester delete this news article?
+   * Can the requester delete this npms dashboard?
    *
    * @param arg
    */

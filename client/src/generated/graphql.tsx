@@ -985,6 +985,7 @@ export type NpmsDashboardCollectionNode = {
 export type NpmsDashboardCollectionActions = {
   __typename?: 'NpmsDashboardCollectionActions';
   show: Scalars['Boolean'];
+  sort: Scalars['Boolean'];
   create: Scalars['Boolean'];
 };
 
@@ -1021,6 +1022,7 @@ export type RootMutationType = {
   updateNewsArticle: NewsArticleNode;
   deleteNewsArticle: NewsArticleNode;
   createNpmsPackage: NpmsPackageNode;
+  sortNpmsDashboards: Scalars['Boolean'];
   createNpmsDashboard: NpmsDashboardNode;
   updateNpmsDashboard: NpmsDashboardNode;
   deleteNpmsDashboard: NpmsDashboardNode;
@@ -1046,6 +1048,11 @@ export type RootMutationTypeDeleteNewsArticleArgs = {
 
 export type RootMutationTypeCreateNpmsPackageArgs = {
   dto: CreateNpmsPackage;
+};
+
+
+export type RootMutationTypeSortNpmsDashboardsArgs = {
+  dto: SortNpmsDashboard;
 };
 
 
@@ -1092,6 +1099,10 @@ export type DeleteNewsArticle = {
 
 export type CreateNpmsPackage = {
   name: Scalars['String'];
+};
+
+export type SortNpmsDashboard = {
+  dashboard_ids: Array<Scalars['Int']>;
 };
 
 export type CreateNpmsDashboard = {
@@ -1182,8 +1193,8 @@ export type CreateNpmsPackageFormMutation = (
 );
 
 export type NpmsDashbortSortFormQueryVariables = Exact<{
-  dashboardOffset?: Maybe<Scalars['Int']>;
-  dashboardLimit?: Maybe<Scalars['Int']>;
+  dashboardOffset: Scalars['Int'];
+  dashboardLimit: Scalars['Int'];
 }>;
 
 
@@ -1209,6 +1220,16 @@ export type NpmsDashbortSortFormQuery = (
       ) }
     )>> }
   ) }
+);
+
+export type NpmsDashbortSortFormSubmitMutationVariables = Exact<{
+  dashboard_ids: Array<Scalars['Int']>;
+}>;
+
+
+export type NpmsDashbortSortFormSubmitMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'sortNpmsDashboards'>
 );
 
 export type JsPageDeleteDashboardMutationVariables = Exact<{

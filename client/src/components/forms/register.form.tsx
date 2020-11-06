@@ -13,7 +13,7 @@ import {
 import clsx from 'clsx';
 import { gql } from "graphql-request";
 import React, { useContext, useState } from "react";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/make-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
@@ -22,12 +22,6 @@ import { OrPromise } from "../../types/or-promise.type";
 
 
 const useStyles = makeStyles((theme) => ({
-  centered: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   label: {
     paddingBottom: theme.spacing(1),
   },
@@ -74,7 +68,7 @@ export function RegisterForm(props: IRegisterFormProps) {
   const isDisabled = result.isLoading || result.isSuccess;
 
   return (
-    <Grid container spacing={2} className={classes.centered}>
+    <Grid container spacing={2} className="centered col">
       {title && (
         <Grid item xs={12}>
           <Typography variant="h5" component="h2">
@@ -87,7 +81,7 @@ export function RegisterForm(props: IRegisterFormProps) {
           evt.preventDefault();
           doRegister(signupData);
         }}>
-          <Grid className={classes.centered} container spacing={2}>
+          <Grid className="centered col" container spacing={2}>
             <Grid className={clsx(undefined, classes.group)} item xs={12} sm={12}>
               <InputLabel className={classes.label} htmlFor="signup_name">name</InputLabel>
               {/* <Input */}
@@ -121,20 +115,20 @@ export function RegisterForm(props: IRegisterFormProps) {
                 }}
               />
             </Grid>
-            {err && (
-              <Grid className={classes.centered} item xs={12} sm={12}>
-                <FormHelperText error>
-                  {err.message}
-                </FormHelperText>
-              </Grid>
-            )}
             <Grid item xs={12} sm={12}>
               <Button disabled={isDisabled} type="submit">
                 Register
               </Button>
             </Grid>
+            {err && (
+              <Grid className="centered col" item xs={12} sm={12}>
+                <FormHelperText error>
+                  {err.message}
+                </FormHelperText>
+              </Grid>
+            )}
             {isDisabled && (
-              <Grid item xs={12} sm={12}>
+              <Grid className="centered col" item xs={12} sm={12}>
                 <CircularProgress />
               </Grid>
             )}

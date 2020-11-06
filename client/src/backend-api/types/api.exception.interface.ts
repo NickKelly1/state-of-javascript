@@ -6,5 +6,6 @@ export interface IApiException {
   error: string;
   message: string;
   data?: IApiExceptionData;
-  stack?: string[];
+  stack?: string;
+  trace?: string[];
 }

@@ -277,6 +277,7 @@ export function MutateNpmsDashboardForm(props: IMutateNpmsDashboardFormProps) {
 
   return (
     <>
+      {/* TODO: use dialog instead of modal */}
       <Modal
         open={createNpmsPackageModalOpen}
         onClose={() => setCreateNpmsPackageModalOpen(false)}

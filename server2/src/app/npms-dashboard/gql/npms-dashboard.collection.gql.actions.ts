@@ -12,6 +12,12 @@ export const NpmsDashboardCollectionGqlActions = new GraphQLObjectType<INpmsDash
         return ctx.services.npmsDashboardPolicy.canFindMany();
       },
     },
+    sort: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.npmsDashboardPolicy.canSort();
+      },
+    },
     create: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {

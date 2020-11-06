@@ -41,7 +41,7 @@ export abstract class BaseContext implements IRequestContext {
 
   except(throwable: IThrowable): Exception {
     const exception = throwable(this);
-    exception.shiftStack(2);
+    exception.shiftTrace(2);
     return exception;
   }
 

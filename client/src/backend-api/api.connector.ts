@@ -78,7 +78,7 @@ export class ApiConnector {
         const result = await doTry();
         return result;
       }
-      throw error;
+      throw exception;
     }
   }
 }

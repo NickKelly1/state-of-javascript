@@ -1,18 +1,32 @@
-import { GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
+import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
 import { Op } from "sequelize";
 import { NpmsDashboardModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
+import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
-import { ICreateNpmsDashboardItemInput } from "../../npms-dashboard-item/dtos/create-npms-dashboard-item.gql";
-import { NpmsDashboardItemField } from "../../npms-dashboard-item/npms-dashboard-item.attributes";
 import { NpmsPackageField } from "../../npms-package/npms-package.attributes";
 import { CreateNpmsDashboardGqlInput, CreateNpmsDashboardValidator } from "../dtos/create-npms-dashboard.gql";
 import { DeleteNpmsDashboardGqlInput, DeleteNpmsDashboardValidator } from "../dtos/delete-npms-dashboard.gql";
+import { SortNpmsDashboardGqlInput, SortNpmsDashboardValidator } from "../dtos/sort-npms-dashboard.gql";
 import { UpdateNpmsDashboardGqlInput, UpdateNpmsDashboardValidator } from "../dtos/update-npms-dashboard.gql";
 import { NpmsDashboardAssociation } from "../npms-dashboard.associations";
+import { NpmsDashboardCollectionOptionsGqlInput } from "./npms-dashboard.collection.gql.options";
 import { INpmsDashboardGqlNodeSource, NpmsDashboardGqlNode } from "./npms-dashboard.gql.node";
 
 export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext>> = () => ({
+  sortNpmsDashboards: {
+    type: GraphQLNonNull(GraphQLBoolean),
+    args: { dto: { type: GraphQLNonNull(SortNpmsDashboardGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<boolean> => {
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canSort());
+      const dto = ctx.validate(SortNpmsDashboardValidator, args.dto);
+      await ctx.services.universal.db.transact(async ({ runner }) => {
+        await ctx.services.npmsDashboardService.sortDashboards({ runner, dto });
+      });
+      return true;
+    },
+  },
+
   createNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(CreateNpmsDashboardGqlInput) } },
