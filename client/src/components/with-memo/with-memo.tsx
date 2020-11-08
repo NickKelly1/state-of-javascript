@@ -1,9 +1,9 @@
-import { ReactElement, ReactNode, ReactText, useMemo } from "react";
+import { DependencyList, ReactElement, ReactNode, ReactText, useMemo } from "react";
 import { ist } from "../../helpers/ist.helper";
 import { nodeify } from "../../helpers/nodeify.helper";
 
 export interface IWithMemoProps<R> {
-  deps: any[],
+  deps: DependencyList,
   memo: () => R;
   children: (take: R) => ReactElement;
 }

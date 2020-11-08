@@ -43,7 +43,7 @@ export function normaliseApiException(exp: unknown): ApiException {
         });
       }});
 
-      return new ApiException({
+      return ApiException({
         code,
         name,
         error,
@@ -60,7 +60,7 @@ export function normaliseApiException(exp: unknown): ApiException {
   }
 
   // neither - fake it
-  return new ApiException({
+  return ApiException({
     name: 'unknown error',
     code: -1,
     error: 'unknown error',

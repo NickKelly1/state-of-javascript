@@ -18,7 +18,7 @@ export const NpmsPackageGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContex
       const { page, options } = transformGqlQuery(args);
       const { rows, count } = await ctx.services.npmsPackageRepository.findAllAndCount({
         runner: null,
-        options: { ...options, },
+        options: { ...options },
       });
       const pagination = collectionMeta({ data: rows, total: count, page });
       const connection: INpmsPackageCollectionGqlNodeSource = {

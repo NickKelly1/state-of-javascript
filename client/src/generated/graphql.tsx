@@ -1274,6 +1274,35 @@ export type SearchNpmsPackageQuery = (
   ) }
 );
 
+export type RolesPageQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  offset: Scalars['Int'];
+}>;
+
+
+export type RolesPageQuery = (
+  { __typename?: 'RootQueryType' }
+  & { roles: (
+    { __typename?: 'RoleCollectionNode' }
+    & { pagination: (
+      { __typename?: 'meta' }
+      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+    ), can: (
+      { __typename?: 'RoleCollectionActions' }
+      & Pick<RoleCollectionActions, 'show' | 'create'>
+    ), nodes: Array<Maybe<(
+      { __typename?: 'RoleNode' }
+      & { can: (
+        { __typename?: 'RoleActions' }
+        & Pick<RoleActions, 'show' | 'update' | 'delete'>
+      ), data: (
+        { __typename?: 'RoleData' }
+        & Pick<RoleData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+      ) }
+    )>> }
+  ) }
+);
+
 export type JsPageDashboardQueryVariables = Exact<{
   dashboardOffset?: Maybe<Scalars['Int']>;
   dashboardLimit?: Maybe<Scalars['Int']>;

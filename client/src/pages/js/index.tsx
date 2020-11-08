@@ -283,7 +283,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
     const refreshDashboards = useCallback(async () => {
     // TODO: useQuery...
     // TODO: report on errors...
-    const result = await runDashboardsQuery(api, defaultQueryVars);
+    const result = await runPageDataQuery(api, defaultQueryVars);
     setDashboards(result);
   }, []);
 
@@ -613,7 +613,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
 }
 
 
-async function runDashboardsQuery(
+async function runPageDataQuery(
   api: Api,
   vars: JsPageDashboardQueryVariables,
 ): Promise<Attempt<JsPageDashboardQuery, ApiException>> {
@@ -633,7 +633,7 @@ async function runDashboardsQuery(
 async function getProps(args: { cms: Cms; npmsApi: NpmsApi; api: Api; }): Promise<IJavaScriptPageProps> {
   const { cms, npmsApi, api } = args
 
-  const dashboards = await runDashboardsQuery(
+  const dashboards = await runPageDataQuery(
     api,
     defaultQueryVars,
   );
