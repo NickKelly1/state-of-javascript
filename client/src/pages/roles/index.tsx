@@ -1,18 +1,23 @@
 import KeyboardArrowUpIcon  from '@material-ui/icons/KeyboardArrowUpSharp';
+import SwipeableViews from 'react-swipeable-views';
 import TablePagination from '@material-ui/core/TablePagination';
 import KeyboardArrowDownIcon  from '@material-ui/icons/KeyboardArrowDownSharp';
 import {
+  Box,
   Collapse,
   Grid,
   IconButton,
   makeStyles,
   Paper,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Tabs,
+  Typography,
 } from "@material-ui/core";
 import dayjs from 'dayjs';
 import { gql } from "graphql-request";
@@ -48,6 +53,10 @@ import { NextRouter, useRouter } from 'next/router';
 import { useQuery } from 'react-query';
 import { serverSidePropsHandler } from '../../helpers/server-side-props-handler.helper';
 import { WithMemo } from '../../components/with-memo/with-memo';
+import { TabGroup } from '../../components/tab-group/tab-group';
+import clsx from 'clsx';
+import { IRoleFormProps, RoleForm } from '../../components/role-form/role.form';
+import { formatRelative } from 'date-fns';
 
 
 const rolesPageQuery = gql`
@@ -92,7 +101,6 @@ query RolesPage(
 `;
 
 const PerPageOptions = {
-  _1: 1,
   _5: 5,
   _10: 10,
   _30: 30,
@@ -196,13 +204,13 @@ function RolesPageContent(props: IRolesPageContentProps) {
       accessor: 'name',
     }, {
       Header: 'Created',
-      accessor: 'created_at',
+      accessor: (original) => formatRelative(new Date(original.created_at), new Date()),
     }, {
       Header: 'Updated',
-      accessor: 'updated_at',
+      accessor: (original) => formatRelative(new Date(original.updated_at), new Date()),
     }, {
       Header: 'Deleted',
-      accessor: 'deleted_at',
+      accessor: (original) => original.deleted_at ? formatRelative(new Date(original.deleted_at), new Date()) : '',
   }], [open]);
 
   const tableInstance = useTable({ columns, data });
@@ -210,6 +218,11 @@ function RolesPageContent(props: IRolesPageContentProps) {
 
   return (
     <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <Typography component="h1" variant="h1">
+          Roles
+        </Typography>
+      </Grid>
       <Grid item xs={12}>
         <TableContainer>
           <Table {...getTableProps()}>
@@ -237,12 +250,26 @@ function RolesPageContent(props: IRolesPageContentProps) {
                         </TableCell>
                       ))}
                     </TableRow>
-                    <TableRow {...rowProps}>
-                      <TableCell colSpan={row.cells.length} style={{ paddingBottom: 0, paddingTop: 0 }}>
+                    <TableRow {...rowProps} className={clsx(rowProps.className, 'tabs-row')}>
+                      <TableCell className="tabs-cell" colSpan={row.cells.length}>
                         <Collapse in={!!open[row.original.id]} timeout="auto" unmountOnExit>
-                          <div>
-                            muh nuts
-                          </div>
+                          <WithMemo
+                            deps={[row.original]}
+                            memo={(): { roleFormProps: IRoleFormProps } => ({
+                              roleFormProps: {
+                                role_id: row.original.id,
+                              },
+                            })}
+                          >
+                            {({ roleFormProps }) => (
+                              <TabGroup
+                                tabs={[{
+                                  label: 'Permissions',
+                                  accessor: () => <Box p={3}><RoleForm {...roleFormProps} /></Box>,
+                                }]}
+                              />
+                            )}
+                          </WithMemo>
                         </Collapse>
                       </TableCell>
                     </TableRow>
@@ -254,12 +281,15 @@ function RolesPageContent(props: IRolesPageContentProps) {
         </TableContainer>
       </Grid>
       <Grid item xs={12}>
-        {console.log(rolesQuery.roles.pagination)}
         <WithMemo<number[]>
-          memo={() => Array.from(new Set(Object
-              .values(PerPageOptions)
-              .concat(rolesQuery.roles.pagination.limit))
-          ).sort((a, b) => a - b)}
+          memo={() => {
+            return Array
+              .from(new Set(Object
+                .values(PerPageOptions)
+                .concat(rolesQuery.roles.pagination.limit))
+              )
+              .sort((a, b) => a - b)
+          }}
           deps={[rolesQuery.roles.pagination.limit, rolesQuery.roles.pagination]}
         >
           {(perPage) => (

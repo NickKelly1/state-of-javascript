@@ -44,6 +44,7 @@ export class RolePolicy {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
+    if (model.isAdmin()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRole,
@@ -55,6 +56,7 @@ export class RolePolicy {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
+    if (model.isAdmin()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRole,

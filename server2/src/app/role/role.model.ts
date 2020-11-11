@@ -13,6 +13,7 @@ import { RoleId } from './role.id.type';
 import { PermissionModel, UserModel } from '../../circle';
 import { UserRoleModel } from '../user-role/user-role.model';
 import { RolePermissionModel } from '../role-permission/role-permission.model';
+import { Role } from './role.const';
 
 
 export class RoleModel extends Model<IRoleAttributes, IRoleCreationAttributes> implements IRoleAttributes {
@@ -38,6 +39,10 @@ export class RoleModel extends Model<IRoleAttributes, IRoleCreationAttributes> i
   getPermissions!: HasManyGetAssociationsMixin<PermissionModel>;
   getUserRoles!: HasManyGetAssociationsMixin<UserRoleModel>;
   getRolePermissions!: HasManyGetAssociationsMixin<RolePermissionModel>;
+
+  // helpers
+  isAdmin() { return this[RoleField.id] === Role.Admin; }
+  isPublic() { return this[RoleField.id] === Role.Public; }
 }
 
 

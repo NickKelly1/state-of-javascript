@@ -30,6 +30,30 @@
   align-items: center;
 }
 
+.centered-main-axis {
+  display: flex;
+  justify-content: center;
+}
+
+.centered-cross-axis {
+  display: flex;
+  align-items: center;
+}
+
+.m-auto {
+  margin: auto !important;
+}
+
+.m-auto-x {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.m-auto-y {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
 .modal {
   display: flex;
   justify-content: center;
@@ -63,6 +87,18 @@
   display: flex;
 }
 
+.rotate-90 {
+  transform: rotate(90deg);
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+.rotate-270 {
+  transform: rotate(270deg);
+}
+
 .full-width {
   width: 100%;
 }
@@ -78,4 +114,15 @@
 
 .text-transform-none {
   text-transform: none !important;
+}
+
+/* table rows auto expand to fill, causing mui tabs to cause overflow with scrollbar instead of overflowing internally */
+/* putting a non % width (0px, 1px, etc...) on the row with tabs fixes this... */
+.tabs-row {
+  max-width: 1px;
+  padding: 0 !important;
+}
+.tabs-cell {
+  max-width: 1px;
+  padding: 0 !important;
 }

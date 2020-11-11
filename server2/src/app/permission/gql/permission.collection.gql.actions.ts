@@ -1,6 +1,5 @@
-import { GraphQLNonNull, GraphQLObjectType } from "graphql";
+import { GraphQLBoolean, GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { GqlContext } from "../../../common/context/gql.context";
-import { GqlAction, IGqlActionSource } from "../../../common/gql/gql.action";
 import { IGqlNever } from "../../../common/gql/gql.ever";
 
 export type IPermissionCollectionGqlActionSource = IGqlNever;
@@ -8,15 +7,15 @@ export const PermissionCollectionGqlActions = new GraphQLObjectType<IPermissionC
   name: 'PermissionCollectionActions',
   fields: {
     show: {
-      type: GraphQLNonNull(GqlAction),
-      resolve: async (parent, args, ctx): Promise<IGqlActionSource> => {
-        return { can: ctx.services.permissionPolicy.canFindMany() };
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.permissionPolicy.canFindMany();
       },
     },
     create: {
-      type: GraphQLNonNull(GqlAction),
-      resolve: async (parent, args, ctx): Promise<IGqlActionSource> => {
-        return { can: ctx.services.permissionPolicy.canCreate() };
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.permissionPolicy.canCreate();
       },
     },
   },

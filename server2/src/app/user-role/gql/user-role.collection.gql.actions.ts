@@ -1,6 +1,5 @@
 import { GraphQLBoolean, GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { GqlContext } from "../../../common/context/gql.context";
-import { GqlAction, IGqlActionSource } from "../../../common/gql/gql.action";
 import { IGqlNever } from "../../../common/gql/gql.ever";
 
 export type IUserRoleCollectionGqlActionSource = IGqlNever;

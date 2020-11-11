@@ -6,6 +6,16 @@ export const RoleLang = {
     [Language.Ger]: '__TODO__',
   }),
 
+  ForbiddenAddingPermissions: (arg: { roleName: string, permisionNames: string[] }) => ({
+    [Language.En]: `Forbidden: unable to add permissions of role "${arg.roleName}": "${arg.permisionNames.join('", "')}"`,
+    [Language.Ger]: '__TODO__',
+  }),
+
+  ForbiddenDeletingPermissions: (arg: { roleName: string, permisionNames: string[] }) => ({
+    [Language.En]: `Forbidden: unable to delete permissions from role "${arg.roleName}": "${arg.permisionNames.join('", "')}"`,
+    [Language.Ger]: '__TODO__',
+  }),
+
   FailedToCreate: {
     [Language.En]: 'failed to create role',
     [Language.Ger]: '__TODO__',

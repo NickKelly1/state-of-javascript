@@ -19,7 +19,7 @@ export const PermissionGqlNode: GraphQLObjectType<IPermissionGqlNodeSource, GqlC
       type: GraphQLNonNull(PermissionGqlData),
       resolve: (parent): IPermissionGqlDataSource => parent,
     },
-    actions: {
+    can: {
       type: GraphQLNonNull(PermissionGqlActions),
       resolve: (parent): IPermissionGqlActionsSource => parent,
     },

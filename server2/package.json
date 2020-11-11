@@ -6,6 +6,7 @@
     "start": "node ./dist/scripts/www.js",
     "build": "rimraf ./dist && tsc",
     "dev": "ts-node-dev --notify false --respawn src/scripts/www.ts",
+    "dev:debug": "ts-node-dev --inspect --notify false --respawn src/scripts/www.ts",
     "migration:up": "ts-node src/scripts/migration.up.script.ts --script migration_up",
     "migration:down": "ts-node src/scripts/migration.down.script.ts --script migration_down",
     "seed": "ts-node src/scripts/seed.script.ts --script seed"

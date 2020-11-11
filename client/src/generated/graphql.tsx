@@ -16,6 +16,7 @@ export type Scalars = {
 export type RootQueryType = {
   __typename?: 'RootQueryType';
   newsArticles: NewsArticleCollectionNode;
+  permissions: PermissionCollectionNode;
   roles: RoleCollectionNode;
   rolePermissions: RolePermissionCollectionNode;
   users: UserCollectionNode;
@@ -28,6 +29,11 @@ export type RootQueryType = {
 
 export type RootQueryTypeNewsArticlesArgs = {
   query?: Maybe<NewsArticleQuery>;
+};
+
+
+export type RootQueryTypePermissionsArgs = {
+  query?: Maybe<PermissionQuery>;
 };
 
 
@@ -221,6 +227,7 @@ export type RoleActions = {
   show: Scalars['Boolean'];
   update: Scalars['Boolean'];
   delete: Scalars['Boolean'];
+  createRolePermission: Scalars['Boolean'];
 };
 
 export type RoleRelations = {
@@ -357,7 +364,15 @@ export type RolePermissionActions = {
 export type RolePermissionRelations = {
   __typename?: 'RolePermissionRelations';
   role?: Maybe<RoleNode>;
-  permission?: Maybe<PermissionData>;
+  permission?: Maybe<PermissionNode>;
+};
+
+export type PermissionNode = {
+  __typename?: 'PermissionNode';
+  cursor: Scalars['String'];
+  data: PermissionData;
+  can: PermissionActions;
+  relations: PermissionRelations;
 };
 
 export type PermissionData = {
@@ -369,69 +384,10 @@ export type PermissionData = {
   deleted_at?: Maybe<Scalars['DateTime']>;
 };
 
-export type RolePermissionCollectionActions = {
-  __typename?: 'RolePermissionCollectionActions';
-  show: Action;
-  create: Action;
-};
-
-export type Action = {
-  __typename?: 'Action';
-  can: Scalars['Boolean'];
-};
-
-export type Meta = {
-  __typename?: 'meta';
-  limit: Scalars['Int'];
-  offset: Scalars['Int'];
-  total: Scalars['Int'];
-  page_number: Scalars['Int'];
-  pages: Scalars['Int'];
-  more: Scalars['Boolean'];
-};
-
-export type RolePermissionQuery = {
-  offset?: Maybe<Scalars['Int']>;
-  limit?: Maybe<Scalars['Int']>;
-  sorts?: Maybe<Array<QuerySort>>;
-  filter?: Maybe<Array<RolePermissionQueryFilterFilterConditionGroup>>;
-};
-
-export type RolePermissionQueryFilterFilterConditionGroup = {
-  attr?: Maybe<RolePermissionQueryFilterFilterAttributes>;
-  or?: Maybe<Array<RolePermissionQueryFilterFilterConditionGroup>>;
-  and?: Maybe<Array<RolePermissionQueryFilterFilterConditionGroup>>;
-};
-
-export type RolePermissionQueryFilterFilterAttributes = {
-  id?: Maybe<FilterFieldNumber>;
-  role_id?: Maybe<FilterFieldNumber>;
-  user_id?: Maybe<FilterFieldNumber>;
-  created_at?: Maybe<FilterFieldDateTime>;
-  updated_at?: Maybe<FilterFieldDateTime>;
-  deleted_at?: Maybe<FilterFieldDateTime>;
-};
-
-export type PermissionCollectionNode = {
-  __typename?: 'PermissionCollectionNode';
-  nodes: Array<Maybe<PermissionNode>>;
-  actions: PermissionCollectionActions;
-  pagination: Meta;
-};
-
-export type PermissionNode = {
-  __typename?: 'PermissionNode';
-  cursor: Scalars['String'];
-  data: PermissionData;
-  actions: PermissionActions;
-  relations: PermissionRelations;
-};
-
 export type PermissionActions = {
   __typename?: 'PermissionActions';
-  show: Action;
-  update: Action;
-  delete: Action;
+  show: Scalars['Boolean'];
+  createRolePermission: Scalars['Boolean'];
 };
 
 export type PermissionRelations = {
@@ -488,6 +444,16 @@ export type RoleCollectionActions = {
   __typename?: 'RoleCollectionActions';
   show: Scalars['Boolean'];
   create: Scalars['Boolean'];
+};
+
+export type Meta = {
+  __typename?: 'meta';
+  limit: Scalars['Int'];
+  offset: Scalars['Int'];
+  total: Scalars['Int'];
+  page_number: Scalars['Int'];
+  pages: Scalars['Int'];
+  more: Scalars['Boolean'];
 };
 
 export type RoleQuery = {
@@ -573,10 +539,49 @@ export type UserQueryFilterFilterAttributes = {
   deleted_at?: Maybe<FilterFieldDateTime>;
 };
 
+export type RolePermissionCollectionActions = {
+  __typename?: 'RolePermissionCollectionActions';
+  show: Scalars['Boolean'];
+};
+
+export type RolePermissionQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<RolePermissionQueryFilterFilterConditionGroup>>;
+};
+
+export type RolePermissionQueryFilterFilterConditionGroup = {
+  attr?: Maybe<RolePermissionQueryFilterFilterAttributes>;
+  or?: Maybe<Array<RolePermissionQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<RolePermissionQueryFilterFilterConditionGroup>>;
+};
+
+export type RolePermissionQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  role_id?: Maybe<FilterFieldNumber>;
+  user_id?: Maybe<FilterFieldNumber>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+  deleted_at?: Maybe<FilterFieldDateTime>;
+};
+
+export type PermissionCollectionNode = {
+  __typename?: 'PermissionCollectionNode';
+  nodes: Array<Maybe<PermissionNode>>;
+  actions: PermissionCollectionActions;
+  pagination: Meta;
+};
+
 export type PermissionCollectionActions = {
   __typename?: 'PermissionCollectionActions';
   show: Action;
   create: Action;
+};
+
+export type Action = {
+  __typename?: 'Action';
+  can: Scalars['Boolean'];
 };
 
 export type UserRoleCollectionActions = {
@@ -1028,6 +1033,11 @@ export type RootMutationType = {
   deleteNpmsDashboard: NpmsDashboardNode;
   createNpmsDashboardItem: NpmsDashboardItemNode;
   deleteNpmsDashboardItem: NpmsDashboardItemNode;
+  createRolePermission: RolePermissionNode;
+  deleteRolePermission: Scalars['Boolean'];
+  createRole: RoleNode;
+  updateRole: RoleNode;
+  deleteRole: Scalars['Boolean'];
 };
 
 
@@ -1080,6 +1090,31 @@ export type RootMutationTypeDeleteNpmsDashboardItemArgs = {
   dto: DeleteNpmsDashboardItem;
 };
 
+
+export type RootMutationTypeCreateRolePermissionArgs = {
+  dto: CreateRolePermissionGqlInput;
+};
+
+
+export type RootMutationTypeDeleteRolePermissionArgs = {
+  dto: DeleteRolePermission;
+};
+
+
+export type RootMutationTypeCreateRoleArgs = {
+  dto: CreateRole;
+};
+
+
+export type RootMutationTypeUpdateRoleArgs = {
+  dto: UpdateRole;
+};
+
+
+export type RootMutationTypeDeleteRoleArgs = {
+  dto: DeleteRole;
+};
+
 export type CreateNewsArticle = {
   title: Scalars['String'];
   teaser: Scalars['String'];
@@ -1126,6 +1161,30 @@ export type CreateNpmsDashboardItem = {
 };
 
 export type DeleteNpmsDashboardItem = {
+  id: Scalars['Int'];
+};
+
+export type CreateRolePermissionGqlInput = {
+  role_id: Scalars['Int'];
+  permission_id: Scalars['Int'];
+};
+
+export type DeleteRolePermission = {
+  role_permission_id: Scalars['Int'];
+};
+
+export type CreateRole = {
+  name: Scalars['String'];
+  permission_ids?: Maybe<Array<Scalars['Int']>>;
+};
+
+export type UpdateRole = {
+  id: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  permission_ids?: Maybe<Array<Scalars['Int']>>;
+};
+
+export type DeleteRole = {
   id: Scalars['Int'];
 };
 
@@ -1274,33 +1333,139 @@ export type SearchNpmsPackageQuery = (
   ) }
 );
 
-export type RolesPageQueryVariables = Exact<{
-  limit: Scalars['Int'];
-  offset: Scalars['Int'];
+export type RoleFormDataQueryVariables = Exact<{
+  id: Scalars['Float'];
+  rolesPermissionsLimit: Scalars['Int'];
+  rolesPermissionsOffset: Scalars['Int'];
+  permissionsLimit: Scalars['Int'];
+  permissionsOffset: Scalars['Int'];
 }>;
 
 
-export type RolesPageQuery = (
+export type RoleFormDataQuery = (
   { __typename?: 'RootQueryType' }
   & { roles: (
     { __typename?: 'RoleCollectionNode' }
-    & { pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
-    ), can: (
-      { __typename?: 'RoleCollectionActions' }
-      & Pick<RoleCollectionActions, 'show' | 'create'>
-    ), nodes: Array<Maybe<(
+    & { nodes: Array<Maybe<(
       { __typename?: 'RoleNode' }
       & { can: (
         { __typename?: 'RoleActions' }
-        & Pick<RoleActions, 'show' | 'update' | 'delete'>
+        & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
       ), data: (
         { __typename?: 'RoleData' }
-        & Pick<RoleData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+        & Pick<RoleData, 'id' | 'name'>
+      ), relations: (
+        { __typename?: 'RoleRelations' }
+        & { permissions: (
+          { __typename?: 'PermissionCollectionNode' }
+          & { pagination: (
+            { __typename?: 'meta' }
+            & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+          ), nodes: Array<Maybe<(
+            { __typename?: 'PermissionNode' }
+            & { can: (
+              { __typename?: 'PermissionActions' }
+              & Pick<PermissionActions, 'show' | 'createRolePermission'>
+            ), data: (
+              { __typename?: 'PermissionData' }
+              & Pick<PermissionData, 'id' | 'name'>
+            ) }
+          )>> }
+        ) }
+      ) }
+    )>> }
+  ), permissions: (
+    { __typename?: 'PermissionCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'PermissionNode' }
+      & { can: (
+        { __typename?: 'PermissionActions' }
+        & Pick<PermissionActions, 'show' | 'createRolePermission'>
+      ), data: (
+        { __typename?: 'PermissionData' }
+        & Pick<PermissionData, 'id' | 'name'>
       ) }
     )>> }
   ) }
+);
+
+export type RoleFormCreateMutationVariables = Exact<{
+  name: Scalars['String'];
+  permission_ids?: Maybe<Array<Scalars['Int']>>;
+}>;
+
+
+export type RoleFormCreateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { createRole: (
+    { __typename?: 'RoleNode' }
+    & { can: (
+      { __typename?: 'RoleActions' }
+      & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+    ), data: (
+      { __typename?: 'RoleData' }
+      & Pick<RoleData, 'id' | 'name'>
+    ), relations: (
+      { __typename?: 'RoleRelations' }
+      & { permissions: (
+        { __typename?: 'PermissionCollectionNode' }
+        & { nodes: Array<Maybe<(
+          { __typename?: 'PermissionNode' }
+          & { can: (
+            { __typename?: 'PermissionActions' }
+            & Pick<PermissionActions, 'show' | 'createRolePermission'>
+          ), data: (
+            { __typename?: 'PermissionData' }
+            & Pick<PermissionData, 'id' | 'name'>
+          ) }
+        )>> }
+      ) }
+    ) }
+  ) }
+);
+
+export type RoleFormUpdateMutationVariables = Exact<{
+  id: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  permission_ids?: Maybe<Array<Scalars['Int']>>;
+}>;
+
+
+export type RoleFormUpdateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { updateRole: (
+    { __typename?: 'RoleNode' }
+    & { can: (
+      { __typename?: 'RoleActions' }
+      & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+    ), data: (
+      { __typename?: 'RoleData' }
+      & Pick<RoleData, 'id' | 'name'>
+    ), relations: (
+      { __typename?: 'RoleRelations' }
+      & { permissions: (
+        { __typename?: 'PermissionCollectionNode' }
+        & { nodes: Array<Maybe<(
+          { __typename?: 'PermissionNode' }
+          & { can: (
+            { __typename?: 'PermissionActions' }
+            & Pick<PermissionActions, 'show' | 'createRolePermission'>
+          ), data: (
+            { __typename?: 'PermissionData' }
+            & Pick<PermissionData, 'id' | 'name'>
+          ) }
+        )>> }
+      ) }
+    ) }
+  ) }
+);
+
+export type RoleFormDeleteMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RoleFormDeleteMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'deleteRole'>
 );
 
 export type JsPageDashboardQueryVariables = Exact<{
@@ -1542,6 +1707,35 @@ export type ViewNewsArticlePageQuery = (
             & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
           ) }
         )> }
+      ) }
+    )>> }
+  ) }
+);
+
+export type RolesPageQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  offset: Scalars['Int'];
+}>;
+
+
+export type RolesPageQuery = (
+  { __typename?: 'RootQueryType' }
+  & { roles: (
+    { __typename?: 'RoleCollectionNode' }
+    & { pagination: (
+      { __typename?: 'meta' }
+      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+    ), can: (
+      { __typename?: 'RoleCollectionActions' }
+      & Pick<RoleCollectionActions, 'show' | 'create'>
+    ), nodes: Array<Maybe<(
+      { __typename?: 'RoleNode' }
+      & { can: (
+        { __typename?: 'RoleActions' }
+        & Pick<RoleActions, 'show' | 'update' | 'delete'>
+      ), data: (
+        { __typename?: 'RoleData' }
+        & Pick<RoleData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
       ) }
     )>> }
   ) }

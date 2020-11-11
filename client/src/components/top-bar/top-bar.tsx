@@ -79,7 +79,7 @@ export function TopBar(props: ITopBarProps) {
   const router = useRouter();
   const [logout, logoutResult] = useMutation(async () => {
     await api.credentials.signOut();
-    router.push('/'); 
+    // router.push('/'); 
   });
 
   interface ILoginModalState { isOpen: boolean }

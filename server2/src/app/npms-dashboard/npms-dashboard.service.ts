@@ -1,7 +1,10 @@
 import { NpmsDashboardModel } from '../../circle';
+import { assertDefined } from '../../common/helpers/assert-defined.helper';
+import { Combinator } from '../../common/helpers/combinator.helper';
 import { ist } from '../../common/helpers/ist.helper';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { OrNull } from '../../common/types/or-null.type';
+import { OrNullable } from '../../common/types/or-nullable.type';
 import { QueryRunner } from '../db/query-runner';
 import { NpmsDashboardItemField } from '../npms-dashboard-item/npms-dashboard-item.attributes';
 import { NpmsDashboardItemModel } from '../npms-dashboard-item/npms-dashboard-item.model';
@@ -100,23 +103,25 @@ export class NpmsDashboardService {
     const { runner, dashboard, prevDashboardItems, nextPackages } = arg;
     const { transaction } = runner;
 
-    // TODO: move logic outside to caller
-    const expectedPackages = nextPackages;
-    const expectedPackagesMap = new Map(expectedPackages.map(exp => [exp.id, exp]));
-
-    const actualLinkages = prevDashboardItems;
-    const actualLinkagesMap = new Map(actualLinkages.map(linkage => [linkage.npms_package_id, linkage]));
-
-    const unexpectedLinkages = actualLinkages.filter(linkage => !expectedPackagesMap.has(linkage.npms_package_id));
-    const normalLinkages = actualLinkages.filter(linkage => expectedPackagesMap.has(linkage.npms_package_id));
-    const missingPackages = Array.from(expectedPackages.values()).filter(expected => !actualLinkagesMap.has(expected.id));
+    const combinator = new Combinator({
+      // a => previous items
+      a: new Map(prevDashboardItems.map(itm => [itm.npms_package_id, itm])),
+      // b => next items
+      b: new Map(nextPackages.map(pkg => [pkg.id, pkg])),
+    });
+    // in previous but not next
+    const unexpected = Array.from(combinator.diff.aNotB.values());
+    // in next but not previous
+    const missing = Array.from(combinator.diff.bNotA.values());
+    // already exist
+    const normal = Array.from(combinator.bJoinA.a.values());
 
     // synchronise items
     const [_, createdLinkages] = await Promise.all([
       // destroy unexpected
-      Promise.all(unexpectedLinkages.map(toDestroy => toDestroy.destroy({ transaction }))),
+      Promise.all(unexpected.map(itemToDestroy => itemToDestroy.destroy({ transaction }))),
       // add missing
-      Promise.all(missingPackages.map(async (missingPackage, i) => {
+      Promise.all(missing.map(async (missingPackage, i) => {
         const nextLinkage = await this
           .ctx
           .services
@@ -135,7 +140,7 @@ export class NpmsDashboardService {
     const orderedLinkages = await this.ctx.services.npmsDashboardItemService.syncOrder({
       runner,
       dashboard,
-      items: [...createdLinkages, ...normalLinkages,],
+      items: [...createdLinkages, ...normal,],
     });
 
     return orderedLinkages;
@@ -190,7 +195,7 @@ export class NpmsDashboardService {
     const { model, runner, items } = arg;
     const { transaction } = runner;
     // hard delete all associated items..
-    await Promise.all(items.map(item => item.destroy({ transaction, force: true })));
+    await Promise.all(items.map(item => item.destroy({ transaction })));
     // hard delete dashboard
     await model.destroy({ transaction, force: true });
     return model;

@@ -1,5 +1,6 @@
 import { makeStyles, Typography } from "@material-ui/core";
 import React from "react";
+import { NotFound } from "../components/not-found/not-found";
 import { serverSidePropsHandler } from "../helpers/server-side-props-handler.helper";
 import { staticPathsHandler, staticPropsHandler } from "../helpers/static-props-handler.helper";
 
@@ -23,12 +24,9 @@ export interface IFourZeroFourPageProps {
 
 function FourZeroFourPage(props: IFourZeroFourPageProps) {
   const classes = useStyles();
-  //
   return (
     <div className={classes.root}>
-      <Typography component="h1" variant="h3">
-        {`404 page not found`}
-      </Typography>
+      <NotFound message="404 page not found" />
     </div>
   )
 }

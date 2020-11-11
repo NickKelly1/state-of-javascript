@@ -25,18 +25,19 @@ export class RolePermissionService {
     const { runner, role, permission } = arg;
     const { transaction } = runner;
 
-    const existing = await RolePermissionModel.findOne({ where: {
-      [Op.and]: {
-        [RolePermissionField.role_id]: role.id,
-        [RolePermissionField.permission_id]: permission.id,
-      }
-    }, transaction });
-    if (existing) {
-      const nameViolation = this.ctx.except(BadRequestException({
-        message: this.ctx.lang(RolePermissionLang.AlreadyExists({ role, permission, })),
-      }));
-      throw nameViolation
-    }
+    // TODO: run this check in caller....
+    // const existing = await RolePermissionModel.findOne({ where: {
+    //   [Op.and]: {
+    //     [RolePermissionField.role_id]: role.id,
+    //     [RolePermissionField.permission_id]: permission.id,
+    //   }
+    // }, transaction });
+    // if (existing) {
+    //   const nameViolation = this.ctx.except(BadRequestException({
+    //     message: this.ctx.lang(RolePermissionLang.AlreadyExists({ role, permission, })),
+    //   }));
+    //   throw nameViolation
+    // }
 
     const RolePermission = RolePermissionModel.build({
       role_id: role.id,

@@ -14,6 +14,7 @@ import { UserId } from './user.id.type';
 import { RoleModel } from '../role/role.model';
 import { UserRoleModel } from '../user-role/user-role.model';
 import { NewsArticleModel } from '../news-article/news-article.model';
+import { User } from './user.const';
 
 
 export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> implements IUserAttributes {
@@ -38,6 +39,12 @@ export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> i
   getPassword!: HasOneGetAssociationMixin<UserPasswordModel>;
   getRoles!: HasManyGetAssociationsMixin<UserPasswordModel>;
   getUserRoles!: HasManyGetAssociationsMixin<UserRoleModel>;
+
+  // helpers
+  isAdmin() { return this[UserField.id] === User.Admin; }
+  isAnonymous() { return this[UserField.id] === User.Anonymous; }
+  isSystem() { return this[UserField.id] === User.System; }
+  isProtected() { return this.isAdmin() || this.isAnonymous() || this.isSystem() }
 }
 
 

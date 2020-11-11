@@ -1,9 +1,9 @@
 import {
+  GraphQLBoolean,
   GraphQLNonNull,
   GraphQLObjectType,
 } from "graphql";
 import { GqlContext } from "../../../common/context/gql.context";
-import { GqlAction, IGqlActionSource } from "../../../common/gql/gql.action";
 import { PermissionModel } from "../permission.model";
 
 export type IPermissionGqlActionsSource = PermissionModel;
@@ -11,21 +11,15 @@ export const PermissionGqlActions = new GraphQLObjectType<IPermissionGqlActionsS
   name: 'PermissionActions',
   fields: {
     show: {
-      type: GraphQLNonNull(GqlAction),
-      resolve: async (parent, args, ctx): Promise<IGqlActionSource> => {
-        return { can: ctx.services.permissionPolicy.canFindOne({ model: parent }) };
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.permissionPolicy.canFindOne({ model: parent });
       },
     },
-    update: {
-      type: GraphQLNonNull(GqlAction),
-      resolve: async (parent, args, ctx): Promise<IGqlActionSource> => {
-        return { can: ctx.services.permissionPolicy.canUpdate({ model: parent }) };
-      },
-    },
-    delete: {
-      type: GraphQLNonNull(GqlAction),
-      resolve: async (parent, args, ctx): Promise<IGqlActionSource> => {
-        return { can: ctx.services.permissionPolicy.canDelete({ model: parent }) };
+    createRolePermission: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.rolePermissionPolicy.canCreateForPermission({ permission: parent });
       },
     },
   },

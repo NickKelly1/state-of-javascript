@@ -38,7 +38,6 @@ export const NewsArticleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, Gql
           },
         });
         const author: UserModel = assertDefined(model.author);
-        ctx.loader.users.prime(model.author_id, author);
         ctx.authorize(ctx.services.newsArticlePolicy.canUpdate({ author, model }));
         await ctx.services.newsArticleService.update({ runner, author, dto, model });
         return model;
@@ -60,7 +59,6 @@ export const NewsArticleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, Gql
           },
         });
         const author: UserModel = assertDefined(model.author);
-        ctx.loader.users.prime(model.author_id, author);
         ctx.authorize(ctx.services.newsArticlePolicy.canDelete({ author, model }));
         await ctx.services.newsArticleService.delete({ runner, author, model });
         return model;

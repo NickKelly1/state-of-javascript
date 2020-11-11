@@ -4,7 +4,7 @@ import { RolePermissionModel } from "../role-permission.model";
 import { OrNull } from "../../../common/types/or-null.type";
 import { IRoleGqlNodeSource, RoleGqlNode } from "../../role/gql/role.gql.node";
 import { PermissionGqlData } from "../../permission/gql/permission.gql.data";
-import { IPermissionGqlNodeSource } from "../../permission/gql/permission.gql.node";
+import { IPermissionGqlNodeSource, PermissionGqlNode } from "../../permission/gql/permission.gql.node";
 
 
 export type IRolePermissionGqlRelationsSource = RolePermissionModel;
@@ -22,7 +22,7 @@ export const RolePermissionGqlRelations: GraphQLObjectType<RolePermissionModel, 
     },
 
     permission: {
-      type: PermissionGqlData,
+      type: PermissionGqlNode,
       resolve: async (parent, args, ctx): Promise<OrNull<IPermissionGqlNodeSource>> => {
         const model: OrNull<IPermissionGqlNodeSource> = await ctx.loader.permissions.load(parent.permission_id);
         if (!model) return null;

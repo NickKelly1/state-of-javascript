@@ -2,8 +2,8 @@ import { GraphQLEnumType, GraphQLInputObjectType, GraphQLNonNull, GraphQLString 
 import { OrNullable } from "../types/or-nullable.type";
 
 export enum GqlDirEnum {
-  Asc = 'ASC',
-  Desc = 'DESC',
+  Asc = 'Asc',
+  Desc = 'Desc',
 };
 
 export const GqlDirEnumType = new GraphQLEnumType({

@@ -6,10 +6,14 @@ import { softDeleteableRo } from '../../common/helpers/soft-deleteable-ro.helper
 import { RoleLang } from '../../common/i18n/packs/role.lang';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
-import { ICreateRoleDto } from './dtos/create-role.dto';
-import { IUpdateRoleDto } from './dtos/update-role.dto';
-import { IRoleRo } from './dtos/role.ro';
+import { ICreateRoleGqlInput } from './gql-input/create-role.gql';
 import { RoleField } from './role.attributes';
+import { RolePermissionModel } from '../role-permission/role-permission.model';
+import { IUpdateRoleGqlInput } from './gql-input/update-role.gql';
+import { PermissionModel } from '../permission/permission.model';
+import { Combinator } from '../../common/helpers/combinator.helper';
+import { ICreateRoleDto } from './dto/create-role.dto';
+import { IUpdateRoleDto } from './dto/update-role.dto';
 
 export class RoleService {
   constructor(
@@ -18,6 +22,92 @@ export class RoleService {
     //
   }
 
+
+  /**
+   * Find unexpected or missing RolePermissions & Permissions
+   *
+   * @param arg
+   */
+  diffRolePermissions(arg: {
+    currentRolePermissions: RolePermissionModel[];
+    desiredPermissions: PermissionModel[];
+  }): {
+    missingPermissions: PermissionModel[];
+    unexpectedRolePermissions: RolePermissionModel[];
+    normalRolePermissions: RolePermissionModel[];
+  } {
+    const { currentRolePermissions, desiredPermissions } = arg;
+    const combinator = new Combinator({
+      // a => previous
+      a: new Map(currentRolePermissions.map(rp => [rp.permission_id, rp])),
+      // b => next
+      b: new Map(desiredPermissions.map(perm => [perm.id, perm])),
+    });
+    // in previous but not next
+    const unexpectedRolePermissions = Array.from(combinator.diff.aNotB.values());
+    // in next but not previous
+    const missingPermissions = Array.from(combinator.diff.bNotA.values());
+    // normal role-permissions
+    const normalRolePermissions = Array.from(combinator.bJoinA.a.values());
+
+    return {
+      unexpectedRolePermissions,
+      missingPermissions,
+      normalRolePermissions,
+    };
+  }
+
+
+  /**
+   * Sync the role-permissions of a role
+   *
+   * @param arg
+   */
+  async syncRolePermissions(arg: {
+    runner: QueryRunner;
+    role: RoleModel;
+    prevRolePermissions: RolePermissionModel[];
+    nextPermissions: PermissionModel[];
+  }): Promise<RolePermissionModel[]> {
+    const { runner, nextPermissions, prevRolePermissions, role } = arg;
+    const { transaction } = runner;
+
+    const combinator = new Combinator({
+      // a => previous
+      a: new Map(prevRolePermissions.map(rp => [rp.permission_id, rp])),
+      // b => next
+      b: new Map(nextPermissions.map(perm => [perm.id, perm])),
+    });
+    // in previous but not next
+    const unexpected = Array.from(combinator.diff.aNotB.values());
+    // in next but not previous
+    const missing = Array.from(combinator.diff.bNotA.values());
+    // already exist
+    const normal = Array.from(combinator.bJoinA.a.values());
+
+    console.dir(combinator.toDebug());
+
+    const [_, rolePermissions] = await Promise.all([
+      Promise.all(unexpected.map(staleRolePermission => staleRolePermission.destroy({ transaction }))),
+      Promise.all(missing.map(async (permission) => {
+        const rp = await this
+          .ctx
+          .services
+          .rolePermissionService
+          .create({ role, permission, runner });
+        return rp;
+      })),
+    ]);
+
+    return rolePermissions;
+  }
+
+
+  /**
+   * Create a role
+   *
+   * @param arg
+   */
   async create(arg: {
     runner: QueryRunner;
     dto: ICreateRoleDto;
@@ -38,9 +128,16 @@ export class RoleService {
     });
 
     await role.save({ transaction });
+
     return role;
   }
 
+
+  /**
+   * Update a role
+   *
+   * @param arg
+   */
   async update(arg: {
     runner: QueryRunner;
     model: RoleModel;
@@ -53,26 +150,36 @@ export class RoleService {
     return model;
   }
 
-  async delete(arg: {
+  /**
+   * Soft delete a role
+   *
+   * @param arg
+   */
+  async softDelete(arg: {
     model: RoleModel;
     runner: QueryRunner;
-    dto: IUpdateRoleDto;
   }): Promise<RoleModel> {
-    const { model, runner, dto } = arg;
+    const { model, runner } = arg;
     const { transaction } = runner;
     await model.destroy({ transaction });
     return model;
   }
 
-  toRo(arg: {
-    model: RoleModel,
-  }): IRoleRo {
-    const { model } = arg;
-    return {
-      id: model.id,
-      name: model.name,
-      ...auditableRo(model),
-      ...softDeleteableRo(model),
-    };
+
+  /**
+   * Hard delete a role
+   *
+   * @param arg
+   */
+  async hardDelete(arg: {
+    model: RoleModel;
+    rolePermissions: RolePermissionModel[];
+    runner: QueryRunner;
+  }): Promise<RoleModel> {
+    const { model, runner, rolePermissions } = arg;
+    const { transaction } = runner;
+    await Promise.all(rolePermissions.map(rp => rp.destroy({ transaction })));
+    await model.destroy({ transaction, force: true });
+    return model;
   }
 }

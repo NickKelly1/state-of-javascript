@@ -64,7 +64,7 @@ export function RegisterForm(props: IRegisterFormProps) {
     password: '',
   });
 
-  const err = result.error;
+  const error = result.error;
   const isDisabled = result.isLoading || result.isSuccess;
 
   return (
@@ -90,8 +90,8 @@ export function RegisterForm(props: IRegisterFormProps) {
                 disabled={isDisabled}
                 inputProps={{ className: classes.text }}
                 value={signupData.name}
-                error={!!err?.data?.name}
-                helperText={err?.data?.name?.join('\n')}
+                error={!!error?.data?.name}
+                helperText={error?.data?.name?.join('\n')}
                 onChange={(evt) => {
                   const value = evt.target.value;
                   setSignupData((prev) => ({ ...prev, name: value }))
@@ -107,8 +107,8 @@ export function RegisterForm(props: IRegisterFormProps) {
                 inputProps={{ className: classes.text }}
                 type="password"
                 value={signupData.password}
-                error={!!err?.data?.password}
-                helperText={err?.data?.password?.join('\n')}
+                error={!!error?.data?.password}
+                helperText={error?.data?.password?.join('\n')}
                 onChange={(evt) => {
                   const value = evt.target.value;
                   setSignupData((prev) => ({ ...prev, password: value }))
@@ -120,10 +120,10 @@ export function RegisterForm(props: IRegisterFormProps) {
                 Register
               </Button>
             </Grid>
-            {err && (
+            {error && (
               <Grid className="centered col" item xs={12} sm={12}>
                 <FormHelperText error>
-                  {err.message}
+                  {error.message}
                 </FormHelperText>
               </Grid>
             )}

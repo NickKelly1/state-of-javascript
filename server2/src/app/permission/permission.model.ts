@@ -11,6 +11,7 @@ import { IPermissionAttributes, IPermissionCreationAttributes, PermissionField }
 import { PermissionDefinition } from './permission.definition';
 import { RoleModel, RolePermissionModel, UserModel } from '../../circle';
 import { PermissionId } from './permission-id.type';
+import { Permission } from './permission.const';
 
 
 export class PermissionModel extends Model<IPermissionAttributes, IPermissionCreationAttributes> implements IPermissionAttributes {
@@ -32,6 +33,9 @@ export class PermissionModel extends Model<IPermissionAttributes, IPermissionCre
   // associations
   getRoles!: HasManyGetAssociationsMixin<RoleModel>;
   getRolePermissions!: HasManyGetAssociationsMixin<RolePermissionModel>;
+
+  // helpers
+  isSuperAdmin() { return this[PermissionField.id] === Permission.SuperAdmin; }
 }
 
 export const initPermissionModel: ModelInitFn = (arg) => {

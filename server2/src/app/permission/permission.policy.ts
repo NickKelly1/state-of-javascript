@@ -32,18 +32,4 @@ export class PermissionPolicy {
   }): boolean {
     return false;
   }
-
-  canUpdate(arg: {
-    model: PermissionModel;
-  }): boolean {
-    const { model } = arg;
-    return false;
-  }
-
-  canDelete(arg: {
-    model: PermissionModel;
-  }): boolean {
-    const { model } = arg;
-    return false;
-  }
 }

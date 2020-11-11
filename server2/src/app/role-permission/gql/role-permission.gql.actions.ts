@@ -4,7 +4,7 @@ import {
   GraphQLObjectType,
 } from "graphql";
 import { GqlContext } from "../../../common/context/gql.context";
-import { GqlAction, IGqlActionSource } from "../../../common/gql/gql.action";
+import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { RolePermissionModel } from "../role-permission.model";
 
 
@@ -20,8 +20,12 @@ export const RolePermissionGqlActions = new GraphQLObjectType<IRolePermissionGql
     },
     delete: {
       type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.rolePermissionPolicy.canDelete({ model: parent });
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        const [ role, permission ] = await Promise.all([
+          ctx.loader.roles.load(parent.role_id).then(assertDefined),
+          ctx.loader.permissions.load(parent.permission_id).then(assertDefined),
+        ]);
+        return ctx.services.rolePermissionPolicy.canDelete({ model: parent, role, permission });
       },
     },
   },

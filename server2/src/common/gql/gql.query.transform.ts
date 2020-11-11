@@ -6,7 +6,7 @@ import { OrUndefined } from "../types/or-undefined.type";
 import { transformGqlFilter } from "./gql.filter.transformer";
 import { IGqlCollectionOptions } from "./gql.collection.options";
 import { IGqlQueryArg } from "./gql.query.arg";
-import { IGqlSortInput, GqlSortInput } from "./gql.sort";
+import { IGqlSortInput, GqlSortInput, GqlDirEnum } from "./gql.sort";
 
 export function transformGqlQuery(arg: { [_q: string]: any }): {
   page: IPaginateInput;
@@ -23,7 +23,10 @@ export function transformGqlQuery(arg: { [_q: string]: any }): {
 
   // transform sorts
   if (options.sorts) {
-    order = options.sorts.map((sort): OrderItem => ({ col: sort.field, val: sort.dir }));
+    order = options.sorts.map((sort): OrderItem => [
+      sort.field,
+      sort.dir === GqlDirEnum.Asc ? 'ASC' : 'DESC',
+    ]);
   }
 
   if (options.filter) {
