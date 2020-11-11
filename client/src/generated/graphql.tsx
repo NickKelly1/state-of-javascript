@@ -1246,6 +1246,45 @@ export type CreateNpmsPackageFormMutation = (
   ) }
 );
 
+export type MutateRoleFromCreateMutationVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type MutateRoleFromCreateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { createRole: (
+    { __typename?: 'RoleNode' }
+    & { can: (
+      { __typename?: 'RoleActions' }
+      & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+    ), data: (
+      { __typename?: 'RoleData' }
+      & Pick<RoleData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
+export type MutateRoleFormUpdateMutationVariables = Exact<{
+  id: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+}>;
+
+
+export type MutateRoleFormUpdateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { updateRole: (
+    { __typename?: 'RoleNode' }
+    & { can: (
+      { __typename?: 'RoleActions' }
+      & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+    ), data: (
+      { __typename?: 'RoleData' }
+      & Pick<RoleData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
 export type NpmsDashbortSortFormQueryVariables = Exact<{
   dashboardOffset: Scalars['Int'];
   dashboardLimit: Scalars['Int'];

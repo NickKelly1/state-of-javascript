@@ -119,7 +119,7 @@ export function LoginForm(props: ILoginFormProps) {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid className="centered col" item xs={12} sm={12}>
               <Button disabled={isDisabled} type="submit">
                 Login
               </Button>

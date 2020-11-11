@@ -1,6 +1,8 @@
 import KeyboardArrowUpIcon  from '@material-ui/icons/KeyboardArrowUpSharp';
+import BugReportIcon from '@material-ui/icons/BugReport';
+import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
-import SwipeableViews from 'react-swipeable-views';
+import AddIcon from '@material-ui/icons/Add';
 import TablePagination from '@material-ui/core/TablePagination';
 import KeyboardArrowDownIcon  from '@material-ui/icons/KeyboardArrowDownSharp';
 import {
@@ -12,22 +14,22 @@ import {
   IconButton,
   makeStyles,
   Paper,
-  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Tabs,
   Typography,
+  Dialog,
+  DialogContent,
+  DialogTitle,
 } from "@material-ui/core";
 import dayjs from 'dayjs';
 import { gql } from "graphql-request";
 import React, { Fragment,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -49,29 +51,21 @@ import {
   isSuccess,
 } from "../../helpers/attempted.helper";
 import { ist } from "../../helpers/ist.helper";
-import {
-  staticPropsHandler,
-  staticPathsHandler,
-} from "../../helpers/static-props-handler.helper";
-import { NpmsApi } from "../../npms-api/npms-api";
 import { Id } from "../../types/id.type";
 import { OrUndefined } from "../../types/or-undefined.type";
-import { JsonPretty } from '../../components/json-pretty/json-pretty';
 import { NextRouter, useRouter } from 'next/router';
 import { useMutation, useQuery } from 'react-query';
-import { serverSidePropsHandler } from '../../helpers/server-side-props-handler.helper';
 import { WithMemo } from '../../components/with-memo/with-memo';
-import { TabGroup } from '../../components/tab-group/tab-group';
 import clsx from 'clsx';
-import { IRoleRolePermissionFormProps, RoleRolePermissionForm } from '../../components/role-role-permissions-form/role.form';
 import { formatRelative } from 'date-fns';
 import { RoleSection } from '../../components/role-section/role-section';
 import { ApiContext } from '../../contexts/api.context';
 import { DebugException } from '../../components/debug-exception/debug-exception';
-import { useUpdate } from '../../hooks/use-update.hook';
 import { ParsedUrlQuery } from 'querystring';
 import { OrNullable } from '../../types/or-nullable.type';
-import { IMeHash } from '../../backend-api/api.me';
+import { IUseModalStateReturn, useModalState } from '../../hooks/use-modal-state.hook';
+import { MutateRoleForm } from '../../components/mutate-role-form/mutate-role.form';
+import { IIdentityFn } from '../../types/identity-fn.type';
 
 const RolesPageQueryName = 'RolesPageQuery'
 const rolesPageQuery = gql`
@@ -143,12 +137,6 @@ const defaultQueryVariables: RolesPageQueryVariables = {
 };
 
 
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    padding: theme.spacing(2),
-  },
-}));
-
 interface IRolesPageProps {
   //
 }
@@ -166,7 +154,6 @@ function getVars(query: OrNullable<ParsedUrlQuery>): RolesPageQueryVariables {
 }
 
 function RolesPage(props: IRolesPageProps) {
-  const classes = useStyles();
   const router: NextRouter = useRouter();
   const { api, me } = useContext(ApiContext);
 
@@ -205,12 +192,10 @@ function RolesPage(props: IRolesPageProps) {
       )}
       {data && (
         <Grid item xs={12}>
-          <Paper className={classes.paper}>
-            <RolesPageContent
-              refetch={refetch}
-              rolesQuery={data}
-            />
-          </Paper>
+          <RolesPageContent
+            refetch={refetch}
+            rolesQuery={data}
+          />
         </Grid>
       )}
     </Grid>
@@ -223,10 +208,17 @@ interface IRolesPageContentProps {
   refetch?: IRolesPageContentRefetchFn;
 }
 
+
+const useRolesPageContentStyles = makeStyles((theme) => ({
+  paper: {
+    padding: theme.spacing(2),
+  },
+}));
+
 function RolesPageContent(props: IRolesPageContentProps) {
   const { rolesQuery, refetch } = props;
-
   const { api, me } = useContext(ApiContext);
+  const classes = useRolesPageContentStyles();
   const router: NextRouter = useRouter();
   const handleChangeRowsPerPage: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = useCallback((evt) => {
     const nextLimit = evt.target.value;
@@ -327,91 +319,122 @@ function RolesPageContent(props: IRolesPageContentProps) {
 
   const tableInstance = useTable({ columns, data });
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
+  const createRoleModal: IUseModalStateReturn = useModalState();
+
+  const handleRoleCreated: IIdentityFn = useCallback(() => {
+    refetch?.();
+    createRoleModal.close();
+  }, [refetch, createRoleModal.close]);
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Typography component="h1" variant="h1">
-          Roles
-        </Typography>
-      </Grid>
-      <Grid item xs={12}>
-        <TableContainer>
-          <Table {...getTableProps()}>
-            <TableHead>
-              {headerGroups.map(hg => (
-                <TableRow {...hg.getHeaderGroupProps()}>
-                  {hg.headers.map(col => (
-                    <TableCell {...col.getHeaderProps()}>
-                      {col.render('Header')}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHead>
-            <TableBody {...getTableBodyProps()}>
-              {rows.map(row => {
-                prepareRow(row);
-                const { key, ...rowProps } = row.getRowProps();
-                return (
-                  <Fragment key={key}>
-                    <TableRow {...rowProps}>
-                      {row.cells.map(cell => (
-                        <TableCell {...cell.getCellProps()}>
-                          {cell.render('Cell')}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                    <TableRow {...rowProps} className={clsx(rowProps.className, 'tabs-row')}>
-                      <TableCell className="tabs-cell" colSpan={row.cells.length}>
-                        <Collapse in={!!open[row.original.id]} timeout="auto" unmountOnExit>
-                          <Box mb={2}>
-                            <RoleSection role_id={row.original.id} />
-                          </Box>
-                        </Collapse>
-                      </TableCell>
-                    </TableRow>
-                  </Fragment>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Grid>
-      <Grid item xs={12}>
-        <WithMemo<number[]>
-          memo={() => {
-            return Array
-              .from(new Set(Object
-                .values(PerPageOptions)
-                .concat(rolesQuery.roles.pagination.limit))
-              )
-              .sort((a, b) => a - b)
-          }}
-          deps={[rolesQuery.roles.pagination.limit, rolesQuery.roles.pagination]}
-        >
-          {(perPage) => (
-            <TablePagination
-              component="div"
-              rowsPerPageOptions={perPage}
-              count={rolesQuery.roles.pagination.total}
-              page={rolesQuery.roles.pagination.page_number - 1}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
-              rowsPerPage={rolesQuery.roles.pagination.limit}
-            />
-          )}
-        </WithMemo>
-      </Grid>
-      {doDeleteState.isLoading && (
-        <Grid className="centered" item xs={12}>
-          <CircularProgress />
+    <>
+      <Dialog open={createRoleModal.isOpen} onClose={createRoleModal.close}>
+        <DialogTitle>
+          Create Role
+        </DialogTitle>
+        <DialogContent dividers>
+          <MutateRoleForm onSuccess={handleRoleCreated} />
+        </DialogContent>
+      </Dialog>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Typography component="h1" variant="h1">
+            <Box display="flex" justifyContent="flex-start" alignItems="center">
+              <Box className="centered col" mr={2}>
+                Roles
+              </Box>
+              <Box bgcolor="background.paper" className="centered col" mr={2}>
+                <Button variant="outlined" onClick={createRoleModal.open}>
+                  <AddIcon />
+                </Button>
+              </Box>
+            </Box>
+          </Typography>
         </Grid>
-      )}
-      <Grid item xs={12}>
-        <DebugException centered always exception={doDeleteState.error} />
+        <Grid item xs={12}>
+          <Paper className={classes.paper}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TableContainer>
+                  <Table {...getTableProps()}>
+                    <TableHead>
+                      {headerGroups.map(hg => (
+                        <TableRow {...hg.getHeaderGroupProps()}>
+                          {hg.headers.map(col => (
+                            <TableCell {...col.getHeaderProps()}>
+                              {col.render('Header')}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableHead>
+                    <TableBody {...getTableBodyProps()}>
+                      {rows.map(row => {
+                        prepareRow(row);
+                        const { key, ...rowProps } = row.getRowProps();
+                        return (
+                          <Fragment key={key}>
+                            <TableRow {...rowProps}>
+                              {row.cells.map(cell => (
+                                <TableCell {...cell.getCellProps()}>
+                                  {cell.render('Cell')}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                            <TableRow {...rowProps} className={clsx(rowProps.className, 'tabs-row')}>
+                              <TableCell className="tabs-cell" colSpan={row.cells.length}>
+                                <Collapse in={!!open[row.original.id]} timeout="auto" unmountOnExit>
+                                  <Box mb={2}>
+                                    <RoleSection role_id={row.original.id} />
+                                  </Box>
+                                </Collapse>
+                              </TableCell>
+                            </TableRow>
+                          </Fragment>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Grid>
+              <Grid item xs={12}>
+                <WithMemo<number[]>
+                  memo={() => {
+                    return Array
+                      .from(new Set(Object
+                        .values(PerPageOptions)
+                        .concat(rolesQuery.roles.pagination.limit))
+                      )
+                      .sort((a, b) => a - b)
+                  }}
+                  deps={[rolesQuery.roles.pagination.limit, rolesQuery.roles.pagination]}
+                >
+                  {(perPage) => (
+                    <TablePagination
+                      component="div"
+                      rowsPerPageOptions={perPage}
+                      count={rolesQuery.roles.pagination.total}
+                      page={rolesQuery.roles.pagination.page_number - 1}
+                      onChangePage={handleChangePage}
+                      onChangeRowsPerPage={handleChangeRowsPerPage}
+                      rowsPerPage={rolesQuery.roles.pagination.limit}
+                    />
+                  )}
+                </WithMemo>
+              </Grid>
+              {doDeleteState.isLoading && (
+                <Grid className="centered" item xs={12}>
+                  <CircularProgress />
+                </Grid>
+              )}
+              <Grid item xs={12}>
+                <DebugException centered always exception={doDeleteState.error} />
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
       </Grid>
-    </Grid>
+    </>
   );
 }
 

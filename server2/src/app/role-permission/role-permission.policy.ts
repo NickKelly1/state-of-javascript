@@ -63,7 +63,6 @@ export class RolePermissionPolicy {
   }): boolean {
     const { role, permission } = arg;
     const result = this.canCreateForRole({ role }) && this.canCreateForPermission({ permission })
-    console.log('---------- can create for role permission...', { role, permission, auth: this.ctx.auth, result });
     return result;
   }
 

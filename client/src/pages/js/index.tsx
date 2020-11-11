@@ -583,12 +583,12 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
               <Box mr={2}>
                 Dashboards
               </Box>
-              <Box mr={2}>
+              <Box bgcolor="background.paper" mr={2}>
                 <Button variant="outlined" onClick={openCreateDashboardDialog}>
                   <AddIcon />
                 </Button>
               </Box>
-              <Box mr={2}>
+              <Box bgcolor="background.paper" mr={2}>
                 <Button variant="outlined" onClick={openSortDashboardDialog}>
                   <SortIcon />
                 </Button>

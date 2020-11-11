@@ -61,7 +61,6 @@ export function MutateNpmsPackageForm(props: ICreateNpmsPackageFormProps) {
   const classes = useStyles();
   const seq = useRef(0);
   const [formData, setFormData] = useState<CreateNpmsPackageFormMutationVariables>(({ name: '' }));
-
   const [submitForm, formState] = useMutation<CreateNpmsPackageFormMutation, IApiException, CreateNpmsPackageFormMutationVariables>(
     async (vars: CreateNpmsPackageFormMutationVariables) => {
       const result = await api

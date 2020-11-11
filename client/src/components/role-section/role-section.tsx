@@ -1,16 +1,18 @@
 import { Box, Typography } from '@material-ui/core';
 import React from 'react';
 import { Id } from '../../types/id.type';
+import { IIdentityFn } from '../../types/identity-fn.type';
 import { RoleDetail } from '../role-detail/role.detail';
-import { RoleRolePermissionForm } from '../role-role-permissions-form/role.form';
+import { RoleRolePermissionForm } from '../role-role-permissions-form/role-role-permissions.form';
 import { TabGroup } from '../tab-group/tab-group';
 
 interface IRoleSectionProps {
   role_id: Id;
+  onStale?: IIdentityFn;
 }
 
 export function RoleSection(props: IRoleSectionProps) {
-  const { role_id } = props;
+  const { role_id, onStale } = props;
   //
 
   return (
@@ -21,7 +23,7 @@ export function RoleSection(props: IRoleSectionProps) {
           label: 'Detail',
           accessor: () => (
             <Box p={3}>
-              <RoleDetail role_id={role_id} />
+              <RoleDetail onUpdated={onStale} role_id={role_id} />
             </Box>
           ),
         }, {
@@ -29,7 +31,7 @@ export function RoleSection(props: IRoleSectionProps) {
           label: 'Permissions',
           accessor: () => (
             <Box p={3}>
-              <RoleRolePermissionForm role_id={role_id} />
+              <RoleRolePermissionForm onSuccess={onStale} role_id={role_id} />
             </Box>
           ),
         }]}

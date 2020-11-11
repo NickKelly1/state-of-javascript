@@ -66,6 +66,8 @@ import { DashColours } from "../../dashboard-theme";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { Api } from "../../backend-api/api";
 import { IMeHash } from "../../backend-api/api.me";
+import { IConstructor } from "../../types/constructor.interface";
+import { IIdentityFn } from "../../types/identity-fn.type";
 
 
 const RoleRolePermissionsFormDataQueryName = (id: Id) => `RoleRolePermissionsFormDataQuery_${id}`;
@@ -155,47 +157,7 @@ query RoleRolePermissionsFormData(
 `;
 
 
-// const roleFormCreateMutation = gql`
-// mutation RoleFormCreate(
-//   $name:String!
-//   $permission_ids:[Int!]
-// ){
-//   createRole(
-//     dto:{
-//       name:$name
-//       permission_ids:$permission_ids
-//     }
-//   ){
-//     can{
-//       show
-//       update
-//       delete
-//       createRolePermission
-//     }
-//     data{
-//       id
-//       name
-//     }
-//     relations{
-//       permissions{
-//         nodes{
-//           can{
-//             show
-//             createRolePermission
-//           }
-//           data{
-//             id
-//             name
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
-// `;
-
-
-const rolePermissionFormUpdateMutation = gql`
+const rolePermissionFormUpdateUpdateMutation = gql`
 mutation RoleRolePermissionFormUpdate(
   $id:Int!
   $name:String
@@ -248,7 +210,7 @@ export interface IRoleRolePermissionFormProps {
 }
 
 export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
-  const { role_id, onSuccess } = props;
+  const { role_id, onSuccess, } = props;
   const { api, me, } = useContext(ApiContext);
 
   const [vars, setVars] = useState<RoleRolePermissionsFormDataQueryVariables>(() => ({
@@ -328,7 +290,7 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
     const result = await api
       .connector
       .graphql<RoleRolePermissionFormUpdateMutation, RoleRolePermissionFormUpdateMutationVariables>(
-        rolePermissionFormUpdateMutation,
+        rolePermissionFormUpdateUpdateMutation,
         vars,
       )
       .catch(rethrow(normaliseApiException));

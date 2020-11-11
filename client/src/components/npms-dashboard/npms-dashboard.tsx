@@ -224,25 +224,29 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          <WhenDebugMode>
-            <Button onClick={openDebugDialog}>
-              <BugReportIcon />
-            </Button>
-          </WhenDebugMode>
-          {dashboard.graphical.can.update && (
-            <Box component="span">
-              <Button onClick={openMutationDialog}>
-                <EditIcon />
-              </Button>
-            </Box>
-          )}
-          {dashboard.graphical.can.delete && (
-            <Box component="span">
-              <Button onClick={handleDeleteDashboard}>
-                <DeleteIcon />
-              </Button>
-            </Box>
-          )}
+          <Box display="flex" justifyContent="center">
+            <WhenDebugMode>
+              <Box m={2}>
+                <Button variant="outlined" onClick={openDebugDialog}>
+                  <BugReportIcon />
+                </Button>
+              </Box>
+            </WhenDebugMode>
+            {dashboard.graphical.can.update && (
+              <Box m={2}>
+                <Button variant="outlined" onClick={openMutationDialog}>
+                  <EditIcon />
+                </Button>
+              </Box>
+            )}
+            {dashboard.graphical.can.delete && (
+              <Box m={2}>
+                <Button variant="outlined" onClick={handleDeleteDashboard}>
+                  <DeleteIcon />
+                </Button>
+              </Box>
+            )}
+          </Box>
         </Grid>
         <Grid className="centered col" item xs={12} sm={4}>
           <Legend names={dashboard.graphical.overview.legend.names} colours={dashboard.graphical.colours} />

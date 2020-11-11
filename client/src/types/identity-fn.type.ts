@@ -1,0 +1,1 @@
+export interface IIdentityFn { (): any; }
