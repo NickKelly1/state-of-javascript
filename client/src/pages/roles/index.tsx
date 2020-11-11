@@ -57,6 +57,7 @@ import { TabGroup } from '../../components/tab-group/tab-group';
 import clsx from 'clsx';
 import { IRoleFormProps, RoleForm } from '../../components/role-form/role.form';
 import { formatRelative } from 'date-fns';
+import { RoleSection } from '../../components/role-section/role-section';
 
 
 const rolesPageQuery = gql`
@@ -253,23 +254,7 @@ function RolesPageContent(props: IRolesPageContentProps) {
                     <TableRow {...rowProps} className={clsx(rowProps.className, 'tabs-row')}>
                       <TableCell className="tabs-cell" colSpan={row.cells.length}>
                         <Collapse in={!!open[row.original.id]} timeout="auto" unmountOnExit>
-                          <WithMemo
-                            deps={[row.original]}
-                            memo={(): { roleFormProps: IRoleFormProps } => ({
-                              roleFormProps: {
-                                role_id: row.original.id,
-                              },
-                            })}
-                          >
-                            {({ roleFormProps }) => (
-                              <TabGroup
-                                tabs={[{
-                                  label: 'Permissions',
-                                  accessor: () => <Box p={3}><RoleForm {...roleFormProps} /></Box>,
-                                }]}
-                              />
-                            )}
-                          </WithMemo>
+                          <RoleSection role_id={row.original.id} />
                         </Collapse>
                       </TableCell>
                     </TableRow>

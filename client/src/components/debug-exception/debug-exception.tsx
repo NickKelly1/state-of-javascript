@@ -19,13 +19,16 @@ interface IDebugExceptionProps {
   className?: OrNullable<string>
   exception?: OrNullable<ApiException>;
   centered?: boolean;
+  always?: boolean;
 }
 
 export function DebugException(props: IDebugExceptionProps) {
-  const { exception, className, centered, } = props;
+  const { exception, always, className, centered, } = props;
   const classes = useStyles();
+  const debugMode = useContext(DebugModeContext);
 
   if (!exception) return null;
+  if (!(debugMode.isOn || always)) return null;
 
   const {
     name,
@@ -41,7 +44,7 @@ export function DebugException(props: IDebugExceptionProps) {
   const itemClassName = !!centered ? 'centered col' : undefined;
 
   return (
-    <WhenDebugMode>
+    <>
       <Grid className={clsx(classes.root, className)} container spacing={2}>
         <Grid className={itemClassName} item xs={12}>
           <Typography>
@@ -141,6 +144,6 @@ export function DebugException(props: IDebugExceptionProps) {
           </Grid>
         )}
       </Grid>
-    </WhenDebugMode>
+    </>
   );
 }

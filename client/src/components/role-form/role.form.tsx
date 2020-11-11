@@ -58,7 +58,7 @@ import { ring } from "../../helpers/ring.helper";
 import { DashColours } from "../../dashboard-theme";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 
-
+const RoleFormDataQueryName = (id: Id) => `RoleFormDataQuery_${id}`;
 const roleFormDataQuery = gql`
 query RoleFormData(
   $id:Float!
@@ -228,10 +228,12 @@ mutation RoleFormUpdate(
 
 
 const roleFormDeleteMutation = gql`
-mutation RoleFormDelete{
+mutation RoleFormDelete(
+  $id:Int!
+){
   deleteRole(
     dto:{
-      id:12
+      id:$id
 		}
   )
 }
@@ -252,25 +254,29 @@ export function RoleForm(props: IRoleFormProps) {
   const { role_id, onSuccess } = props;
   const { api, me, } = useContext(ApiContext);
 
+  const [vars, setVars] = useState<RoleFormDataQueryVariables>({
+    id: Number(role_id),
+    permissionsLimit: 10_000,
+    permissionsOffset: 0,
+    rolesPermissionsLimit: 10_000,
+    rolesPermissionsOffset: 0,
+  });
   const queryFn: TypedQueryFunction<RoleFormDataQuery> = useCallback(async (): Promise<RoleFormDataQuery> => {
-    const _vars: RoleFormDataQueryVariables = {
-      id: Number(role_id),
-      permissionsLimit: 10_000,
-      permissionsOffset: 0,
-      rolesPermissionsLimit: 10_000,
-      rolesPermissionsOffset: 0,
-    };
     const result = await api
       .connector
       .graphql<RoleFormDataQuery, RoleFormDataQueryVariables>(
         roleFormDataQuery,
-        _vars,
+        vars,
       )
       .catch(rethrow(normaliseApiException))
     return result;
-  }, [me, role_id]);
+  }, [me, role_id, vars]);
 
-  const { data, refetch, isLoading, error, } = useQuery<RoleFormDataQuery, ApiException>(`role_form_${role_id}`, queryFn, {});
+  const { data, refetch, isLoading, error, } = useQuery<RoleFormDataQuery, ApiException>(
+    RoleFormDataQueryName(role_id),
+    queryFn,
+  );
+
   // refetch on user update
   useUpdate(() => refetch(), [me]);
 
@@ -281,9 +287,7 @@ export function RoleForm(props: IRoleFormProps) {
     <Grid container spacing={2}>
       {error && (
         <Grid item xs={12}>
-          <Typography color="error">
-            <JsonPretty src={error} />
-          </Typography>
+          <DebugException always exception={error} />
         </Grid>
       )}
       {isLoading && (

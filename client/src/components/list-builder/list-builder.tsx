@@ -182,9 +182,9 @@ function ListBuilderListItems<T>(props: IListBuilderListItemsProps<T>) {
   const classes = useListBuilderListItemsStyles();
 
   return (
-    <div className={clsx(classes.root, className)}>
-      <Box className="text-center" border={2} borderRadius="borderRadius" py={1} borderColor="grey.500">
-        <Box p={2} borderBottom={2}>
+    <Box className={clsx(classes.root, className)} border={1} borderRadius="borderRadius" py={1} borderColor="grey.500">
+      <Box className="text-center">
+        <Box p={2} borderBottom={1}>
           <Typography color={disabled ? 'textSecondary' : 'inherit'} component="h4" variant="h4">
             {config.names?.[listIndex]}
           </Typography>
@@ -206,6 +206,6 @@ function ListBuilderListItems<T>(props: IListBuilderListItemsProps<T>) {
           })}
         </List>
       </Box>
-    </div>
+    </Box>
   )
 }

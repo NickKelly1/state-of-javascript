@@ -404,7 +404,7 @@ function UserAuthorizationSubsection(props: IUserAuthorizationSubsection) {
   }
 
   const { data, error, isLoading } = useQuery(
-    `user_${user.id}_authorization`,
+    null,
     async () => {
       const personalisedP = (async () => {
         const hasUserRoles = await api.services.userRoles.findMany({ query: {

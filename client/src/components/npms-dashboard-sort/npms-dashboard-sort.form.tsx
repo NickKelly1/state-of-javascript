@@ -13,12 +13,14 @@ import { ist } from '../../helpers/ist.helper';
 import { useUpdate } from '../../hooks/use-update.hook';
 import { Id } from '../../types/id.type';
 import { OrUndefined } from '../../types/or-undefined.type';
+import { DebugException } from '../debug-exception/debug-exception';
 import { JsonDownloadButton } from '../json-download-button/json-download-button';
 import { JsonPretty } from '../json-pretty/json-pretty';
 import { NpmsPackageComboSearch } from '../npms-package-combo-search/npms-package-combo-search';
 import { WhenDebugMode } from '../when-debug-mode/when-debug-mode';
 import { WithRandomId } from '../with-random-id/with-random-id';
 
+const NpmsDashbortSortFormQueryName = 'NpmsDashbortSortFormQuery';
 const npmsDashboardSortFormQuery = gql`
 query NpmsDashbortSortForm(
   $dashboardOffset:Int!
@@ -73,10 +75,7 @@ mutation NpmsDashbortSortFormSubmit(
 }
 `
 
-export interface INpmsDashboardSortFormPropsOnSuccessFn {
-  (): any;
-}
-
+export interface INpmsDashboardSortFormPropsOnSuccessFn { (): any; }
 export interface INpmsDashboardSortFormProps {
   onSuccess?: INpmsDashboardSortFormPropsOnSuccessFn;
 }
@@ -89,25 +88,24 @@ const defaultQueryVars: NpmsDashbortSortFormQueryVariables = {
 export function NpmsDashboardSortForm(props: INpmsDashboardSortFormProps) {
   const { onSuccess } = props;
   const { api, me } = useContext(ApiContext);
-  const debugMode = useContext(DebugModeContext);
 
-  const { data, error, isLoading, refetch } = useQuery<NpmsDashbortSortFormQuery, ApiException, [OrUndefined<NpmsDashbortSortFormQueryVariables>]>(
-    'npms_dashboard_sort',
-    async (vars: OrUndefined<NpmsDashbortSortFormQueryVariables>): Promise<NpmsDashbortSortFormQuery> => {
-      let _vars: NpmsDashbortSortFormQueryVariables = {
-        dashboardLimit: vars?.dashboardLimit ?? defaultQueryVars.dashboardLimit,
-        dashboardOffset: vars?.dashboardOffset ?? defaultQueryVars.dashboardOffset,
-      };
-      const result = await api
-        .connector
-        .graphql<NpmsDashbortSortFormQuery, NpmsDashbortSortFormQueryVariables>(
-          npmsDashboardSortFormQuery,
-          _vars
-        )
-        .catch(rethrow(normaliseApiException));
-      return result;
-    },
-    {},
+  const [vars, setVars] = useState<NpmsDashbortSortFormQueryVariables>({
+    dashboardLimit: defaultQueryVars.dashboardLimit,
+    dashboardOffset: defaultQueryVars.dashboardOffset,
+  });
+  const queryFn = useCallback(async (): Promise<NpmsDashbortSortFormQuery> => {
+    const result = await api
+      .connector
+      .graphql<NpmsDashbortSortFormQuery, NpmsDashbortSortFormQueryVariables>(
+        npmsDashboardSortFormQuery,
+        vars
+      )
+      .catch(rethrow(normaliseApiException));
+    return result;
+  }, [api, me, vars]);
+  const { data, error, isLoading, refetch } = useQuery<NpmsDashbortSortFormQuery, ApiException>(
+    NpmsDashbortSortFormQueryName,
+    queryFn,
   );
 
   return (
@@ -118,6 +116,11 @@ export function NpmsDashboardSortForm(props: INpmsDashboardSortFormProps) {
             <CircularProgress />
           </Grid>
         )}
+        {error && (
+          <Grid item xs={12}>
+            <DebugException always exception={error} />
+          </Grid>
+        )}
         {data && (
           <Grid item xs={12}>
             <NpmsDashboardSortFormList
@@ -126,8 +129,6 @@ export function NpmsDashboardSortForm(props: INpmsDashboardSortFormProps) {
             />
           </Grid>
         )}
-      </Grid>
-      <Grid item xs={12}>
       </Grid>
     </Grid>
   );
@@ -156,7 +157,6 @@ function NpmsDashboardSortFormList(props: INpmsDashboardSortFormListProps) {
   const { source, onSuccess } = props;
   const { me, api } = useContext(ApiContext);
   const [formState, setFormState] = useState<INpmsDashboardSortFormState>(() => npmsDashboardSortFormQueryToFormState(source));
-  const debugMode = useContext(DebugModeContext);
   const resetFromSource = useCallback(
     () => {
       setFormState(npmsDashboardSortFormQueryToFormState(source));

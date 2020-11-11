@@ -575,13 +575,8 @@ export type PermissionCollectionNode = {
 
 export type PermissionCollectionActions = {
   __typename?: 'PermissionCollectionActions';
-  show: Action;
-  create: Action;
-};
-
-export type Action = {
-  __typename?: 'Action';
-  can: Scalars['Boolean'];
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
 };
 
 export type UserRoleCollectionActions = {
@@ -1333,6 +1328,28 @@ export type SearchNpmsPackageQuery = (
   ) }
 );
 
+export type RoleDetailDataQueryVariables = Exact<{
+  id: Scalars['Float'];
+}>;
+
+
+export type RoleDetailDataQuery = (
+  { __typename?: 'RootQueryType' }
+  & { roles: (
+    { __typename?: 'RoleCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'RoleNode' }
+      & { can: (
+        { __typename?: 'RoleActions' }
+        & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+      ), data: (
+        { __typename?: 'RoleData' }
+        & Pick<RoleData, 'id' | 'name'>
+      ) }
+    )>> }
+  ) }
+);
+
 export type RoleFormDataQueryVariables = Exact<{
   id: Scalars['Float'];
   rolesPermissionsLimit: Scalars['Int'];
@@ -1460,7 +1477,9 @@ export type RoleFormUpdateMutation = (
   ) }
 );
 
-export type RoleFormDeleteMutationVariables = Exact<{ [key: string]: never; }>;
+export type RoleFormDeleteMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
 
 
 export type RoleFormDeleteMutation = (

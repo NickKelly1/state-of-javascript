@@ -48,7 +48,7 @@ export function TabGroup(props: IMyTabsProps) {
       </Tabs>
       {/* bodies */}
       {tabs.map((tab, i) => (
-        <TabPanel key={tab.key ?? i} value={value} index={0}>
+        <TabPanel key={tab.key ?? i} value={value} index={i}>
           {nodeify(tab.accessor)}
         </TabPanel>
       ))}

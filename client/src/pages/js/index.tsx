@@ -280,7 +280,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
   // const { refreshDashboards } = useQuery(
   //   'js_page_query'
   // );
-    const refreshDashboards = useCallback(async () => {
+  const refreshDashboards = useCallback(async () => {
     // TODO: useQuery...
     // TODO: report on errors...
     const result = await runPageDataQuery(api, defaultQueryVars);
