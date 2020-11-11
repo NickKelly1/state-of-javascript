@@ -1,9 +1,12 @@
 import KeyboardArrowUpIcon  from '@material-ui/icons/KeyboardArrowUpSharp';
+import DeleteIcon from '@material-ui/icons/Delete';
 import SwipeableViews from 'react-swipeable-views';
 import TablePagination from '@material-ui/core/TablePagination';
 import KeyboardArrowDownIcon  from '@material-ui/icons/KeyboardArrowDownSharp';
 import {
   Box,
+  Button,
+  CircularProgress,
   Collapse,
   Grid,
   IconButton,
@@ -23,6 +26,8 @@ import dayjs from 'dayjs';
 import { gql } from "graphql-request";
 import React, { Fragment,
   useCallback,
+  useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -30,10 +35,13 @@ import { Column,
   useTable } from "react-table";
 import { Api } from "../../backend-api/api";
 import { ApiException } from "../../backend-api/api.exception";
-import { normaliseApiException } from "../../backend-api/normalise-api-exception.helper";
+import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { Cms } from "../../cms/cms";
 import { RolesPageQuery,
-  RolesPageQueryVariables } from "../../generated/graphql";
+  RolesPageQueryVariables, 
+  RoleTableDeleteMutation,
+  RoleTableDeleteMutationVariables,
+} from "../../generated/graphql";
 import {
   Attempt,
   attemptAsync,
@@ -50,16 +58,22 @@ import { Id } from "../../types/id.type";
 import { OrUndefined } from "../../types/or-undefined.type";
 import { JsonPretty } from '../../components/json-pretty/json-pretty';
 import { NextRouter, useRouter } from 'next/router';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { serverSidePropsHandler } from '../../helpers/server-side-props-handler.helper';
 import { WithMemo } from '../../components/with-memo/with-memo';
 import { TabGroup } from '../../components/tab-group/tab-group';
 import clsx from 'clsx';
-import { IRoleFormProps, RoleForm } from '../../components/role-form/role.form';
+import { IRoleRolePermissionFormProps, RoleRolePermissionForm } from '../../components/role-role-permissions-form/role.form';
 import { formatRelative } from 'date-fns';
 import { RoleSection } from '../../components/role-section/role-section';
+import { ApiContext } from '../../contexts/api.context';
+import { DebugException } from '../../components/debug-exception/debug-exception';
+import { useUpdate } from '../../hooks/use-update.hook';
+import { ParsedUrlQuery } from 'querystring';
+import { OrNullable } from '../../types/or-nullable.type';
+import { IMeHash } from '../../backend-api/api.me';
 
-
+const RolesPageQueryName = 'RolesPageQuery'
 const rolesPageQuery = gql`
 query RolesPage(
   $limit:Int!
@@ -101,6 +115,20 @@ query RolesPage(
 }
 `;
 
+
+const roleTableDeleteMutation = gql`
+mutation RoleTableDelete(
+  $id:Int!
+){
+  deleteRole(
+    dto:{
+      id:$id
+		}
+  )
+}
+`;
+
+
 const PerPageOptions = {
   _5: 5,
   _10: 10,
@@ -122,35 +150,83 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface IRolesPageProps {
-  rolesQueryAttempt: Attempt<RolesPageQuery, ApiException>;
+  //
+}
+
+function getVars(query: OrNullable<ParsedUrlQuery>): RolesPageQueryVariables {
+  let offset: number;
+  if (ist.notNullable(query?.offset)) offset = Number(query?.offset);
+  else offset = defaultQueryVariables.offset;
+
+  let limit: number;
+  if (ist.notNullable(query?.limit)) limit = Number(query?.limit);
+  else limit = defaultQueryVariables.limit;
+
+  return { offset, limit, }
 }
 
 function RolesPage(props: IRolesPageProps) {
-  const { rolesQueryAttempt } = props;
   const classes = useStyles();
-
   const router: NextRouter = useRouter();
+  const { api, me } = useContext(ApiContext);
+
+  const vars = useMemo(() => getVars(router.query), [router.query])
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    fetchMore,
+  } = useQuery<RolesPageQuery, ApiException>(
+    [RolesPageQueryName, vars, me?.hash],
+    async (): Promise<RolesPageQuery> => {
+      const result = await api
+        .connector
+        .graphql<RolesPageQuery, RolesPageQueryVariables>(rolesPageQuery, vars)
+        .catch(rethrow(normaliseApiException));
+      return result;
+    },
+    {
+      keepPreviousData: true,
+    },
+  );
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Paper className={classes.paper}>
-          {isFail(rolesQueryAttempt) && <JsonPretty src={rolesQueryAttempt.value} />}
-          {isSuccess(rolesQueryAttempt) && <RolesPageContent rolesQuery={rolesQueryAttempt.value} />}
-        </Paper>
-      </Grid>
+      {error && (
+        <Grid item xs={12}>
+          <DebugException centered always exception={error} />
+        </Grid>
+      )}
+      {isLoading && (
+        <Grid className="centered" item xs={12}>
+          <CircularProgress />
+        </Grid>
+      )}
+      {data && (
+        <Grid item xs={12}>
+          <Paper className={classes.paper}>
+            <RolesPageContent
+              refetch={refetch}
+              rolesQuery={data}
+            />
+          </Paper>
+        </Grid>
+      )}
     </Grid>
   );
 }
 
-
+interface IRolesPageContentRefetchFn { (): any; }
 interface IRolesPageContentProps {
   rolesQuery: RolesPageQuery;
+  refetch?: IRolesPageContentRefetchFn;
 }
 
 function RolesPageContent(props: IRolesPageContentProps) {
-  const { rolesQuery } = props;
+  const { rolesQuery, refetch } = props;
 
+  const { api, me } = useContext(ApiContext);
   const router: NextRouter = useRouter();
   const handleChangeRowsPerPage: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = useCallback((evt) => {
     const nextLimit = evt.target.value;
@@ -172,6 +248,7 @@ function RolesPageContent(props: IRolesPageContentProps) {
     updated_at: string;
     created_at: string;
     deleted_at: string;
+    canDelete: boolean;
   }
 
   const data = useMemo<IRoleRow[]>((): IRoleRow[] => {
@@ -186,33 +263,67 @@ function RolesPageContent(props: IRolesPageContentProps) {
           created_at: dayjs(node.data.created_at).format('YYYY-M-D hh:mm:ss'),
           updated_at: dayjs(node.data.updated_at).format('YYYY-M-D hh:mm:ss'),
           deleted_at: node.data.deleted_at ? dayjs(node.data.deleted_at).format('YYYY-M-D hh:mm:ss') : '',
+          canDelete: node.can.delete,
         };
       });
   }, [rolesQuery]);
 
-  const columns = useMemo<Column<IRoleRow>[]>(() => [{
-      id: 'expand_chevron',
-      accessor: (original, index, table) => (
-        <IconButton color="inherit" size="small" onClick={() => setOpen((prev) => ({ ...prev, [original.id]: !prev[original.id] }))}>
-          {!open[original.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-        </IconButton>
-      ),
-    }, {
-      Header: 'Id',
-      accessor: 'id',
-    }, {
-      Header: 'Name',
-      accessor: 'name',
-    }, {
-      Header: 'Created',
-      accessor: (original) => formatRelative(new Date(original.created_at), new Date()),
-    }, {
-      Header: 'Updated',
-      accessor: (original) => formatRelative(new Date(original.updated_at), new Date()),
-    }, {
-      Header: 'Deleted',
-      accessor: (original) => original.deleted_at ? formatRelative(new Date(original.deleted_at), new Date()) : '',
-  }], [open]);
+  const handleDeleteCb = useCallback(async (vars: RoleTableDeleteMutationVariables): Promise<RoleTableDeleteMutation> => {
+    const result = await api
+      .connector
+      .graphql<RoleTableDeleteMutation, RoleTableDeleteMutationVariables>(
+        roleTableDeleteMutation,
+        vars,
+      )
+      .catch(rethrow(normaliseApiException));
+    return result;
+  }, [api, me,]);
+  const [doDelete, doDeleteState] = useMutation<RoleTableDeleteMutation, ApiException, RoleTableDeleteMutationVariables>(
+    handleDeleteCb,
+    { onSuccess: refetch }
+  );
+
+  const columns = useMemo<Column<IRoleRow>[]>(() => {
+    const cols: Column<IRoleRow>[] = [{
+        id: 'expand_chevron',
+        accessor: (original, index, table) => (
+          <IconButton color="inherit" size="small" onClick={() => setOpen((prev) => ({ ...prev, [original.id]: !prev[original.id] }))}>
+            {!open[original.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+        ),
+      }, {
+        Header: 'Id',
+        accessor: 'id',
+      }, {
+        Header: 'Name',
+        accessor: 'name',
+      }, {
+        Header: 'Created',
+        accessor: (original) => formatRelative(new Date(original.created_at), new Date()),
+      }, {
+        Header: 'Updated',
+        accessor: (original) => formatRelative(new Date(original.updated_at), new Date()),
+      }, {
+        Header: 'Deleted',
+        accessor: (original) => original.deleted_at
+          ? formatRelative(new Date(original.deleted_at), new Date())
+          : '',
+    }];
+    const canDeleteSome = data.some(dat => dat.canDelete);
+    if (canDeleteSome) {
+      cols.push({
+        Header: 'Delete',
+        accessor: (original) => (
+          <Box>
+            <Button disabled={!original.canDelete} onClick={() => doDelete({ id: Number(original.id) })}>
+              <DeleteIcon />
+            </Button>
+          </Box>
+        ),
+      });
+    }
+    return cols;
+  }, [ open, doDelete, rolesQuery, ]);
 
   const tableInstance = useTable({ columns, data });
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
@@ -254,7 +365,9 @@ function RolesPageContent(props: IRolesPageContentProps) {
                     <TableRow {...rowProps} className={clsx(rowProps.className, 'tabs-row')}>
                       <TableCell className="tabs-cell" colSpan={row.cells.length}>
                         <Collapse in={!!open[row.original.id]} timeout="auto" unmountOnExit>
-                          <RoleSection role_id={row.original.id} />
+                          <Box mb={2}>
+                            <RoleSection role_id={row.original.id} />
+                          </Box>
                         </Collapse>
                       </TableCell>
                     </TableRow>
@@ -290,37 +403,46 @@ function RolesPageContent(props: IRolesPageContentProps) {
           )}
         </WithMemo>
       </Grid>
+      {doDeleteState.isLoading && (
+        <Grid className="centered" item xs={12}>
+          <CircularProgress />
+        </Grid>
+      )}
+      <Grid item xs={12}>
+        <DebugException centered always exception={doDeleteState.error} />
+      </Grid>
     </Grid>
   );
 }
 
-async function runPageDataQuery(
-  api: Api,
-  vars: RolesPageQueryVariables,
-): Promise<Attempt<RolesPageQuery, ApiException>> {
-  return attemptAsync(
-    api
-      .connector
-      .graphql<RolesPageQuery, RolesPageQueryVariables>(rolesPageQuery, vars),
-    normaliseApiException,
-  );
-}
+// async function runPageDataQuery(
+//   api: Api,
+//   vars: RolesPageQueryVariables,
+// ): Promise<Attempt<RolesPageQuery, ApiException>> {
+//   return attemptAsync(
+//     api
+//       .connector
+//       .graphql<RolesPageQuery, RolesPageQueryVariables>(rolesPageQuery, vars),
+//     normaliseApiException,
+//   );
+// }
 
-async function getProps(args: { cms: Cms; npmsApi: NpmsApi; api: Api; vars: RolesPageQueryVariables; }): Promise<IRolesPageProps> {
-  const { cms, npmsApi, api, vars } = args
-  const rolesQueryAttempt = await runPageDataQuery(api, vars);
-  return { rolesQueryAttempt, }
-}
+// async function getProps(args: { cms: Cms; npmsApi: NpmsApi; api: Api; vars: RolesPageQueryVariables; }): Promise<IRolesPageProps> {
+//   const { cms, npmsApi, api, vars } = args
+//   const rolesQueryAttempt = await runPageDataQuery(api, vars);
+//   return { rolesQueryAttempt, }
+// }
 
-export const getServerSideProps = serverSidePropsHandler<IRolesPageProps>(async ({ ctx, cms, npmsApi, api, }) => {
-  const query = ctx.query;
-  const vars: RolesPageQueryVariables = {
-    offset: ist.notNullable(query?.offset) ? Number(query?.offset) : defaultQueryVariables.offset,
-    limit: ist.notNullable(query?.limit) ? Number(query?.limit) : defaultQueryVariables.limit,
-  };
-  const props = await getProps({ cms, npmsApi, api, vars, });
-  return { props, };
-});
+// export const getServerSideProps = serverSidePropsHandler<IRolesPageProps>(async ({ ctx, cms, npmsApi, api, }) => {
+//   // const query = ctx.query;
+//   // const vars: RolesPageQueryVariables = {
+//   //   offset: ist.notNullable(query?.offset) ? Number(query?.offset) : defaultQueryVariables.offset,
+//   //   limit: ist.notNullable(query?.limit) ? Number(query?.limit) : defaultQueryVariables.limit,
+//   // };
+//   // const props = await getProps({ cms, npmsApi, api, vars, });
+//   // return { props, };
+//   return { props: {} };
+// });
 
 
 export default RolesPage;

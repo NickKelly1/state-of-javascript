@@ -1,7 +1,9 @@
 import { ist } from "../helpers/ist.helper";
+import { Id } from "../types/id.type";
 import { OrUndefined } from "../types/or-undefined.type";
-import { PublicPermissions } from "./services/permission/permission.const";
 import { PermissionId } from "./services/permission/permission.id";
+
+export interface IMeHash { id?: Id; permissions: number[]; }
 
 export class ApiMe {
   protected readonly user?: { id: number; name: string; }
@@ -17,7 +19,7 @@ export class ApiMe {
     refresh_exp: number;
   }) {
     this.user = arg.user;
-    this._permissions = arg.permissions.concat(PublicPermissions);
+    this._permissions = Array.from(arg.permissions).sort((a, b) => a - b);
     this._permission_set = new Set(this._permissions);
     this.access_exp = arg.access_exp;
     this.refresh_exp = arg.refresh_exp;
@@ -38,6 +40,15 @@ export class ApiMe {
 
   get name(): OrUndefined<string> {
     return this.user?.name;
+  }
+
+  get permissions() { return this._permissions; }
+
+  get hash(): IMeHash {
+    return {
+      id: this.user?.id,
+      permissions: this._permissions,
+    };
   }
 
   hasSomePermissions(perms: PermissionId[]): boolean {

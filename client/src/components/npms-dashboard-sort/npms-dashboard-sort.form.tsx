@@ -4,7 +4,9 @@ import { gql } from 'graphql-request';
 import React, { FormEventHandler, useCallback, useContext, useMemo, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from 'react-beautiful-dnd';
 import { useMutation, useQuery } from 'react-query';
+import { Api } from '../../backend-api/api';
 import { ApiException } from '../../backend-api/api.exception';
+import { IMeHash } from '../../backend-api/api.me';
 import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { ApiContext } from '../../contexts/api.context';
 import { DebugModeContext } from '../../contexts/debug-mode.context';
@@ -93,19 +95,24 @@ export function NpmsDashboardSortForm(props: INpmsDashboardSortFormProps) {
     dashboardLimit: defaultQueryVars.dashboardLimit,
     dashboardOffset: defaultQueryVars.dashboardOffset,
   });
-  const queryFn = useCallback(async (): Promise<NpmsDashbortSortFormQuery> => {
-    const result = await api
-      .connector
-      .graphql<NpmsDashbortSortFormQuery, NpmsDashbortSortFormQueryVariables>(
-        npmsDashboardSortFormQuery,
-        vars
-      )
-      .catch(rethrow(normaliseApiException));
-    return result;
-  }, [api, me, vars]);
-  const { data, error, isLoading, refetch } = useQuery<NpmsDashbortSortFormQuery, ApiException>(
-    NpmsDashbortSortFormQueryName,
-    queryFn,
+
+  const {
+    data,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery<NpmsDashbortSortFormQuery, ApiException>(
+    [NpmsDashbortSortFormQueryName, vars, me?.hash],
+    async (): Promise<NpmsDashbortSortFormQuery> => {
+      const result = await api
+        .connector
+        .graphql<NpmsDashbortSortFormQuery, NpmsDashbortSortFormQueryVariables>(
+          npmsDashboardSortFormQuery,
+          vars,
+        )
+        .catch(rethrow(normaliseApiException));
+      return result;
+    },
   );
 
   return (
@@ -118,7 +125,7 @@ export function NpmsDashboardSortForm(props: INpmsDashboardSortFormProps) {
         )}
         {error && (
           <Grid item xs={12}>
-            <DebugException always exception={error} />
+            <DebugException centered always exception={error} />
           </Grid>
         )}
         {data && (

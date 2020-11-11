@@ -2,7 +2,7 @@ import { Box, makeStyles, Tab, Tabs, Theme, Typography } from "@material-ui/core
 import React from "react";
 import { nodeify } from "../../helpers/nodeify.helper";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useTabGroupStyles = makeStyles((theme: Theme) => ({
   root: {
     //
   },
@@ -25,7 +25,7 @@ export interface IMyTabsProps {
 
 export function TabGroup(props: IMyTabsProps) {
   const { tabs } = props;
-  const classes = useStyles();
+  const classes = useTabGroupStyles();
   const [value, setValue] = React.useState(0);
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
@@ -63,9 +63,18 @@ interface TabPanelProps {
   value: any;
 }
 
+const useTabPanelStyles = makeStyles((theme: Theme) => ({
+  box: {
+    borderRadius: `0 0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px`,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+}));
+
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
+  const classes = useTabPanelStyles();
+
   return (
     <div
       role="tabpanel"
@@ -73,7 +82,13 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box>
+        <Box
+          // borderLeft={2}
+          // borderRight={2}
+          // borderBottom={2}
+          className={classes.box}
+          // boxShadow={3}
+        >
           <>{children}</>
         </Box>
       )}

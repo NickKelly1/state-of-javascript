@@ -12,10 +12,17 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import {
   gql,
 } from "graphql-request";
-import React, { FormEventHandler, useCallback, useContext, useMemo, useState } from "react";
+import React, {
+  FormEventHandler,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import {
   TypedQueryFunction,
-  useMutation, useQuery,
+  useMutation,
+  useQuery,
 } from "react-query";
 import {
   ApiException,
@@ -28,10 +35,10 @@ import {
   ApiContext,
 } from "../../contexts/api.context";
 import {
-  RoleFormDataQuery,
-  RoleFormDataQueryVariables,
-  RoleFormUpdateMutation,
-  RoleFormUpdateMutationVariables,
+  RoleRolePermissionFormUpdateMutation,
+  RoleRolePermissionFormUpdateMutationVariables,
+  RoleRolePermissionsFormDataQuery,
+  RoleRolePermissionsFormDataQueryVariables,
 } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
 import FourZeroFourPage from "../../pages/404";
@@ -57,10 +64,13 @@ import { DebugException } from "../debug-exception/debug-exception";
 import { ring } from "../../helpers/ring.helper";
 import { DashColours } from "../../dashboard-theme";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
+import { Api } from "../../backend-api/api";
+import { IMeHash } from "../../backend-api/api.me";
 
-const RoleFormDataQueryName = (id: Id) => `RoleFormDataQuery_${id}`;
-const roleFormDataQuery = gql`
-query RoleFormData(
+
+const RoleRolePermissionsFormDataQueryName = (id: Id) => `RoleRolePermissionsFormDataQuery_${id}`;
+const roleRolePermissionsFormDataQuery = gql`
+query RoleRolePermissionsFormData(
   $id:Float!
   $rolesPermissionsLimit:Int!
   $rolesPermissionsOffset:Int!
@@ -145,48 +155,48 @@ query RoleFormData(
 `;
 
 
-const roleFormCreateMutation = gql`
-mutation RoleFormCreate(
-  $name:String!
-  $permission_ids:[Int!]
-){
-  createRole(
-    dto:{
-      name:$name
-      permission_ids:$permission_ids
-    }
-  ){
-    can{
-      show
-      update
-      delete
-      createRolePermission
-    }
-    data{
-      id
-      name
-    }
-    relations{
-      permissions{
-        nodes{
-          can{
-            show
-            createRolePermission
-          }
-          data{
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-}
-`;
+// const roleFormCreateMutation = gql`
+// mutation RoleFormCreate(
+//   $name:String!
+//   $permission_ids:[Int!]
+// ){
+//   createRole(
+//     dto:{
+//       name:$name
+//       permission_ids:$permission_ids
+//     }
+//   ){
+//     can{
+//       show
+//       update
+//       delete
+//       createRolePermission
+//     }
+//     data{
+//       id
+//       name
+//     }
+//     relations{
+//       permissions{
+//         nodes{
+//           can{
+//             show
+//             createRolePermission
+//           }
+//           data{
+//             id
+//             name
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
+// `;
 
 
-const roleFormUpdateMutation = gql`
-mutation RoleFormUpdate(
+const rolePermissionFormUpdateMutation = gql`
+mutation RoleRolePermissionFormUpdate(
   $id:Int!
   $name:String
   $permission_ids:[Int!]
@@ -227,58 +237,46 @@ mutation RoleFormUpdate(
 `;
 
 
-const roleFormDeleteMutation = gql`
-mutation RoleFormDelete(
-  $id:Int!
-){
-  deleteRole(
-    dto:{
-      id:$id
-		}
-  )
-}
-`;
-
-
-export interface IRoleFormOnSuccessFnArg { id: Id; name: string; }
-export interface IRoleFormOnSuccessFn {
-  (arg: IRoleFormOnSuccessFnArg): any;
+export interface IRoleRolePermissionFormOnSuccessFnArg { id: Id; name: string; }
+export interface IRoleRolePermissionFormOnSuccessFn {
+  (arg: IRoleRolePermissionFormOnSuccessFnArg): any;
 }
 
-export interface IRoleFormProps {
+export interface IRoleRolePermissionFormProps {
   role_id: Id;
-  onSuccess?: IRoleFormOnSuccessFn;
+  onSuccess?: IRoleRolePermissionFormOnSuccessFn;
 }
 
-export function RoleForm(props: IRoleFormProps) {
+export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
   const { role_id, onSuccess } = props;
   const { api, me, } = useContext(ApiContext);
 
-  const [vars, setVars] = useState<RoleFormDataQueryVariables>({
+  const [vars, setVars] = useState<RoleRolePermissionsFormDataQueryVariables>(() => ({
     id: Number(role_id),
     permissionsLimit: 10_000,
     permissionsOffset: 0,
     rolesPermissionsLimit: 10_000,
     rolesPermissionsOffset: 0,
-  });
-  const queryFn: TypedQueryFunction<RoleFormDataQuery> = useCallback(async (): Promise<RoleFormDataQuery> => {
-    const result = await api
-      .connector
-      .graphql<RoleFormDataQuery, RoleFormDataQueryVariables>(
-        roleFormDataQuery,
-        vars,
-      )
-      .catch(rethrow(normaliseApiException))
-    return result;
-  }, [me, role_id, vars]);
+  }));
 
-  const { data, refetch, isLoading, error, } = useQuery<RoleFormDataQuery, ApiException>(
-    RoleFormDataQueryName(role_id),
-    queryFn,
+  const {
+    data,
+    refetch,
+    isLoading,
+    error,
+  } = useQuery<RoleRolePermissionsFormDataQuery, ApiException>(
+    [RoleRolePermissionsFormDataQueryName(role_id), vars, me?.hash],
+    async (): Promise<RoleRolePermissionsFormDataQuery> => {
+        const result = await api
+          .connector
+          .graphql<RoleRolePermissionsFormDataQuery, RoleRolePermissionsFormDataQueryVariables>(
+            roleRolePermissionsFormDataQuery,
+            vars,
+          )
+          .catch(rethrow(normaliseApiException))
+        return result;
+      },
   );
-
-  // refetch on user update
-  useUpdate(() => refetch(), [me]);
 
   const roles = useMemo(() => data?.roles.nodes.filter(ist.notNullable), [data?.roles]);
   const permissions = useMemo(() => data?.permissions.nodes.filter(ist.notNullable), [data?.permissions]);
@@ -287,7 +285,7 @@ export function RoleForm(props: IRoleFormProps) {
     <Grid container spacing={2}>
       {error && (
         <Grid item xs={12}>
-          <DebugException always exception={error} />
+          <DebugException centered always exception={error} />
         </Grid>
       )}
       {isLoading && (
@@ -302,7 +300,7 @@ export function RoleForm(props: IRoleFormProps) {
       )}
       {permissions && roles?.length === 1 && (
         <Grid item xs={12}>
-          <RoleFormContent
+          <RoleRolePermissionFormContent
             role={roles[0]}
             permissions={permissions}
             onSuccess={onSuccess}
@@ -313,28 +311,33 @@ export function RoleForm(props: IRoleFormProps) {
   );
 }
 
-interface IRoleFormContentProps {
-  role: NonNullable<RoleFormDataQuery['roles']['nodes'][0]>;
-  permissions: NonNullable<RoleFormDataQuery['permissions']['nodes'][0]>[];
-  onSuccess?: IRoleFormOnSuccessFn;
+
+interface IRoleRolePermissionFormContentProps {
+  role: NonNullable<RoleRolePermissionsFormDataQuery['roles']['nodes'][0]>;
+  permissions: NonNullable<RoleRolePermissionsFormDataQuery['permissions']['nodes'][0]>[];
+  onSuccess?: IRoleRolePermissionFormOnSuccessFn;
 }
 
-function RoleFormContent(props: IRoleFormContentProps) {
+
+function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProps) {
   const { role, permissions, onSuccess } = props;
   const { api, me } = useContext(ApiContext);
 
   const [isDirty, setIsDirty] = useState(false);
-  const submitCb = useCallback(async (vars: RoleFormUpdateMutationVariables): Promise<IRoleFormOnSuccessFnArg> => {
+  const submitCb = useCallback(async (vars: RoleRolePermissionFormUpdateMutationVariables): Promise<IRoleRolePermissionFormOnSuccessFnArg> => {
     const result = await api
       .connector
-      .graphql<RoleFormUpdateMutation, RoleFormUpdateMutationVariables>(roleFormUpdateMutation, vars)
+      .graphql<RoleRolePermissionFormUpdateMutation, RoleRolePermissionFormUpdateMutationVariables>(
+        rolePermissionFormUpdateMutation,
+        vars,
+      )
       .catch(rethrow(normaliseApiException));
     return {
       id: result.updateRole.data.id,
       name: result.updateRole.data.name,
     };
   }, [api])
-  const [submit, submitState] = useMutation<IRoleFormOnSuccessFnArg, ApiException, RoleFormUpdateMutationVariables>(
+  const [submit, submitState] = useMutation<IRoleRolePermissionFormOnSuccessFnArg, ApiException, RoleRolePermissionFormUpdateMutationVariables>(
     submitCb,
     { onSuccess, }
   );

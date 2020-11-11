@@ -2,7 +2,9 @@ import { CircularProgress, Grid, Typography } from "@material-ui/core";
 import { gql } from "graphql-request";
 import React, { useCallback, useContext, useMemo, useState } from "react";
 import { useQuery } from "react-query";
+import { Api } from "../../backend-api/api";
 import { ApiException } from "../../backend-api/api.exception";
+import { IMeHash } from "../../backend-api/api.me";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { ApiContext } from "../../contexts/api.context";
 import { RoleDetailDataQuery, RoleDetailDataQueryVariables } from "../../generated/graphql";
@@ -52,19 +54,22 @@ export function RoleDetail(props: IRoleDetailProps) {
   const { me, api } = useContext(ApiContext);
 
   const [vars, setVars] = useState<RoleDetailDataQueryVariables>({ id: Number(role_id), });
-  const queryCb = useCallback(async (): Promise<RoleDetailDataQuery> => {
-    const result = await api
-      .connector
-      .graphql<RoleDetailDataQuery, RoleDetailDataQueryVariables>(
-        roleDetailDataQuery,
-        vars,
-      )
-      .catch(rethrow(normaliseApiException));
-    return result;
-  }, [api, me, vars]);
-  const { data, error, isLoading, } = useQuery<RoleDetailDataQuery, ApiException>(
-    RoleDetailDataQueryName(role_id),
-    queryCb,
+  const {
+    data,
+    error,
+    isLoading,
+  } = useQuery<RoleDetailDataQuery, ApiException>(
+    [RoleDetailDataQueryName(role_id), vars, me?.hash],
+    async (): Promise<RoleDetailDataQuery> => {
+        const result = await api
+          .connector
+          .graphql<RoleDetailDataQuery, RoleDetailDataQueryVariables>(
+            roleDetailDataQuery,
+            vars,
+          )
+          .catch(rethrow(normaliseApiException));
+        return result;
+      },
   );
 
   const roles = useMemo(() => data?.roles.nodes.filter(ist.notNullable), [data?.roles]);
@@ -78,7 +83,7 @@ export function RoleDetail(props: IRoleDetailProps) {
       )}
       {error && (
         <Grid item xs={12}>
-          <DebugException always exception={error} />
+          <DebugException centered always exception={error} />
         </Grid>
       )}
       {roles?.length === 0 && (
@@ -107,7 +112,7 @@ function RoleDetailContent(props: IRoleDetailContentProps) {
   return (
     <Grid container>
       <Grid item xs={12}>
-        <Typography component="h1" variant="h1">
+        <Typography component="h2" variant="h2">
           {`${role.data.name}`}
         </Typography>
       </Grid>

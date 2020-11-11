@@ -1350,7 +1350,7 @@ export type RoleDetailDataQuery = (
   ) }
 );
 
-export type RoleFormDataQueryVariables = Exact<{
+export type RoleRolePermissionsFormDataQueryVariables = Exact<{
   id: Scalars['Float'];
   rolesPermissionsLimit: Scalars['Int'];
   rolesPermissionsOffset: Scalars['Int'];
@@ -1359,7 +1359,7 @@ export type RoleFormDataQueryVariables = Exact<{
 }>;
 
 
-export type RoleFormDataQuery = (
+export type RoleRolePermissionsFormDataQuery = (
   { __typename?: 'RootQueryType' }
   & { roles: (
     { __typename?: 'RoleCollectionNode' }
@@ -1406,49 +1406,14 @@ export type RoleFormDataQuery = (
   ) }
 );
 
-export type RoleFormCreateMutationVariables = Exact<{
-  name: Scalars['String'];
-  permission_ids?: Maybe<Array<Scalars['Int']>>;
-}>;
-
-
-export type RoleFormCreateMutation = (
-  { __typename?: 'RootMutationType' }
-  & { createRole: (
-    { __typename?: 'RoleNode' }
-    & { can: (
-      { __typename?: 'RoleActions' }
-      & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
-    ), data: (
-      { __typename?: 'RoleData' }
-      & Pick<RoleData, 'id' | 'name'>
-    ), relations: (
-      { __typename?: 'RoleRelations' }
-      & { permissions: (
-        { __typename?: 'PermissionCollectionNode' }
-        & { nodes: Array<Maybe<(
-          { __typename?: 'PermissionNode' }
-          & { can: (
-            { __typename?: 'PermissionActions' }
-            & Pick<PermissionActions, 'show' | 'createRolePermission'>
-          ), data: (
-            { __typename?: 'PermissionData' }
-            & Pick<PermissionData, 'id' | 'name'>
-          ) }
-        )>> }
-      ) }
-    ) }
-  ) }
-);
-
-export type RoleFormUpdateMutationVariables = Exact<{
+export type RoleRolePermissionFormUpdateMutationVariables = Exact<{
   id: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
   permission_ids?: Maybe<Array<Scalars['Int']>>;
 }>;
 
 
-export type RoleFormUpdateMutation = (
+export type RoleRolePermissionFormUpdateMutation = (
   { __typename?: 'RootMutationType' }
   & { updateRole: (
     { __typename?: 'RoleNode' }
@@ -1475,16 +1440,6 @@ export type RoleFormUpdateMutation = (
       ) }
     ) }
   ) }
-);
-
-export type RoleFormDeleteMutationVariables = Exact<{
-  id: Scalars['Int'];
-}>;
-
-
-export type RoleFormDeleteMutation = (
-  { __typename?: 'RootMutationType' }
-  & Pick<RootMutationType, 'deleteRole'>
 );
 
 export type JsPageDashboardQueryVariables = Exact<{
@@ -1758,4 +1713,14 @@ export type RolesPageQuery = (
       ) }
     )>> }
   ) }
+);
+
+export type RoleTableDeleteMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type RoleTableDeleteMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'deleteRole'>
 );

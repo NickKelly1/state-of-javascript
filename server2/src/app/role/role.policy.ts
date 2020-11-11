@@ -57,6 +57,7 @@ export class RolePolicy {
   }): boolean {
     const { model } = arg;
     if (model.isAdmin()) return false;
+    if (model.isPublic()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRole,
