@@ -163,11 +163,13 @@ function RoleDetailContent(props: IRoleDetailContentProps) {
               <Box mr={2} className="centered col">
                 {`${role.data.name}`}
               </Box>
-              <Box className="centered col">
-                <Button variant="outlined" onClick={openModal}>
-                  <EditIcon />
-                </Button>
-              </Box>
+              {role.can.update && (
+                <Box className="centered col">
+                  <Button variant="outlined" onClick={openModal}>
+                    <EditIcon />
+                  </Button>
+                </Box>
+              )}
             </Box>
           </Typography>
         </Grid>

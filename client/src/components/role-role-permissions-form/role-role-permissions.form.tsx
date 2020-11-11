@@ -373,7 +373,8 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
     });
   }, [submit, role.data.id, permissionLists]);
 
-  const isDisabled = submitState.isLoading || !role.can.update;
+  // || !role.can.update;
+  const isDisabled = submitState.isLoading || !role.can.createRolePermission;
   const isLoading = submitState.isLoading;
   const error = submitState.error;
 

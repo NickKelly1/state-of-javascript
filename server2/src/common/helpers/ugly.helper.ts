@@ -4,6 +4,11 @@ import { $TS_FIX_ME } from "../types/$ts-fix-me.type";
 import { Primitive } from "../types/primitive.type";
 import { Printable } from "../types/printable.type";
 
+/**
+ * Opposite of pretty(...)
+ *
+ * @param json
+ */
 export function ugly(json: Printable | $TS_FIX_ME<any>): string {
   return JSON.stringify(json);
 }
