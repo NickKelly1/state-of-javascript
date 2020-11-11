@@ -101,11 +101,11 @@ export const getStaticProps = staticPropsHandler<ICreateNewsPageProps>(async ({ 
   };
 });
 
-export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
-  return {
-    fallback: false,
-    paths: [],
-  };
-})
+// export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
+//   return {
+//     fallback: false,
+//     paths: [],
+//   };
+// })
 
 export default CreateNewsPage;

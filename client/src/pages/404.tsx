@@ -1,8 +1,6 @@
-import { makeStyles, Typography } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import React from "react";
 import { NotFound } from "../components/not-found/not-found";
-import { serverSidePropsHandler } from "../helpers/server-side-props-handler.helper";
-import { staticPathsHandler, staticPropsHandler } from "../helpers/static-props-handler.helper";
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -32,20 +30,3 @@ function FourZeroFourPage(props: IFourZeroFourPageProps) {
 }
 
 export default FourZeroFourPage;
-
-export const getStaticProps = staticPropsHandler<IFourZeroFourPageProps>(async ({ ctx, cms, npmsApi }) => {
-  return {
-    props: {
-      //
-    },
-    // revalidate: false,
-  };
-});
-
-
-export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
-  return {
-    fallback: false,
-    paths: [],
-  };
-})

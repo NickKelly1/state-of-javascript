@@ -165,7 +165,6 @@ function IndexNewsPage(props: IIndexNewsPageProps) {
 }
 
 
-
 export const getStaticProps = staticPropsHandler<IIndexNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {
   const query = await api.connector.graphql<IndexNewsPageQuery, IndexNewsPageQueryVariables>(
     pageQuery,
@@ -186,11 +185,13 @@ export const getStaticProps = staticPropsHandler<IIndexNewsPageProps>(async ({ c
   };
 });
 
-export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
-  return {
-    fallback: false,
-    paths: [],
-  };
-})
+
+// export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
+//   return {
+//     fallback: false,
+//     paths: [],
+//   };
+// })
+
 
 export default IndexNewsPage;

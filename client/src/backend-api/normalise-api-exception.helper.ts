@@ -4,10 +4,10 @@ import { OrUndefined } from "../types/or-undefined.type";
 import { ApiException } from "./api.exception";
 
 export function normaliseApiException(exp: unknown): ApiException {
-  if (exp instanceof ApiException) return exp;
+  if (exp instanceof ApiException) return exp as ApiException;
 
   // is already api exception?
-  if (isu.apiExceptionShape(exp)) return new ApiException(exp);
+  if (isu.apiExceptionShape(exp)) return ApiException(exp);
 
   // has an extension.exception object on it?
   if (isu.hasExtensionException(exp)) {

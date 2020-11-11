@@ -1,20 +1,11 @@
 import React, {
-  Fragment,
-  MouseEventHandler,
-  PureComponent,
   useCallback,
   useContext,
   useMemo,
   useState } from 'react';
-import BugReportIcon from '@material-ui/icons/BugReport';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
-import Next, { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
-import { ParsedUrlQuery } from 'querystring';
 import SortIcon from '@material-ui/icons/Sort';
-import { serverSidePropsHandler } from '../../helpers/server-side-props-handler.helper';
 import {
   Box,
   Button,
@@ -22,66 +13,35 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
-  Link,
   makeStyles,
-  Modal,
   Paper,
   Typography,
-  withTheme } from '@material-ui/core';
-import { ArticleCmsResource } from '../../cms/types/article.cms.resource';
-import { ResourceCmsResource } from '../../cms/types/resource.cms.resource';
-import { ArticleCard } from '../../components/article-card/article-card';
-import { CmsFilterEq, CmsFilterNIn, CmsQuery, CmsSort, CmsSortDir } from '../../cms/cms-query.type';
-import { Sort } from '@material-ui/icons';
-import { ToolsCard } from '../../components/resources-card/tools-card';
-import { ToolCard } from '../../components/tool-card/tool-card';
-import { CmsResourceCategory } from '../../cms/cms-resource-category.enum';
-import {
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  PieChart,
-  Pie,
-  Sector,
-  Cell,
-} from 'recharts';
-import { NpmsPackageInfos } from '../../npms-api/types/npms-package-info.type';
+} from '@material-ui/core';
 import { Attempt, attemptAsync, isSuccess, } from '../../helpers/attempted.helper';
-import { NormalisedError } from '../../helpers/normalise-error.helper';
-import { NpmPackagesDashboard } from '../../components/npm-packages-dashboard/npm-packages-dashboard';
-import { WithAttempted } from '../../components/with-attempted/with-attempted';
 import { staticPathsHandler, staticPropsHandler } from '../../helpers/static-props-handler.helper';
 import { Cms } from '../../cms/cms';
 import { NpmsApi } from '../../npms-api/npms-api';
 import { gql } from 'graphql-request';
 import { Api } from '../../backend-api/api';
-import { JsPageDashboardQuery, JsPageDashboardQueryVariables, JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables } from '../../generated/graphql';
-import { pretty } from '../../helpers/pretty.helper';
-import { FittedPieChart } from '../../components/fitted-pie-chart/fitted-pie-chart';
+import {
+  JsPageDashboardQuery,
+  JsPageDashboardQueryVariables,
+} from '../../generated/graphql';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
 import { OrNull } from '../../types/or-null.type';
-import { Legend } from '../../components/legend/legend';
-import { WithMemo } from '../../components/with-memo/with-memo';
 import { PieChartDatum } from '../../types/pie-chart-datum.type';
-import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
 import { shuffle } from '../../helpers/shuffle.helper';
 import { DashColours } from '../../dashboard-theme';
 import SeedRandom from 'seed-random';
-import { FittedBarChart } from '../../components/fitted-bar-chart/fitted-bar-chart';
-import { INpmsPackageSearchOption, NpmsPackageComboSearch } from '../../components/npms-package-combo-search/npms-package-combo-search';
-import { MutateNpmsDashboardForm, IMutateNpmsDashboardFormOnSuccessFn } from '../../components/mutate-npms-dashboard/mutate-npms-dashboard.form';
+import { INpmsPackageSearchOption, } from '../../components/npms-package-combo-search/npms-package-combo-search';
+import { MutateNpmsDashboardForm, } from '../../components/mutate-npms-dashboard/mutate-npms-dashboard.form';
 import { ApiContext } from '../../contexts/api.context';
 import { ist } from '../../helpers/ist.helper';
-import { Id } from '../../types/id.type';
 import { useUpdate } from '../../hooks/use-update.hook';
-import { DebugModeContext } from '../../contexts/debug-mode.context';
 import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms-dashboard/npms-dashboard';
 import { NpmsDashboardSortForm } from '../../components/npms-dashboard-sort/npms-dashboard-sort.form';
 import { ApiException } from '../../backend-api/api.exception';
 import { normaliseApiException } from '../../backend-api/normalise-api-exception.helper';
-import { useQuery } from 'react-query';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -653,12 +613,12 @@ export const getStaticProps = staticPropsHandler<IJavaScriptPageProps>(async ({ 
 });
 
 
-export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
-  return {
-    fallback: false,
-    paths: [],
-  };
-});
+// export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
+//   return {
+//     fallback: false,
+//     paths: [],
+//   };
+// });
 
 
 export default JavaScriptPage;
