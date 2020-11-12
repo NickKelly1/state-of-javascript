@@ -25,8 +25,9 @@ import React, { useCallback, useContext, useState } from "react";
 import { ApiContext } from "../../contexts/api.context";
 import { useMutation } from "react-query";
 import { DebugModeContext } from "../../contexts/debug-mode.context";
-import { LoginForm } from "../forms/login.form";
-import { RegisterForm } from "../forms/register.form";
+import { LoginFormDialog } from "../forms/login.form.dialog";
+import { RegisterFormDialog } from "../forms/register.form.dialog";
+import { useDialog } from "../../hooks/use-dialog.hook";
 
 interface ITopBarProps {
   //
@@ -82,30 +83,13 @@ export function TopBar(props: ITopBarProps) {
     // router.push('/'); 
   });
 
-  interface ILoginModalState { isOpen: boolean }
-  const [loginModalState, setLoginModalState] = useState<ILoginModalState>({ isOpen: false });
-  const closeLoginModal = useCallback(() => setLoginModalState((prev) => ({ ...prev, isOpen: false })), []);
-  const openLoginModal = useCallback(() => setLoginModalState((prev) => ({ ...prev, isOpen: true })), []);
-
-  interface IRegisterModalState { isOpen: boolean }
-  const [registerModalState, setRegisterModalState] = useState<IRegisterModalState>({ isOpen: false });
-  const closeRegisterModal = useCallback(() => setRegisterModalState((prev) => ({ ...prev, isOpen: false })), []);
-  const openRegisterModal = useCallback(() => setRegisterModalState((prev) => ({ ...prev, isOpen: true })), []);
+  const loginDialog = useDialog();
+  const registerDialog = useDialog();
 
   return (
     <>
-      <Dialog onClose={closeLoginModal} open={loginModalState.isOpen}>
-        <DialogTitle>Login</DialogTitle>
-        <DialogContent dividers>
-          <LoginForm onSuccess={closeLoginModal} />
-        </DialogContent>
-      </Dialog>
-      <Dialog onClose={closeRegisterModal} open={registerModalState.isOpen}>
-        <DialogTitle>Register</DialogTitle>
-        <DialogContent dividers>
-          <RegisterForm onSuccess={closeRegisterModal} />
-        </DialogContent>
-      </Dialog>
+      <LoginFormDialog dialog={loginDialog} onSuccess={loginDialog.doClose} />
+      <RegisterFormDialog dialog={registerDialog} onSuccess={registerDialog.doClose} />
       <div className={classes.root}>
         <div>
           <Typography component="h1" variant="h3">
@@ -162,12 +146,12 @@ export function TopBar(props: ITopBarProps) {
             {!me && (
               <>
                 <ListItem className={classes.navItem}>
-                  <Button color={registerModalState.isOpen ? 'primary' : 'inherit'} className="text-transform-none" onClick={openRegisterModal}>
+                  <Button color={registerDialog.isOpen ? 'primary' : 'inherit'} className="text-transform-none" onClick={registerDialog.doOpen}>
                     Register
                   </Button>
                 </ListItem>
                 <ListItem className={classes.navItem}>
-                  <Button color={loginModalState.isOpen ? 'primary' : 'inherit'} className="text-transform-none" onClick={openLoginModal}>
+                  <Button color={loginDialog.isOpen ? 'primary' : 'inherit'} className="text-transform-none" onClick={loginDialog.doOpen}>
                     Login
                   </Button>
                 </ListItem>

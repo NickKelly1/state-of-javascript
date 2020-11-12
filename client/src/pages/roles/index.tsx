@@ -63,8 +63,8 @@ import { ApiContext } from '../../contexts/api.context';
 import { DebugException } from '../../components/debug-exception/debug-exception';
 import { ParsedUrlQuery } from 'querystring';
 import { OrNullable } from '../../types/or-nullable.type';
-import { IUseModalStateReturn, useModalState } from '../../hooks/use-modal-state.hook';
-import { MutateRoleForm } from '../../components/mutate-role-form/mutate-role.form';
+import { IUseDialogReturn, useDialog } from '../../hooks/use-dialog.hook';
+import { MutateRoleFormDialog } from '../../components/mutate-role-form-dialog/mutate-role.form.dialog';
 import { IIdentityFn } from '../../types/identity-fn.type';
 
 const RolesPageQueryName = 'RolesPageQuery'
@@ -319,23 +319,16 @@ function RolesPageContent(props: IRolesPageContentProps) {
 
   const tableInstance = useTable({ columns, data });
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
-  const createRoleModal: IUseModalStateReturn = useModalState();
+  const createRoleDialog: IUseDialogReturn = useDialog();
 
   const handleRoleCreated: IIdentityFn = useCallback(() => {
     refetch?.();
-    createRoleModal.doClose();
-  }, [refetch, createRoleModal.doClose]);
+    createRoleDialog.doClose();
+  }, [refetch, createRoleDialog.doClose]);
 
   return (
     <>
-      <Dialog open={createRoleModal.isOpen} onClose={createRoleModal.doClose}>
-        <DialogTitle>
-          Create Role
-        </DialogTitle>
-        <DialogContent dividers>
-          <MutateRoleForm onSuccess={handleRoleCreated} />
-        </DialogContent>
-      </Dialog>
+      <MutateRoleFormDialog dialog={createRoleDialog} onSuccess={handleRoleCreated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Typography component="h1" variant="h1">
@@ -344,7 +337,7 @@ function RolesPageContent(props: IRolesPageContentProps) {
                 Roles
               </Box>
               <Box bgcolor="background.paper" className="centered col" mr={2}>
-                <Button variant="outlined" onClick={createRoleModal.doOpen}>
+                <Button variant="outlined" onClick={createRoleDialog.doOpen}>
                   <AddIcon />
                 </Button>
               </Box>

@@ -46,7 +46,7 @@ import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-
 import { useQuery } from 'react-query';
 import { IIdentityFn } from '../../types/identity-fn.type';
 import { DebugException } from '../../components/debug-exception/debug-exception';
-import { useModalState } from '../../hooks/use-modal-state.hook';
+import { useDialog } from '../../hooks/use-dialog.hook';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -514,13 +514,13 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
     return dashes;
   }, [dashboards]);
 
-  const createDashboardModal = useModalState(false);
+  const createDashboardModal = useDialog(false);
   const handleNpmsDashboardCreated = useCallback(() => {
     createDashboardModal.doClose();
     onStale?.();
   }, []);
 
-  const sortDashboardsModal = useModalState(false);
+  const sortDashboardsModal = useDialog(false);
   const handleNpmsDashboardSorted = useCallback(() => {
     sortDashboardsModal.doClose();
     onStale?.();

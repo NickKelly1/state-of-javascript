@@ -36,7 +36,8 @@ export enum ThemeColourType {
 // const red = '#E6A69E';
 // const purple = '#EBB0FF';
 
-const blue = '#55DAFF';
+// const blue = '#55DAFF';
+const blue = 'rgb(144, 202, 249)';
 // const blue = '#0088FE';
 const green = '#84E660';
 const yellow = '#FFE476';
@@ -51,6 +52,7 @@ const purple = '#F28AFF';
 
 const textLight = '#D4D4D4';
 const textDisabled = '#797979';
+const textSecondary = 'rgba(255, 255, 255, 0.7)';
 
 const bgDark = '#111111';
 const paperDark = '#1E1E1E';
@@ -58,7 +60,13 @@ const paperDark = '#1E1E1E';
 // Create a theme instance.
 const theme = createMuiTheme(({
   typography: {
-    fontFamily: [ 'CascadiaCode', ].join(','),
+    // fontFamily: [
+    //   'CascadiaCode',
+    //   'Roboto',
+    //   'Helvetica',
+    //   'Arial',
+    //   'sans-serif',
+    // ].join(','),
 
     h1: { fontSize: '2rem' },
     h2: { fontSize: '1.75rem' },
@@ -66,63 +74,23 @@ const theme = createMuiTheme(({
     h4: { fontSize: '1.3rem' },
     h5: { fontSize: '1.25rem' },
     h6: { fontSize: '1.2rem' },
-    
-    // h1: {
-    //   fontSize: '2.5rem',
-    // },
-    // h2: {
-    //   fontSize: '2rem',
-    // },
-    // h3: {
-    //   fontSize: '1.5rem',
-    // },
-    // h4: {
-    //   fontSize: '2rem',
-    // },
   },
   palette: {
     type: 'dark',
-
+    primary: { main: blue, },
+    secondary: { main: yellow, },
+    success: { main: green, },
+    warning: { main: red, },
+    info: { main: purple, },
     text: {
       primary: textLight,
       disabled: textDisabled,
-      secondary: textDisabled,
+      secondary: textSecondary,
     },
     background: {
       default: bgDark,
       paper: paperDark,
     },
-    primary: {
-      main: blue,
-    },
-    secondary: {
-      main: yellow,
-    },
-    success: {
-      main: green,
-    },
-    warning: {
-      main: red,
-    },
-    info: {
-      main: purple,
-    },
-
-
-
-
-
-
-    // info: 
-    // secondary: {
-    //   // main: '#19857b',
-    // },
-    // error: {
-    //   // main: red.A400,
-    // },
-    // background: {
-    //   // default: '#fff',
-    // },
   },
 }));
 

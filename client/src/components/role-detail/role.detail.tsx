@@ -22,8 +22,9 @@ import { ist } from "../../helpers/ist.helper";
 import { Id } from "../../types/id.type";
 import { DebugException } from "../debug-exception/debug-exception";
 import { NotFound } from "../not-found/not-found";
-import { IMutateRoleFormRole, MutateRoleForm } from "../mutate-role-form/mutate-role.form";
+import { IMutateRoleFormRole, MutateRoleFormDialog } from "../mutate-role-form-dialog/mutate-role.form.dialog";
 import { IIdentityFn } from "../../types/identity-fn.type";
+import { useDialog } from "../../hooks/use-dialog.hook";
 
 const RoleDetailDataQueryName = (id: Id) => `RoleDetailDataQuery_${id}`;
 const roleDetailDataQuery = gql`
@@ -128,34 +129,19 @@ interface IRoleDetailContentProps {
 
 function RoleDetailContent(props: IRoleDetailContentProps) {
   const { role, onSuccess, } = props;
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const openModal = useCallback(() => { setIsModalOpen(true) }, [setIsModalOpen]);
-  const closeModal = useCallback(() => { setIsModalOpen(false) }, [setIsModalOpen]);
+  const editRoleDialog = useDialog();
   const handleRoleUpdated = useCallback(
-    () => {
-      onSuccess();
-      closeModal();
-    },
-    [onSuccess, closeModal],
+    () => { onSuccess(); editRoleDialog.doClose(); },
+    [onSuccess, editRoleDialog.doClose],
   );
-
   const roleFormData: IMutateRoleFormRole = useMemo(
     () => ({ id: role.data.id, name: role.data.name }),
     [role],
   );
 
-  //
   return (
     <>
-      <Dialog open={isModalOpen} onClose={closeModal}>
-        <DialogTitle>
-          Update Role
-        </DialogTitle>
-        <DialogContent dividers>
-          <MutateRoleForm role={roleFormData} onSuccess={handleRoleUpdated} />
-        </DialogContent>
-      </Dialog>
+      <MutateRoleFormDialog dialog={editRoleDialog} role={roleFormData} onSuccess={handleRoleUpdated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Typography component="h2" variant="h2">
@@ -165,7 +151,7 @@ function RoleDetailContent(props: IRoleDetailContentProps) {
               </Box>
               {role.can.update && (
                 <Box className="centered col">
-                  <Button variant="outlined" onClick={openModal}>
+                  <Button variant="outlined" onClick={editRoleDialog.doOpen}>
                     <EditIcon />
                   </Button>
                 </Box>
