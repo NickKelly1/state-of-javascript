@@ -9,6 +9,7 @@ import SortIcon from '@material-ui/icons/Sort';
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -41,7 +42,11 @@ import { useUpdate } from '../../hooks/use-update.hook';
 import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms-dashboard/npms-dashboard';
 import { NpmsDashboardSortForm } from '../../components/npms-dashboard-sort/npms-dashboard-sort.form';
 import { ApiException } from '../../backend-api/api.exception';
-import { normaliseApiException } from '../../backend-api/normalise-api-exception.helper';
+import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
+import { useQuery } from 'react-query';
+import { IIdentityFn } from '../../types/identity-fn.type';
+import { DebugException } from '../../components/debug-exception/debug-exception';
+import { useModalState } from '../../hooks/use-modal-state.hook';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -66,6 +71,7 @@ mutation JsPageDeleteDashboard(
 }
 `;
 
+const JsPageDashboardQueryName = 'JsPageDashboardQuery';
 const jsPageDashboardQuery = gql`
 query JsPageDashboard(
   $dashboardOffset:Int
@@ -232,44 +238,50 @@ const defaultQueryVars: JsPageDashboardQueryVariables = {
 }
 
 function JavaScriptPage(props: IJavaScriptPageProps) {
-  // do refresh...
+  const { dashboards } = props;
   const { api, me } = useContext(ApiContext);
 
-  const [dashboards, setDashboards] = useState<Attempt<JsPageDashboardQuery, ApiException>>(props.dashboards);
-
-  // const { refreshDashboards } = useQuery(
-  //   'js_page_query'
-  // );
-  const refreshDashboards = useCallback(async () => {
-    // TODO: useQuery...
-    // TODO: report on errors...
-    const result = await runPageDataQuery(api, defaultQueryVars);
-    setDashboards(result);
-  }, []);
-
-  // refresh if user changes
-  useUpdate(() => { refreshDashboards() }, [me?.id]);
+  const { data, isLoading, refetch, error, } = useQuery<JsPageDashboardQuery, ApiException>(
+    [ JsPageDashboardQueryName, defaultQueryVars, me?.hash ],
+    async (): Promise<JsPageDashboardQuery> => {
+      const result = await runPageDataQuery(api, defaultQueryVars);
+      return result;
+    },
+    { initialData: isSuccess(dashboards) ? dashboards.value : undefined, }
+  );
 
   return (
-    <JavaScriptPageContent
-      {...props}
-      dashboards={dashboards}
-      refreshDashboards={refreshDashboards}
-    />
+    <Grid container spacing={2}>
+      {error && (
+        <Grid item xs={12}>
+          <DebugException centered always exception={error} />
+        </Grid>
+      )}
+      {isLoading && (
+        <Grid className="centered" item xs={12}>
+          <CircularProgress />
+        </Grid>
+      )}
+      {data && (
+        <Grid item xs={12}>
+          <JavaScriptPageContent
+            {...props}
+            onStale={refetch}
+          />
+        </Grid>
+      )}
+    </Grid>
   );
 }
 
 interface IJavaScriptPageContentProps {
   dashboards: Attempt<JsPageDashboardQuery, ApiException>;
-  refreshDashboards: () => any;
+  onStale?: IIdentityFn;
 }
 
 
 function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
-  const {
-    dashboards,
-    refreshDashboards,
-  } = props;
+  const { dashboards, onStale, } = props;
   const classes = useStyles();
   const { api, me } = useContext(ApiContext);
   const colours = useRandomDashColours();
@@ -502,25 +514,21 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
     return dashes;
   }, [dashboards]);
 
-  const [createDashboardDialogIsOpen, setCreateDashboardDialogIsOpen] = useState<boolean>(false);
-  const closeCreateDashboardDialog = useCallback(() => setCreateDashboardDialogIsOpen(false), []);
-  const openCreateDashboardDialog = useCallback(() => setCreateDashboardDialogIsOpen(true), []);
+  const createDashboardModal = useModalState(false);
   const handleNpmsDashboardCreated = useCallback(() => {
-    setCreateDashboardDialogIsOpen(false);
-    refreshDashboards();
+    createDashboardModal.doClose();
+    onStale?.();
   }, []);
 
-  const [sortDashboardDialogIsOpen, setSortDashboardDialogIsOpen] = useState<boolean>(false);
-  const closeSortDashboardDialog = useCallback(() => setSortDashboardDialogIsOpen(false), []);
-  const openSortDashboardDialog = useCallback(() => setSortDashboardDialogIsOpen(true), []);
+  const sortDashboardsModal = useModalState(false);
   const handleNpmsDashboardSorted = useCallback(() => {
-    setSortDashboardDialogIsOpen(false);
-    refreshDashboards();
+    sortDashboardsModal.doClose();
+    onStale?.();
   }, []);
 
   return (
     <>
-      <Dialog open={createDashboardDialogIsOpen} onClose={closeCreateDashboardDialog}>
+      <Dialog open={createDashboardModal.isOpen} onClose={createDashboardModal.doClose}>
         <DialogTitle>
           Create Dashboard
         </DialogTitle>
@@ -528,7 +536,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
           <MutateNpmsDashboardForm onSuccess={handleNpmsDashboardCreated} />
         </DialogContent>
       </Dialog>
-      <Dialog open={sortDashboardDialogIsOpen} onClose={closeSortDashboardDialog}>
+      <Dialog open={sortDashboardsModal.isOpen} onClose={sortDashboardsModal.doClose}>
         <DialogTitle>
           Sort dashboards
         </DialogTitle>
@@ -544,12 +552,12 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 Dashboards
               </Box>
               <Box bgcolor="background.paper" mr={2}>
-                <Button variant="outlined" onClick={openCreateDashboardDialog}>
+                <Button variant="outlined" onClick={createDashboardModal.doOpen}>
                   <AddIcon />
                 </Button>
               </Box>
               <Box bgcolor="background.paper" mr={2}>
-                <Button variant="outlined" onClick={openSortDashboardDialog}>
+                <Button variant="outlined" onClick={sortDashboardsModal.doOpen}>
                   <SortIcon />
                 </Button>
               </Box>
@@ -562,7 +570,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
               <NpmsDashboard
                 key={dashboard.original.id.toString()}
                 dashboard={dashboard}
-                onChange={refreshDashboards}
+                onChange={onStale}
               />
             </Paper>
           </Grid>
@@ -576,16 +584,14 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
 async function runPageDataQuery(
   api: Api,
   vars: JsPageDashboardQueryVariables,
-): Promise<Attempt<JsPageDashboardQuery, ApiException>> {
-  const dashboards = await attemptAsync(
-    api
-      .connector
-      .graphql<JsPageDashboardQuery, JsPageDashboardQueryVariables>(
-        jsPageDashboardQuery,
-        vars,
-      ),
-    normaliseApiException,
-    );
+): Promise<JsPageDashboardQuery> {
+  const dashboards = await api
+    .connector
+    .graphql<JsPageDashboardQuery, JsPageDashboardQueryVariables>(
+      jsPageDashboardQuery,
+      vars,
+    )
+    .catch(rethrow(normaliseApiException));
 
   return dashboards;
 }
@@ -593,9 +599,12 @@ async function runPageDataQuery(
 async function getProps(args: { cms: Cms; npmsApi: NpmsApi; api: Api; }): Promise<IJavaScriptPageProps> {
   const { cms, npmsApi, api } = args
 
-  const dashboards = await runPageDataQuery(
-    api,
-    defaultQueryVars,
+  const dashboards = await attemptAsync(
+    runPageDataQuery(
+      api,
+      defaultQueryVars,
+    ),
+    normaliseApiException
   );
 
   return {

@@ -323,12 +323,12 @@ function RolesPageContent(props: IRolesPageContentProps) {
 
   const handleRoleCreated: IIdentityFn = useCallback(() => {
     refetch?.();
-    createRoleModal.close();
-  }, [refetch, createRoleModal.close]);
+    createRoleModal.doClose();
+  }, [refetch, createRoleModal.doClose]);
 
   return (
     <>
-      <Dialog open={createRoleModal.isOpen} onClose={createRoleModal.close}>
+      <Dialog open={createRoleModal.isOpen} onClose={createRoleModal.doClose}>
         <DialogTitle>
           Create Role
         </DialogTitle>
@@ -344,7 +344,7 @@ function RolesPageContent(props: IRolesPageContentProps) {
                 Roles
               </Box>
               <Box bgcolor="background.paper" className="centered col" mr={2}>
-                <Button variant="outlined" onClick={createRoleModal.open}>
+                <Button variant="outlined" onClick={createRoleModal.doOpen}>
                   <AddIcon />
                 </Button>
               </Box>
