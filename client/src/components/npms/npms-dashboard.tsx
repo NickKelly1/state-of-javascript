@@ -20,26 +20,22 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { gql } from 'graphql-request';
-import { Api } from '../../backend-api/api';
 import { JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables } from '../../generated/graphql';
 import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
-import { IApiException } from '../../backend-api/types/api.exception.interface';
-import { pretty } from '../../helpers/pretty.helper';
-import { FittedPieChart } from '../fitted-pie-chart/fitted-pie-chart';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
 import { Legend } from '../legend/legend';
 import { PieChartDatum } from '../../types/pie-chart-datum.type';
 import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
-import { FittedBarChart } from '../fitted-bar-chart/fitted-bar-chart';
 import { INpmsPackageSearchOption, } from './npms-package-combo-search';
 import { NpmsDashboardMutateForm, } from './npms-dashboard-mutate.form';
 import { ApiContext } from '../../components-contexts/api.context';
 import { Id } from '../../types/id.type';
-import { DebugModeContext } from '../../components-contexts/debug-mode.context';
 import { JsonPretty } from '../json-pretty/json-pretty';
 import { JsonDownloadButton } from '../json-download-button/json-download-button';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { useDialog } from '../../hooks/use-dialog.hook';
+import { FittedBarChart } from '../../components-charts/fitted-bar-chart/fitted-bar-chart';
+import { FittedPieChart } from '../../components-charts/fitted-pie-chart/fitted-pie-chart';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(

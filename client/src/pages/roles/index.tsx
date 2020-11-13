@@ -57,7 +57,7 @@ import { NextRouter, useRouter } from 'next/router';
 import { useMutation, useQuery } from 'react-query';
 import clsx from 'clsx';
 import { formatRelative } from 'date-fns';
-import { RoleSection } from '../../components/roles/role-section';
+import { RoleSection } from '../../components/roles/role.section';
 import { ApiContext } from '../../components-contexts/api.context';
 import { DebugException } from '../../components/debug-exception/debug-exception';
 import { ParsedUrlQuery } from 'querystring';
