@@ -14,6 +14,7 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
   makeStyles,
   Paper,
   Typography,
@@ -47,6 +48,7 @@ import { IIdentityFn } from '../../types/identity-fn.type';
 import { DebugException } from '../../components/debug-exception/debug-exception';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form';
+import { flsx } from '../../helpers/flsx.helper';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -512,40 +514,34 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
     return dashes;
   }, [dashboards]);
 
-  const createDashboardModal = useDialog(false);
-  const handleNpmsDashboardCreated = useCallback(() => {
-    createDashboardModal.doClose();
-    onStale?.();
-  }, []);
-
-  const sortDashboardsModal = useDialog(false);
-  const handleNpmsDashboardSorted = useCallback(() => {
-    sortDashboardsModal.doClose();
-    onStale?.();
-  }, []);
+  const createDashboardDialog = useDialog(false);
+  const sortDashboardsDialog = useDialog(false);
+  const handleNpmsDashboardCreated = useCallback(() => flsx(createDashboardDialog.doClose, onStale)(), []);
+  const handleNpmsDashboardSorted = useCallback(() => flsx(sortDashboardsDialog.doClose, onStale)(), []);
 
   return (
     <>
-      <NpmsDashboardMutateForm dialog={createDashboardModal} onSuccess={handleNpmsDashboardCreated} />
+      <NpmsDashboardMutateForm dialog={createDashboardDialog} onSuccess={handleNpmsDashboardCreated} />
+      <NpmsDashboardSortForm dialog={sortDashboardsDialog} onSuccess={handleNpmsDashboardSorted} />
       <Grid container spacing={2} className="text-center">
         <Grid item xs={12}>
-          <Typography className={clsx(classes.title, 'text-left')} component="h2" variant="h2">
-            <Box display="flex" justifyContent="flex-start" alignItems="center">
-              <Box mr={2}>
+          <Box display="flex" justifyContent="flex-start" alignItems="center">
+            <Box pr={1}>
+              <Typography className={clsx(classes.title, 'text-left')} component="h2" variant="h2">
                 Dashboards
-              </Box>
-              <Box bgcolor="background.paper" mr={2}>
-                <Button variant="outlined" onClick={createDashboardModal.doOpen}>
-                  <AddIcon />
-                </Button>
-              </Box>
-              <Box bgcolor="background.paper" mr={2}>
-                <Button variant="outlined" onClick={sortDashboardsModal.doOpen}>
-                  <SortIcon />
-                </Button>
-              </Box>
+              </Typography>
             </Box>
-          </Typography>
+            <Box px={1}>
+              <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box px={1}>
+              <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
+                <SortIcon />
+              </IconButton>
+            </Box>
+          </Box>
         </Grid>
         {(dashes ?? []).map(dashboard => (
           <Grid key={dashboard.original.id.toString()} item xs={12} sm={6}>

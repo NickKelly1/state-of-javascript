@@ -3,12 +3,15 @@ import {
   Button,
   CircularProgress,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   FormHelperText,
   Grid,
+  IconButton,
   Typography,
 } from '@material-ui/core';
+import RestoreIcon from '@material-ui/icons/Restore';
 import BugReportIcon from '@material-ui/icons/BugReport';
 import { gql } from 'graphql-request';
 import React, {
@@ -47,6 +50,9 @@ import { JsonPretty } from '../json-pretty/json-pretty';
 import { NpmsPackageComboSearch } from './npms-package-combo-search';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { WithRandomId } from '../../components-hoc/with-random-id/with-random-id';
+import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dialog/with-dialog';
+import { useSubmitForm } from '../../hooks/use-submit-form.hook';
+import { useDialog } from '../../hooks/use-dialog.hook';
 
 const NpmsDashbortSortFormQueryName = 'NpmsDashbortSortFormQuery';
 const npmsDashboardSortFormQuery = gql`
@@ -104,7 +110,7 @@ mutation NpmsDashbortSortFormSubmit(
 `
 
 export interface INpmsDashboardSortFormPropsOnSuccessFn { (): any; }
-export interface INpmsDashboardSortFormProps {
+export interface INpmsDashboardSortFormProps extends IWithDialogueProps {
   onSuccess?: INpmsDashboardSortFormPropsOnSuccessFn;
 }
 
@@ -113,8 +119,9 @@ const defaultQueryVars: NpmsDashbortSortFormQueryVariables = {
   dashboardOffset: 0,
 }
 
-export function NpmsDashboardSortForm(props: INpmsDashboardSortFormProps) {
-  const { onSuccess } = props;
+
+export const NpmsDashboardSortForm = WithDialogue<INpmsDashboardSortFormProps>()((props) => {
+  const { onSuccess, dialog } = props;
   const { api, me } = useContext(ApiContext);
 
   const [vars, setVars] = useState<NpmsDashbortSortFormQueryVariables>({
@@ -142,33 +149,33 @@ export function NpmsDashboardSortForm(props: INpmsDashboardSortFormProps) {
   );
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        {!data && (
-          <Grid item xs={12}>
-            <CircularProgress />
-          </Grid>
-        )}
-        {error && (
-          <Grid item xs={12}>
-            <DebugException centered always exception={error} />
-          </Grid>
-        )}
-        {data && (
-          <Grid item xs={12}>
-            <NpmsDashboardSortFormList
-              onSuccess={onSuccess}
-              source={data}
-            />
-          </Grid>
-        )}
-      </Grid>
-    </Grid>
+    <>
+      <DialogTitle>
+        Sort Dashboards
+      </DialogTitle>
+      {!data && (
+        <DialogContent className="centered col">
+          <CircularProgress />
+        </DialogContent>
+      )}
+      {error && (
+        <DialogContent className="centered col">
+          <DebugException centered always exception={error} />
+        </DialogContent>
+      )}
+      {data && (
+        <NpmsDashboardSortFormContent
+          dialog={dialog}
+          onSuccess={onSuccess}
+          source={data}
+        />
+      )}
+    </>
   );
-}
+});
 
 
-interface INpmsDashboardSortFormListProps {
+interface INpmsDashboardSortFormContentProps extends IWithDialogueProps {
   source: NpmsDashbortSortFormQuery;
   onSuccess?: INpmsDashboardSortFormPropsOnSuccessFn;
 }
@@ -186,8 +193,8 @@ function npmsDashboardSortFormQueryToFormState(input: NpmsDashbortSortFormQuery)
   return state;
 };
 
-function NpmsDashboardSortFormList(props: INpmsDashboardSortFormListProps) {
-  const { source, onSuccess } = props;
+function NpmsDashboardSortFormContent(props: INpmsDashboardSortFormContentProps) {
+  const { source, onSuccess, dialog } = props;
   const { me, api } = useContext(ApiContext);
   const [formState, setFormState] = useState<INpmsDashboardSortFormState>(() => npmsDashboardSortFormQueryToFormState(source));
   const resetFromSource = useCallback(
@@ -227,8 +234,11 @@ function NpmsDashboardSortFormList(props: INpmsDashboardSortFormListProps) {
     });
   }, []);
 
-  const [doSubmit, formResult] = useMutation<NpmsDashbortSortFormSubmitMutation, ApiException, NpmsDashbortSortFormSubmitMutationVariables>(
-    async (vars) => {
+  const [doSubmit, formResult] = useMutation<NpmsDashbortSortFormSubmitMutation, ApiException>(
+    async () => {
+      const vars: NpmsDashbortSortFormSubmitMutationVariables = {
+        dashboard_ids: formState.dashboards.map(dash => Number(dash.id)),
+      };
       const result = await api
         .connector
         .graphql<NpmsDashbortSortFormSubmitMutation, NpmsDashbortSortFormSubmitMutationVariables>(
@@ -242,26 +252,17 @@ function NpmsDashboardSortFormList(props: INpmsDashboardSortFormListProps) {
     { onSuccess, },
   );
 
-  const handleFormSubmitted: FormEventHandler<HTMLFormElement> = useCallback(
-    (evt) => {
-      evt.preventDefault();
-      doSubmit({ dashboard_ids: formState.dashboards.map(dash => Number(dash.id)) });
-    },
-    [formState, doSubmit],
-  );
-
-  const [debugDialogIsOpen, setDebugDialogIsOpen] = useState<boolean>(false);
-  const closeDebugDialog = useCallback(() => setDebugDialogIsOpen(false), []);
-  const openDebugDialog = useCallback(() => setDebugDialogIsOpen(true), []);
+  const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
+  const debugDialog = useDialog();
 
   const error = formResult.error;
   const isDisabled = formResult.isLoading;
 
   return (
     <>
-      <Dialog open={debugDialogIsOpen} onClose={closeDebugDialog}>
+      <Dialog open={debugDialog.isOpen} onClose={debugDialog.doClose}>
         <DialogTitle>
-          Create Dashboard
+          Sort Dashboard
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
@@ -281,75 +282,73 @@ function NpmsDashboardSortFormList(props: INpmsDashboardSortFormListProps) {
           </Grid>
         </DialogContent>
       </Dialog>
-      <Grid container spacing={2}>
-        <Grid className="centered col" item xs={12}>
+
+      <form onSubmit={handleSubmit}>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <DragDropContext onDragEnd={handleDragEnd}>
+                <WithRandomId>
+                  {(dragDropId) => (
+                    <Droppable droppableId={dragDropId}>
+                      {(provided) => (
+                        <Grid ref={provided.innerRef} container spacing={2} >
+                          {formState && formState.dashboards.map((dashboard, i) => (
+                            <Grid key={dashboard.id} item xs={12}>
+                              <Draggable draggableId={dashboard.id.toString()} index={i} >
+                                {(provided, snapshot) => (
+                                  <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                    <Box p={1} border={1} borderColor="primary.main" borderRadius="borderRadius">
+                                      <Typography className="text-center" component="h3">
+                                        {`${i + 1}. ${dashboard.name}`}
+                                      </Typography>
+                                    </Box>
+                                  </div>
+                                )}
+                              </Draggable>
+                            </Grid>
+                          ))}
+                          {provided.placeholder}
+                        </Grid>
+                      )}
+                    </Droppable>
+                  )}
+                </WithRandomId>
+              </DragDropContext>
+            </Grid>
+            {error && (
+              <Grid className="centered col" item xs={12} sm={12}>
+                <FormHelperText error>
+                  {error.message}
+                </FormHelperText>
+              </Grid>
+            )}
+            {isDisabled && (
+              <Grid className="centered col" item xs={12} sm={12}>
+                <CircularProgress />
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
           <WhenDebugMode>
-            <Button onClick={openDebugDialog}>
+            <IconButton color="primary" onClick={debugDialog.doOpen}>
               <BugReportIcon />
-            </Button>
+            </IconButton>
           </WhenDebugMode>
-        </Grid>
-        <Grid className="centered col" item xs={12}>
           {isStale && (
-            <Button disabled={isDisabled} variant="outlined" color="secondary" onClick={resetFromSource}>
+            <Button startIcon={<RestoreIcon />} disabled={isDisabled} color="secondary" onClick={resetFromSource}>
               Ordering has been updated. Refresh?
             </Button>
           )}
-        </Grid>
-        <Grid item xs={12}>
-          <form onSubmit={handleFormSubmitted}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <DragDropContext onDragEnd={handleDragEnd}>
-                  <WithRandomId>
-                    {(dragDropId) => (
-                      <Droppable droppableId={dragDropId}>
-                        {(provided) => (
-                          <Grid ref={provided.innerRef} container spacing={2} >
-                            {formState && formState.dashboards.map((dashboard, i) => (
-                              <Grid key={dashboard.id} item xs={12}>
-                                <Draggable draggableId={dashboard.id.toString()} index={i} >
-                                  {(provided, snapshot) => (
-                                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                      <Box p={3} border={1} borderColor="primary.main" borderRadius="borderRadius">
-                                        <Typography className="text-center" component="h3">
-                                          {`${i + 1}. ${dashboard.name}`}
-                                        </Typography>
-                                      </Box>
-                                    </div>
-                                  )}
-                                </Draggable>
-                              </Grid>
-                            ))}
-                            {provided.placeholder}
-                          </Grid>
-                        )}
-                      </Droppable>
-                    )}
-                  </WithRandomId>
-                </DragDropContext>
-              </Grid>
-              <Grid className="centered col" item xs={12}>
-                <Button disabled={isDisabled} variant="outlined" type="submit">
-                  Submit
-                </Button>
-              </Grid>
-              {error && (
-                <Grid className="centered col" item xs={12} sm={12}>
-                  <FormHelperText error>
-                    {error.message}
-                  </FormHelperText>
-                </Grid>
-              )}
-              {isDisabled && (
-                <Grid className="centered col" item xs={12} sm={12}>
-                  <CircularProgress />
-                </Grid>
-              )}
-            </Grid>
-          </form>
-        </Grid>
-      </Grid>
+          <Button disabled={isDisabled} color="primary" onClick={dialog.doClose}>
+            Cancel
+          </Button>
+          <Button disabled={isDisabled} color="primary" type="submit">
+            Submit
+          </Button>
+        </DialogActions>
+      </form>
     </>
   )
 }

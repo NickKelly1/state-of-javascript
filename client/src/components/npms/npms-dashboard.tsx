@@ -17,6 +17,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
 } from '@material-ui/core';
 import { gql } from 'graphql-request';
 import { Api } from '../../backend-api/api';
@@ -206,24 +207,24 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
         <Grid item xs={12}>
           <Box display="flex" justifyContent="center">
             <WhenDebugMode>
-              <Box m={2}>
-                <Button variant="outlined" onClick={debugDialog.doClose}>
+              <Box px={1}>
+                <IconButton color="primary" onClick={debugDialog.doClose}>
                   <BugReportIcon />
-                </Button>
+                </IconButton>
               </Box>
             </WhenDebugMode>
             {dashboard.graphical.can.update && (
-              <Box m={2}>
-                <Button variant="outlined" onClick={mutationDialog.doOpen}>
+              <Box px={1}>
+                <IconButton color="primary" onClick={mutationDialog.doOpen}>
                   <EditIcon />
-                </Button>
+                </IconButton>
               </Box>
             )}
             {dashboard.graphical.can.delete && (
-              <Box m={2}>
-                <Button variant="outlined" onClick={handleDeleteDashboard}>
+              <Box px={1}>
+                <IconButton color="primary" onClick={handleDeleteDashboard}>
                   <DeleteIcon />
-                </Button>
+                </IconButton>
               </Box>
             )}
           </Box>
@@ -248,7 +249,7 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
         </Grid>
 
         <Grid className="centered col" item xs={12}>
-          <Button variant="outlined" onClick={() => setShowMore(prev => !prev)}>
+          <Button variant="outlined" color="primary" onClick={() => setShowMore(prev => !prev)}>
             {showMore ? 'Show less' : 'Show more'}
           </Button>
         </Grid>
