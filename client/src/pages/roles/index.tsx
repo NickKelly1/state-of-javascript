@@ -55,7 +55,6 @@ import { Id } from "../../types/id.type";
 import { OrUndefined } from "../../types/or-undefined.type";
 import { NextRouter, useRouter } from 'next/router';
 import { useMutation, useQuery } from 'react-query';
-import { WithMemo } from '../../components/with-memo/with-memo';
 import clsx from 'clsx';
 import { formatRelative } from 'date-fns';
 import { RoleSection } from '../../components/roles/role-section';
@@ -66,6 +65,7 @@ import { OrNullable } from '../../types/or-nullable.type';
 import { IUseDialogReturn, useDialog } from '../../hooks/use-dialog.hook';
 import { RoleMutateFormDialog } from '../../components/roles/role-mutate.form.dialog';
 import { IIdentityFn } from '../../types/identity-fn.type';
+import { WithMemo } from '../../components-hoc/with-memo/with-memo';
 
 const RolesPageQueryName = 'RolesPageQuery'
 const rolesPageQuery = gql`
@@ -306,11 +306,16 @@ function RolesPageContent(props: IRolesPageContentProps) {
       cols.push({
         Header: 'Delete',
         accessor: (original) => (
-          <Box>
-            <Button disabled={!original.canDelete} onClick={() => doDelete({ id: Number(original.id) })}>
+          // <Box>
+            <IconButton
+              color="primary"
+              disabled={!original.canDelete}
+              onClick={() => doDelete({ id: Number(original.id) })}
+              size="small"
+            >
               <DeleteIcon />
-            </Button>
-          </Box>
+            </IconButton>
+          // </Box>
         ),
       });
     }
@@ -331,20 +336,20 @@ function RolesPageContent(props: IRolesPageContentProps) {
       <RoleMutateFormDialog dialog={createRoleDialog} onSuccess={handleRoleCreated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Typography component="h1" variant="h1">
-            <Box display="flex" justifyContent="flex-start" alignItems="center">
-              <Box className="centered col" mr={2}>
+          <Box display="flex" justifyContent="flex-start" alignItems="center">
+            <Box pr={1}>
+              <Typography component="h1" variant="h1">
                 Roles
-              </Box>
-              {rolesQuery.roles.can.create && (
-                <Box bgcolor="background.paper" className="centered col" mr={2}>
-                  <Button variant="outlined" onClick={createRoleDialog.doOpen}>
-                    <AddIcon />
-                  </Button>
-                </Box>
-              )}
+              </Typography>
             </Box>
-          </Typography>
+            {rolesQuery.roles.can.create && (
+              <Box pr={1}>
+                <IconButton color="primary" onClick={createRoleDialog.doOpen}>
+                  <AddIcon />
+                </IconButton>
+              </Box>
+            )}
+          </Box>
         </Grid>
         <Grid item xs={12}>
           <Paper className={classes.paper}>

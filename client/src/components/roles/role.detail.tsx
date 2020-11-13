@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Box,
   Button,
+  IconButton,
 } from "@material-ui/core";
 import BugReportIcon from '@material-ui/icons/BugReport';
 import EditIcon from '@material-ui/icons/Edit';
@@ -144,20 +145,20 @@ function RoleDetailContent(props: IRoleDetailContentProps) {
       <RoleMutateFormDialog dialog={editRoleDialog} role={roleFormData} onSuccess={handleRoleUpdated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Typography component="h2" variant="h2">
-            <Box display="flex" justifyContent="flex-start" alignItems="center">
-              <Box mr={2} className="centered col">
+          <Box display="flex" justifyContent="flex-start" alignItems="center">
+            <Box pr={2}>
+              <Typography component="h2" variant="h2">
                 {`${role.data.name}`}
-              </Box>
-              {role.can.update && (
-                <Box className="centered col">
-                  <Button variant="outlined" onClick={editRoleDialog.doOpen}>
-                    <EditIcon />
-                  </Button>
-                </Box>
-              )}
+              </Typography>
             </Box>
-          </Typography>
+            {role.can.update && (
+              <Box pr={2}>
+                <IconButton color="primary" onClick={editRoleDialog.doOpen}>
+                  <EditIcon />
+                </IconButton>
+              </Box>
+            )}
+          </Box>
         </Grid>
       </Grid>
     </>

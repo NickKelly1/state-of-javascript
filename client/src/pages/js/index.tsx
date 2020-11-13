@@ -527,7 +527,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
         <Grid item xs={12}>
           <Box display="flex" justifyContent="flex-start" alignItems="center">
             <Box pr={1}>
-              <Typography className={clsx(classes.title, 'text-left')} component="h2" variant="h2">
+              <Typography className={clsx(classes.title, 'text-left')} component="h1" variant="h1">
                 Dashboards
               </Typography>
             </Box>
