@@ -5,6 +5,7 @@ import { NpmsDashboardGqlMutations } from './app/npms-dashboard/gql/npms-dashboa
 import { NpmsPackageGqlMutations } from './app/npms-package/gql/npms-package.gql.mutations';
 import { RolePermissionGqlMutations } from './app/role-permission/gql/role-permission.gql.mutations';
 import { RoleGqlMutations } from './app/role/gql/role.gql.mutations';
+import { UserGqlMutations } from './app/user/gql/user.gql.mutations';
 import { GqlContext } from './common/context/gql.context';
 import { unthunk } from './common/helpers/unthunk.helper';
 
@@ -17,5 +18,6 @@ export const GqlRootMutation = new GraphQLObjectType<undefined, GqlContext>({
     ...unthunk(NpmsDashboardItemGqlMutations),
     ...unthunk(RolePermissionGqlMutations),
     ...unthunk(RoleGqlMutations),
+    ...unthunk(UserGqlMutations),
   }),
 });

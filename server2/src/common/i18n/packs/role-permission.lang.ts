@@ -2,8 +2,8 @@ import { RoleModel, PermissionModel  } from "../../../circle";
 import { Language } from "../consts/language.enum";
 
 export const RolePermissionLang = {
-  AlreadyExists: (arg: {  role: RoleModel, permission: PermissionModel, }) => ({
-    [Language.En]: `role "${arg.role.name}" already has permission "${arg.permission.name}"`,
+  AlreadyExists: (arg: {  role: string | number, permission: string | number, }) => ({
+    [Language.En]: `role "${arg.role}" already has permission "${arg.permission}"`,
     [Language.Ger]: '__TODO__',
   }),
 

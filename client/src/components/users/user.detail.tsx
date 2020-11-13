@@ -18,22 +18,22 @@ import { useQuery } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { ApiContext } from "../../components-contexts/api.context";
-import { RoleDetailDataQuery, RoleDetailDataQueryVariables } from "../../generated/graphql";
+import { UserDetailDataQuery, UserDetailDataQueryVariables } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
 import { Id } from "../../types/id.type";
 import { DebugException } from "../debug-exception/debug-exception";
 import { NotFound } from "../not-found/not-found";
-import { IRoleMutateFormRole, RoleMutateFormDialog } from "./role-mutate.form.dialog";
+import { IUserMutateFormRole, UserMutateFormDialog } from "./user-mutate.form.dialog";
 import { IIdentityFn } from "../../types/identity-fn.type";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { flsx } from "../../helpers/flsx.helper";
 
-const RoleDetailDataQueryName = (id: Id) => `RoleDetailDataQuery_${id}`;
-const roleDetailDataQuery = gql`
-query RoleDetailData(
+const UserDetailDataQueryName = (id: Id) => `UserDetailDataQuery_${id}`;
+const userDetailDataQuery = gql`
+query UserDetailData(
   $id:Float!
 ){
-  roles(
+  users(
     query:{
       filter:{
         attr:{
@@ -44,44 +44,58 @@ query RoleDetailData(
       }
     }
   ){
+    can{
+      show
+      create
+    }
+    pagination{
+      limit
+      offset
+      total
+      page_number
+      pages
+      more
+    }
     nodes{
       can{
         show
         update
         delete
-        createRolePermission
       }
       data{
         id
         name
-			}
+        created_at
+        updated_at
+        deleted_at
+      }
     }
   }
 }
 `;
 
-interface IRoleDetailProps {
-  role_id: Id;
+interface IUserDetailProps {
+  user_id: Id;
   onUpdated?: IIdentityFn;
 }
 
-export function RoleDetail(props: IRoleDetailProps) {
-  const { role_id, onUpdated } = props;
+export function UserDetail(props: IUserDetailProps) {
+  const { user_id, onUpdated } = props;
   const { me, api } = useContext(ApiContext);
 
-  const [vars, setVars] = useState<RoleDetailDataQueryVariables>({ id: Number(role_id), });
+  const [vars, setVars] = useState<UserDetailDataQueryVariables>({ id: Number(user_id), });
   const {
     data,
     error,
     isLoading,
     refetch,
-  } = useQuery<RoleDetailDataQuery, ApiException>(
-    [RoleDetailDataQueryName(role_id), vars, me?.hash],
-    async (): Promise<RoleDetailDataQuery> => {
+  } = useQuery<UserDetailDataQuery, ApiException>(
+    [UserDetailDataQueryName(user_id), vars, me?.hash],
+    async (): Promise<UserDetailDataQuery> => {
         const result = await api
           .connector
-          .graphql<RoleDetailDataQuery, RoleDetailDataQueryVariables>(
-            roleDetailDataQuery,
+          .graphql<UserDetailDataQuery, UserDetailDataQueryVariables>(
+            userDetailDataQuery,
             vars,
           )
           .catch(rethrow(normaliseApiException));
@@ -89,11 +103,8 @@ export function RoleDetail(props: IRoleDetailProps) {
       },
   );
 
-  const roles = useMemo(() => data?.roles.nodes.filter(ist.notNullable), [data?.roles]);
-  const handleSuccess: IIdentityFn = useCallback(() => {
-    refetch();
-    onUpdated?.();
-  }, [onUpdated, refetch])
+  const users = useMemo(() => data?.users.nodes.filter(ist.notNullable), [data?.users]);
+  const handleSuccess: IIdentityFn = useCallback(() => flsx(refetch, onUpdated)(), [onUpdated, refetch])
 
   return (
     <Grid container spacing={2}>
@@ -107,15 +118,15 @@ export function RoleDetail(props: IRoleDetailProps) {
           <DebugException centered always exception={error} />
         </Grid>
       )}
-      {roles?.length === 0 && (
+      {users?.length === 0 && (
         <Grid item xs={12}>
-          <NotFound message={`Role "${role_id}" not found`} />
+          <NotFound message={`Role "${user_id}" not found`} />
         </Grid>
       )}
-      {roles?.length === 1 && (
+      {users?.length === 1 && (
         <Grid item xs={12}>
-          <RoleDetailContent
-            role={roles[0]}
+          <UserDetailContent
+            user={users[0]}
             onSuccess={handleSuccess}
           />
         </Grid>
@@ -125,36 +136,36 @@ export function RoleDetail(props: IRoleDetailProps) {
 }
 
 interface IRoleDetailContentProps {
-  role: NonNullable<RoleDetailDataQuery['roles']['nodes'][0]>
+  user: NonNullable<UserDetailDataQuery['users']['nodes'][0]>
   onSuccess: IIdentityFn;
 }
 
-function RoleDetailContent(props: IRoleDetailContentProps) {
-  const { role, onSuccess, } = props;
-  const editRoleDialog = useDialog();
+function UserDetailContent(props: IRoleDetailContentProps) {
+  const { user, onSuccess, } = props;
+  const editDialog = useDialog();
   const handleRoleUpdated = useCallback(
-    () => flsx(onSuccess, editRoleDialog.doClose)(),
-    [onSuccess, editRoleDialog.doClose],
+    () => flsx(onSuccess, editDialog.doClose)(),
+    [onSuccess, editDialog.doClose],
   );
-  const roleFormData: IRoleMutateFormRole = useMemo(
-    () => ({ id: role.data.id, name: role.data.name }),
-    [role],
+  const userFormData: IUserMutateFormRole = useMemo(
+    () => ({ id: user.data.id, name: user.data.name }),
+    [user],
   );
 
   return (
     <>
-      <RoleMutateFormDialog dialog={editRoleDialog} role={roleFormData} onSuccess={handleRoleUpdated} />
+      <UserMutateFormDialog dialog={editDialog} user={userFormData} onSuccess={handleRoleUpdated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="flex-start" alignItems="center">
             <Box pr={2}>
               <Typography component="h2" variant="h2">
-                {`${role.data.name}`}
+                {`${user.data.name}`}
               </Typography>
             </Box>
-            {role.can.update && (
+            {user.can.update && (
               <Box pr={2}>
-                <IconButton color="primary" onClick={editRoleDialog.doOpen}>
+                <IconButton color="primary" onClick={editDialog.doOpen}>
                   <EditIcon />
                 </IconButton>
               </Box>

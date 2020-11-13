@@ -17,11 +17,5 @@ export const UserRoleGqlActions = new GraphQLObjectType<IUserRoleGqlActionsSourc
         return ctx.services.userRolePolicy.canFindOne({ model: parent });
       },
     },
-    delete: {
-      type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userRolePolicy.canDelete({ model: parent });
-      },
-    },
   },
 });

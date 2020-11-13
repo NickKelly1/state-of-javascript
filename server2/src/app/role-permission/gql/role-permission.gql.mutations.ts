@@ -14,6 +14,15 @@ export const RolePermissionGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, 
     resolve: async (parent, args, ctx): Promise<IRolePermissionGqlNodeSource> => {
       const dto = ctx.validate(CreateRolePermissionValidator, args.dto);
       const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+        await ctx
+          .services
+          .rolePermissionService
+          .checkConstraints({
+            runner,
+            pairs: [{ permission_id: dto.permission_id, role_id: dto.role_id }],
+            dataKey: 'role_id',
+          });
+
         const [role, permission] = await Promise.all([
           ctx
             .services

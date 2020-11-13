@@ -63,16 +63,4 @@ export class PermissionService {
     await model.destroy({ transaction });
     return model;
   }
-
-  toRo(arg: {
-    model: PermissionModel,
-  }): IPermissionRo {
-    const { model } = arg;
-    return {
-      id: model.id,
-      name: model.name,
-      ...auditableRo(model),
-      ...softDeleteableRo(model),
-    };
-  }
 }

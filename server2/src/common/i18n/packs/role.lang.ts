@@ -1,3 +1,4 @@
+import { RoleId } from "../../../app/role/role.id.type";
 import { Language } from "../consts/language.enum";
 
 export const RoleLang = {
@@ -26,8 +27,17 @@ export const RoleLang = {
     [Language.Ger]: '__TODO__',
   },
 
-  NotFound: {
-    [Language.En]: 'role not found',
-    [Language.Ger]: '__TODO__',
+  NotFound: (arg: { ids?: RoleId[] }) => {
+    const { ids } = arg;
+    if (!ids?.length) {
+      return {
+        [Language.En]: 'role not found',
+        [Language.Ger]: '__TODO__',
+      }
+    }
+    return {
+      [Language.En]: `roles "${ids.join('", "')}" not found`,
+      [Language.Ger]: '__TODO__',
+    }
   },
 };

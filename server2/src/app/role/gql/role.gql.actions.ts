@@ -28,10 +28,28 @@ export const RoleGqlActions = new GraphQLObjectType<IRoleGqlActionsSource, GqlCo
         return ctx.services.rolePolicy.canDelete({ model: parent });
       },
     },
+    createUserRole: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userRolePolicy.canCreateForRole({ role: parent });
+      },
+    },
+    deleteUserRole: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userRolePolicy.canDeleteForRole({ role: parent });
+      },
+    },
     createRolePermission: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
         return ctx.services.rolePermissionPolicy.canCreateForRole({ role: parent });
+      },
+    },
+    deleteRolePermission: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.rolePermissionPolicy.canDeleteForRole({ role: parent });
       },
     },
   },

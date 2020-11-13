@@ -44,7 +44,6 @@ export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> i
   isAdmin() { return this[UserField.id] === User.Admin; }
   isAnonymous() { return this[UserField.id] === User.Anonymous; }
   isSystem() { return this[UserField.id] === User.System; }
-  isProtected() { return this.isAdmin() || this.isAnonymous() || this.isSystem() }
 }
 
 

@@ -35,10 +35,10 @@ import {
   ApiContext,
 } from "../../components-contexts/api.context";
 import {
-  RoleRolePermissionFormUpdateMutation,
-  RoleRolePermissionFormUpdateMutationVariables,
-  RoleRolePermissionsFormDataQuery,
-  RoleRolePermissionsFormDataQueryVariables,
+  UserUserRolesFormUpdateMutation,
+  UserUserRolesFormUpdateMutationVariables,
+  UserUserRolesFormDataQuery,
+  UserUserRolesFormDataQueryVariables,
 } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
 import FourZeroFourPage from "../../pages/404";
@@ -69,16 +69,16 @@ import { IConstructor } from "../../types/constructor.interface";
 import { IIdentityFn } from "../../types/identity-fn.type";
 
 
-const RoleRolePermissionsFormDataQueryName = (id: Id) => `RoleRolePermissionsFormDataQuery_${id}`;
-const roleRolePermissionsFormDataQuery = gql`
-query RoleRolePermissionsFormData(
+const UserUserRolesFormDataQueryName = (id: Id) => `UserUserRolesFormDataQuery_${id}`;
+const userUserRolesFormDataQuery = gql`
+query UserUserRolesFormData(
   $id:Float!
-  $rolesPermissionsLimit:Int!
-  $rolesPermissionsOffset:Int!
-  $permissionsLimit:Int!
-  $permissionsOffset:Int!
+  $userRolesLimit:Int!
+  $userRolesOffset:Int!
+  $rolesLimit:Int!
+  $rolesOffset:Int!
 ){
-  roles(
+  users(
     query:{
       filter:{
         attr:{
@@ -91,20 +91,20 @@ query RoleRolePermissionsFormData(
   ){
     nodes{
       can{
-        createRolePermission
-        deleteRolePermission
+        createUserRole
+        deleteUserRole
       }
       data{
         id
         name
 			}
       relations{
-        permissions(
+        roles(
           query:{
-            limit:$rolesPermissionsLimit
-            offset:$rolesPermissionsOffset
+            offset:$userRolesOffset
+            limit:$userRolesLimit
             sorts:[
-              {field:"id", dir:Asc }
+              {field:"id", dir:Asc}
             ]
           }
         ){
@@ -118,8 +118,8 @@ query RoleRolePermissionsFormData(
           }
           nodes{
             can{
-              createRolePermission
-              deleteRolePermission
+              createUserRole
+              deleteUserRole
             }
             data{
               id
@@ -130,11 +130,10 @@ query RoleRolePermissionsFormData(
       }
     }
   }
-
-  permissions(
+  roles(
     query:{
-      limit:$permissionsLimit
-      offset:$permissionsOffset
+      limit:$rolesLimit
+      offset:$rolesOffset
       sorts:[
         {field:"id", dir:Asc}
       ]
@@ -142,8 +141,9 @@ query RoleRolePermissionsFormData(
   ){
     nodes{
       can{
-        createRolePermission
-        deleteRolePermission
+        show
+        createUserRole
+        deleteUserRole
       }
       data{
         id
@@ -155,17 +155,17 @@ query RoleRolePermissionsFormData(
 `;
 
 
-const rolePermissionFormUpdateUpdateMutation = gql`
-mutation RoleRolePermissionFormUpdate(
+const userUserRolesFormMutationUpdateMutation = gql`
+mutation UserUserRolesFormUpdate(
   $id:Int!
   $name:String
-  $permission_ids:[Int!]
+  $role_ids:[Int!]
 ){
-  updateRole(
+  updateUser(
     dto:{
       id:$id
       name:$name
-      permission_ids:$permission_ids
+      role_ids:$role_ids
     }
   ){
     data{
@@ -177,35 +177,35 @@ mutation RoleRolePermissionFormUpdate(
 `;
 
 
-export interface IRoleRolePermissionFormOnSuccessFnArg { id: Id; name: string; }
-export interface IRoleRolePermissionFormOnSuccessFn {
-  (arg: IRoleRolePermissionFormOnSuccessFnArg): any;
+export interface IUserUserRolesFormOnSuccessFnArg { id: Id; name: string; }
+export interface IUserUserRolesFormOnSuccessFn {
+  (arg: IUserUserRolesFormOnSuccessFnArg): any;
 }
 
-export interface IRoleRolePermissionFormProps {
-  role_id: Id;
-  onSuccess?: IRoleRolePermissionFormOnSuccessFn;
+export interface IUserUserRolesFormProps {
+  user_id: Id;
+  onSuccess?: IUserUserRolesFormOnSuccessFn;
 }
 
-export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
-  const { role_id, onSuccess, } = props;
+export function UserUserRolesForm(props: IUserUserRolesFormProps) {
+  const { user_id, onSuccess, } = props;
   const { api, me, } = useContext(ApiContext);
 
-  const [vars, setVars] = useState<RoleRolePermissionsFormDataQueryVariables>(() => ({
-    id: Number(role_id),
-    permissionsLimit: 10_000,
-    permissionsOffset: 0,
-    rolesPermissionsLimit: 10_000,
-    rolesPermissionsOffset: 0,
+  const [vars, setVars] = useState<UserUserRolesFormDataQueryVariables>(() => ({
+    id: Number(user_id),
+    rolesLimit: 10_000,
+    rolesOffset: 0,
+    userRolesLimit: 10_000,
+    userRolesOffset: 0,
   }));
 
-  const { data, refetch, isLoading, error, } = useQuery<RoleRolePermissionsFormDataQuery, ApiException>(
-    [RoleRolePermissionsFormDataQueryName(role_id), vars, me?.hash],
-    async (): Promise<RoleRolePermissionsFormDataQuery> => {
+  const { data, refetch, isLoading, error, } = useQuery<UserUserRolesFormDataQuery, ApiException>(
+    [UserUserRolesFormDataQueryName(user_id), vars, me?.hash],
+    async (): Promise<UserUserRolesFormDataQuery> => {
         const result = await api
           .connector
-          .graphql<RoleRolePermissionsFormDataQuery, RoleRolePermissionsFormDataQueryVariables>(
-            roleRolePermissionsFormDataQuery,
+          .graphql<UserUserRolesFormDataQuery, UserUserRolesFormDataQueryVariables>(
+            userUserRolesFormDataQuery,
             vars,
           )
           .catch(rethrow(normaliseApiException))
@@ -213,8 +213,8 @@ export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
       },
   );
 
+  const users = useMemo(() => data?.users.nodes.filter(ist.notNullable), [data?.users]);
   const roles = useMemo(() => data?.roles.nodes.filter(ist.notNullable), [data?.roles]);
-  const permissions = useMemo(() => data?.permissions.nodes.filter(ist.notNullable), [data?.permissions]);
 
   return (
     <Grid container spacing={2}>
@@ -228,16 +228,16 @@ export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
           <CircularProgress />
         </Grid>
       )}
-      {roles?.length === 0 && (
+      {users?.length === 0 && (
         <Grid item xs={12}>
-          <NotFound message={`Role "${role_id}" not found`} />
+          <NotFound message={`Role "${user_id}" not found`} />
         </Grid>
       )}
-      {permissions && roles?.length === 1 && (
+      {roles && users?.length === 1 && (
         <Grid item xs={12}>
-          <RoleRolePermissionFormContent
-            role={roles[0]}
-            permissions={permissions}
+          <UserUserRolesFormContent
+            user={users[0]}
+            roles={roles}
             onSuccess={onSuccess}
           />
         </Grid>
@@ -247,90 +247,89 @@ export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
 }
 
 
-interface IRoleRolePermissionFormContentProps {
-  role: NonNullable<RoleRolePermissionsFormDataQuery['roles']['nodes'][0]>;
-  permissions: NonNullable<RoleRolePermissionsFormDataQuery['permissions']['nodes'][0]>[];
-  onSuccess?: IRoleRolePermissionFormOnSuccessFn;
+interface IUserUserRolesFormContentProps {
+  user: NonNullable<UserUserRolesFormDataQuery['users']['nodes'][0]>;
+  roles: NonNullable<UserUserRolesFormDataQuery['roles']['nodes'][0]>[];
+  onSuccess?: IUserUserRolesFormOnSuccessFn;
 }
 
 
-function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProps) {
-  const { role, permissions, onSuccess } = props;
+function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
+  const { user, roles, onSuccess } = props;
   const { api, me } = useContext(ApiContext);
 
   const [isDirty, setIsDirty] = useState(false);
-  const submitCb = useCallback(async (vars: RoleRolePermissionFormUpdateMutationVariables): Promise<IRoleRolePermissionFormOnSuccessFnArg> => {
+  const submitCb = useCallback(async (vars: UserUserRolesFormUpdateMutationVariables): Promise<IUserUserRolesFormOnSuccessFnArg> => {
     const result = await api
       .connector
-      .graphql<RoleRolePermissionFormUpdateMutation, RoleRolePermissionFormUpdateMutationVariables>(
-        rolePermissionFormUpdateUpdateMutation,
+      .graphql<UserUserRolesFormUpdateMutation, UserUserRolesFormUpdateMutationVariables>(
+        userUserRolesFormMutationUpdateMutation,
         vars,
       )
       .catch(rethrow(normaliseApiException));
     return {
-      id: result.updateRole.data.id,
-      name: result.updateRole.data.name,
+      id: result.updateUser.data.id,
+      name: result.updateUser.data.name,
     };
   }, [api])
-  const [submit, submitState] = useMutation<IRoleRolePermissionFormOnSuccessFnArg, ApiException, RoleRolePermissionFormUpdateMutationVariables>(
+  const [doSubmit, submitState] = useMutation<IUserUserRolesFormOnSuccessFnArg, ApiException, UserUserRolesFormUpdateMutationVariables>(
     submitCb,
     { onSuccess, }
   );
 
-  interface IRolePermissionListItem { id: Id; name: string };
-  const incomingPermissionsList = useMemo<IListBuilderLists<IRolePermissionListItem>>(
-    (): IListBuilderLists<IRolePermissionListItem> => {
-      const current: IListBuilderItem<IRolePermissionListItem>[] = role
+  interface IUserRoleListItem { id: Id; name: string };
+  const incomingPermissionsList = useMemo<IListBuilderLists<IUserRoleListItem>>(
+    (): IListBuilderLists<IUserRoleListItem> => {
+      const current: IListBuilderItem<IUserRoleListItem>[] = user
         .relations
-        .permissions
+        .roles
         .nodes
         .filter(ist.notNullable)
-        .map((permission): IListBuilderItem<IRolePermissionListItem> => ({
-          // TODO: check if can DELETE rolePermission too....
-          disabled: !(permission.can.createRolePermission && permission.can.deleteRolePermission),
+        .map((role): IListBuilderItem<IUserRoleListItem> => ({
+          disabled: !(role.can.deleteUserRole && role.can.createUserRole),
           data: {
-            id: permission.data.id,
-            name: permission.data.name,
+            id: role.data.id,
+            name: role.data.name,
           },
         }))
         .sort((a, b) => Number(a.data.id) - Number(b.data.id));
       const currentIds = new Set(current.map(itm => itm.data.id));
-      const available: IListBuilderItem<IRolePermissionListItem>[] = permissions
-        .filter(permission => !currentIds.has(permission.data.id))
-        .map((permission): IListBuilderItem<IRolePermissionListItem> => ({
-          disabled: !(permission.can.createRolePermission && permission.can.deleteRolePermission),
+      const available: IListBuilderItem<IUserRoleListItem>[] = roles
+        .filter(role => !currentIds.has(role.data.id))
+        .map((role): IListBuilderItem<IUserRoleListItem> => ({
+          disabled: !(role.can.deleteUserRole && role.can.createUserRole),
           data: {
-            id: permission.data.id,
-            name: permission.data.name,
+            id: role.data.id,
+            name: role.data.name,
           },
         }))
         .sort((a, b) => Number(a.data.id) - Number(b.data.id));
       return [available, current];
     },
-    [role, permissions],
+    [user, roles],
   );
 
-  const [permissionLists, setPermissionLists] = useState(incomingPermissionsList);
+  const [roleLists, setRoleLists] = useState(incomingPermissionsList);
   // when the incoming list updates, reset to it...
   useUpdate(() => {
-    // @TODO: stop incoming permission change from overriding current session...
-    setPermissionLists(incomingPermissionsList);
+    // @TODO: stop incoming role change from overriding current session...
+    setRoleLists(incomingPermissionsList);
   }, [incomingPermissionsList]);
 
-  const permissionListConfig = useMemo<IListBuilderConfig<IRolePermissionListItem>>(() => ({
-    names: ['Available', 'Permissions'],
+  const roleListConfig = useMemo<IListBuilderConfig<IUserRoleListItem>>(() => ({
+    names: ['Available', 'Roles'],
     key: ({ list, index, item }) => item.data.id,
     accessor: ({ list, index, item }) => (
-      <Box color={ring(DashColours, Math.floor(Number(item.data.id) / 100))}>
+      <Box>
         {`${item.data.id.toString().padStart(4, ' ')} - ${item.data.name}`}
       </Box>
     ),
   }), []);
 
-  const handlePermissionListsChange: IListBuilderOnChangeFn<IRolePermissionListItem> = useCallback(
+  const handlePermissionListsChange: IListBuilderOnChangeFn<IUserRoleListItem> = useCallback(
     ({ lists }) => {
       setIsDirty(true);
-      setPermissionLists([
+      setRoleLists([
         Array.from(lists[0]).sort((a, b) => Number(a.data.id) - Number(b.data.id)),
         Array.from(lists[1]).sort((a, b) => Number(a.data.id) - Number(b.data.id)),
       ]);
@@ -340,14 +339,14 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback((evt) => {
     evt.preventDefault();
-    submit({
-      id: role.data.id,
-      permission_ids: permissionLists[1].map(perm => Number(perm.data.id)),
+    doSubmit({
+      id: user.data.id,
+      role_ids: roleLists[1].map(perm => Number(perm.data.id)),
     });
-  }, [submit, role.data.id, permissionLists]);
+  }, [doSubmit, user.data.id, roleLists]);
 
-  // TODO:
-  const isDisabled = submitState.isLoading || !(role.can.createRolePermission && role.can.deleteRolePermission);
+  // || !role.can.update;
+  const isDisabled = submitState.isLoading || !(user.can.createUserRole) || !(user.can.deleteUserRole);
   const isLoading = submitState.isLoading;
   const error = submitState.error;
 
@@ -361,8 +360,8 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
                 onChange={handlePermissionListsChange}
                 disabled={isDisabled}
                 error={error}
-                config={permissionListConfig}
-                lists={permissionLists}
+                config={roleListConfig}
+                lists={roleLists}
               />
             </Grid>
             {error?.data?.permission_ids && (

@@ -12,11 +12,5 @@ export const UserRoleCollectionGqlActions = new GraphQLObjectType<IUserRoleColle
         return ctx.services.userRolePolicy.canFindMany();
       },
     },
-    create: {
-      type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userRolePolicy.canCreate();
-      },
-    },
   },
 });

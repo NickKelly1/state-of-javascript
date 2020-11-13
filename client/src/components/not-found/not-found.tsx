@@ -21,7 +21,7 @@ export function NotFound(props: INotFoundProps) {
 
   return (
     <div className={classes.root}>
-      <Typography component="h1" variant="h3">
+      <Typography component="h2" variant="h2">
         {message}
       </Typography>
     </div>

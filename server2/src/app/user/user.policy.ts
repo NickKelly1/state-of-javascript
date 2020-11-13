@@ -44,7 +44,9 @@ export class UserPolicy {
     model: UserModel;
   }): boolean {
     const { model } = arg;
-    if (model.isProtected()) return false;
+    if (model.isAdmin()) return false;
+    if (model.isAnonymous()) return false;
+    if (model.isSystem()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageUser,
@@ -56,7 +58,9 @@ export class UserPolicy {
     model: UserModel;
   }): boolean {
     const { model } = arg;
-    if (model.isProtected()) return false;
+    if (model.isAdmin()) return false;
+    if (model.isAnonymous()) return false;
+    if (model.isSystem()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageUser,

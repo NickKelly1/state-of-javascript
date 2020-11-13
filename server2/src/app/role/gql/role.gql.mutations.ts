@@ -128,18 +128,18 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
 
   // find missing & unexpected permissions from the role
   const {
-    missingPermissions,
-    unexpectedRolePermissions,
+    missing,
+    unexpected,
   } = ctx
     .services
     .roleService
     .diffRolePermissions({
-      currentRolePermissions,
-      desiredPermissions: Array.from(desiredPermissionsMap.values()),
+      current: currentRolePermissions,
+      desired: Array.from(desiredPermissionsMap.values()),
     });
 
   // verify missing permissions can be created
-  const forbiddenFromCreating = missingPermissions.filter(permission => !ctx
+  const forbiddenFromCreating = missing.filter(permission => !ctx
     .services
     .rolePermissionPolicy
     .canCreate({ permission, role }));
@@ -154,12 +154,12 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
   }
 
   // verify unexpected permissions can be deleted
-  const forbiddenFromDeleting = unexpectedRolePermissions.filter(rp => !ctx
+  const forbiddenFromDeleting = unexpected.filter(rolePermission => !ctx
     .services
     .rolePermissionPolicy
     .canDelete({
-      model: rp,
-      permission: assertDefined(allPermissionsMap.get(rp.permission_id)),
+      model: rolePermission,
+      permission: assertDefined(allPermissionsMap.get(rolePermission.permission_id)),
       role,
     }));
 
@@ -167,21 +167,20 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
     throw ctx.except(ForbiddenException({
       message: ctx.lang(RoleLang.ForbiddenDeletingPermissions({
         roleName: role.name,
-        permisionNames: forbiddenFromDeleting.map(rp => assertDefined(allPermissionsMap.get(rp.permission_id)).name),
+        permisionNames: forbiddenFromDeleting.map(rolePermission => assertDefined(allPermissionsMap.get(rolePermission.permission_id)).name),
       })),
     }));
   }
 
   // do create
-  await Promise.all(missingPermissions.map((permission) => ctx.services.rolePermissionService.create({
-    runner,
-    permission,
-    role,
-  })));
+  await Promise.all(missing.map((permission) => ctx
+    .services
+    .rolePermissionService
+    .create({ runner, permission, role, })));
 
   // do delete
-  await Promise.all(unexpectedRolePermissions.map((rp) => ctx.services.rolePermissionService.delete({
-    model: rp,
-    runner,
-  })));
+  await Promise.all(unexpected.map((rolePermission) => ctx
+    .services
+    .rolePermissionService
+    .delete({ model: rolePermission, runner, })));
 }

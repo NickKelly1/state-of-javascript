@@ -139,6 +139,8 @@ export type UserActions = {
   show: Scalars['Boolean'];
   update: Scalars['Boolean'];
   delete: Scalars['Boolean'];
+  createUserRole: Scalars['Boolean'];
+  deleteUserRole: Scalars['Boolean'];
 };
 
 export type UserRelations = {
@@ -196,7 +198,6 @@ export type UserRoleData = {
 export type UserRoleActions = {
   __typename?: 'UserRoleActions';
   show: Scalars['Boolean'];
-  delete: Scalars['Boolean'];
 };
 
 export type UserRoleRelations = {
@@ -227,7 +228,10 @@ export type RoleActions = {
   show: Scalars['Boolean'];
   update: Scalars['Boolean'];
   delete: Scalars['Boolean'];
+  createUserRole: Scalars['Boolean'];
+  deleteUserRole: Scalars['Boolean'];
   createRolePermission: Scalars['Boolean'];
+  deleteRolePermission: Scalars['Boolean'];
 };
 
 export type RoleRelations = {
@@ -388,6 +392,7 @@ export type PermissionActions = {
   __typename?: 'PermissionActions';
   show: Scalars['Boolean'];
   createRolePermission: Scalars['Boolean'];
+  deleteRolePermission: Scalars['Boolean'];
 };
 
 export type PermissionRelations = {
@@ -582,7 +587,6 @@ export type PermissionCollectionActions = {
 export type UserRoleCollectionActions = {
   __typename?: 'UserRoleCollectionActions';
   show: Scalars['Boolean'];
-  create: Scalars['Boolean'];
 };
 
 export type NewsArticleQuery = {
@@ -1033,6 +1037,9 @@ export type RootMutationType = {
   createRole: RoleNode;
   updateRole: RoleNode;
   deleteRole: Scalars['Boolean'];
+  createUser: UserNode;
+  updateUser: UserNode;
+  deleteUser: Scalars['Boolean'];
 };
 
 
@@ -1110,6 +1117,21 @@ export type RootMutationTypeDeleteRoleArgs = {
   dto: DeleteRole;
 };
 
+
+export type RootMutationTypeCreateUserArgs = {
+  dto: CreateUser;
+};
+
+
+export type RootMutationTypeUpdateUserArgs = {
+  dto: UpdateUser;
+};
+
+
+export type RootMutationTypeDeleteUserArgs = {
+  dto: DeleteUser;
+};
+
 export type CreateNewsArticle = {
   title: Scalars['String'];
   teaser: Scalars['String'];
@@ -1180,6 +1202,21 @@ export type UpdateRole = {
 };
 
 export type DeleteRole = {
+  id: Scalars['Int'];
+};
+
+export type CreateUser = {
+  name: Scalars['String'];
+  role_ids?: Maybe<Array<Scalars['Int']>>;
+};
+
+export type UpdateUser = {
+  id: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  role_ids?: Maybe<Array<Scalars['Int']>>;
+};
+
+export type DeleteUser = {
   id: Scalars['Int'];
 };
 
@@ -1384,7 +1421,7 @@ export type RoleRolePermissionsFormDataQuery = (
       { __typename?: 'RoleNode' }
       & { can: (
         { __typename?: 'RoleActions' }
-        & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+        & Pick<RoleActions, 'createRolePermission' | 'deleteRolePermission'>
       ), data: (
         { __typename?: 'RoleData' }
         & Pick<RoleData, 'id' | 'name'>
@@ -1399,7 +1436,7 @@ export type RoleRolePermissionsFormDataQuery = (
             { __typename?: 'PermissionNode' }
             & { can: (
               { __typename?: 'PermissionActions' }
-              & Pick<PermissionActions, 'show' | 'createRolePermission'>
+              & Pick<PermissionActions, 'createRolePermission' | 'deleteRolePermission'>
             ), data: (
               { __typename?: 'PermissionData' }
               & Pick<PermissionData, 'id' | 'name'>
@@ -1414,7 +1451,7 @@ export type RoleRolePermissionsFormDataQuery = (
       { __typename?: 'PermissionNode' }
       & { can: (
         { __typename?: 'PermissionActions' }
-        & Pick<PermissionActions, 'show' | 'createRolePermission'>
+        & Pick<PermissionActions, 'createRolePermission' | 'deleteRolePermission'>
       ), data: (
         { __typename?: 'PermissionData' }
         & Pick<PermissionData, 'id' | 'name'>
@@ -1434,27 +1471,9 @@ export type RoleRolePermissionFormUpdateMutation = (
   { __typename?: 'RootMutationType' }
   & { updateRole: (
     { __typename?: 'RoleNode' }
-    & { can: (
-      { __typename?: 'RoleActions' }
-      & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
-    ), data: (
+    & { data: (
       { __typename?: 'RoleData' }
       & Pick<RoleData, 'id' | 'name'>
-    ), relations: (
-      { __typename?: 'RoleRelations' }
-      & { permissions: (
-        { __typename?: 'PermissionCollectionNode' }
-        & { nodes: Array<Maybe<(
-          { __typename?: 'PermissionNode' }
-          & { can: (
-            { __typename?: 'PermissionActions' }
-            & Pick<PermissionActions, 'show' | 'createRolePermission'>
-          ), data: (
-            { __typename?: 'PermissionData' }
-            & Pick<PermissionData, 'id' | 'name'>
-          ) }
-        )>> }
-      ) }
     ) }
   ) }
 );
@@ -1518,6 +1537,186 @@ export type RoleTableDeleteMutationVariables = Exact<{
 export type RoleTableDeleteMutation = (
   { __typename?: 'RootMutationType' }
   & Pick<RootMutationType, 'deleteRole'>
+);
+
+export type UserMutateFormCreateMutationVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type UserMutateFormCreateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { createUser: (
+    { __typename?: 'UserNode' }
+    & { can: (
+      { __typename?: 'UserActions' }
+      & Pick<UserActions, 'show' | 'update' | 'delete'>
+    ), data: (
+      { __typename?: 'UserData' }
+      & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+    ) }
+  ) }
+);
+
+export type UserMutateFormUpdateMutationVariables = Exact<{
+  id: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+}>;
+
+
+export type UserMutateFormUpdateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { updateUser: (
+    { __typename?: 'UserNode' }
+    & { can: (
+      { __typename?: 'UserActions' }
+      & Pick<UserActions, 'show' | 'update' | 'delete'>
+    ), data: (
+      { __typename?: 'UserData' }
+      & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+    ) }
+  ) }
+);
+
+export type UserUserRolesFormDataQueryVariables = Exact<{
+  id: Scalars['Float'];
+  userRolesLimit: Scalars['Int'];
+  userRolesOffset: Scalars['Int'];
+  rolesLimit: Scalars['Int'];
+  rolesOffset: Scalars['Int'];
+}>;
+
+
+export type UserUserRolesFormDataQuery = (
+  { __typename?: 'RootQueryType' }
+  & { users: (
+    { __typename?: 'UserCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'UserNode' }
+      & { can: (
+        { __typename?: 'UserActions' }
+        & Pick<UserActions, 'createUserRole' | 'deleteUserRole'>
+      ), data: (
+        { __typename?: 'UserData' }
+        & Pick<UserData, 'id' | 'name'>
+      ), relations: (
+        { __typename?: 'UserRelations' }
+        & { roles: (
+          { __typename?: 'RoleCollectionNode' }
+          & { pagination: (
+            { __typename?: 'meta' }
+            & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+          ), nodes: Array<Maybe<(
+            { __typename?: 'RoleNode' }
+            & { can: (
+              { __typename?: 'RoleActions' }
+              & Pick<RoleActions, 'createUserRole' | 'deleteUserRole'>
+            ), data: (
+              { __typename?: 'RoleData' }
+              & Pick<RoleData, 'id' | 'name'>
+            ) }
+          )>> }
+        ) }
+      ) }
+    )>> }
+  ), roles: (
+    { __typename?: 'RoleCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'RoleNode' }
+      & { can: (
+        { __typename?: 'RoleActions' }
+        & Pick<RoleActions, 'show' | 'createUserRole' | 'deleteUserRole'>
+      ), data: (
+        { __typename?: 'RoleData' }
+        & Pick<RoleData, 'id' | 'name'>
+      ) }
+    )>> }
+  ) }
+);
+
+export type UserUserRolesFormUpdateMutationVariables = Exact<{
+  id: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  role_ids?: Maybe<Array<Scalars['Int']>>;
+}>;
+
+
+export type UserUserRolesFormUpdateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { updateUser: (
+    { __typename?: 'UserNode' }
+    & { data: (
+      { __typename?: 'UserData' }
+      & Pick<UserData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
+export type UserDetailDataQueryVariables = Exact<{
+  id: Scalars['Float'];
+}>;
+
+
+export type UserDetailDataQuery = (
+  { __typename?: 'RootQueryType' }
+  & { users: (
+    { __typename?: 'UserCollectionNode' }
+    & { can: (
+      { __typename?: 'UserCollectionActions' }
+      & Pick<UserCollectionActions, 'show' | 'create'>
+    ), pagination: (
+      { __typename?: 'meta' }
+      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+    ), nodes: Array<Maybe<(
+      { __typename?: 'UserNode' }
+      & { can: (
+        { __typename?: 'UserActions' }
+        & Pick<UserActions, 'show' | 'update' | 'delete'>
+      ), data: (
+        { __typename?: 'UserData' }
+        & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+      ) }
+    )>> }
+  ) }
+);
+
+export type UsersTableDataQueryVariables = Exact<{
+  offset: Scalars['Int'];
+  limit: Scalars['Int'];
+}>;
+
+
+export type UsersTableDataQuery = (
+  { __typename?: 'RootQueryType' }
+  & { users: (
+    { __typename?: 'UserCollectionNode' }
+    & { pagination: (
+      { __typename?: 'meta' }
+      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+    ), can: (
+      { __typename?: 'UserCollectionActions' }
+      & Pick<UserCollectionActions, 'show' | 'create'>
+    ), nodes: Array<Maybe<(
+      { __typename?: 'UserNode' }
+      & { can: (
+        { __typename?: 'UserActions' }
+        & Pick<UserActions, 'show' | 'update' | 'delete'>
+      ), data: (
+        { __typename?: 'UserData' }
+        & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+      ) }
+    )>> }
+  ) }
+);
+
+export type UsersTableDeleteMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type UsersTableDeleteMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'deleteUser'>
 );
 
 export type JsPageDashboardQueryVariables = Exact<{

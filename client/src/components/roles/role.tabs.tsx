@@ -6,12 +6,12 @@ import { RoleDetail } from './role.detail';
 import { RoleRolePermissionForm } from './role-role-permissions.form';
 import { TabGroup } from '../tab-group/tab-group';
 
-interface IRoleSectionProps {
+interface IRoleTabsProps {
   role_id: Id;
   onStale?: IIdentityFn;
 }
 
-export function RoleSection(props: IRoleSectionProps) {
+export function RoleTabs(props: IRoleTabsProps) {
   const { role_id, onStale } = props;
   //
 

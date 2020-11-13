@@ -1,13 +1,36 @@
-import { Button, CircularProgress, DialogActions, DialogContent, DialogTitle, FormHelperText, Grid, InputLabel, TextField } from "@material-ui/core";
+import {
+  Button,
+  CircularProgress,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  TextField
+} from "@material-ui/core";
 import { gql } from "graphql-request";
 import produce from "immer";
-import React, { ChangeEventHandler, FormEventHandler, MouseEventHandler, useCallback, useContext, useState } from "react";
+import React, {
+  ChangeEventHandler,
+  FormEventHandler,
+  MouseEventHandler,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { useMutation } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import { ApiContext } from "../../components-contexts/api.context";
-import { MutateRoleFormUpdateMutation, MutateRoleFormUpdateMutationVariables, MutateRoleFromCreateMutation, MutateRoleFromCreateMutationVariables } from "../../generated/graphql";
+import {
+  UserMutateFormUpdateMutation,
+  UserMutateFormUpdateMutationVariables,
+  UserMutateFormCreateMutation,
+  UserMutateFormCreateMutationVariables,
+  // usermutatform,
+} from "../../generated/graphql";
 import { change } from "../../helpers/change.helper";
 import { ist } from "../../helpers/ist.helper";
 import { useFormStyles } from "../../hooks/use-form-styles.hook";
@@ -16,11 +39,12 @@ import { useUpdate } from "../../hooks/use-update.hook";
 import { Id } from "../../types/id.type";
 import { OrNullable } from "../../types/or-nullable.type";
 
-const mutateRoleFormCreateMutation = gql`
-mutation MutateRoleFromCreate(
+
+const userMutateFormCreateMutation = gql`
+mutation UserMutateFormCreate(
   $name:String!
 ){
-  createRole(
+  createUser(
     dto:{
       name:$name
     }
@@ -29,23 +53,25 @@ mutation MutateRoleFromCreate(
       show
       update
       delete
-      createRolePermission
     }
     data{
       id
       name
+      created_at
+      updated_at
+      deleted_at
     }
   }
 }
 `;
 
 
-const mutateRoleFormUpdateMutation = gql`
-mutation MutateRoleFormUpdate(
+const userMutateFormUpdateMutation = gql`
+mutation UserMutateFormUpdate(
   $id:Int!
   $name:String
 ){
-  updateRole(
+  updateUser(
     dto:{
       id:$id
       name:$name
@@ -55,65 +81,69 @@ mutation MutateRoleFormUpdate(
       show
       update
       delete
-      createRolePermission
     }
     data{
       id
       name
+      created_at
+      updated_at
+      deleted_at
     }
   }
 }
 `;
 
-export interface IRoleMutateFormOnSuccessFnArg { id: Id; name: string };
-export interface IRoleMutateFormOnSuccessFn { (arg: IRoleMutateFormOnSuccessFnArg): any }
-export interface IRoleMutateFormRole { id: Id; name: string; };
-export interface IRoleMutateFormProps extends IWithDialogueProps {
-  role?: OrNullable<IRoleMutateFormRole>;
-  onSuccess?: IRoleMutateFormOnSuccessFn;
+
+export interface IUserMutateFormOnSuccessFnArg { id: Id; name: string };
+export interface IUserMutateFormOnSuccessFn { (arg: IUserMutateFormOnSuccessFnArg): any }
+export interface IUserMutateFormRole { id: Id; name: string; };
+export interface IUserMutateFormProps extends IWithDialogueProps {
+  user?: OrNullable<IUserMutateFormRole>;
+  onSuccess?: IUserMutateFormOnSuccessFn;
 }
 
-export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWidth: true })((props) => {
-  const { role, onSuccess, dialog, } = props;
+
+export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWidth: true })((props) => {
+  const { user, onSuccess, dialog, } = props;
   const { api, me, } = useContext(ApiContext);
 
   interface IFormState { name: string; };
-  const [formState, setFormState] = useState<IFormState>(() => ({ name: role?.name ?? '', }));
-  const [doSubmit, submitState] = useMutation<IRoleMutateFormOnSuccessFnArg, ApiException>(
+  const [formState, setFormState] = useState<IFormState>(() => ({ name: user?.name ?? '', }));
+  const [doSubmit, submitState] = useMutation<IUserMutateFormOnSuccessFnArg, ApiException>(
     async () => {
-      if (ist.notNullable(role)) {
+      if (ist.notNullable(user)) {
         // update
-        const vars: MutateRoleFormUpdateMutationVariables = {
-          id: Number(role.id),
+        const vars: UserMutateFormUpdateMutationVariables = {
+          id: Number(user.id),
           name: formState.name,
         };
         const result = await api
           .connector
-          .graphql<MutateRoleFormUpdateMutation, MutateRoleFormUpdateMutationVariables>(
-            mutateRoleFormUpdateMutation,
+          .graphql<UserMutateFormUpdateMutation, UserMutateFormUpdateMutationVariables>(
+            userMutateFormUpdateMutation,
             vars
           )
           .catch(rethrow(normaliseApiException));
         return {
-          id: result.updateRole.data.id,
-          name: result.updateRole.data.name,
+          id: result.updateUser.data.id,
+          name: result.updateUser.data.name,
         };
       }
 
       // create
-      const vars: MutateRoleFromCreateMutationVariables = {
+      const vars: UserMutateFormCreateMutationVariables = {
         name: formState.name,
       };
       const result = await api
         .connector
-        .graphql<MutateRoleFromCreateMutation, MutateRoleFromCreateMutationVariables>(
-          mutateRoleFormCreateMutation,
+        .graphql<UserMutateFormCreateMutation, UserMutateFormCreateMutationVariables>(
+          userMutateFormCreateMutation,
           vars
         )
         .catch(rethrow(normaliseApiException));
       return {
-        id: result.createRole.data.id,
-        name: result.createRole.data.name,
+        id: result.createUser.data.id,
+        name: result.createUser.data.name,
       };
     },
     { onSuccess, },
@@ -128,7 +158,7 @@ export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWid
   return (
     <>
       <DialogTitle>
-        {ist.defined(role) ? 'Edit role' : 'Create role'}
+        {ist.defined(user) ? 'Edit user' : 'Create user'}
       </DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>

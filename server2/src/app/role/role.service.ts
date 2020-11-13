@@ -29,31 +29,31 @@ export class RoleService {
    * @param arg
    */
   diffRolePermissions(arg: {
-    currentRolePermissions: RolePermissionModel[];
-    desiredPermissions: PermissionModel[];
+    current: RolePermissionModel[];
+    desired: PermissionModel[];
   }): {
-    missingPermissions: PermissionModel[];
-    unexpectedRolePermissions: RolePermissionModel[];
-    normalRolePermissions: RolePermissionModel[];
+    missing: PermissionModel[];
+    unexpected: RolePermissionModel[];
+    normal: RolePermissionModel[];
   } {
-    const { currentRolePermissions, desiredPermissions } = arg;
+    const { current, desired } = arg;
     const combinator = new Combinator({
       // a => previous
-      a: new Map(currentRolePermissions.map(rp => [rp.permission_id, rp])),
+      a: new Map(current.map(rp => [rp.permission_id, rp])),
       // b => next
-      b: new Map(desiredPermissions.map(perm => [perm.id, perm])),
+      b: new Map(desired.map(perm => [perm.id, perm])),
     });
     // in previous but not next
-    const unexpectedRolePermissions = Array.from(combinator.diff.aNotB.values());
+    const unexpected = Array.from(combinator.diff.aNotB.values());
     // in next but not previous
-    const missingPermissions = Array.from(combinator.diff.bNotA.values());
+    const missing = Array.from(combinator.diff.bNotA.values());
     // normal role-permissions
-    const normalRolePermissions = Array.from(combinator.bJoinA.a.values());
+    const normal = Array.from(combinator.bJoinA.a.values());
 
     return {
-      unexpectedRolePermissions,
-      missingPermissions,
-      normalRolePermissions,
+      unexpected,
+      missing,
+      normal,
     };
   }
 

@@ -1,10 +1,12 @@
+import { RoleId } from "../../../app/role/role.id.type";
 import { RoleModel } from "../../../app/role/role.model";
+import { UserId } from "../../../app/user/user.id.type";
 import { UserModel } from "../../../app/user/user.model";
 import { Language } from "../consts/language.enum";
 
 export const UserRoleLang = {
-  AlreadyExists: (arg: { user: UserModel, role: RoleModel }) => ({
-    [Language.En]: `user "${arg.user.name}" already has role "${arg.role.name}"`,
+  AlreadyExists: (arg: { user: string | number, role: string | number }) => ({
+    [Language.En]: `user "${arg.user}" already has role "${arg.role}"`,
     [Language.Ger]: '__TODO__',
   }),
 

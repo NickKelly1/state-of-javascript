@@ -1,11 +1,14 @@
 import { UserModel } from '../../circle';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
 import { auditableRo } from '../../common/helpers/auditable-ro.helper';
+import { Combinator } from '../../common/helpers/combinator.helper';
 import { ist } from '../../common/helpers/ist.helper';
 import { softDeleteableRo } from '../../common/helpers/soft-deleteable-ro.helper';
 import { UserLang } from '../../common/i18n/packs/user.lang';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
+import { RoleModel } from '../role/role.model';
+import { UserRoleModel } from '../user-role/user-role.model';
 import { ICreateUserDto } from './dtos/create-user.dto';
 import { IUpdateUserDto } from './dtos/update-user.dto';
 import { IUserRo } from './dtos/user.ro';
@@ -18,6 +21,46 @@ export class UserService {
     //
   }
 
+  /**
+   * Find unexpected or missing UserRoles & Roles
+   *
+   * @param arg
+   */
+  diffUserRoles(arg: {
+    current: UserRoleModel[];
+    desired: RoleModel[];
+  }): {
+    missing: RoleModel[];
+    unexpected: UserRoleModel[];
+    normal: UserRoleModel[];
+  } {
+    const { current, desired } = arg;
+    const combinator = new Combinator({
+      // a => previous
+      a: new Map(current.map(userRole => [userRole.role_id, userRole])),
+      // b => next
+      b: new Map(desired.map(role => [role.id, role])),
+    });
+    // in previous but not next
+    const unexpected = Array.from(combinator.diff.aNotB.values());
+    // in next but not previous
+    const missing = Array.from(combinator.diff.bNotA.values());
+    // normal role-permissions
+    const normal = Array.from(combinator.bJoinA.a.values());
+
+    return {
+      unexpected,
+      missing,
+      normal,
+    };
+  }
+
+
+  /**
+   * Create a user
+   *
+   * @param arg
+   */
   async create(arg: {
     runner: QueryRunner;
     dto: ICreateUserDto;
@@ -41,6 +84,12 @@ export class UserService {
     return user;
   }
 
+
+  /**
+   * Update a user
+   *
+   * @param arg
+   */
   async update(arg: {
     runner: QueryRunner;
     model: UserModel;
@@ -53,26 +102,19 @@ export class UserService {
     return model;
   }
 
+
+  /**
+   * Delete a user
+   *
+   * @param arg
+   */
   async delete(arg: {
     model: UserModel;
     runner: QueryRunner;
-    dto: IUpdateUserDto;
   }): Promise<UserModel> {
-    const { model, runner, dto } = arg;
+    const { model, runner, } = arg;
     const { transaction } = runner;
     await model.destroy({ transaction });
     return model;
-  }
-
-  toRo(arg: {
-    model: UserModel,
-  }): IUserRo {
-    const { model } = arg;
-    return {
-      id: model.id,
-      name: model.name,
-      ...auditableRo(model),
-      ...softDeleteableRo(model),
-    };
   }
 }

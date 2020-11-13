@@ -29,5 +29,17 @@ export const UserGqlActions = new GraphQLObjectType<IUserGqlActionsSource, GqlCo
         return ctx.services.userPolicy.canDelete({ model: parent });
       },
     },
+    createUserRole: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userRolePolicy.canCreateForUser({ user: parent });
+      },
+    },
+    deleteUserRole: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userRolePolicy.canDeleteForUser({ user: parent });
+      },
+    },
   },
 });

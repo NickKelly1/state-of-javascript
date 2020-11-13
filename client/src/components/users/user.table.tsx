@@ -40,10 +40,10 @@ import { ApiException } from "../../backend-api/api.exception";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { Cms } from "../../cms/cms";
 import {
-  RolesTableDataQuery,
-  RolesTableDataQueryVariables, 
-  RoleTableDeleteMutation,
-  RoleTableDeleteMutationVariables,
+  UsersTableDataQuery,
+  UsersTableDataQueryVariables,
+  UsersTableDeleteMutation,
+  UsersTableDeleteMutationVariables,
 } from "../../generated/graphql";
 import {
   Attempt,
@@ -58,24 +58,23 @@ import { NextRouter, useRouter } from 'next/router';
 import { useMutation, useQuery } from 'react-query';
 import clsx from 'clsx';
 import { formatRelative } from 'date-fns';
-import { RoleTabs } from './role.tabs';
 import { ApiContext } from '../../components-contexts/api.context';
-import { DebugException } from '../../components/debug-exception/debug-exception';
-import { ParsedUrlQuery } from 'querystring';
-import { OrNullable } from '../../types/or-nullable.type';
+import { DebugException } from '../debug-exception/debug-exception';
 import { IUseDialogReturn, useDialog } from '../../hooks/use-dialog.hook';
-import { RoleMutateFormDialog } from '../../components/roles/role-mutate.form.dialog';
 import { IIdentityFn } from '../../types/identity-fn.type';
 import { WithMemo } from '../../components-hoc/with-memo/with-memo';
+import { RoleTabs } from '../roles/role.tabs';
 import { flsx } from '../../helpers/flsx.helper';
+import { UserMutateFormDialog } from './user-mutate.form.dialog';
+import { UserTabs } from './user.tabs';
 
-const RolesTableDataQueryName = 'RolesTableDataQuery'
-const rolesTableDataQuery = gql`
-query RolesTableData(
-  $limit:Int!
+const UsersTableDataQueryName = 'UsersTableDataQuery'
+const usersTableDataQuery = gql`
+query UsersTableData(
   $offset:Int!
+  $limit:Int!
 ){
-  roles(
+  users(
     query:{
       offset:$offset
       limit:$limit
@@ -91,7 +90,7 @@ query RolesTableData(
     }
     can{
       show
-			create
+      create
     }
     nodes{
       can{
@@ -112,16 +111,17 @@ query RolesTableData(
 `;
 
 
-const roleTableDeleteMutation = gql`
-mutation RoleTableDelete(
+const usersTableDeleteMutation = gql`
+mutation UsersTableDelete(
   $id:Int!
 ){
-  deleteRole(
+  deleteUser(
     dto:{
       id:$id
-		}
+    }
   )
 }
+
 `;
 
 
@@ -134,22 +134,22 @@ const PerPageOptions = {
 };
 
 
-const defaultQueryVariables: RolesTableDataQueryVariables = {
+const defaultQueryVariables: UsersTableDataQueryVariables = {
   offset: 0,
   limit: PerPageOptions._30,
 };
 
 
-export interface IRolesTableProps {
+export interface IUsersTableProps {
   limit?: number;
   offset?: number;
 }
 
 
-export function RolesTable(props: IRolesTableProps) {
+export function UsersTable(props: IUsersTableProps) {
   const { limit, offset } = props;
   const { api, me } = useContext(ApiContext);
-  const vars = useMemo((): RolesTableDataQueryVariables => ({
+  const vars = useMemo((): UsersTableDataQueryVariables => ({
     limit: limit ?? defaultQueryVariables.limit,
     offset: offset ?? defaultQueryVariables.offset,
   }), [limit, offset])
@@ -158,12 +158,12 @@ export function RolesTable(props: IRolesTableProps) {
     isLoading,
     error,
     refetch,
-  } = useQuery<RolesTableDataQuery, ApiException>(
-    [RolesTableDataQueryName, vars, me?.hash],
-    async (): Promise<RolesTableDataQuery> => {
+  } = useQuery<any, ApiException>(
+    [UsersTableDataQueryName, vars, me?.hash],
+    async (): Promise<UsersTableDataQuery> => {
       const result = await api
         .connector
-        .graphql<RolesTableDataQuery, RolesTableDataQueryVariables>(rolesTableDataQuery, vars)
+        .graphql<UsersTableDataQuery, UsersTableDataQueryVariables>(usersTableDataQuery, vars)
         .catch(rethrow(normaliseApiException));
       return result;
     },
@@ -186,9 +186,9 @@ export function RolesTable(props: IRolesTableProps) {
       )}
       {data && (
         <Grid item xs={12}>
-          <RolesTableContent
-            refetch={refetch}
+          <UsersTableContent
             queryData={data}
+            refetch={refetch}
           />
         </Grid>
       )}
@@ -196,10 +196,9 @@ export function RolesTable(props: IRolesTableProps) {
   );
 }
 
-interface IRolesTableContentRefetchFn { (): any; }
-interface IRolesTableContentProps {
-  queryData: RolesTableDataQuery;
-  refetch?: IRolesTableContentRefetchFn;
+interface IUsersTableContentProps {
+  queryData: UsersTableDataQuery;
+  refetch?: IIdentityFn;
 }
 
 
@@ -209,7 +208,7 @@ const useRolesTableContentStyles = makeStyles((theme) => ({
   },
 }));
 
-function RolesTableContent(props: IRolesTableContentProps) {
+function UsersTableContent(props: IUsersTableContentProps) {
   const { queryData, refetch } = props;
   const { api, me } = useContext(ApiContext);
   const classes = useRolesTableContentStyles();
@@ -219,16 +218,16 @@ function RolesTableContent(props: IRolesTableContentProps) {
     router.push({ query: { ...router.query, limit: encodeURI(nextLimit), } });
   }, [router])
   const handleChangePage: (event: React.MouseEvent<HTMLButtonElement> | null, page: number) => void = useCallback((evt, page) => {
-    const limit = queryData.roles.pagination.limit;
+    const limit = queryData.users.pagination.limit;
     // mui 0 indexes page
     const nextOffset = page * limit;
     router.push({ query: { ...router.query, offset: encodeURI(nextOffset.toString()), }, });
-  }, [router, queryData.roles.pagination])
+  }, [router, queryData.users.pagination])
 
   type IOpenState = Record<Id, OrUndefined<boolean>>;
   const [open, setOpen] = useState<IOpenState>({});
 
-  interface IRoleRow {
+  interface IUserRow {
     id: Id;
     name: string;
     updated_at: string;
@@ -237,12 +236,12 @@ function RolesTableContent(props: IRolesTableContentProps) {
     canDelete: boolean;
   }
 
-  const tableData = useMemo<IRoleRow[]>((): IRoleRow[] => {
+  const tableData = useMemo<IUserRow[]>((): IUserRow[] => {
     return queryData
-      .roles
+      .users
       .nodes
       .filter(ist.notNullable)
-      .map((node): IRoleRow => {
+      .map((node): IUserRow => {
         return {
           id: node.data.id,
           name: node.data.name,
@@ -254,23 +253,22 @@ function RolesTableContent(props: IRolesTableContentProps) {
       });
   }, [queryData]);
 
-  const handleDeleteCb = useCallback(async (vars: RoleTableDeleteMutationVariables): Promise<RoleTableDeleteMutation> => {
-    const result = await api
-      .connector
-      .graphql<RoleTableDeleteMutation, RoleTableDeleteMutationVariables>(
-        roleTableDeleteMutation,
-        vars,
-      )
-      .catch(rethrow(normaliseApiException));
-    return result;
-  }, [api, me,]);
-  const [doDelete, doDeleteState] = useMutation<RoleTableDeleteMutation, ApiException, RoleTableDeleteMutationVariables>(
-    handleDeleteCb,
-    { onSuccess: refetch }
+  const [doDelete, doDeleteState] = useMutation<UsersTableDeleteMutation, ApiException, UsersTableDeleteMutationVariables>(
+    async (vars: UsersTableDeleteMutationVariables): Promise<UsersTableDeleteMutation> => {
+      const result = await api
+        .connector
+        .graphql<UsersTableDeleteMutation, UsersTableDeleteMutationVariables>(
+          usersTableDeleteMutation,
+          vars,
+        )
+        .catch(rethrow(normaliseApiException));
+      return result;
+    },
+    { onSuccess: refetch, },
   );
 
-  const columns = useMemo<Column<IRoleRow>[]>(() => {
-    const cols: Column<IRoleRow>[] = [{
+  const columns = useMemo<Column<IUserRow>[]>(() => {
+    const cols: Column<IUserRow>[] = [{
         id: 'expand_chevron',
         accessor: (original, index, table) => (
           <IconButton color="inherit" size="small" onClick={() => setOpen((prev) => ({ ...prev, [original.id]: !prev[original.id] }))}>
@@ -316,21 +314,23 @@ function RolesTableContent(props: IRolesTableContentProps) {
 
   const tableInstance = useTable({ columns, data: tableData });
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
+
   const createDialog: IUseDialogReturn = useDialog();
   const handleCreated: IIdentityFn = useCallback(() => flsx(refetch, createDialog.doClose)(), [refetch, createDialog.doClose]);
 
   return (
     <>
-      <RoleMutateFormDialog dialog={createDialog} onSuccess={handleCreated} />
+      <UserMutateFormDialog dialog={createDialog} onSuccess={handleCreated} />
+      {/* create user dialog */}
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="flex-start" alignItems="center">
             <Box pr={1}>
               <Typography component="h1" variant="h1">
-                Roles
+                Users
               </Typography>
             </Box>
-            {queryData.roles.can.create && (
+            {queryData.users.can.create && (
               <Box pr={1}>
                 <IconButton color="primary" onClick={createDialog.doOpen}>
                   <AddIcon />
@@ -373,7 +373,7 @@ function RolesTableContent(props: IRolesTableContentProps) {
                               <TableCell className="tabs-cell" colSpan={row.cells.length}>
                                 <Collapse in={!!open[row.original.id]} timeout="auto" unmountOnExit>
                                   <Box mb={2}>
-                                    <RoleTabs onStale={refetch} role_id={row.original.id} />
+                                    <UserTabs onStale={refetch} user_id={row.original.id} />
                                   </Box>
                                 </Collapse>
                               </TableCell>
@@ -391,21 +391,21 @@ function RolesTableContent(props: IRolesTableContentProps) {
                     return Array
                       .from(new Set(Object
                         .values(PerPageOptions)
-                        .concat(queryData.roles.pagination.limit))
+                        .concat(queryData.users.pagination.limit))
                       )
                       .sort((a, b) => a - b)
                   }}
-                  deps={[queryData.roles.pagination.limit, queryData.roles.pagination]}
+                  deps={[queryData.users.pagination.limit, queryData.users.pagination]}
                 >
                   {(perPage) => (
                     <TablePagination
                       component="div"
                       rowsPerPageOptions={perPage}
-                      count={queryData.roles.pagination.total}
-                      page={queryData.roles.pagination.page_number - 1}
+                      count={queryData.users.pagination.total}
+                      page={queryData.users.pagination.page_number - 1}
                       onChangePage={handleChangePage}
                       onChangeRowsPerPage={handleChangeRowsPerPage}
-                      rowsPerPage={queryData.roles.pagination.limit}
+                      rowsPerPage={queryData.users.pagination.limit}
                     />
                   )}
                 </WithMemo>
