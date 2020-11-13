@@ -123,6 +123,20 @@ export function TopBar(props: ITopBarProps) {
         <nav className={classes.nav}>
           <List className={classes.navList}>
             <ListItem className={classes.navItem}>
+              <NextLink href="/users" passHref>
+                <MUILink color="inherit">
+                  Users
+                </MUILink>
+              </NextLink>
+            </ListItem>
+            <ListItem className={classes.navItem}>
+              <NextLink href="/roles" passHref>
+                <MUILink color="inherit">
+                  Roles
+                </MUILink>
+              </NextLink>
+            </ListItem>
+            <ListItem className={classes.navItem}>
               <NextLink href="/stats" passHref>
                 <MUILink color="inherit">
                   Stats
