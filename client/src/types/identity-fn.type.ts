@@ -1,1 +1,1 @@
-export interface IIdentityFn { (): any; }
+export interface IIdentityFn<T = any> { (): T; }

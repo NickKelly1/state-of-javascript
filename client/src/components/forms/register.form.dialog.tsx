@@ -24,6 +24,7 @@ import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { ApiContext } from "../../contexts/api.context";
 import { change } from "../../helpers/change.helper";
 import { useFormStyles } from "../../hooks/use-form-styles.hook";
+import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { OrPromise } from "../../types/or-promise.type";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { IWithDialogueProps, WithDialogue } from "../with-dialog/with-dialog";
@@ -50,7 +51,7 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
     },
     { onSuccess, },
   );
-  const handleSubmit: MouseEventHandler<HTMLButtonElement> = useCallback(() => doSubmit(), [doSubmit]);
+  const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
   const handleNameChange = useCallback(change(setFormState, 'name'), [setFormState]);
   const handlePasswordChange = useCallback(change(setFormState, 'password'), [setFormState]);
   const error = submitState.error;
@@ -59,56 +60,58 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
   return (
     <>
       <DialogTitle>Register</DialogTitle>
-      <DialogContent dividers>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              label="name"
-              autoFocus
-              fullWidth
-              margin="dense"
-              disabled={isDisabled}
-              value={formState.name}
-              error={!!error?.data?.name}
-              helperText={error?.data?.name?.join('\n')}
-              onChange={handleNameChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="password"
-              fullWidth
-              margin="dense"
-              disabled={isDisabled}
-              type="password"
-              value={formState.password}
-              error={!!error?.data?.password}
-              helperText={error?.data?.password?.join('\n')}
-              onChange={handlePasswordChange}
-            />
-          </Grid>
-          {error && (
-            <Grid className="centered col" item xs={12}>
-              <FormHelperText error>
-                {error.message}
-              </FormHelperText>
+      <form onSubmit={handleSubmit}>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                label="name"
+                autoFocus
+                fullWidth
+                margin="dense"
+                disabled={isDisabled}
+                value={formState.name}
+                error={!!error?.data?.name}
+                helperText={error?.data?.name?.join('\n')}
+                onChange={handleNameChange}
+              />
             </Grid>
-          )}
-          {isDisabled && (
-            <Grid className="centered col" item xs={12}>
-              <FilledCircularProgress active={isDisabled} />
+            <Grid item xs={12}>
+              <TextField
+                label="password"
+                fullWidth
+                margin="dense"
+                disabled={isDisabled}
+                type="password"
+                value={formState.password}
+                error={!!error?.data?.password}
+                helperText={error?.data?.password?.join('\n')}
+                onChange={handlePasswordChange}
+              />
             </Grid>
-          )}
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button color="primary" disabled={isDisabled} onClick={dialog.doClose}>
-          Close
-        </Button>
-        <Button color="primary" disabled={isDisabled} onClick={handleSubmit}>
-          Register
-        </Button>
-      </DialogActions>
+            {error && (
+              <Grid className="centered col" item xs={12}>
+                <FormHelperText error>
+                  {error.message}
+                </FormHelperText>
+              </Grid>
+            )}
+            {isDisabled && (
+              <Grid className="centered col" item xs={12}>
+                <FilledCircularProgress active={isDisabled} />
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary" disabled={isDisabled} onClick={dialog.doClose}>
+            Close
+          </Button>
+          <Button color="primary" disabled={isDisabled} type="submit">
+            Register
+          </Button>
+        </DialogActions>
+      </form>
     </>
   );
 });

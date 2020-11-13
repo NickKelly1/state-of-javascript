@@ -10,6 +10,7 @@ import { MutateRoleFormUpdateMutation, MutateRoleFormUpdateMutationVariables, Mu
 import { change } from "../../helpers/change.helper";
 import { ist } from "../../helpers/ist.helper";
 import { useFormStyles } from "../../hooks/use-form-styles.hook";
+import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { useUpdate } from "../../hooks/use-update.hook";
 import { Id } from "../../types/id.type";
 import { OrNullable } from "../../types/or-nullable.type";
@@ -119,7 +120,7 @@ export const  MutateRoleFormDialog = WithDialogue<IMutateRoleFormProps>({ fullWi
     },
     { onSuccess, },
   )
-  const handleSubmit: MouseEventHandler<HTMLButtonElement> = useCallback(() => doSubmit(), [doSubmit]);
+  const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
   const handleNameChange = useCallback(change(setFormState, 'name'), [setFormState]);
 
 
@@ -131,43 +132,45 @@ export const  MutateRoleFormDialog = WithDialogue<IMutateRoleFormProps>({ fullWi
       <DialogTitle>
         {ist.defined(role) ? 'Edit role' : 'Create role'}
       </DialogTitle>
-      <DialogContent dividers>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              label="name"
-              margin="dense"
-              autoFocus
-              fullWidth
-              disabled={isDisabled}
-              value={formState.name}
-              error={!!error?.data?.name}
-              helperText={error?.data?.name?.join('\n')}
-              onChange={handleNameChange}
-            />
+      <form onSubmit={handleSubmit}>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                label="name"
+                margin="dense"
+                autoFocus
+                fullWidth
+                disabled={isDisabled}
+                value={formState.name}
+                error={!!error?.data?.name}
+                helperText={error?.data?.name?.join('\n')}
+                onChange={handleNameChange}
+              />
+            </Grid>
+            {error && (
+              <Grid className="centered col" item xs={12}>
+                <FormHelperText error>
+                  {error.message}
+                </FormHelperText>
+              </Grid>
+            )}
+            {isDisabled && (
+              <Grid className="centered col" item xs={12}>
+                <CircularProgress />
+              </Grid>
+            )}
           </Grid>
-          {error && (
-            <Grid className="centered col" item xs={12}>
-              <FormHelperText error>
-                {error.message}
-              </FormHelperText>
-            </Grid>
-          )}
-          {isDisabled && (
-            <Grid className="centered col" item xs={12}>
-              <CircularProgress />
-            </Grid>
-          )}
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button color="primary" disabled={isDisabled} onClick={dialog.doClose}>
-          Close
-        </Button>
-        <Button color="primary" disabled={isDisabled} onClick={handleSubmit}>
-          Submit
-        </Button>
-      </DialogActions>
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary" disabled={isDisabled} onClick={dialog.doClose}>
+            Close
+          </Button>
+          <Button color="primary" disabled={isDisabled} type="submit">
+            Submit
+          </Button>
+        </DialogActions>
+      </form>
     </>
   );
 });

@@ -8,16 +8,16 @@ export interface IWithDialogueProps {
   dialog: IUseDialogReturn;
 }
 
-export const WithDialogue =
-  <P extends IWithDialogueProps>(dialogProps?: Partial<DialogProps> | ((props: P) => Partial<DialogProps>)) =>
-  (Element: React.ComponentType<P>): React.ComponentType<P> =>
-  (props: P): JSX.Element => {
-  const { dialog } = props;
-  const dProps = ist.fn(dialogProps) ? dialogProps(props) : dialogProps;
-  return (
-    <Dialog {...dProps} open={dialog.isOpen} onClose={dialog.doClose}>
-      <Element {...props} />
-    </Dialog>
-  );
+export function WithDialogue<P extends IWithDialogueProps>(dialogProps?: Partial<DialogProps> | ((props: P) => Partial<DialogProps>)) {
+  return function WithDialogueComponent(Comp: React.ComponentType<P>): React.ComponentType<P> {
+    return function WithDialogRenderer(props: P): JSX.Element {
+      const { dialog } = props;
+      const dProps = ist.fn(dialogProps) ? dialogProps(props) : dialogProps;
+      return (
+        <Dialog {...dProps} open={dialog.isOpen} onClose={dialog.doClose}>
+          <Comp {...props} />
+        </Dialog>
+      );
+    }
+  }
 }
-

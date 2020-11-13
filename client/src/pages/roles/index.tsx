@@ -336,11 +336,13 @@ function RolesPageContent(props: IRolesPageContentProps) {
               <Box className="centered col" mr={2}>
                 Roles
               </Box>
-              <Box bgcolor="background.paper" className="centered col" mr={2}>
-                <Button variant="outlined" onClick={createRoleDialog.doOpen}>
-                  <AddIcon />
-                </Button>
-              </Box>
+              {rolesQuery.roles.can.create && (
+                <Box bgcolor="background.paper" className="centered col" mr={2}>
+                  <Button variant="outlined" onClick={createRoleDialog.doOpen}>
+                    <AddIcon />
+                  </Button>
+                </Box>
+              )}
             </Box>
           </Typography>
         </Grid>

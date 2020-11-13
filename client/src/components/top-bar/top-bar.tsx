@@ -1,5 +1,6 @@
 import {
   AppBar,
+  Box,
   Button,
   colors,
   Dialog,
@@ -10,12 +11,19 @@ import {
   Link as MUILink,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
   makeStyles,
+  Menu,
+  MenuItem,
   Paper,
   Toolbar,
   Typography
 } from "@material-ui/core";
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import SettingsIcon from '@material-ui/icons/Settings';
 import BugReportIcon from '@material-ui/icons/BugReport';
 import { useRouter } from 'next/router';
 import NextLink from 'next/link';
@@ -28,6 +36,8 @@ import { DebugModeContext } from "../../contexts/debug-mode.context";
 import { LoginFormDialog } from "../forms/login.form.dialog";
 import { RegisterFormDialog } from "../forms/register.form.dialog";
 import { useDialog } from "../../hooks/use-dialog.hook";
+import { useMenu } from "../../hooks/use-menu.hook";
+import { flsx } from "../../helpers/flsx.helper";
 
 interface ITopBarProps {
   //
@@ -71,6 +81,8 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+
+
 export function TopBar(props: ITopBarProps) {
   const { api, me } = useContext(ApiContext);
   const classes = useStyles();
@@ -78,11 +90,13 @@ export function TopBar(props: ITopBarProps) {
   const debugMode = useContext(DebugModeContext);
 
   const router = useRouter();
-  const [logout, logoutResult] = useMutation(async () => {
+  const [doLogout, logoutResult] = useMutation(async () => {
     await api.credentials.signOut();
     // router.push('/'); 
   });
 
+  const handleLogout = useCallback(() => doLogout(), [doLogout]);
+  const cogMenu = useMenu();
   const loginDialog = useDialog();
   const registerDialog = useDialog();
 
@@ -136,30 +150,39 @@ export function TopBar(props: ITopBarProps) {
                 </MUILink>
               </NextLink>
             </ListItem>
-            {me && (
-              <ListItem className={classes.navItem}>
-                <MUILink onClick={() => logout()} className={clsx(classes.navItem, classes.logout)} color="inherit">
-                  {`(${me.name}) Logout`}
-                </MUILink>
-              </ListItem>
-            )}
-            {!me && (
-              <>
-                <ListItem className={classes.navItem}>
-                  <Button color={registerDialog.isOpen ? 'primary' : 'inherit'} className="text-transform-none" onClick={registerDialog.doOpen}>
-                    Register
-                  </Button>
-                </ListItem>
-                <ListItem className={classes.navItem}>
-                  <Button color={loginDialog.isOpen ? 'primary' : 'inherit'} className="text-transform-none" onClick={loginDialog.doOpen}>
-                    Login
-                  </Button>
-                </ListItem>
-              </>
-            )}
-            <ListItem className={classes.navItem}>
-              <Button color={debugMode.isOn ? 'primary' : 'inherit'} onClick={debugMode.toggle}>
-                <BugReportIcon />
+            <ListItem>
+              {/* todo position menu UNDER button */}
+              <Menu
+                anchorEl={cogMenu.anchor}
+                keepMounted
+                open={cogMenu.isOpen}
+                onClose={cogMenu.doClose}
+              >
+                {!me && (
+                  <MenuItem color="primary" onClick={flsx(registerDialog.doOpen, cogMenu.doClose)}>
+                    <ListItemIcon><PersonAddIcon /></ListItemIcon>
+                    <ListItemText primary="register" />
+                  </MenuItem>
+                )}
+                {!me && (
+                  <MenuItem onClick={flsx(loginDialog.doOpen, cogMenu.doClose) }>
+                    <ListItemIcon><AccountCircleIcon /></ListItemIcon>
+                    <ListItemText primary="login" />
+                  </MenuItem>
+                )}
+                {me && (
+                  <MenuItem onClick={flsx(handleLogout, cogMenu.doClose)}>
+                    <ListItemIcon><ExitToAppIcon /></ListItemIcon>
+                    <ListItemText primary="logout" />
+                  </MenuItem>
+                )}
+                <MenuItem onClick={flsx(debugMode.toggle, cogMenu.doClose)}>
+                  <ListItemIcon><BugReportIcon color={debugMode.isOn ? 'primary' : 'inherit'} /></ListItemIcon>
+                  <ListItemText primary="debug mode" />
+                </MenuItem>
+              </Menu>
+              <Button onClick={cogMenu.doOpen}>
+                <SettingsIcon />
               </Button>
             </ListItem>
             <ListItem className={classes.navItem}>
