@@ -6,12 +6,12 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import theme from '../theme';
 import { Layout } from '../components/layout/layout';
-import { ApiProvider } from '../contexts/api.context';
-import { NpmsApiProvider } from '../contexts/npms-api.context';
-import { CmsProvider } from '../contexts/cms.context';
-import { PublicEnvProvider } from '../contexts/public-env.context';
+import { ApiProvider } from '../components-contexts/api.context';
+import { NpmsApiProvider } from '../components-contexts/npms-api.context';
+import { CmsProvider } from '../components-contexts/cms.context';
+import { PublicEnvProvider } from '../components-contexts/public-env.context';
 import { AppProps } from 'next/app';
-import { DebugModeProvider } from '../contexts/debug-mode.context';
+import { DebugModeProvider } from '../components-contexts/debug-mode.context';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 
 interface IMyAppProps extends AppProps {

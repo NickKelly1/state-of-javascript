@@ -21,13 +21,13 @@ import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { ApiException } from "../../backend-api/api.exception";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { ApiContext } from "../../contexts/api.context";
+import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
+import { ApiContext } from "../../components-contexts/api.context";
 import { change } from "../../helpers/change.helper";
 import { useFormStyles } from "../../hooks/use-form-styles.hook";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { OrPromise } from "../../types/or-promise.type";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
-import { IWithDialogueProps, WithDialogue } from "../with-dialog/with-dialog";
 
 
 export interface IRegisterFormDialogProps extends IWithDialogueProps {

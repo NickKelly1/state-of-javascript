@@ -4,7 +4,7 @@ import MUILink from '@material-ui/core/Link';
 import { gql } from "graphql-request";
 import React, { useCallback, useContext, } from "react";
 import { Permission } from "../../../backend-api/services/permission/permission.const";
-import { ApiContext } from "../../../contexts/api.context";
+import { ApiContext } from "../../../components-contexts/api.context";
 import { EditNewsArticlePageQuery, UpdateNewsArticle, UpdateNewsArticleMutationVariables, ViewNewsArticlePageQuery, ViewNewsArticlePageQueryVariables } from "../../../generated/graphql";
 import { ist } from "../../../helpers/ist.helper";
 import { staticPathsHandler, staticPropsHandler } from "../../../helpers/static-props-handler.helper";

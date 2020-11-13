@@ -5,7 +5,8 @@ import React, { ChangeEventHandler, FormEventHandler, MouseEventHandler, useCall
 import { useMutation } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
-import { ApiContext } from "../../contexts/api.context";
+import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
+import { ApiContext } from "../../components-contexts/api.context";
 import { MutateRoleFormUpdateMutation, MutateRoleFormUpdateMutationVariables, MutateRoleFromCreateMutation, MutateRoleFromCreateMutationVariables } from "../../generated/graphql";
 import { change } from "../../helpers/change.helper";
 import { ist } from "../../helpers/ist.helper";
@@ -14,7 +15,6 @@ import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { useUpdate } from "../../hooks/use-update.hook";
 import { Id } from "../../types/id.type";
 import { OrNullable } from "../../types/or-nullable.type";
-import { IWithDialogueProps, WithDialogue } from "../with-dialog/with-dialog";
 
 const mutateRoleFormCreateMutation = gql`
 mutation MutateRoleFromCreate(
@@ -65,15 +65,15 @@ mutation MutateRoleFormUpdate(
 }
 `;
 
-export interface IMutateRoleFormOnSuccessFnArg { id: Id; name: string };
-export interface IMutateRoleFormOnSuccessFn { (arg: IMutateRoleFormOnSuccessFnArg): any }
-export interface IMutateRoleFormRole { id: Id; name: string; };
-export interface IMutateRoleFormProps extends IWithDialogueProps {
-  role?: OrNullable<IMutateRoleFormRole>;
-  onSuccess?: IMutateRoleFormOnSuccessFn;
+export interface IRoleMutateFormOnSuccessFnArg { id: Id; name: string };
+export interface IRoleMutateFormOnSuccessFn { (arg: IRoleMutateFormOnSuccessFnArg): any }
+export interface IRoleMutateFormRole { id: Id; name: string; };
+export interface IRoleMutateFormProps extends IWithDialogueProps {
+  role?: OrNullable<IRoleMutateFormRole>;
+  onSuccess?: IRoleMutateFormOnSuccessFn;
 }
 
-export const  MutateRoleFormDialog = WithDialogue<IMutateRoleFormProps>({ fullWidth: true })((props) => {
+export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWidth: true })((props) => {
   const { role, onSuccess, dialog, } = props;
   const { api, me, } = useContext(ApiContext);
 
@@ -81,7 +81,7 @@ export const  MutateRoleFormDialog = WithDialogue<IMutateRoleFormProps>({ fullWi
 
   interface IFormState { name: string; };
   const [formState, setFormState] = useState<IFormState>(() => ({ name: role?.name ?? '', }));
-  const [doSubmit, submitState] = useMutation<IMutateRoleFormOnSuccessFnArg, ApiException>(
+  const [doSubmit, submitState] = useMutation<IRoleMutateFormOnSuccessFnArg, ApiException>(
     async () => {
       if (ist.notNullable(role)) {
         // update

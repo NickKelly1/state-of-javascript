@@ -1,7 +1,7 @@
 import React from "react";
-import { TopBar } from "../top-bar/top-bar";
+import { TopBar } from "./top-bar";
 import { AppProps } from 'next/app';
-import { Footer } from "../footer/footer";
+import { Footer } from "./footer";
 import { AppBar, Container, makeStyles, Paper, Toolbar } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({

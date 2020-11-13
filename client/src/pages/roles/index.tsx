@@ -58,13 +58,13 @@ import { useMutation, useQuery } from 'react-query';
 import { WithMemo } from '../../components/with-memo/with-memo';
 import clsx from 'clsx';
 import { formatRelative } from 'date-fns';
-import { RoleSection } from '../../components/role-section/role-section';
-import { ApiContext } from '../../contexts/api.context';
+import { RoleSection } from '../../components/roles/role-section';
+import { ApiContext } from '../../components-contexts/api.context';
 import { DebugException } from '../../components/debug-exception/debug-exception';
 import { ParsedUrlQuery } from 'querystring';
 import { OrNullable } from '../../types/or-nullable.type';
 import { IUseDialogReturn, useDialog } from '../../hooks/use-dialog.hook';
-import { MutateRoleFormDialog } from '../../components/mutate-role-form-dialog/mutate-role.form.dialog';
+import { RoleMutateFormDialog } from '../../components/roles/role-mutate.form.dialog';
 import { IIdentityFn } from '../../types/identity-fn.type';
 
 const RolesPageQueryName = 'RolesPageQuery'
@@ -328,7 +328,7 @@ function RolesPageContent(props: IRolesPageContentProps) {
 
   return (
     <>
-      <MutateRoleFormDialog dialog={createRoleDialog} onSuccess={handleRoleCreated} />
+      <RoleMutateFormDialog dialog={createRoleDialog} onSuccess={handleRoleCreated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Typography component="h1" variant="h1">

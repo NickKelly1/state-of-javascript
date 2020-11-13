@@ -33,7 +33,7 @@ import {
 } from "../../backend-api/normalise-api-exception.helper";
 import {
   ApiContext,
-} from "../../contexts/api.context";
+} from "../../components-contexts/api.context";
 import {
   RoleRolePermissionFormUpdateMutation,
   RoleRolePermissionFormUpdateMutationVariables,

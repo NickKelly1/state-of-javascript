@@ -13,14 +13,13 @@ import { useMutation } from "react-query";
 import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { ApiContext } from "../../contexts/api.context";
+import { ApiContext } from "../../components-contexts/api.context";
 import { useFormStyles } from "../../hooks/use-form-styles.hook";
-import { IWithDialogueProps, WithDialogue } from "../with-dialog/with-dialog";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { change } from "../../helpers/change.helper";
 import { ApiException } from "../../backend-api/api.exception";
-import { IWithFormProps, WithForm } from "../with-form/with-form";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
+import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 
 
 const useStyles = makeStyles((theme) => ({

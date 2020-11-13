@@ -1,16 +1,42 @@
-import { Box, Button, CircularProgress, Dialog, DialogContent, DialogTitle, FormHelperText, Grid, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  FormHelperText,
+  Grid,
+  Typography,
+} from '@material-ui/core';
 import BugReportIcon from '@material-ui/icons/BugReport';
 import { gql } from 'graphql-request';
-import React, { FormEventHandler, useCallback, useContext, useMemo, useState } from 'react';
-import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from 'react-beautiful-dnd';
+import React, {
+  FormEventHandler,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  OnDragEndResponder,
+} from 'react-beautiful-dnd';
 import { useMutation, useQuery } from 'react-query';
 import { Api } from '../../backend-api/api';
 import { ApiException } from '../../backend-api/api.exception';
 import { IMeHash } from '../../backend-api/api.me';
 import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
-import { ApiContext } from '../../contexts/api.context';
-import { DebugModeContext } from '../../contexts/debug-mode.context';
-import { NpmsDashbortSortFormQuery, NpmsDashbortSortFormQueryVariables, NpmsDashbortSortFormSubmitMutation, NpmsDashbortSortFormSubmitMutationVariables } from '../../generated/graphql';
+import { ApiContext } from '../../components-contexts/api.context';
+import { DebugModeContext } from '../../components-contexts/debug-mode.context';
+import {
+  NpmsDashbortSortFormQuery,
+  NpmsDashbortSortFormQueryVariables,
+  NpmsDashbortSortFormSubmitMutation,
+  NpmsDashbortSortFormSubmitMutationVariables,
+} from '../../generated/graphql';
 import { ist } from '../../helpers/ist.helper';
 import { useUpdate } from '../../hooks/use-update.hook';
 import { Id } from '../../types/id.type';
@@ -18,9 +44,9 @@ import { OrUndefined } from '../../types/or-undefined.type';
 import { DebugException } from '../debug-exception/debug-exception';
 import { JsonDownloadButton } from '../json-download-button/json-download-button';
 import { JsonPretty } from '../json-pretty/json-pretty';
-import { NpmsPackageComboSearch } from '../npms-package-combo-search/npms-package-combo-search';
-import { WhenDebugMode } from '../when-debug-mode/when-debug-mode';
-import { WithRandomId } from '../with-random-id/with-random-id';
+import { NpmsPackageComboSearch } from './npms-package-combo-search';
+import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
+import { WithRandomId } from '../../components-hoc/with-random-id/with-random-id';
 
 const NpmsDashbortSortFormQueryName = 'NpmsDashbortSortFormQuery';
 const npmsDashboardSortFormQuery = gql`

@@ -1,5 +1,5 @@
 import { ReactChildren, ReactNode, useContext, PropsWithChildren } from "react";
-import { DebugModeContext } from "../../contexts/debug-mode.context";
+import { DebugModeContext } from "../../components-contexts/debug-mode.context";
 import { ist } from "../../helpers/ist.helper";
 import { nodeify } from "../../helpers/nodeify.helper";
 

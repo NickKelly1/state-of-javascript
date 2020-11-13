@@ -9,7 +9,7 @@ import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { Markdown } from "../markdown/markdown";
-import { ApiContext } from "../../contexts/api.context";
+import { ApiContext } from "../../components-contexts/api.context";
 import { CreateNewsArticle, CreateNewsArticleMutationVariables, } from "../../generated/graphql";
 import { pretty } from "../../helpers/pretty.helper";
 import { serverSidePropsHandler } from "../../helpers/server-side-props-handler.helper";

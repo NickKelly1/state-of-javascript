@@ -16,13 +16,13 @@ import React, { useCallback, useContext, useMemo, useState } from "react";
 import { useQuery } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
-import { ApiContext } from "../../contexts/api.context";
+import { ApiContext } from "../../components-contexts/api.context";
 import { RoleDetailDataQuery, RoleDetailDataQueryVariables } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
 import { Id } from "../../types/id.type";
 import { DebugException } from "../debug-exception/debug-exception";
 import { NotFound } from "../not-found/not-found";
-import { IMutateRoleFormRole, MutateRoleFormDialog } from "../mutate-role-form-dialog/mutate-role.form.dialog";
+import { IRoleMutateFormRole, RoleMutateFormDialog } from "./role-mutate.form.dialog";
 import { IIdentityFn } from "../../types/identity-fn.type";
 import { useDialog } from "../../hooks/use-dialog.hook";
 
@@ -134,14 +134,14 @@ function RoleDetailContent(props: IRoleDetailContentProps) {
     () => { onSuccess(); editRoleDialog.doClose(); },
     [onSuccess, editRoleDialog.doClose],
   );
-  const roleFormData: IMutateRoleFormRole = useMemo(
+  const roleFormData: IRoleMutateFormRole = useMemo(
     () => ({ id: role.data.id, name: role.data.name }),
     [role],
   );
 
   return (
     <>
-      <MutateRoleFormDialog dialog={editRoleDialog} role={roleFormData} onSuccess={handleRoleUpdated} />
+      <RoleMutateFormDialog dialog={editRoleDialog} role={roleFormData} onSuccess={handleRoleUpdated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Typography component="h2" variant="h2">

@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/core';
 import React, { CSSProperties, useContext } from 'react';
-import { PublicEnvContext } from '../../contexts/public-env.context';
+import { PublicEnvContext } from '../../components-contexts/public-env.context';
 import { OrNull } from '../../types/or-null.type';
 import { OrNullable } from '../../types/or-nullable.type';
 import { IInlineImgProps, InlineImg } from '../inline-img/inline-img';

@@ -24,20 +24,21 @@ import { JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables }
 import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { pretty } from '../../helpers/pretty.helper';
-import { FittedPieChart } from '../../components/fitted-pie-chart/fitted-pie-chart';
+import { FittedPieChart } from '../fitted-pie-chart/fitted-pie-chart';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
-import { Legend } from '../../components/legend/legend';
+import { Legend } from '../legend/legend';
 import { PieChartDatum } from '../../types/pie-chart-datum.type';
 import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
-import { FittedBarChart } from '../../components/fitted-bar-chart/fitted-bar-chart';
-import { INpmsPackageSearchOption, } from '../../components/npms-package-combo-search/npms-package-combo-search';
-import { MutateNpmsDashboardForm, } from '../../components/mutate-npms-dashboard/mutate-npms-dashboard.form';
-import { ApiContext } from '../../contexts/api.context';
+import { FittedBarChart } from '../fitted-bar-chart/fitted-bar-chart';
+import { INpmsPackageSearchOption, } from './npms-package-combo-search';
+import { NpmsDashboardMutateForm, } from './npms-dashboard-mutate.form';
+import { ApiContext } from '../../components-contexts/api.context';
 import { Id } from '../../types/id.type';
-import { DebugModeContext } from '../../contexts/debug-mode.context';
+import { DebugModeContext } from '../../components-contexts/debug-mode.context';
 import { JsonPretty } from '../json-pretty/json-pretty';
 import { JsonDownloadButton } from '../json-download-button/json-download-button';
-import { WhenDebugMode } from '../when-debug-mode/when-debug-mode';
+import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
+import { useDialog } from '../../hooks/use-dialog.hook';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -121,29 +122,10 @@ interface INpmsDashboardProps {
   onChange?: () => any;
 }
 
-const useStyles = makeStyles((theme) => ({
-  //
-}));
-
 export function NpmsDashboard(props: INpmsDashboardProps) {
   const { dashboard, onChange } = props;
-  const classes = useStyles();
   const { api, me } = useContext(ApiContext);
   const colours = useRandomDashColours();
-
-  type IMutationDialogState = | { isOpen: false; } | { isOpen: true; };
-  const [mutationDialogState, setMutationDialogState] = useState<IMutationDialogState>({ isOpen: false, });
-  const closeMutationDialog = useCallback(() => setMutationDialogState({ isOpen: false, }), []);
-  const openMutationDialog = useCallback(() => setMutationDialogState({ isOpen: true }), []);
-  const handleNpmsDialogCreated = useCallback(() => {
-    setMutationDialogState({ isOpen: false, });
-    onChange?.();
-  }, []);
-
-  type IDebugDialogState = | { isOpen: false; } | { isOpen: true; };
-  const [debugDialogState, setDebugDialogState] = useState<IDebugDialogState>({ isOpen: false, });
-  const closeDebugDialog = useCallback(() => setDebugDialogState({ isOpen: false, }), []);
-  const openDebugDialog = useCallback(() => setDebugDialogState({ isOpen: true }), []);
 
   const handleDeleteDashboard = useCallback(async () => {
     const vars: JsPageDeleteDashboardMutationVariables = { id: Number(dashboard.original.id) };
@@ -158,35 +140,33 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
     onChange?.();
   }, [dashboard.original.id]);
 
+  const debugDialog = useDialog();
+  const mutationDialog = useDialog();
+  const handleNpmsDialogCreated = useCallback(() => {
+    mutationDialog.doClose();
+    onChange?.();
+  }, []);
+
   const [showMore, setShowMore] = useState(false);
-  const debugMode = useContext(DebugModeContext);
+
 
   return (
     <>
-
-      {/* edit */}
-      <Dialog open={mutationDialogState.isOpen} onClose={closeMutationDialog}>
-        <DialogTitle>
-          Edit Dashboard
-        </DialogTitle>
-        <DialogContent dividers>
-          <MutateNpmsDashboardForm
-            initial={{
-              id: dashboard.original.id,
-              name: dashboard.original.name,
-              packages: dashboard.original.packages,
-            }}
-            onSuccess={handleNpmsDialogCreated}
-          />
-        </DialogContent>
-      </Dialog>
-
+      <NpmsDashboardMutateForm
+      dialog={mutationDialog}
+        initial={{
+          id: dashboard.original.id,
+          name: dashboard.original.name,
+          packages: dashboard.original.packages,
+        }}
+        onSuccess={handleNpmsDialogCreated}
+      />
       {/* debug */}
-      <Dialog open={debugDialogState.isOpen} onClose={closeDebugDialog} maxWidth="xl">
+      <Dialog open={debugDialog.isOpen} onClose={debugDialog.doClose} fullWidth>
         <DialogTitle>
           {`Debug information (${dashboard.original.name})`}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <Box mx={3} p={3} display="flex" justifyContent="flex-start" alignItems="flex-start" flexDirection="column">
@@ -227,14 +207,14 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
           <Box display="flex" justifyContent="center">
             <WhenDebugMode>
               <Box m={2}>
-                <Button variant="outlined" onClick={openDebugDialog}>
+                <Button variant="outlined" onClick={debugDialog.doClose}>
                   <BugReportIcon />
                 </Button>
               </Box>
             </WhenDebugMode>
             {dashboard.graphical.can.update && (
               <Box m={2}>
-                <Button variant="outlined" onClick={openMutationDialog}>
+                <Button variant="outlined" onClick={mutationDialog.doOpen}>
                   <EditIcon />
                 </Button>
               </Box>

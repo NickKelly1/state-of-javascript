@@ -10,12 +10,10 @@ import {
   Sector,
   Cell,
 } from 'recharts';
+import { WithoutFirstLoad } from '../../components-hoc/without-first-load/without-first-load';
 import { percent } from '../../helpers/percent.helper';
 import { ring } from '../../helpers/ring.helper';
-import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
-import { NpmsPackageInfos } from '../../npms-api/types/npms-package-info.type';
 import { PieChartDatum } from '../../types/pie-chart-datum.type';
-import { WithoutFirstLoad } from '../without-first-load/without-first-load';
 
 export interface IFittedPieChartProps {
   data: PieChartDatum[];

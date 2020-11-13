@@ -34,19 +34,19 @@ import { PieChartDatum } from '../../types/pie-chart-datum.type';
 import { shuffle } from '../../helpers/shuffle.helper';
 import { DashColours } from '../../dashboard-theme';
 import SeedRandom from 'seed-random';
-import { INpmsPackageSearchOption, } from '../../components/npms-package-combo-search/npms-package-combo-search';
-import { MutateNpmsDashboardForm, } from '../../components/mutate-npms-dashboard/mutate-npms-dashboard.form';
-import { ApiContext } from '../../contexts/api.context';
+import { INpmsPackageSearchOption, } from '../../components/npms/npms-package-combo-search';
+import { NpmsDashboardMutateForm, } from '../../components/npms/npms-dashboard-mutate.form';
+import { ApiContext } from '../../components-contexts/api.context';
 import { ist } from '../../helpers/ist.helper';
 import { useUpdate } from '../../hooks/use-update.hook';
-import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms-dashboard/npms-dashboard';
-import { NpmsDashboardSortForm } from '../../components/npms-dashboard-sort/npms-dashboard-sort.form';
+import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms/npms-dashboard';
 import { ApiException } from '../../backend-api/api.exception';
 import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { useQuery } from 'react-query';
 import { IIdentityFn } from '../../types/identity-fn.type';
 import { DebugException } from '../../components/debug-exception/debug-exception';
 import { useDialog } from '../../hooks/use-dialog.hook';
+import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form';
 
 const jsPageDeleteDashboardQuery = gql`
 mutation JsPageDeleteDashboard(
@@ -265,7 +265,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
       {data && (
         <Grid item xs={12}>
           <JavaScriptPageContent
-            {...props}
+            dashboards={data}
             onStale={refetch}
           />
         </Grid>
@@ -275,7 +275,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
 }
 
 interface IJavaScriptPageContentProps {
-  dashboards: Attempt<JsPageDashboardQuery, ApiException>;
+  dashboards: JsPageDashboardQuery;
   onStale?: IIdentityFn;
 }
 
@@ -287,9 +287,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
   const colours = useRandomDashColours();
 
   const dashes: OrNull<INpmsDashboardDatasets[]> = useMemo(() => {
-    if (!isSuccess(dashboards)) { return null; }
     const dashes: INpmsDashboardDatasets[] = dashboards
-      .value
       .npmsDashboards
       .nodes
       .filter(ist.notNullable)
@@ -528,22 +526,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
 
   return (
     <>
-      <Dialog open={createDashboardModal.isOpen} onClose={createDashboardModal.doClose}>
-        <DialogTitle>
-          Create Dashboard
-        </DialogTitle>
-        <DialogContent dividers>
-          <MutateNpmsDashboardForm onSuccess={handleNpmsDashboardCreated} />
-        </DialogContent>
-      </Dialog>
-      <Dialog open={sortDashboardsModal.isOpen} onClose={sortDashboardsModal.doClose}>
-        <DialogTitle>
-          Sort dashboards
-        </DialogTitle>
-        <DialogContent dividers>
-          <NpmsDashboardSortForm onSuccess={handleNpmsDashboardSorted} />
-        </DialogContent>
-      </Dialog>
+      <NpmsDashboardMutateForm dialog={createDashboardModal} onSuccess={handleNpmsDashboardCreated} />
       <Grid container spacing={2} className="text-center">
         <Grid item xs={12}>
           <Typography className={clsx(classes.title, 'text-left')} component="h2" variant="h2">

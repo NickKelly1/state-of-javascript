@@ -2,10 +2,10 @@ import BugReportIcon from '@material-ui/icons/BugReport';
 import { Grid, makeStyles, Typography } from '@material-ui/core';
 import React, { useContext } from 'react';
 import { ApiException } from "../../backend-api/api.exception";
-import { DebugModeContext } from '../../contexts/debug-mode.context';
+import { DebugModeContext } from '../../components-contexts/debug-mode.context';
 import { OrNullable } from '../../types/or-nullable.type';
 import { JsonPretty } from '../json-pretty/json-pretty';
-import { WhenDebugMode } from '../when-debug-mode/when-debug-mode';
+import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) => ({

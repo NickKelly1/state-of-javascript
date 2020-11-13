@@ -4,7 +4,7 @@ import NextLink from 'next/link';
 import MUILink from '@material-ui/core/Link';
 import { formatRelative } from 'date-fns';
 import { OrNull } from "../../types/or-null.type";
-import { ApiContext } from "../../contexts/api.context";
+import { ApiContext } from "../../components-contexts/api.context";
 import { Markdown } from "../markdown/markdown";
 
 const useStyles = makeStyles((theme) => ({

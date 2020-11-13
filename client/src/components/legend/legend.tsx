@@ -4,7 +4,7 @@ import { FullscreenExitRounded } from '@material-ui/icons';
 import React, { Fragment, useCallback, useContext, useMemo, useState } from 'react';
 import seedRandom from 'seed-random';
 import { ring } from '../../helpers/ring.helper';
-import { DebugModeContext } from '../../contexts/debug-mode.context';
+import { DebugModeContext } from '../../components-contexts/debug-mode.context';
 
 const useStyles = makeStyles((theme) => ({
   root: {

@@ -4,7 +4,7 @@ import React, { useCallback, useContext, useState } from "react";
 import { useMutation } from "react-query";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { ApiContext } from "../../contexts/api.context";
+import { ApiContext } from "../../components-contexts/api.context";
 import { CreateNewsArticle, CreateNewsArticleMutationVariables, } from "../../generated/graphql";
 import { staticPathsHandler, staticPropsHandler } from "../../helpers/static-props-handler.helper";
 import { INewsArticleFormData, NewsArticleForm } from "../../components/news/news-article.form";
