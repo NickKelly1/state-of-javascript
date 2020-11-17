@@ -64,6 +64,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.userRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { [UserField.id]: { [Op.in]: keys as UserId[] } }, }
       });
       const map = new Map(models.map(model => [model.id, model]));
@@ -82,6 +83,7 @@ export class Loader {
       const { runner } = this;
       const model = await this.ctx.services.roleRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { [RoleField.id]: { [Op.in]: keys as RoleId[] } }, },
       });
       const map = new Map(model.map(user => [user.id, user]));
@@ -100,6 +102,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.userRoleRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { [UserRoleField.id]: { [Op.in]: keys as UserRoleId[] } }, },
       });
       const map = new Map(models.map(model => [model.id, model]));
@@ -118,6 +121,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.permissionRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { id: { [Op.in]: keys as PermissionId[] } }, },
       });
       const map = new Map(models.map(model => [model.id, model]));
@@ -136,6 +140,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.rolePermissionRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { id: { [Op.in]: keys as RolePermissionId[] } }, },
       });
       const map = new Map(models.map(model => [model.id, model]));
@@ -154,6 +159,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.newsArticleRepository.findAll({
           runner,
+          unscoped: true,
         options: { where: { id: { [Op.in]: keys as NewsArticleId[] } } },
       });
       const map = new Map(models.map(model => [model.id, model]));
@@ -172,6 +178,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.newsArticleStatusRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { id: { [Op.in]: keys as NewsArticleId[] } } },
       });
       const map = new Map(models.map(model => [model.id, model]));
@@ -190,6 +197,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.npmsPackageRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { id: { [Op.in]: keys as NpmsPackageId[] } } },
       });
       const map = new Map(models.map(model => [model.id, model]));
@@ -208,6 +216,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.npmsDashboardRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { id: { [Op.in]: keys as NpmsDashboardId[] } } },
       });
       const map = new Map(models.map(model => [model.id, model]));
@@ -226,6 +235,7 @@ export class Loader {
       const { runner } = this;
       const models = await this.ctx.services.npmsDashboardItemRepository.findAll({
         runner,
+        unscoped: true,
         options: { where: { id: { [Op.in]: keys as NpmsDashboardItemId[] } } },
       });
       const map = new Map(models.map(model => [model.id, model]));

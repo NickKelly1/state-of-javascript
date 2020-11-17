@@ -1,17 +1,17 @@
 import { GraphQLInputObjectType, GraphQLInt, GraphQLNonNull } from 'graphql';
 import Joi from 'joi';
 
-export interface IDeleteNpmsDashboardInput {
+export interface IRejectNpmsDashboardGqlInput {
   id: number;
 }
 
-export const DeleteNpmsDashboardGqlInput = new GraphQLInputObjectType({
-  name: 'DeleteNpmsDashboard',
+export const RejectNpmsDashboardGqlInput = new GraphQLInputObjectType({
+  name: 'RejectNpmsDashboard',
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), },
   }),
 })
 
-export const DeleteNpmsDashboardValidator = Joi.object<IDeleteNpmsDashboardInput>({
+export const RejectNpmsDashboardGqlInputValidator = Joi.object<IRejectNpmsDashboardGqlInput>({
   id: Joi.number().integer().positive().required(),
 });

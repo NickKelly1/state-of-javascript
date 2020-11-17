@@ -32,16 +32,13 @@ export class NewsArticleStatusModel extends Model<INewsArticleStatusAttributes, 
 
   // eager loaded associations
   [NewsArticleStatusAssociation.articles]?: NewsArticleModel[];
-
-  // associations
-  getUser!: BelongsToGetAssociationMixin<UserModel>;
 }
 
 
 export const initNewsArticleStatusModel: ModelInitFn = (arg) => {
   const { sequelize, env } = arg;
   NewsArticleStatusModel.init({
-    id: AutoIncrementingId,
+    id: { type: DataTypes.INTEGER, primaryKey: true, },
     name: { type: DataTypes.STRING(NewsArticleStatusDefinition.name.max), allowNull: false, },
     ...pretendAuditable,
   }, {

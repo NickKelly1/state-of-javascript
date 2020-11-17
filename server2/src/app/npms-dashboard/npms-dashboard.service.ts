@@ -1,17 +1,16 @@
-import { NpmsDashboardModel } from '../../circle';
-import { assertDefined } from '../../common/helpers/assert-defined.helper';
+import { NpmsDashboardModel, UserModel } from '../../circle';
 import { Combinator } from '../../common/helpers/combinator.helper';
 import { ist } from '../../common/helpers/ist.helper';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { OrNull } from '../../common/types/or-null.type';
-import { OrNullable } from '../../common/types/or-nullable.type';
 import { QueryRunner } from '../db/query-runner';
 import { NpmsDashboardItemField } from '../npms-dashboard-item/npms-dashboard-item.attributes';
 import { NpmsDashboardItemModel } from '../npms-dashboard-item/npms-dashboard-item.model';
+import { NpmsDashboardStatus } from '../npms-dashboard-status/npms-dashboard-status.const';
 import { NpmsPackageModel } from '../npms-package/npms-package.model';
-import { ICreateNpmsDashboardInput } from './dtos/create-npms-dashboard.gql';
-import { ISortNpmsDashboardInput } from './dtos/sort-npms-dashboard.gql';
-import { IUpdateNpmsDashboardInput } from './dtos/update-npms-dashboard.gql';
+import { INpmsDashboardServiceCreateNpmsDashboardDto } from './dto/npms-dashboard-service.create-npms-dashboard.dto';
+import { INpmsDashboardServiceUpdateNpmsDashboardDto } from './dto/npms-dashboard-service.update-npms-dashboard.dto';
+import { ISortNpmsDashboardInput } from './gql-input/sort-npms-dashboard.gql';
 import { NpmsDashboardField } from './npms-dashboard.attributes';
 
 export class NpmsDashboardService {
@@ -21,23 +20,9 @@ export class NpmsDashboardService {
     //
   }
 
-  async create(arg: {
-    runner: QueryRunner;
-    dto: ICreateNpmsDashboardInput,
-  }): Promise<NpmsDashboardModel> {
-    const { runner, dto } = arg;
-    const { transaction } = runner;
-
-    // get highest order...
-    const count = await NpmsDashboardModel.count({ transaction });
-    const NpmsDashboard = NpmsDashboardModel.build({ name: dto.name, order: count - 1, });
-    await NpmsDashboard.save({ transaction });
-
-    return NpmsDashboard;
-  }
 
   /**
-   * Sort all dashboards
+   * Sort all NpmsDashboards
    *
    * @param arg
    */
@@ -90,7 +75,7 @@ export class NpmsDashboardService {
 
 
   /**
-   * Synchronise dashboard items
+   * Synchronise NpmsDashboardItems for an NpmsDashboard
    *
    * @param arg
    */
@@ -148,14 +133,41 @@ export class NpmsDashboardService {
 
 
   /**
-   * Update the model
+   * Create an NpmsDashboard
+   *
+   * @param arg
+   */
+  async create(arg: {
+    runner: QueryRunner;
+    owner: UserModel;
+    dto: INpmsDashboardServiceCreateNpmsDashboardDto,
+  }): Promise<NpmsDashboardModel> {
+    const { runner, owner, dto } = arg;
+    const { transaction } = runner;
+
+    // get highest order...
+    const count = await NpmsDashboardModel.count({ transaction });
+    const NpmsDashboard = NpmsDashboardModel.build({
+      name: dto.name,
+      order: count - 1,
+      owner_id: owner.id,
+      status_id: dto.status_id,
+    });
+    await NpmsDashboard.save({ transaction });
+
+    return NpmsDashboard;
+  }
+
+
+  /**
+   * Update an NpmsDashboard
    *
    * @param arg
    */
   async update(arg: {
     runner: QueryRunner;
     model: NpmsDashboardModel;
-    dto: IUpdateNpmsDashboardInput,
+    dto: INpmsDashboardServiceUpdateNpmsDashboardDto,
   }): Promise<NpmsDashboardModel> {
     const { runner, model, dto } = arg;
     const { transaction } = runner;
@@ -166,13 +178,12 @@ export class NpmsDashboardService {
 
 
   /**
-   * Soft delete the model
+   * SoftDelete an NpmsDashboard
    * 
    * @param arg
    */
   async softDelete(arg: {
     model: NpmsDashboardModel;
-    items: NpmsDashboardItemModel[];
     runner: QueryRunner;
   }): Promise<NpmsDashboardModel> {
     const { model, runner } = arg;
@@ -183,7 +194,7 @@ export class NpmsDashboardService {
 
 
   /**
-   * Hard delete the model
+   * HardDelete an NpmsDashboard
    * 
    * @param arg
    */
@@ -198,6 +209,105 @@ export class NpmsDashboardService {
     await Promise.all(items.map(item => item.destroy({ transaction })));
     // hard delete dashboard
     await model.destroy({ transaction, force: true });
+    return model;
+  }
+
+
+  /**
+   * Restore an NpmsDashboard
+   * 
+   * @param arg
+   */
+  async restore(arg: {
+    model: NpmsDashboardModel;
+    runner: QueryRunner;
+  }): Promise<NpmsDashboardModel> {
+    const { model, runner } = arg;
+    const { transaction } = runner;
+    await model.restore({ transaction, });
+    return model;
+  }
+
+
+  /**
+   * Submit the NpmsDashboard for Approval
+   */
+  async submit(arg: {
+    model: NpmsDashboardModel;
+    runner: QueryRunner;
+  }): Promise<NpmsDashboardModel> {
+    const { model, runner } = arg;
+    const { transaction } = runner;
+    model.status_id = NpmsDashboardStatus.Submitted;
+    await model.save({ transaction });
+    return model;
+  }
+
+
+  /**
+   * Reject the NpmsDashboard Submission
+   *
+   * @param arg
+   */
+  async reject(arg: {
+    model: NpmsDashboardModel;
+    runner: QueryRunner;
+  }): Promise<NpmsDashboardModel> {
+    const { model, runner } = arg;
+    const { transaction } = runner;
+    model.status_id = NpmsDashboardStatus.Rejected;
+    await model.save({ transaction });
+    return model;
+  }
+
+
+  /**
+   * Approve the NpmsDashboard for Publishing
+   *
+   * @param arg
+   */
+  async approve(arg: {
+    model: NpmsDashboardModel;
+    runner: QueryRunner;
+  }): Promise<NpmsDashboardModel> {
+    const { model, runner } = arg;
+    const { transaction } = runner;
+    model.status_id = NpmsDashboardStatus.Approved;
+    await model.save({ transaction });
+    return model;
+  }
+
+
+  /**
+   * Publish the NpmsDashboard
+   *
+   * @param arg
+   */
+  async publish(arg: {
+    model: NpmsDashboardModel;
+    runner: QueryRunner;
+  }): Promise<NpmsDashboardModel> {
+    const { model, runner } = arg;
+    const { transaction } = runner;
+    model.status_id = NpmsDashboardStatus.Published;
+    await model.save({ transaction });
+    return model;
+  }
+
+
+  /**
+   * Unpublish the NpmsDashboard
+   *
+   * @param arg
+   */
+  async unpublish(arg: {
+    model: NpmsDashboardModel;
+    runner: QueryRunner;
+  }): Promise<NpmsDashboardModel> {
+    const { model, runner } = arg;
+    const { transaction } = runner;
+    model.status_id = NpmsDashboardStatus.Unpublished;
+    await model.save({ transaction });
     return model;
   }
 }

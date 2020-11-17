@@ -36,7 +36,8 @@ query ViewNewsArticlePage(
       can{
         show
         update
-        delete
+        softDelete
+        hardDelete
       }
       data{
         id
@@ -125,7 +126,7 @@ function ViewNewsArticlePage(props: IViewNewsArticlePageProps) {
                 </NextLink>
               </Box>
             )}
-            {article.can.delete && (
+            {article.can.softDelete && (
               <Box m={1}>
                 <Button variant="outlined" color="secondary">
                   Delete

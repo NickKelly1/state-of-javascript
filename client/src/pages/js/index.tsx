@@ -50,29 +50,6 @@ import { useDialog } from '../../hooks/use-dialog.hook';
 import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form';
 import { flsx } from '../../helpers/flsx.helper';
 
-const jsPageDeleteDashboardQuery = gql`
-mutation JsPageDeleteDashboard(
-  $id:Int!
-){
-  deleteNpmsDashboard(
-    dto:{
-      id:$id
-    }
-  ){
-    cursor,
-    can{
-      show
-      update
-      delete
-    }
-    data{
-      id
-      name
-    }
-  }
-}
-`;
-
 const JsPageDashboardQueryName = 'JsPageDashboardQuery';
 const jsPageDashboardQuery = gql`
 query JsPageDashboard(
@@ -89,6 +66,7 @@ query JsPageDashboard(
   ){
     can{
       show
+      sort
       create
     }
     pagination{
@@ -104,7 +82,8 @@ query JsPageDashboard(
       can{
         show
         update
-        delete
+        softDelete
+        hardDelete
       }
       data{
         id
@@ -133,7 +112,8 @@ query JsPageDashboard(
             cursor
             can{
               show
-              delete
+              softDelete
+              hardDelete
             }
             data{
               id
@@ -317,7 +297,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
             colours,
             can: {
               update: dashNode.can.update,
-              delete: dashNode.can.delete,
+              softDelete: dashNode.can.softDelete,
               show: dashNode.can.show,
             },
             overview: {
@@ -531,16 +511,20 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 Dashboards
               </Typography>
             </Box>
-            <Box px={1}>
-              <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
-                <AddIcon />
-              </IconButton>
-            </Box>
-            <Box px={1}>
-              <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
-                <SortIcon />
-              </IconButton>
-            </Box>
+            {dashboards.npmsDashboards.can.create && (
+              <Box px={1}>
+                <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
+                  <AddIcon />
+                </IconButton>
+              </Box>
+            )}
+            {dashboards.npmsDashboards.can.sort && (
+              <Box px={1}>
+                <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
+                  <SortIcon />
+                </IconButton>
+              </Box>
+            )}
           </Box>
         </Grid>
         {(dashes ?? []).map(dashboard => (

@@ -22,14 +22,11 @@ Migration scripts are inside `src/scripts`
 
 ### Migration:up
 
-To run migrations up, use the npm cli to run the `package.json` script: `npm run migrate:up -- --step=2`
+To run migrations up, use the npm cli to run the `package.json` script: `npm run migration:up -- --step=2`
 
-### MIgrations::down
+### Migrations::down
 
-To run migrations down, use the npm cli to run the `package.json` script: `npm run migrate:down -- --step=2`
-
-To run migrations up, use the npm cli to run the `package.json` script: `npm run migrate:up -- --step=2`
-
+To run migrations down, use the npm cli to run the `package.json` script: `npm run migration:down -- --step=2 --step=batch|number`
 
 ### Psql
 

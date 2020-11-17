@@ -3,24 +3,22 @@ import { UserModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { ForbiddenException } from "../../../common/exceptions/types/forbidden.exception";
 import { NotFoundException } from "../../../common/exceptions/types/not-found.exception";
-import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
-import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
+import { ist } from "../../../common/helpers/ist.helper";
 import { RoleLang } from "../../../common/i18n/packs/role.lang";
 import { UserLang } from "../../../common/i18n/packs/user.lang";
-import { collectionMeta } from "../../../common/responses/collection-meta";
-import { OrNull } from "../../../common/types/or-null.type";
 import { QueryRunner } from "../../db/query-runner";
-import { CreateNewsArticleGqlInput } from "../../news-article/dtos/create-news-article.gql";
 import { RoleId } from "../../role/role.id.type";
 import { RoleModel } from "../../role/role.model";
+import { ICreateUserPasswordDto } from "../../user-password/dtos/create-user-password.dto";
+import { IUpdateUserPasswordDto } from "../../user-password/dtos/update-user-password.dto";
 import { UserRoleModel } from "../../user-role/user-role.model";
-import { CreateUserGqlInput, CreateUserValidator } from "../dtos/create-user.gql";
-import { DeleteUserGqlInput, DeleteUserValidator } from "../dtos/delete-user.gql";
-import { UpdateUserGqlInput, UpdateUserValidator } from "../dtos/update-user.gql";
+import { CreateUserGqlInput, CreateUserValidator } from "../gql-input/create-user.gql";
+import { DeleteUserGqlInput, DeleteUserValidator } from "../gql-input/delete-user.gql";
+import { UpdateUserGqlInput, UpdateUserValidator } from "../gql-input/update-user.gql";
+import { IUserServiceCreateUserDto } from "../service-dto/user-service.create-user.dto";
+import { IUserServiceUpdateUserDto } from "../service-dto/user-service.update-user.dto";
 import { UserAssociation } from "../user.associations";
-import { IUserCollectionGqlNodeSource, UserCollectionGqlNode } from "./user.collection.gql.node";
-import { UserCollectionOptionsGqlInput } from "./user.collection.gql.options";
 import { IUserGqlNodeSource, UserGqlNode } from "./user.gql.node";
 
 export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = () => ({
@@ -30,8 +28,22 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
     resolve: async (parent, args, ctx): Promise<IUserGqlNodeSource> => {
       ctx.authorize(ctx.services.userPolicy.canCreate());
       const dto = ctx.validate(CreateUserValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const user = await ctx.services.userService.create({ runner, dto: { name: dto.name, }, });
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const serviceDto: IUserServiceCreateUserDto = {
+          name: dto.name,
+          email: dto.email ?? null,
+          verified: false,
+          deactivated: false,
+        };
+        const user = await ctx.services.userService.create({ runner, dto: serviceDto });
+
+        // create password
+        if (ist.notNullable(dto.password)) {
+          const passwordDto: ICreateUserPasswordDto = { password: dto.password };
+          await ctx.services.userPasswordService.create({ runner, user, dto: passwordDto });
+        }
+
+        // link roles
         if (dto.role_ids?.length) {
           await authorizeAndSyncrhoniseUserRoles({
             ctx,
@@ -43,7 +55,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         }
         return user;
       });
-      return model;
+      return final;
     },
   },
 
@@ -52,13 +64,46 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
     args: { dto: { type: GraphQLNonNull(UpdateUserGqlInput), }, },
     resolve: async (parent, args, ctx): Promise<IUserGqlNodeSource> => {
       const dto = ctx.validate(UpdateUserValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const user = await ctx.services.userRepository.findByPkOrfail(dto.id, {
           runner,
-          options: { include: [{ association: UserAssociation.userRoles }] },
+          options: { include: [
+            { association: UserAssociation.userRoles },
+            { association: UserAssociation.password },
+          ] },
         });
         ctx.authorize(ctx.services.userPolicy.canUpdate({ model: user }));
-        await ctx.services.userService.update({ runner, model: user, dto: { name: dto.name ?? undefined, }, });
+        const serviceDto: IUserServiceUpdateUserDto = {
+          name: dto.name ?? undefined,
+          email: dto.email,
+          verified: undefined,
+          deactivated: undefined,
+        };
+
+        // deactivate?
+        if (ist.notNullable(dto.deactivated)) {
+          ctx.authorize(ctx.services.userPolicy.canDeactivate({ model: user }));
+          serviceDto.deactivated = dto.deactivated;
+        }
+        await ctx.services.userService.update({ runner, model: user, dto: serviceDto, });
+
+        // change password?
+        // create / update password
+        if (ist.notNullable(dto.password)) {
+          ctx.authorize(ctx.services.userPolicy.canUpdatePassword({ model: user }));
+          const oldPassword = user.password;
+          if (!oldPassword) {
+            // create
+            const passwordDto: ICreateUserPasswordDto = { password: dto.password };
+            await ctx.services.userPasswordService.create({ runner, user, dto: passwordDto });
+          } else {
+            // update
+            const passwordDto: IUpdateUserPasswordDto = { password: dto.password };
+            await ctx.services.userPasswordService.update({ runner, model: oldPassword, dto: passwordDto });
+          }
+        }
+
+        // link / unlink roles
         if (dto.role_ids?.length) {
           const currentUserRoles = assertDefined(user.userRoles);
           await authorizeAndSyncrhoniseUserRoles({
@@ -71,7 +116,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         }
         return user;
       });
-      return model;
+      return final;
     },
   },
 
@@ -80,9 +125,9 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
     args: { dto: { type: GraphQLNonNull(DeleteUserGqlInput), }, },
     resolve: async (parent, args, ctx): Promise<boolean> => {
       const dto = ctx.validate(DeleteUserValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const user = await ctx.services.userRepository.findByPkOrfail(dto.id, { runner, });
-        ctx.authorize(ctx.services.userPolicy.canDelete({ model: user }));
+        ctx.authorize(ctx.services.userPolicy.canSoftDelete({ model: user }));
         await ctx.services.userService.delete({ model: user, runner });
         return user;
       });
@@ -152,7 +197,7 @@ async function authorizeAndSyncrhoniseUserRoles(arg: {
   const forbiddenFromDeleting = unexpected.filter(userRole => !ctx
     .services
     .userRolePolicy
-    .canDelete({
+    .canHardDelete({
       model: userRole,
       role: assertDefined(allRolesMap.get(userRole.role_id)),
       user,

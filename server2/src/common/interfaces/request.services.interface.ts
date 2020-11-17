@@ -33,6 +33,9 @@ import { NpmsDashboardPolicy } from "../../app/npms-dashboard/npms-dashboard.pol
 import { NpmsDashboardItemService } from "../../app/npms-dashboard-item/npms-dashboard-item.service";
 import { NpmsDashboardItemPolicy } from "../../app/npms-dashboard-item/npms-dashboard-item.policy";
 import { NpmsDashboardItemRepository } from "../../app/npms-dashboard-item/npms-dashboard-item.repository";
+import { NpmsDashboardStatusPolicy } from "../../app/npms-dashboard-status/npms-dashboard-status.policy";
+import { NpmsDashboardStatusRepository } from "../../app/npms-dashboard-status/npms-dashboard-status.repository";
+import { NpmsDashboardStatusService } from "../../app/npms-dashboard-status/npms-dashboard-status.service";
 
 export interface IRequestServices {
   universal: IUniversalServices;
@@ -64,6 +67,10 @@ export interface IRequestServices {
   newsArticleStatusService: NewsArticleStatusService;
   newsArticleStatusRepository: NewsArticleStatusRepository;
   newsArticleStatusPolicy: NewsArticleStatusPolicy;
+
+  npmsDashboardStatusService: NpmsDashboardStatusService;
+  npmsDashboardStatusRepository: NpmsDashboardStatusRepository;
+  npmsDashboardStatusPolicy: NpmsDashboardStatusPolicy;
 
   userPasswordService: UserPasswordService,
   userPasswordRepository: UserPasswordRepository;

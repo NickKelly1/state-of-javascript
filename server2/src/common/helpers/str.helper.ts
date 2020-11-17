@@ -30,4 +30,13 @@ export const Str = {
     if (haystack.toLowerCase().endsWith(needle.toLowerCase())) return haystack;
     return `${haystack}${needle}`;
   },
+  dontEndWith: (arg: { haystack: string, needle: string, caseSensitive?: boolean }): string => {
+    const { haystack, needle, caseSensitive } = arg;
+    if (caseSensitive) {
+      if (haystack.endsWith(needle)) return haystack.substr(0, haystack.length - needle.length);
+      return haystack;
+    }
+    if (haystack.toLowerCase().startsWith(needle.toLowerCase())) return haystack.substr(0, haystack.length - needle.length);
+    return haystack;
+  },
 }

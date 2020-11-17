@@ -226,10 +226,10 @@ export class ApiCredentials {
    * @param arg
    */
   async signIn(
-    props: { name: string; password: string },
+    props: { name_or_email: string; password: string },
     opts?: { unlocked?: boolean; },
   ): Promise<IAuthenticationRo> {
-    const { name, password } = props
+    const { name_or_email, password } = props
     const { unlocked } = opts ?? {};
     const release = unlocked ? null : await this.authenticationLock.acquire();
 
@@ -245,7 +245,7 @@ export class ApiCredentials {
             'Content-Type': 'application/json',
             'Accepts': 'application/json',
           },
-          body: JSON.stringify({ name, password }),
+          body: JSON.stringify({ name_or_email, password }),
         },
       );
       const result: IAuthenticationRo = await response.json();
@@ -277,10 +277,10 @@ export class ApiCredentials {
    * @param arg
    */
   async signUp(
-    props: { name: string, password: string, },
+    props: { name: string; email: string; password: string; },
     opts?: { unlocked?: boolean; },
   ): Promise<IAuthenticationRo> {
-    const { name, password } = props;
+    const { name, email, password } = props;
     const { unlocked } = opts ?? {};
     const release = unlocked ? null : await this.authenticationLock.acquire();
     try {
@@ -295,7 +295,7 @@ export class ApiCredentials {
             'Content-Type': 'application/json',
             'Accepts': 'application/json',
           },
-          body: JSON.stringify({ name, password }),
+          body: JSON.stringify({ name, email, password }),
         },
       );
       const result: IAuthenticationRo = await response.json();

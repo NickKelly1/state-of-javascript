@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { UserId } from "../../app/user/user.id.type";
+import { UserModel } from "../../app/user/user.model";
 import { RequestAuth } from "../classes/request-auth";
 import { Exception } from "../exceptions/exception";
 import { LangSwitch } from "../i18n/helpers/lange-match.helper"

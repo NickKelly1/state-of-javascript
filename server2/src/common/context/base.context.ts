@@ -16,6 +16,7 @@ import { Loader } from "../classes/loader";
 import { RequestAuth } from "../classes/request-auth";
 import { OrNullable } from "../types/or-nullable.type";
 import { NotFoundException } from "../exceptions/types/not-found.exception";
+import { UserModel } from "../../app/user/user.model";
 
 export abstract class BaseContext implements IRequestContext {
   abstract readonly auth: RequestAuth;

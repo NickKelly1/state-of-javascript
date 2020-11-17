@@ -44,7 +44,8 @@ mutation CreateNpmsPackageForm(
     cursor
     can{
       show
-      delete
+      softDelete
+      hardDelete
     }
     data{
       id
@@ -69,10 +70,12 @@ export interface INpmsPackageCreateFormProps extends IWithDialogueProps {
 export const NpmsPackageCreateForm = WithDialogue<INpmsPackageCreateFormProps>({ fullWidth: true })((props) => {
   const { dialog, onSuccess, className } = props;
   const { api, me, } = useContext(ApiContext);
-  const seq = useRef(0);
   const [formState, setFormState] = useState<CreateNpmsPackageFormMutationVariables>(({ name: '' }));
-  const [doSubmit, submitState] = useMutation<CreateNpmsPackageFormMutation, IApiException, CreateNpmsPackageFormMutationVariables>(
-    async (vars: CreateNpmsPackageFormMutationVariables) => {
+  const [doSubmit, submitState] = useMutation<CreateNpmsPackageFormMutation, IApiException>(
+    async () => {
+      const vars: CreateNpmsPackageFormMutationVariables = {
+        name: formState.name,
+      };
       const result = await api
         .connector
         .graphql<CreateNpmsPackageFormMutation, CreateNpmsPackageFormMutationVariables>(
@@ -112,7 +115,7 @@ export const NpmsPackageCreateForm = WithDialogue<INpmsPackageCreateFormProps>({
             <Grid item xs={12}>
             </Grid>
             {isDisabled && (
-              <Grid item xs={12}>
+              <Grid className="centered" item xs={12}>
                 <CircularProgress />
               </Grid>
             )}

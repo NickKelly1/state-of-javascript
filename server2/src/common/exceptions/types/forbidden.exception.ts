@@ -7,7 +7,7 @@ import { HttpCode } from '../../constants/http-code.const';
 
 export const ForbiddenException = (arg?: Partial<IExceptionArg>): IThrowable => (ctx) => {
   return new Exception({
-    code: HttpCode.UNAUTHENTICATED,
+    code: HttpCode.FORBIDDEN,
     name: 'ForbiddenException',
     ctx,
     ...arg,

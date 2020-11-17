@@ -5,13 +5,13 @@ import { id } from "../schemas/constants/id.const";
 import { updated_at } from "../schemas/constants/updated_at.const";
 
 // initialise the migrations table
-export interface IMigrationAttributes extends IAuditable {
+export interface IMigrationAttributes {
   id: number;
-  path: string;
   name: string;
   number: number;
   batch: number;
+  ran_at: Date;
 }
 
-export interface IMigrationCreationAttributes extends Optional<IMigrationAttributes, | id | created_at | updated_at> {};
+export interface IMigrationCreationAttributes extends Optional<IMigrationAttributes, | id > {};
 

@@ -45,6 +45,9 @@ import { NpmsDashboardItemField } from './app/npms-dashboard-item/npms-dashboard
 import { NpmsDashboardAssociation } from './app/npms-dashboard/npms-dashboard.associations';
 import { NpmsDashboardField } from './app/npms-dashboard/npms-dashboard.attributes';
 import { NpmsDashboardItemAssociation } from './app/npms-dashboard-item/npms-dashboard-item.associations';
+import { initNpmsDashboardStatusModel, NpmsDashboardStatusModel } from './app/npms-dashboard-status/npms-dashboard-status.model';
+import { NpmsDashboardStatusAssociation } from './app/npms-dashboard-status/npms-dashboard-status.associations';
+import { NpmsDashboardStatusField } from './app/npms-dashboard-status/npms-dashboard-status.attributes';
 
 
 /**
@@ -123,6 +126,7 @@ async function initialiseWithTransaction(arg: {
   initNewsArticleStatusModel({ env, sequelize, });
   initNewsArticleModel({ env, sequelize, });
   initNpmsModel({ env, sequelize, });
+  initNpmsDashboardStatusModel({ env, sequelize, });
   initNpmsDashboardModel({ env, sequelize, });
   initNpmsDashboardItemModel({ env, sequelize, });
 
@@ -137,6 +141,7 @@ async function initialiseWithTransaction(arg: {
   UserModel.hasMany(UserRoleModel, { as: UserAssociation.userRoles, sourceKey: UserField.id, foreignKey: UserRoleField.user_id, })
   UserModel.belongsToMany(RoleModel, { as: UserAssociation.roles, through: UserRoleModel as typeof Model, sourceKey: UserField.id, targetKey: RoleField.id, foreignKey: UserRoleField.user_id, otherKey: UserRoleField.role_id });
   UserModel.hasMany(NewsArticleModel, { as: UserAssociation.newsArticles, sourceKey: UserField.id, foreignKey: NewsArticleField.author_id, })
+  UserModel.hasMany(NpmsDashboardModel, { as: UserAssociation.npmsDashboards, sourceKey: UserField.id, foreignKey: NpmsDashboardField.owner_id, })
 
   // user password
   UserPasswordModel.belongsTo(UserModel, { as: UserPasswordAssociation.user, foreignKey: UserPasswordField.user_id, targetKey: UserField.id, });
@@ -166,13 +171,18 @@ async function initialiseWithTransaction(arg: {
   // news article status
   NewsArticleStatusModel.hasMany(NewsArticleModel, { as: NewsArticleStatusAssociation.articles, sourceKey: NewsArticleStatusField.id, foreignKey: NewsArticleField.status_id, })
 
-  // npms
+  // npms packages
   NpmsPackageModel.hasMany(NpmsDashboardItemModel, { as: NpmsPackageAssociation.dashboard_items, sourceKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })
   NpmsPackageModel.belongsToMany(NpmsDashboardModel, { as: NpmsPackageAssociation.dashboards, through: NpmsDashboardItemModel as typeof Model, sourceKey: NpmsPackageField.id, targetKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.npms_package_id, otherKey: NpmsDashboardItemField.dashboard_id });
 
+  // npms dashboard status
+  NpmsDashboardStatusModel.hasMany(NpmsDashboardModel, { as: NpmsDashboardStatusAssociation.dashboards, sourceKey: NpmsDashboardItemField.id, foreignKey: NpmsDashboardField.status_id, })
+
   // npms dashboard
   NpmsDashboardModel.hasMany(NpmsDashboardItemModel, { as: NpmsDashboardAssociation.items, sourceKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, })
+  NpmsDashboardModel.belongsTo(UserModel, { as: NpmsDashboardAssociation.owner, targetKey: UserField.id, foreignKey: NpmsDashboardField.owner_id, });
   NpmsDashboardModel.belongsToMany(NpmsPackageModel, { as: NpmsDashboardAssociation.packages, through: NpmsDashboardItemModel as typeof Model, sourceKey: NpmsDashboardField.id, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.dashboard_id, otherKey: NpmsDashboardItemField.npms_package_id });
+  NpmsDashboardModel.belongsTo(NpmsDashboardStatusModel, { as: NpmsDashboardAssociation.status, targetKey: NpmsDashboardStatusField.id, foreignKey: NpmsDashboardField.status_id, })
 
   // npms dashboard item
   NpmsDashboardItemModel.belongsTo(NpmsPackageModel, { as: NpmsDashboardItemAssociation.package, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })

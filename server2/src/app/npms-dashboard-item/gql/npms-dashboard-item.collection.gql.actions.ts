@@ -12,11 +12,5 @@ export const NpmsDashboardItemCollectionGqlActions = new GraphQLObjectType<INpms
         return ctx.services.npmsDashboardItemPolicy.canFindMany();
       },
     },
-    create: {
-      type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.npmsDashboardItemPolicy.canCreate();
-      },
-    },
   },
 });

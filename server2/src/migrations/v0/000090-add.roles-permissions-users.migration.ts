@@ -42,235 +42,168 @@ interface IMigrationUserRole {
 
 const now = new Date();
 
-const permissions: IMigrationPermission[] = [{
-  id: 10,
-  name: 'super-admin',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 100,
-  name: 'show-user',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 110,
-  name: 'create-user',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 120,
-  name: 'update-user',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 130,
-  name: 'delete-user',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 140,
-  name: 'manage-user',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 200,
-  name: 'show-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 210,
-  name: 'create-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 220,
-  name: 'update-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 230,
-  name: 'delete-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 240,
-  name: 'manage-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 300,
-  name: 'show-permission',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 400,
-  name: 'show-user-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 410,
-  name: 'create-user-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 420,
-  name: 'update-user-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 430,
-  name: 'delete-user-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 440,
-  name: 'manage-user-role',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 500,
-  name: 'show-role-permission',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 510,
-  name: 'create-role-permission',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 520,
-  name: 'update-role-permission',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 530,
-  name: 'delete-role-permission',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 540,
-  name: 'manage-role-permission',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 600,
-  name: 'show-news-article',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 610,
-  name: 'create-news-article',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 620,
-  name: 'update-news-article',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 630,
-  name: 'delete-news-article',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 640,
-  name: 'manage-news-article',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 700,
-  name: 'show-news-article-status',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}];
+function getData() {
+  // TODO: update policies & gql actions & permission const names (keys)...
+  const permissions: IMigrationPermission[] = [
+    // users
+    { id: 10, name: 'super-admin', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 100, name: 'show-users', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 101, name: 'show-user-identities', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 110, name: 'create-users', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 111, name: 'register-users', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 120, name: 'update-users', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 121, name: 'update-user-self', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 122, name: 'update-user-passwords', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 130, name: 'soft-delete-users', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 131, name: 'soft-delete-user-self', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 132, name: 'hard-delete-users', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 133, name: 'restore-users', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 140, name: 'manage-users', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 141, name: 'deactivate-users', created_at: now, updated_at: now, deleted_at: null, },
 
-const roles: IMigrationRole[] = [{
-  id: 1,
-  name: 'admin',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 2,
-  name: 'public',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}];
+    // roles
+    { id: 200, name: 'show-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 210, name: 'create-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 220, name: 'update-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 230, name: 'soft-delete-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 231, name: 'hard-delete-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 232, name: 'restore-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 240, name: 'manage-roles', created_at: now, updated_at: now, deleted_at: null, },
+
+    // permissions
+    { id: 300, name: 'show-permissions', created_at: now, updated_at: now, deleted_at: null, },
+
+    // user-roles
+    { id: 400, name: 'show-user-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 410, name: 'create-user-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 420, name: 'update-user-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 430, name: 'hard-delete-user-roles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 440, name: 'manage-user-roles', created_at: now, updated_at: now, deleted_at: null, },
+
+    // role-permissions
+    { id: 500, name: 'show-role-permissions', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 510, name: 'create-role-permissions', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 520, name: 'update-role-permissions', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 530, name: 'delete-role-permissions', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 540, name: 'manage-role-permissions', created_at: now, updated_at: now, deleted_at: null, },
+
+    // news-articles
+    { id: 600, name: 'show-news-articles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 610, name: 'create-news-articles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 620, name: 'update-news-articles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 621, name: 'update-own-news-articles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 630, name: 'soft-delete-news-articles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 631, name: 'hard-delete-news-articles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 632, name: 'restore-news-articles', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 640, name: 'manage-news-articles', created_at: now, updated_at: now, deleted_at: null, },
+
+    // news-article-statuses
+    { id: 700, name: 'show-news-article-statuses', created_at: now, updated_at: now, deleted_at: null, },
+
+    // npms-packages
+    { id: 800, name: 'show-npms-packages', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 810, name: 'create-npms-packages', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 820, name: 'update-npms-packages', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 830, name: 'soft-delete-npms-packages', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 831, name: 'hard-delete-npms-packages', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 832, name: 'restore-npms-packages', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 840, name: 'manage-npms-packages', created_at: now, updated_at: now, deleted_at: null, },
+
+    // npms dashboards
+    { id: 900, name: 'show-npms-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 910, name: 'create-npms-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 920, name: 'update-npms-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 921, name: 'update-own-npms-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 930, name: 'soft-delete-npms-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 931, name: 'hard-delete-npms-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 932, name: 'restore-npms-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 940, name: 'manage-npms-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+
+    // npms dashboards items
+    { id: 1000, name: 'show-npms-dashboard-items', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1010, name: 'create-npms-dashboard-items', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1020, name: 'update-npms-dashboard-items', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1021, name: 'update-own-npms-dashboard-items', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1030, name: 'hard-delete-npms-dashboard-items', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1031, name: 'hard-delete-own-npms-dashboard-items', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1040, name: 'manage-npms-dashboard-items', created_at: now, updated_at: now, deleted_at: null, },
+
+    // npms-dashboard-statuses
+    { id: 1100, name: 'show-npms-dashboard-statuses', created_at: now, updated_at: now, deleted_at: null, },
+  ];
+
+  const roles: IMigrationRole[] = [{
+    id: 1,
+    name: 'admin',
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  },
+  {
+    id: 2,
+    name: 'public',
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  }];
 
 
-// give the admin role all permissions
-const rolePermissions: IMigrationRolePermission[] = permissions.map((permission): IMigrationRolePermission => ({
-  // admin role => every permission
-  role_id: 1,
-  permission_id: permission.id,
-  created_at: now,
-  updated_at: now,
-}));
+  // give the admin role all permissions
+  const rolePermissions: IMigrationRolePermission[] = permissions.map((permission): IMigrationRolePermission => ({
+    // admin role => every permission
+    role_id: 1,
+    permission_id: permission.id,
+    created_at: now,
+    updated_at: now,
+  }));
 
 
-const users: IMigrationUser[] = [{
-  id: 1,
-  name: 'Admin',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 2,
-  name: 'System',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}, {
-  id: 3,
-  name: 'Anonymous',
-  created_at: now,
-  updated_at: now,
-  deleted_at: null,
-}];
+  const users: IMigrationUser[] = [{
+    id: 1,
+    name: 'Admin',
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  },
+  {
+    id: 2,
+    name: 'System',
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  },
+  {
+    id: 3,
+    name: 'Anonymous',
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  }];
 
 
-const userRoles: IMigrationUserRole[] = [{
-  // admin user => admin role
-  user_id: 1,
-  role_id: 1,
-  created_at: now,
-  updated_at: now,
-}, {
-  // system user => admin role
-  user_id: 2,
-  role_id: 1,
-  created_at: now,
-  updated_at: now,
-}];
+  const userRoles: IMigrationUserRole[] = [{
+    // admin user => admin role
+    user_id: 1,
+    role_id: 1,
+    created_at: now,
+    updated_at: now,
+  },
+  {
+    // system user => admin role
+    user_id: 2,
+    role_id: 1,
+    created_at: now,
+    updated_at: now,
+  }];
+
+  return {
+    permissions,
+    rolePermissions,
+    roles,
+    users,
+    userRoles,
+  };
+}
 
 
 // name for debugging purposes only
@@ -279,6 +212,7 @@ export default class implements IMigration {
 
   up = async (arg: IMigrationUpArg) => {
     const { env, queryInterface, sequelize, transaction } = arg;
+    const { permissions, rolePermissions, roles, userRoles, users } = getData();
     await queryInterface.bulkInsert('permissions', permissions, { transaction });
     await queryInterface.bulkInsert('roles', roles, { transaction });
     await queryInterface.bulkInsert('role_permissions', rolePermissions, { transaction });
@@ -296,10 +230,8 @@ export default class implements IMigration {
       updated_at: now,
     }], { transaction });
 
-    const maxPerm = permissions.reduce((p, c) => c.id > p ? c.id : p, 0);
     const maxRole = roles.reduce((p, c) => c.id > p ? c.id : p, 0);
     const maxUser = users.reduce((p, c) => c.id > p ? c.id : p, 0);
-    await sequelize.query(`SELECT setval('permissions_id_seq', ${maxPerm})`, { transaction });
     await sequelize.query(`SELECT setval('roles_id_seq', ${maxRole})`, { transaction });
     await sequelize.query(`SELECT setval('users_id_seq', ${maxUser})`, { transaction });
 
@@ -307,7 +239,7 @@ export default class implements IMigration {
 
   down = async (arg: IMigrationDownArg) => {
     const { env, queryInterface, sequelize, transaction, } = arg;
-
+    const { permissions, rolePermissions, roles, userRoles, users } = getData();
     await queryInterface.bulkDelete(
       'user_passwords',
       { user_id: 1, },

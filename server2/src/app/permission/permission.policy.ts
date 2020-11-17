@@ -14,7 +14,7 @@ export class PermissionPolicy {
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ShowPermission,
+      Permission.ShowPermissions,
     ]);
   }
 
@@ -23,7 +23,7 @@ export class PermissionPolicy {
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ShowPermission,
+      Permission.ShowPermissions,
     ]);
   }
 

@@ -11,43 +11,26 @@ import { IRefreshToken, RefreshTokenGqlObj } from "../token/refresh.token.gql";
 // ---- input ----
 // ---------------
 
-export interface ISignupGqlInput {
+export interface ISignupDto {
   name: string;
+  email: string;
   password: string;
 }
 
-export const SignupGqlInputValidator = Joi.object<ISignupGqlInput>({
+export const SignupDtoValidator = Joi.object<ISignupDto>({
   name: Joi.string().min(UserDefinition.name.min).max(UserDefinition.name.max).required(),
+  email: Joi.string().min(UserDefinition.name.min).max(UserDefinition.name.max).required(),
   password: Joi.string().min(UserPasswordDefinition.password.min).max(UserPasswordDefinition.password.max).required(),
 });
 
-export const SignupGqlInput = new GraphQLInputObjectType({
-  name: 'SignupInput',
-  fields: () => ({
-    name: { type: GraphQLNonNull(GraphQLString) },
-    password: { type: GraphQLNonNull(GraphQLString) },
-  }),
-});
 
 // ----------------
 // ---- output ----
 // ----------------
 
-export interface ISignupGqlObj {
+export interface ISignupRo {
   access_token: string;
   refresh_token: string;
   access_token_object: IAccessToken;
   refresh_token_object: IRefreshToken;
-  // user: OrNull<IUserGqlNode>;
 }
-
-export const SignupGqlObj = new GraphQLObjectType({
-  name: 'SignupObject',
-  fields: () => ({
-    access_token: { type: GraphQLNonNull(GraphQLString) },
-    refresh_token: { type: GraphQLNonNull(GraphQLString) },
-    access_token_object: { type: GraphQLNonNull(AccessTokenGqlObj) },
-    refresh_token_object: { type: GraphQLNonNull(RefreshTokenGqlObj) },
-    // user: { type: UserGqlNode }
-  }),
-});

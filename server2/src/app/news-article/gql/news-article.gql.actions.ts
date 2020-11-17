@@ -20,15 +20,25 @@ export const NewsArticleGqlActions = new GraphQLObjectType<INewsArticleGqlAction
     update: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: async (parent, args, ctx): Promise<boolean> => {
-        const author = await ctx.loader.users.load(parent.author_id);
-        return ctx.services.newsArticlePolicy.canUpdate({ model: parent, author });
+        return ctx.services.newsArticlePolicy.canUpdate({ model: parent });
       },
     },
-    delete: {
+    softDelete: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: async (parent, args, ctx): Promise<boolean> => {
-        const author = await ctx.loader.users.load(parent.author_id);
-        return ctx.services.newsArticlePolicy.canDelete({ model: parent, author });
+        return ctx.services.newsArticlePolicy.canSoftDelete({ model: parent });
+      },
+    },
+    hardDelete: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.newsArticlePolicy.canHardDelete({ model: parent });
+      },
+    },
+    restore: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.newsArticlePolicy.canRestore({ model: parent });
       },
     },
     submit: {

@@ -17,10 +17,22 @@ export const NpmsPackageGqlActions = new GraphQLObjectType<INpmsPackageGqlAction
         return ctx.services.npmsPackagePolicy.canFindOne({ model: parent });
       },
     },
-    delete: {
+    softDelete: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: async (parent, args, ctx): Promise<boolean> => {
-        return ctx.services.npmsPackagePolicy.canDelete({ model: parent });
+        return ctx.services.npmsPackagePolicy.canSoftDelete({ model: parent });
+      },
+    },
+    hardDelete: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.npmsPackagePolicy.canHardDelete({ model: parent });
+      },
+    },
+    restore: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        return ctx.services.npmsPackagePolicy.canRestore({ model: parent });
       },
     },
   },

@@ -12,6 +12,12 @@ export const UserCollectionGqlActions = new GraphQLObjectType<IUserCollectionGql
         return ctx.services.userPolicy.canFindMany();
       },
     },
+    register: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canRegister();
+      },
+    },
     create: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {

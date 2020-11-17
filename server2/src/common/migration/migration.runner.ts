@@ -53,12 +53,10 @@ export class MigrationRunner {
         { tableName: _migrations, },
         {
           id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, },
-          path: { type: DataTypes.STRING(600), allowNull: false },
-          name: { type: DataTypes.STRING(300), allowNull: false },
+          name: { type: DataTypes.STRING(600), allowNull: false },
           number: { type: DataTypes.INTEGER, unique: true, allowNull: false },
           batch: { type: DataTypes.INTEGER, allowNull: false },
-          [created_at]: { type: DataTypes.DATE, allowNull: false, },
-          [updated_at]: { type: DataTypes.DATE, allowNull: false, },
+          ran_at: { type: DataTypes.DATE, allowNull: false },
         },
         { transaction: this.transaction, },
       );
@@ -251,8 +249,8 @@ export class MigrationRunner {
       const migrationRecord = MigrationModel.build({
         batch: nextBatch,
         number: descriptor.number,
-        name: Str.beforeLastDot(descriptor.name),
-        path: descriptor.file,
+        name: Str.dontEndWith({ needle: this.env.EXT, haystack: Str.beforeLastDot(descriptor.name) }),
+        ran_at: new Date(),
       });
       logger.info(`migrating up (${(i + 1).toString().padStart(2, ' ')} / ${runCount.toString().padStart(2, ' ')}): ${descriptor.number} - ${descriptor.name}`);
       await migrationRecord.save({ transaction: this.transaction });

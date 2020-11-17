@@ -16,8 +16,8 @@ export class UserRolePolicy {
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUserRole,
-      Permission.ShowUserRole,
+      Permission.ManageUserRoles,
+      Permission.ShowUserRoles,
     ]);
   }
 
@@ -27,8 +27,8 @@ export class UserRolePolicy {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUserRole,
-      Permission.ShowUserRole,
+      Permission.ManageUserRoles,
+      Permission.ShowUserRoles,
     ]);
   }
 
@@ -41,8 +41,8 @@ export class UserRolePolicy {
     if (user.isAnonymous()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUserRole,
-      Permission.CreateUserRole,
+      Permission.ManageUserRoles,
+      Permission.CreateUserRoles,
     ]);
   }
 
@@ -54,8 +54,8 @@ export class UserRolePolicy {
     if (role.isPublic()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUserRole,
-      Permission.CreateUserRole,
+      Permission.ManageUserRoles,
+      Permission.CreateUserRoles,
     ]);
   }
 
@@ -67,7 +67,8 @@ export class UserRolePolicy {
     return this.canCreateForUser({ user }) && this.canCreateForRole({ role });
   }
 
-  canDeleteForUser(arg: {
+
+  canHardDeleteForUser(arg: {
     user: UserModel;
   }): boolean {
     const { user } = arg;
@@ -76,12 +77,13 @@ export class UserRolePolicy {
     if (user.isAnonymous()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUserRole,
-      Permission.DeleteUserRole,
+      Permission.ManageUserRoles,
+      Permission.HardDeleteUserRoles,
     ]);
   }
 
-  canDeleteForRole(arg: {
+
+  canHardDeleteForRole(arg: {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
@@ -89,17 +91,18 @@ export class UserRolePolicy {
     if (role.isPublic()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUserRole,
-      Permission.DeleteUserRole,
+      Permission.ManageUserRoles,
+      Permission.HardDeleteUserRoles,
     ]);
   }
 
-  canDelete(arg: {
+
+  canHardDelete(arg: {
     model: UserRoleModel;
     user: UserModel;
     role: RoleModel;
   }): boolean {
     const { model, user, role } = arg;
-    return this.canDeleteForUser({ user }) && this.canDeleteForRole({ role });
+    return this.canHardDeleteForUser({ user }) && this.canHardDeleteForRole({ role });
   }
 }

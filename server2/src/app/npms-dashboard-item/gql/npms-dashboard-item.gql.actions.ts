@@ -5,6 +5,7 @@ import {
 } from "graphql";
 import { NpmsDashboardItemModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
+import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 
 
 export type INpmsDashboardItemGqlActionsSource = NpmsDashboardItemModel;
@@ -13,14 +14,16 @@ export const NpmsDashboardItemGqlActions = new GraphQLObjectType<INpmsDashboardI
   fields: {
     show: {
       type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.npmsDashboardItemPolicy.canFindOne({ model: parent });
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        const dashboard = await ctx.loader.npmsDashboard.load(parent.dashboard_id).then(assertDefined);
+        return ctx.services.npmsDashboardItemPolicy.canFindOne({ model: parent, dashboard });
       },
     },
-    delete: {
+    hardDelete: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: async (parent, args, ctx): Promise<boolean> => {
-        return ctx.services.npmsDashboardItemPolicy.canDelete({ model: parent });
+        const dashboard = await ctx.loader.npmsDashboard.load(parent.dashboard_id).then(assertDefined);
+        return ctx.services.npmsDashboardItemPolicy.canHardDelete({ model: parent, dashboard });
       },
     },
   },

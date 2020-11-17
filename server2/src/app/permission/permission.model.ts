@@ -41,7 +41,7 @@ export class PermissionModel extends Model<IPermissionAttributes, IPermissionCre
 export const initPermissionModel: ModelInitFn = (arg) => {
   const { env, sequelize } = arg;
   PermissionModel.init({
-    id: AutoIncrementingId,
+    id: { type: DataTypes.INTEGER, primaryKey: true, },
     name: {
       type: DataTypes.STRING(PermissionDefinition.name.max),
       unique: true,

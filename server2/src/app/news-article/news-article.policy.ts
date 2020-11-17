@@ -14,8 +14,9 @@ export class NewsArticlePolicy {
     //
   }
 
+
   /**
-   * Can the requester view many news articles?
+   * Can the Requester Show NewsArticles?
    *
    * @param arg
    */
@@ -24,13 +25,14 @@ export class NewsArticlePolicy {
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle,
-      Permission.ShowNewsArticle,
+      Permission.ManageNewsArticles,
+      Permission.ShowNewsArticles,
     ]);
   }
 
+
   /**
-   * Can the requester view this newsa article?
+   * Can the Requester Show this NewsArticle?
    *
    * @param arg
    */
@@ -38,15 +40,25 @@ export class NewsArticlePolicy {
     model: NewsArticleModel;
   }): boolean {
     const { model } = arg;
+
+    const isAuthor = this.ctx.auth.isMeByUserId(model.author_id);
+    if (
+      isAuthor
+      && !model.isSoftDeleted()
+      && this.ctx.auth.hasAnyPermissions([Permission.ShowNewsArticles])
+    ) {
+      return true;
+    }
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle,
-      Permission.ShowNewsArticle,
+      Permission.ManageNewsArticles,
     ]);
   }
 
+
   /**
-   * Can the requester create this news article?
+   * Can the Requester Create NewsArticles?
    *
    * @param arg
    */
@@ -55,76 +67,101 @@ export class NewsArticlePolicy {
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle,
-      Permission.CreateNewsArticle,
+      Permission.ManageNewsArticles,
+      Permission.CreateNewsArticles,
     ]);
   }
 
 
   /**
-   * Can the request update this news article?
+   * Can the Request Update this NewsArticle?
    *
    * @param arg
    */
   canUpdate(arg: {
-    author: OrNullable<UserModel>;
     model: NewsArticleModel;
   }): boolean {
-    const { author, model } = arg;
+    const { model } = arg;
 
-    // admin
-    if (this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticle,
-    ])) {
+    const isAuthor = this.ctx.auth.isMeByUserId(model.author_id);
+    if (isAuthor
+      && !model.isSoftDeleted()
+      && this.ctx.auth.hasAnyPermissions([Permission.UpdateOwnNewsArticles])
+    ) {
       return true;
     };
 
-    if (!author) return false;
-
-    // is author & is still a draft
-    const isAuthor = this.ctx.auth.user_id === author.id;
-    const isDraft = model.status_id === NewsArticleStatus.Draft;
-    if (isAuthor && isDraft && this.ctx.auth.hasAnyPermissions([ Permission.UpdateNewsArticle ])) {
+    if (!model.isSoftDeleted()
+      && Permission.UpdateNewsArticles
+    ) {
       return true;
     }
 
-    return false;
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNewsArticles,
+    ]);
   }
 
+
   /**
-   * Can the requester delete this news article?
+   * Can the Requester SoftDelete this NewsArticle?
    *
    * @param arg
    */
-  canDelete(arg: {
-    author: OrNullable<UserModel>;
+  canSoftDelete(arg: {
     model: NewsArticleModel;
   }): boolean {
-    const { author, model } = arg;
+    const { model } = arg;
+    if (model.isSoftDeleted()) return false;
 
-    // admin
-    if (this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle,
-    ])) {
-      return true;
-    };
-
-    if (!author) return false;
-
-    // is author
-    const isAuthor = model.author_id === this.ctx.auth.user_id;
-    if (isAuthor && this.ctx.auth.hasAnyPermissions([ Permission.DeleteNewsArticle ])) {
-      return true;
-    }
-
-    return false;
+      Permission.ManageNewsArticles,
+      Permission.SoftDeleteDeleteNewsArticles,
+    ]);
   }
 
 
   /**
-   * Can the requester submit this news article?
+   * Can the Requester HardDelete this NewsArticle?
+   *
+   * @param arg
+   */
+  canHardDelete(arg: {
+    model: NewsArticleModel
+  }): boolean {
+    const { model } = arg;
+
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNewsArticles,
+      Permission.HardDeleteDeleteNewsArticles,
+    ]);
+  }
+
+
+  /**
+   * Can the Requester Restore this NewsArticle?
+   *
+   * @param arg
+   */
+  canRestore(arg: {
+    model: NewsArticleModel;
+  }): boolean {
+    const { model } = arg;
+    if (!model.isSoftDeleted()) return false;
+
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageNewsArticles,
+      Permission.RestoreNewsArticles,
+    ]);
+  }
+
+
+  /**
+   * Can the Requester Submit this NewsArticle?
    *
    * @param arg
    */
@@ -132,30 +169,15 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
-
+    if (model.isSoftDeleted()) return false;
     // can only submit drafts
-    if (model.status_id !== NewsArticleStatus.Draft) return false;
-
-    // admin
-    if (this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticle
-    ])) {
-      return true;
-    }
-
-    // is author & has perm
-    const isAuthor = model.author_id === this.ctx.auth.user_id;
-    if (isAuthor && this.ctx.auth.hasAnyPermissions([Permission.CreateNewsArticle])) {
-      return true;
-    }
-
-    return false;
+    if (!model.isDraft()) return false;
+    return this.canUpdate({ model });
   }
 
 
   /**
-   * Can the requester reject this news article?
+   * Can the requester Reject this NewsArticle?
    *
    * @param arg
    */
@@ -163,26 +185,19 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
-
-
+    if (model.isSoftDeleted()) return false;
     // can only reject submitted articles
-    if (model.status_id !== NewsArticleStatus.Submitted) return false;
+    if (!model.isSubmitted()) return false;
 
-    // admin
-    if (this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle
-    ])) {
-      return true;
-    }
-
-    return false;
-    //
+      Permission.ManageNewsArticles
+    ]);
   }
 
 
   /**
-   * Can the requester approve this news article?
+   * Can the requester Approve this NewsArticle?
    *
    * @param arg
    */
@@ -190,25 +205,19 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
-
-
+    if (model.isSoftDeleted()) return false;
     // can only approve submitted articles
-    if (model.status_id !== NewsArticleStatus.Submitted) return false;
+    if (!model.isSubmitted()) return false;
 
-    // admin
-    if (this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle
-    ])) {
-      return true;
-    }
-
-    return false;
+      Permission.ManageNewsArticles
+    ]);
   }
 
 
   /**
-   * Can the requester publish this news article
+   * Can the Requester Publish this NewsArticle
    * 
    * @param arg
    */
@@ -216,24 +225,19 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
-
-    // can only submit drafts
-    if (model.status_id !== NewsArticleStatus.Approved) return false;
+    if (model.isSoftDeleted()) return false;
+    if (!model.isApproved()) return false;
 
     // admin
-    if (this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle
-    ])) {
-      return true;
-    }
-
-    return false;
+      Permission.ManageNewsArticles,
+    ]);
   }
 
 
   /**
-   * Can the requester unpublish this news article?
+   * Can the requester Unpublish this NewsArticle?
    *
    * @param arg
    */
@@ -241,19 +245,14 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
-
-    // can only unpublish published articles
-    if (model.status_id !== NewsArticleStatus.Published) return false;
+    if (model.isSoftDeleted()) return false;
+    if (!model.isPublished()) return false;
 
     // admin
-    if (this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle
-    ])) {
-      return true;
-    }
-
-    return false;
+      Permission.ManageNewsArticles,
+    ]);
   }
 
 
@@ -266,18 +265,13 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
-
-    // can only submit drafts
-    if (model.status_id !== NewsArticleStatus.Approved) return false;
+    if (model.isSoftDeleted()) return false;
+    if (!model.isApproved()) return false;
 
     // admin
-    if (this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageNewsArticle
-    ])) {
-      return true;
-    }
-
-    return false;
+      Permission.ManageNewsArticles
+    ]);
   }
 }

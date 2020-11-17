@@ -38,14 +38,14 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
   const { dialog, onSuccess, } = props;
   const { api } = useContext(ApiContext);
 
-  interface IFormState { name: string; password: string };
-  const [ formState, setFormState ] = useState<IFormState>({ name: '', password: '', });
+  interface IFormState { name: string; email: string; password: string; };
+  const [ formState, setFormState ] = useState<IFormState>({ name: '', email: '', password: '', });
   const [ doSubmit, submitState ] = useMutation<IAuthenticationRo, ApiException>(
     async (): Promise<IAuthenticationRo> => {
-      const { name, password } = formState;
+      const { name, email, password } = formState;
       const result = await api
         .credentials
-        .signUp({ name, password })
+        .signUp({ name, email, password })
         .catch(rethrow(normaliseApiException));
       return result;
     },
@@ -53,6 +53,7 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
   );
   const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
   const handleNameChange = useCallback(change(setFormState, 'name'), [setFormState]);
+  const handleEmailChange = useCallback(change(setFormState, 'email'), [setFormState]);
   const handlePasswordChange = useCallback(change(setFormState, 'password'), [setFormState]);
   const error = submitState.error;
   const isDisabled = submitState.isLoading || submitState.isSuccess;
@@ -74,6 +75,18 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
                 error={!!error?.data?.name}
                 helperText={error?.data?.name?.join('\n')}
                 onChange={handleNameChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="email"
+                fullWidth
+                margin="dense"
+                disabled={isDisabled}
+                value={formState.email}
+                error={!!error?.data?.email}
+                helperText={error?.data?.email?.join('\n')}
+                onChange={handleEmailChange}
               />
             </Grid>
             <Grid item xs={12}>

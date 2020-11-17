@@ -9,7 +9,7 @@ export default class implements IMigration {
   up = async (arg: IMigrationUpArg) => {
     const { env, queryInterface, sequelize, transaction } = arg;
     await queryInterface.createTable('permissions', {
-      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false, },
+      id: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false, },
       name: { type: DataTypes.STRING(100), allowNull: false, },
       created_at: { type: DataTypes.DATE, allowNull: false },
       updated_at: { type: DataTypes.DATE, allowNull: false },

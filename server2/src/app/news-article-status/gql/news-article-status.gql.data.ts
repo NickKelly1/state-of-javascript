@@ -2,7 +2,6 @@ import { GraphQLInt, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "gr
 import { GqlContext } from "../../../common/context/gql.context";
 import { NewsArticleStatusModel } from "../news-article-status.model";
 import { AuditableGql } from "../../../common/gql/gql.auditable";
-import { SoftDeleteableGql } from "../../../common/gql/gql.soft-deleteable";
 
 
 export type INewsArticleStatusGqlDataSource = NewsArticleStatusModel;
@@ -10,11 +9,7 @@ export const NewsArticleStatusGqlData: GraphQLObjectType<NewsArticleStatusModel,
   name: 'NewsArticleStatusData',
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), },
-    title: { type: GraphQLNonNull(GraphQLString), },
-    teaser: { type: GraphQLNonNull(GraphQLString), },
-    body: { type: GraphQLNonNull(GraphQLString), },
-    author_id: { type: GraphQLNonNull(GraphQLInt), },
+    name: { type: GraphQLNonNull(GraphQLString), },
     ...AuditableGql,
-    ...SoftDeleteableGql,
   }),
 });

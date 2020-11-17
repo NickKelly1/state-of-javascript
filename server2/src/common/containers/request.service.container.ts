@@ -36,6 +36,9 @@ import { NpmsDashboardPolicy } from "../../app/npms-dashboard/npms-dashboard.pol
 import { NpmsDashboardRepository } from "../../app/npms-dashboard/npms-dashboard.repository";
 import { NpmsDashboardService } from "../../app/npms-dashboard/npms-dashboard.service";
 import { NpmsDashboardItemService } from "../../app/npms-dashboard-item/npms-dashboard-item.service";
+import { NpmsDashboardStatusPolicy } from "../../app/npms-dashboard-status/npms-dashboard-status.policy";
+import { NpmsDashboardStatusRepository } from "../../app/npms-dashboard-status/npms-dashboard-status.repository";
+import { NpmsDashboardStatusService } from "../../app/npms-dashboard-status/npms-dashboard-status.service";
 
 export class RequestSerivceContainer implements IRequestServices {
   constructor(
@@ -267,6 +270,27 @@ export class RequestSerivceContainer implements IRequestServices {
     if (this._npmsDashboardService) return this._npmsDashboardService;
     this._npmsDashboardService = new NpmsDashboardService(this._ctx);
     return this._npmsDashboardService;
+  }
+
+  protected _npmsDashboardStatusService: OrUndefined<NpmsDashboardStatusService>
+  get npmsDashboardStatusService(): NpmsDashboardStatusService {
+    if (this._npmsDashboardStatusService) return this._npmsDashboardStatusService;
+    this._npmsDashboardStatusService = new NpmsDashboardStatusService(this._ctx);
+    return this._npmsDashboardStatusService;
+  }
+
+  protected _npmsDashboardStatusRepository: OrUndefined<NpmsDashboardStatusRepository>
+  get npmsDashboardStatusRepository(): NpmsDashboardStatusRepository {
+    if (this._npmsDashboardStatusRepository) return this._npmsDashboardStatusRepository;
+    this._npmsDashboardStatusRepository = new NpmsDashboardStatusRepository(this._ctx);
+    return this._npmsDashboardStatusRepository;
+  }
+
+  protected _npmsDashboardStatusPolicy: OrUndefined<NpmsDashboardStatusPolicy>
+  get npmsDashboardStatusPolicy(): NpmsDashboardStatusPolicy {
+    if (this._npmsDashboardStatusPolicy) return this._npmsDashboardStatusPolicy;
+    this._npmsDashboardStatusPolicy = new NpmsDashboardStatusPolicy(this._ctx);
+    return this._npmsDashboardStatusPolicy;
   }
 
   protected _jwtService: OrUndefined<JwtService>

@@ -10,12 +10,10 @@ import { _migrations } from "./_migration.const";
 
 export class MigrationModel extends Model<IMigrationAttributes, IMigrationCreationAttributes> implements IMigrationAttributes {
   id!: number;
-  path!: string;
   name!: string;
   number!: number;
   batch!: number;
-  [created_at]!: Date;
-  [updated_at]!: Date;
+  ran_at!: Date;
 }
 
 // initialise in sequelize
@@ -24,13 +22,12 @@ export const initMigrationModel: ModelInitFn = (arg) => {
   MigrationModel.init({
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false, },
     name: { type: DataTypes.STRING(600), allowNull: false, },
-    path: { type: DataTypes.STRING(300), allowNull: false, },
     number: { type: DataTypes.INTEGER, unique: true, allowNull: false, },
     batch: { type: DataTypes.INTEGER, allowNull: false, },
-    ...pretendAuditable,
+    ran_at: { type: DataTypes.DATE, allowNull: false, },
   }, {
     sequelize,
     tableName: _migrations,
-    ...AuditableSchema,
+    timestamps: false,
   });
 }

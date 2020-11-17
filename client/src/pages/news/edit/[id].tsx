@@ -41,7 +41,8 @@ query EditNewsArticlePage(
       can{
         show
         update
-        delete
+        softDelete
+        hardDelete
       }
       data{
         id
@@ -172,7 +173,7 @@ function EditNewsArticlePage(props: IEditNewsArticlePageProps) {
           }}
           canShow={article.can.show}
           canSave={article.can.update}
-          canDelete={article.can.delete}
+          canSoftDelete={article.can.softDelete}
         />
       </Grid>
     </Grid>

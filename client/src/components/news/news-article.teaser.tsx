@@ -38,7 +38,7 @@ export interface INewsArticleTeaserProps {
     can: {
       show: boolean;
       update: boolean;
-      delete: boolean;
+      softDelete: boolean;
     },
     relations: {
       author: OrNull<{
@@ -72,10 +72,10 @@ export function NewsArticleTeaser(props: INewsArticleTeaserProps) {
               </Box>
             </NextLink>
           )}
-          {(node.can.delete) && (
+          {(node.can.softDelete) && (
             <Box component="span" ml={2}>
               <Button color="secondary" variant="outlined">
-                {'Delete'}
+                {'Soft Delete'}
               </Button>
             </Box>
           )}

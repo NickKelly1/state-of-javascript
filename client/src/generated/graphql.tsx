@@ -103,7 +103,9 @@ export type NewsArticleActions = {
   __typename?: 'NewsArticleActions';
   show: Scalars['Boolean'];
   update: Scalars['Boolean'];
-  delete: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  restore: Scalars['Boolean'];
   submit: Scalars['Boolean'];
   reject: Scalars['Boolean'];
   approve: Scalars['Boolean'];
@@ -115,6 +117,7 @@ export type NewsArticleActions = {
 export type NewsArticleRelations = {
   __typename?: 'NewsArticleRelations';
   author?: Maybe<UserNode>;
+  status?: Maybe<UserNode>;
 };
 
 export type UserNode = {
@@ -129,6 +132,9 @@ export type UserData = {
   __typename?: 'UserData';
   id: Scalars['Int'];
   name: Scalars['String'];
+  deactivated: Scalars['Boolean'];
+  email?: Maybe<Scalars['String']>;
+  verified?: Maybe<Scalars['Boolean']>;
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
@@ -138,9 +144,13 @@ export type UserActions = {
   __typename?: 'UserActions';
   show: Scalars['Boolean'];
   update: Scalars['Boolean'];
-  delete: Scalars['Boolean'];
-  createUserRole: Scalars['Boolean'];
-  deleteUserRole: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  restore: Scalars['Boolean'];
+  deactivate: Scalars['Boolean'];
+  updatePassword: Scalars['Boolean'];
+  createUserRoles: Scalars['Boolean'];
+  hardDeleteUserRoles: Scalars['Boolean'];
 };
 
 export type UserRelations = {
@@ -227,11 +237,12 @@ export type RoleActions = {
   __typename?: 'RoleActions';
   show: Scalars['Boolean'];
   update: Scalars['Boolean'];
-  delete: Scalars['Boolean'];
-  createUserRole: Scalars['Boolean'];
-  deleteUserRole: Scalars['Boolean'];
-  createRolePermission: Scalars['Boolean'];
-  deleteRolePermission: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  createUserRoles: Scalars['Boolean'];
+  hardDeleteUserRoles: Scalars['Boolean'];
+  createRolePermissions: Scalars['Boolean'];
+  hardDeleteRolePermissions: Scalars['Boolean'];
 };
 
 export type RoleRelations = {
@@ -391,8 +402,8 @@ export type PermissionData = {
 export type PermissionActions = {
   __typename?: 'PermissionActions';
   show: Scalars['Boolean'];
-  createRolePermission: Scalars['Boolean'];
-  deleteRolePermission: Scalars['Boolean'];
+  createRolePermissions: Scalars['Boolean'];
+  hardDeleteRolePermissions: Scalars['Boolean'];
 };
 
 export type PermissionRelations = {
@@ -520,6 +531,7 @@ export type UserCollectionNode = {
 export type UserCollectionActions = {
   __typename?: 'UserCollectionActions';
   show: Scalars['Boolean'];
+  register: Scalars['Boolean'];
   create: Scalars['Boolean'];
 };
 
@@ -831,7 +843,9 @@ export type NpmsPackageDataInfoScoreDetail = {
 export type NpmsPackageActions = {
   __typename?: 'NpmsPackageActions';
   show: Scalars['Boolean'];
-  delete: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  restore: Scalars['Boolean'];
 };
 
 export type NpmsPackageRelations = {
@@ -879,7 +893,7 @@ export type NpmsDashboardItemData = {
 export type NpmsDashboardItemActions = {
   __typename?: 'NpmsDashboardItemActions';
   show: Scalars['Boolean'];
-  delete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
 };
 
 export type NpmsDashboardItemRelations = {
@@ -910,7 +924,16 @@ export type NpmsDashboardActions = {
   __typename?: 'NpmsDashboardActions';
   show: Scalars['Boolean'];
   update: Scalars['Boolean'];
-  delete: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  restore: Scalars['Boolean'];
+  createNpmsDashboardItem: Scalars['Boolean'];
+  hardDeleteNpmsDashboardItem: Scalars['Boolean'];
+  submit: Scalars['Boolean'];
+  reject: Scalars['Boolean'];
+  approve: Scalars['Boolean'];
+  publish: Scalars['Boolean'];
+  unpublish: Scalars['Boolean'];
 };
 
 export type NpmsDashboardRelations = {
@@ -976,7 +999,6 @@ export type NpmsPackageQueryFilterFilterAttributes = {
 export type NpmsDashboardItemCollectionActions = {
   __typename?: 'NpmsDashboardItemCollectionActions';
   show: Scalars['Boolean'];
-  create: Scalars['Boolean'];
 };
 
 export type NpmsDashboardCollectionNode = {
@@ -1029,14 +1051,22 @@ export type RootMutationType = {
   sortNpmsDashboards: Scalars['Boolean'];
   createNpmsDashboard: NpmsDashboardNode;
   updateNpmsDashboard: NpmsDashboardNode;
-  deleteNpmsDashboard: NpmsDashboardNode;
+  softDeleteNpmsDashboard: Scalars['Boolean'];
+  hardDeleteNpmsDashboard: Scalars['Boolean'];
+  restoreNpmsDashboard: NpmsDashboardNode;
+  submitNpmsDashboard: NpmsDashboardNode;
+  rejectNpmsDashboard: NpmsDashboardNode;
+  approveNpmsDashboard: NpmsDashboardNode;
+  publishNpmsDashboard: NpmsDashboardNode;
+  unpublishNpmsDashboard: NpmsDashboardNode;
   createNpmsDashboardItem: NpmsDashboardItemNode;
-  deleteNpmsDashboardItem: NpmsDashboardItemNode;
+  hardDeleteNpmsDashboardItem: NpmsDashboardItemNode;
   createRolePermission: RolePermissionNode;
   deleteRolePermission: Scalars['Boolean'];
   createRole: RoleNode;
   updateRole: RoleNode;
   deleteRole: Scalars['Boolean'];
+  restoreRole: Scalars['Boolean'];
   createUser: UserNode;
   updateUser: UserNode;
   deleteUser: Scalars['Boolean'];
@@ -1078,8 +1108,43 @@ export type RootMutationTypeUpdateNpmsDashboardArgs = {
 };
 
 
-export type RootMutationTypeDeleteNpmsDashboardArgs = {
-  dto: DeleteNpmsDashboard;
+export type RootMutationTypeSoftDeleteNpmsDashboardArgs = {
+  dto: SoftDeleteNpmsDashboard;
+};
+
+
+export type RootMutationTypeHardDeleteNpmsDashboardArgs = {
+  dto: HardDeleteNpmsDashboard;
+};
+
+
+export type RootMutationTypeRestoreNpmsDashboardArgs = {
+  dto: RestoreNpmsDashboard;
+};
+
+
+export type RootMutationTypeSubmitNpmsDashboardArgs = {
+  dto: SubmitNpmsDashboard;
+};
+
+
+export type RootMutationTypeRejectNpmsDashboardArgs = {
+  dto: RejectNpmsDashboard;
+};
+
+
+export type RootMutationTypeApproveNpmsDashboardArgs = {
+  dto: ApproveNpmsDashboard;
+};
+
+
+export type RootMutationTypePublishNpmsDashboardArgs = {
+  dto: PublishNpmsDashboard;
+};
+
+
+export type RootMutationTypeUnpublishNpmsDashboardArgs = {
+  dto: UnpublishNpmsDashboard;
 };
 
 
@@ -1088,8 +1153,8 @@ export type RootMutationTypeCreateNpmsDashboardItemArgs = {
 };
 
 
-export type RootMutationTypeDeleteNpmsDashboardItemArgs = {
-  dto: DeleteNpmsDashboardItem;
+export type RootMutationTypeHardDeleteNpmsDashboardItemArgs = {
+  dto: SoftDeleteNpmsDashboardItem;
 };
 
 
@@ -1114,6 +1179,11 @@ export type RootMutationTypeUpdateRoleArgs = {
 
 
 export type RootMutationTypeDeleteRoleArgs = {
+  dto: DeleteRole;
+};
+
+
+export type RootMutationTypeRestoreRoleArgs = {
   dto: DeleteRole;
 };
 
@@ -1168,7 +1238,35 @@ export type UpdateNpmsDashboard = {
   npms_package_ids?: Maybe<Array<Scalars['Int']>>;
 };
 
-export type DeleteNpmsDashboard = {
+export type SoftDeleteNpmsDashboard = {
+  id: Scalars['Int'];
+};
+
+export type HardDeleteNpmsDashboard = {
+  id: Scalars['Int'];
+};
+
+export type RestoreNpmsDashboard = {
+  id: Scalars['Int'];
+};
+
+export type SubmitNpmsDashboard = {
+  id: Scalars['Int'];
+};
+
+export type RejectNpmsDashboard = {
+  id: Scalars['Int'];
+};
+
+export type ApproveNpmsDashboard = {
+  id: Scalars['Int'];
+};
+
+export type PublishNpmsDashboard = {
+  id: Scalars['Int'];
+};
+
+export type UnpublishNpmsDashboard = {
   id: Scalars['Int'];
 };
 
@@ -1177,7 +1275,7 @@ export type CreateNpmsDashboardItem = {
   npms_id: Scalars['Int'];
 };
 
-export type DeleteNpmsDashboardItem = {
+export type SoftDeleteNpmsDashboardItem = {
   id: Scalars['Int'];
 };
 
@@ -1207,12 +1305,17 @@ export type DeleteRole = {
 
 export type CreateUser = {
   name: Scalars['String'];
+  email?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
   role_ids?: Maybe<Array<Scalars['Int']>>;
 };
 
 export type UpdateUser = {
   id: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  deactivated?: Maybe<Scalars['Boolean']>;
+  password?: Maybe<Scalars['String']>;
   role_ids?: Maybe<Array<Scalars['Int']>>;
 };
 
@@ -1233,7 +1336,7 @@ export type CreateNpmsDashboardFormMutation = (
     & Pick<NpmsDashboardNode, 'cursor'>
     & { can: (
       { __typename?: 'NpmsDashboardActions' }
-      & Pick<NpmsDashboardActions, 'show' | 'update' | 'delete'>
+      & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
     ), data: (
       { __typename?: 'NpmsDashboardData' }
       & Pick<NpmsDashboardData, 'id' | 'name'>
@@ -1255,7 +1358,7 @@ export type UpdateNpmsDashboardFormMutation = (
     & Pick<NpmsDashboardNode, 'cursor'>
     & { can: (
       { __typename?: 'NpmsDashboardActions' }
-      & Pick<NpmsDashboardActions, 'show' | 'update' | 'delete'>
+      & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
     ), data: (
       { __typename?: 'NpmsDashboardData' }
       & Pick<NpmsDashboardData, 'id' | 'name'>
@@ -1284,7 +1387,7 @@ export type NpmsDashbortSortFormQuery = (
       & Pick<NpmsDashboardNode, 'cursor'>
       & { can: (
         { __typename?: 'NpmsDashboardActions' }
-        & Pick<NpmsDashboardActions, 'show' | 'update' | 'delete'>
+        & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
       ), data: (
         { __typename?: 'NpmsDashboardData' }
         & Pick<NpmsDashboardData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -1303,24 +1406,14 @@ export type NpmsDashbortSortFormSubmitMutation = (
   & Pick<RootMutationType, 'sortNpmsDashboards'>
 );
 
-export type JsPageDeleteDashboardMutationVariables = Exact<{
+export type NpmsDashboardSoftDeleteDashboardMutationVariables = Exact<{
   id: Scalars['Int'];
 }>;
 
 
-export type JsPageDeleteDashboardMutation = (
+export type NpmsDashboardSoftDeleteDashboardMutation = (
   { __typename?: 'RootMutationType' }
-  & { deleteNpmsDashboard: (
-    { __typename?: 'NpmsDashboardNode' }
-    & Pick<NpmsDashboardNode, 'cursor'>
-    & { can: (
-      { __typename?: 'NpmsDashboardActions' }
-      & Pick<NpmsDashboardActions, 'show' | 'update' | 'delete'>
-    ), data: (
-      { __typename?: 'NpmsDashboardData' }
-      & Pick<NpmsDashboardData, 'id' | 'name'>
-    ) }
-  ) }
+  & Pick<RootMutationType, 'softDeleteNpmsDashboard'>
 );
 
 export type SearchNpmsPackageQueryVariables = Exact<{
@@ -1357,7 +1450,7 @@ export type CreateNpmsPackageFormMutation = (
     & Pick<NpmsPackageNode, 'cursor'>
     & { can: (
       { __typename?: 'NpmsPackageActions' }
-      & Pick<NpmsPackageActions, 'show' | 'delete'>
+      & Pick<NpmsPackageActions, 'show' | 'softDelete' | 'hardDelete'>
     ), data: (
       { __typename?: 'NpmsPackageData' }
       & Pick<NpmsPackageData, 'id' | 'name'>
@@ -1376,7 +1469,7 @@ export type MutateRoleFromCreateMutation = (
     { __typename?: 'RoleNode' }
     & { can: (
       { __typename?: 'RoleActions' }
-      & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+      & Pick<RoleActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'createRolePermissions'>
     ), data: (
       { __typename?: 'RoleData' }
       & Pick<RoleData, 'id' | 'name'>
@@ -1396,7 +1489,7 @@ export type MutateRoleFormUpdateMutation = (
     { __typename?: 'RoleNode' }
     & { can: (
       { __typename?: 'RoleActions' }
-      & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+      & Pick<RoleActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'createRolePermissions'>
     ), data: (
       { __typename?: 'RoleData' }
       & Pick<RoleData, 'id' | 'name'>
@@ -1421,7 +1514,7 @@ export type RoleRolePermissionsFormDataQuery = (
       { __typename?: 'RoleNode' }
       & { can: (
         { __typename?: 'RoleActions' }
-        & Pick<RoleActions, 'createRolePermission' | 'deleteRolePermission'>
+        & Pick<RoleActions, 'createRolePermissions' | 'hardDeleteRolePermissions'>
       ), data: (
         { __typename?: 'RoleData' }
         & Pick<RoleData, 'id' | 'name'>
@@ -1436,7 +1529,7 @@ export type RoleRolePermissionsFormDataQuery = (
             { __typename?: 'PermissionNode' }
             & { can: (
               { __typename?: 'PermissionActions' }
-              & Pick<PermissionActions, 'createRolePermission' | 'deleteRolePermission'>
+              & Pick<PermissionActions, 'createRolePermissions' | 'hardDeleteRolePermissions'>
             ), data: (
               { __typename?: 'PermissionData' }
               & Pick<PermissionData, 'id' | 'name'>
@@ -1451,7 +1544,7 @@ export type RoleRolePermissionsFormDataQuery = (
       { __typename?: 'PermissionNode' }
       & { can: (
         { __typename?: 'PermissionActions' }
-        & Pick<PermissionActions, 'createRolePermission' | 'deleteRolePermission'>
+        & Pick<PermissionActions, 'createRolePermissions' | 'hardDeleteRolePermissions'>
       ), data: (
         { __typename?: 'PermissionData' }
         & Pick<PermissionData, 'id' | 'name'>
@@ -1491,7 +1584,7 @@ export type RoleDetailDataQuery = (
       { __typename?: 'RoleNode' }
       & { can: (
         { __typename?: 'RoleActions' }
-        & Pick<RoleActions, 'show' | 'update' | 'delete' | 'createRolePermission'>
+        & Pick<RoleActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'createRolePermissions'>
       ), data: (
         { __typename?: 'RoleData' }
         & Pick<RoleData, 'id' | 'name'>
@@ -1520,7 +1613,7 @@ export type RolesTableDataQuery = (
       { __typename?: 'RoleNode' }
       & { can: (
         { __typename?: 'RoleActions' }
-        & Pick<RoleActions, 'show' | 'update' | 'delete'>
+        & Pick<RoleActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
       ), data: (
         { __typename?: 'RoleData' }
         & Pick<RoleData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -1541,6 +1634,8 @@ export type RoleTableDeleteMutation = (
 
 export type UserMutateFormCreateMutationVariables = Exact<{
   name: Scalars['String'];
+  email?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
 }>;
 
 
@@ -1550,7 +1645,7 @@ export type UserMutateFormCreateMutation = (
     { __typename?: 'UserNode' }
     & { can: (
       { __typename?: 'UserActions' }
-      & Pick<UserActions, 'show' | 'update' | 'delete'>
+      & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
     ), data: (
       { __typename?: 'UserData' }
       & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -1561,6 +1656,9 @@ export type UserMutateFormCreateMutation = (
 export type UserMutateFormUpdateMutationVariables = Exact<{
   id: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
+  deactivated?: Maybe<Scalars['Boolean']>;
 }>;
 
 
@@ -1570,7 +1668,7 @@ export type UserMutateFormUpdateMutation = (
     { __typename?: 'UserNode' }
     & { can: (
       { __typename?: 'UserActions' }
-      & Pick<UserActions, 'show' | 'update' | 'delete'>
+      & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
     ), data: (
       { __typename?: 'UserData' }
       & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -1595,7 +1693,7 @@ export type UserUserRolesFormDataQuery = (
       { __typename?: 'UserNode' }
       & { can: (
         { __typename?: 'UserActions' }
-        & Pick<UserActions, 'createUserRole' | 'deleteUserRole'>
+        & Pick<UserActions, 'createUserRoles' | 'hardDeleteUserRoles'>
       ), data: (
         { __typename?: 'UserData' }
         & Pick<UserData, 'id' | 'name'>
@@ -1610,7 +1708,7 @@ export type UserUserRolesFormDataQuery = (
             { __typename?: 'RoleNode' }
             & { can: (
               { __typename?: 'RoleActions' }
-              & Pick<RoleActions, 'createUserRole' | 'deleteUserRole'>
+              & Pick<RoleActions, 'createUserRoles' | 'hardDeleteUserRoles'>
             ), data: (
               { __typename?: 'RoleData' }
               & Pick<RoleData, 'id' | 'name'>
@@ -1625,7 +1723,7 @@ export type UserUserRolesFormDataQuery = (
       { __typename?: 'RoleNode' }
       & { can: (
         { __typename?: 'RoleActions' }
-        & Pick<RoleActions, 'show' | 'createUserRole' | 'deleteUserRole'>
+        & Pick<RoleActions, 'show' | 'createUserRoles' | 'hardDeleteUserRoles'>
       ), data: (
         { __typename?: 'RoleData' }
         & Pick<RoleData, 'id' | 'name'>
@@ -1671,10 +1769,10 @@ export type UserDetailDataQuery = (
       { __typename?: 'UserNode' }
       & { can: (
         { __typename?: 'UserActions' }
-        & Pick<UserActions, 'show' | 'update' | 'delete'>
+        & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'deactivate' | 'updatePassword'>
       ), data: (
         { __typename?: 'UserData' }
-        & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+        & Pick<UserData, 'id' | 'name' | 'email' | 'verified' | 'deactivated' | 'created_at' | 'updated_at' | 'deleted_at'>
       ) }
     )>> }
   ) }
@@ -1700,7 +1798,7 @@ export type UsersTableDataQuery = (
       { __typename?: 'UserNode' }
       & { can: (
         { __typename?: 'UserActions' }
-        & Pick<UserActions, 'show' | 'update' | 'delete'>
+        & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
       ), data: (
         { __typename?: 'UserData' }
         & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -1733,7 +1831,7 @@ export type JsPageDashboardQuery = (
     { __typename?: 'NpmsDashboardCollectionNode' }
     & { can: (
       { __typename?: 'NpmsDashboardCollectionActions' }
-      & Pick<NpmsDashboardCollectionActions, 'show' | 'create'>
+      & Pick<NpmsDashboardCollectionActions, 'show' | 'sort' | 'create'>
     ), pagination: (
       { __typename?: 'meta' }
       & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
@@ -1742,7 +1840,7 @@ export type JsPageDashboardQuery = (
       & Pick<NpmsDashboardNode, 'cursor'>
       & { can: (
         { __typename?: 'NpmsDashboardActions' }
-        & Pick<NpmsDashboardActions, 'show' | 'update' | 'delete'>
+        & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
       ), data: (
         { __typename?: 'NpmsDashboardData' }
         & Pick<NpmsDashboardData, 'id' | 'name'>
@@ -1761,7 +1859,7 @@ export type JsPageDashboardQuery = (
             & Pick<NpmsPackageNode, 'cursor'>
             & { can: (
               { __typename?: 'NpmsPackageActions' }
-              & Pick<NpmsPackageActions, 'show' | 'delete'>
+              & Pick<NpmsPackageActions, 'show' | 'softDelete' | 'hardDelete'>
             ), data: (
               { __typename?: 'NpmsPackageData' }
               & Pick<NpmsPackageData, 'id' | 'name' | 'last_ran_at' | 'created_at' | 'updated_at'>
@@ -1851,7 +1949,7 @@ export type EditNewsArticlePageQuery = (
       & Pick<NewsArticleNode, 'cursor'>
       & { can: (
         { __typename?: 'NewsArticleActions' }
-        & Pick<NewsArticleActions, 'show' | 'update' | 'delete'>
+        & Pick<NewsArticleActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
       ), data: (
         { __typename?: 'NewsArticleData' }
         & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -1909,7 +2007,7 @@ export type IndexNewsPageQuery = (
       & Pick<NewsArticleNode, 'cursor'>
       & { can: (
         { __typename?: 'NewsArticleActions' }
-        & Pick<NewsArticleActions, 'show' | 'update' | 'delete'>
+        & Pick<NewsArticleActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
       ), data: (
         { __typename?: 'NewsArticleData' }
         & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -1920,7 +2018,7 @@ export type IndexNewsPageQuery = (
           & Pick<UserNode, 'cursor'>
           & { can: (
             { __typename?: 'UserActions' }
-            & Pick<UserActions, 'show' | 'update'>
+            & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
           ), data: (
             { __typename?: 'UserData' }
             & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -1945,7 +2043,7 @@ export type ViewNewsArticlePageQuery = (
       & Pick<NewsArticleNode, 'cursor'>
       & { can: (
         { __typename?: 'NewsArticleActions' }
-        & Pick<NewsArticleActions, 'show' | 'update' | 'delete'>
+        & Pick<NewsArticleActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
       ), data: (
         { __typename?: 'NewsArticleData' }
         & Pick<NewsArticleData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>

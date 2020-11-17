@@ -25,7 +25,7 @@ export const RolePermissionGqlActions = new GraphQLObjectType<IRolePermissionGql
           ctx.loader.roles.load(parent.role_id).then(assertDefined),
           ctx.loader.permissions.load(parent.permission_id).then(assertDefined),
         ]);
-        return ctx.services.rolePermissionPolicy.canDelete({ model: parent, role, permission });
+        return ctx.services.rolePermissionPolicy.canHardDelete({ model: parent, role, permission });
       },
     },
   },

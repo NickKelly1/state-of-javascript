@@ -60,11 +60,17 @@ query UserDetailData(
       can{
         show
         update
-        delete
+        softDelete
+        hardDelete
+        deactivate
+        updatePassword
       }
       data{
         id
         name
+        email
+        verified
+        deactivated
         created_at
         updated_at
         deleted_at
@@ -147,8 +153,16 @@ function UserDetailContent(props: IRoleDetailContentProps) {
     () => flsx(onSuccess, editDialog.doClose)(),
     [onSuccess, editDialog.doClose],
   );
-  const userFormData: IUserMutateFormRole = useMemo(
-    () => ({ id: user.data.id, name: user.data.name }),
+  const userFormData: IUserMutateFormRole = useMemo<IUserMutateFormRole>(
+    () => ({
+      id: user.data.id,
+      name: user.data.name,
+      email: user.data.email,
+      verified: user.data.verified,
+      deactivated: user.data.deactivated,
+      canDeactivate: user.can.deactivate,
+      canUpdatePassword: user.can.updatePassword,
+    }),
     [user],
   );
 
@@ -160,7 +174,7 @@ function UserDetailContent(props: IRoleDetailContentProps) {
           <Box display="flex" justifyContent="flex-start" alignItems="center">
             <Box pr={2}>
               <Typography component="h2" variant="h2">
-                {`${user.data.name}`}
+                {`${user.data.id} - ${user.data.name}`}
               </Typography>
             </Box>
             {user.can.update && (
@@ -171,6 +185,17 @@ function UserDetailContent(props: IRoleDetailContentProps) {
               </Box>
             )}
           </Box>
+        </Grid>
+        <Grid item xs={12}>
+          {/* can't see identifying information without permission */}
+          {`email: ${user.data.email ?? '?'}`}
+        </Grid>
+        <Grid item xs={12}>
+          {/* can't see identifying information without permission */}
+          {`verified: ${(user.data.verified === true) ? 'yes' : (user.data.verified === false) ? 'no' : '?'}`}
+        </Grid>
+        <Grid item xs={12}>
+          {`Deactivated: ${user.data.deactivated ? 'true' : 'false'}`}
         </Grid>
       </Grid>
     </>

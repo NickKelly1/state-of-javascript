@@ -63,7 +63,7 @@ export interface ICreateNewsPageProps {
   error: OrNullable<IApiException>;
   canShow: boolean;
   canSave: boolean;
-  canDelete: boolean;
+  canSoftDelete: boolean;
 }
 
 const _ls_news_draft = {
@@ -82,7 +82,7 @@ export function NewsArticleForm(props: ICreateNewsPageProps) {
     error,
     canShow,
     canSave,
-    canDelete,
+    canSoftDelete,
   } = props;
   const { api, me } = useContext(ApiContext);
   const classes = useStyles();
@@ -193,7 +193,7 @@ export function NewsArticleForm(props: ICreateNewsPageProps) {
                         </Button>
                       </Box>
                     )}
-                    {canDelete && (
+                    {canSoftDelete && (
                       <Box m={1}>
                         <Button disabled={isDisabled} color="secondary" variant="outlined">
                           {'Delete'}

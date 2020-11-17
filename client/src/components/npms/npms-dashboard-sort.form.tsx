@@ -83,7 +83,8 @@ query NpmsDashbortSortForm(
       can{
         show
         update
-        delete
+        softDelete
+        hardDelete
       }
       data{
         id

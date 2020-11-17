@@ -86,7 +86,29 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
             include: [{ association: RoleAssociation.rolePermissions }]
           }
         });
-        ctx.authorize(ctx.services.rolePolicy.canDelete({ model }));
+        ctx.authorize(ctx.services.rolePolicy.canSoftDelete({ model }));
+        const rolePermissions = assertDefined(model.rolePermissions);
+        await ctx.services.roleService.hardDelete({ runner, model, rolePermissions, });
+        return model;
+      });
+      return true;
+    },
+  },
+
+  restoreRole: {
+    type: GraphQLNonNull(GraphQLBoolean),
+    args: { dto: { type: GraphQLNonNull(DeleteRoleGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<boolean> => {
+      const dto = ctx.validate(DeleteRoleValidator, args.dto);
+      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const model: RoleModel = await ctx.services.roleRepository.findByPkOrfail(dto.id, {
+          runner,
+          options: {
+            paranoid: true,
+            include: [{ association: RoleAssociation.rolePermissions }]
+          }
+        });
+        ctx.authorize(ctx.services.rolePolicy.canSoftDelete({ model }));
         const rolePermissions = assertDefined(model.rolePermissions);
         await ctx.services.roleService.hardDelete({ runner, model, rolePermissions, });
         return model;
@@ -157,7 +179,7 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
   const forbiddenFromDeleting = unexpected.filter(rolePermission => !ctx
     .services
     .rolePermissionPolicy
-    .canDelete({
+    .canHardDelete({
       model: rolePermission,
       permission: assertDefined(allPermissionsMap.get(rolePermission.permission_id)),
       role,

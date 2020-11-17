@@ -12,8 +12,8 @@ import { RolePermissionModel } from '../role-permission/role-permission.model';
 import { IUpdateRoleGqlInput } from './gql-input/update-role.gql';
 import { PermissionModel } from '../permission/permission.model';
 import { Combinator } from '../../common/helpers/combinator.helper';
-import { ICreateRoleDto } from './dto/create-role.dto';
-import { IUpdateRoleDto } from './dto/update-role.dto';
+import { IRoleServiceCreateRoleDto } from './dto/role-service-create-role.dto';
+import { IRoleServiceUpdateRoleDto } from './dto/role-service-update-role.dto';
 
 export class RoleService {
   constructor(
@@ -110,7 +110,7 @@ export class RoleService {
    */
   async create(arg: {
     runner: QueryRunner;
-    dto: ICreateRoleDto;
+    dto: IRoleServiceCreateRoleDto;
   }): Promise<RoleModel> {
     const { dto, runner } = arg;
     const { transaction } = runner;
@@ -141,7 +141,7 @@ export class RoleService {
   async update(arg: {
     runner: QueryRunner;
     model: RoleModel;
-    dto: IUpdateRoleDto;
+    dto: IRoleServiceUpdateRoleDto;
   }) {
     const { model, dto, runner } = arg;
     const { transaction } = runner;

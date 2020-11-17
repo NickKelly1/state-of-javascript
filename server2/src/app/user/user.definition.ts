@@ -3,4 +3,8 @@ export const UserDefinition = {
     min: 3,
     max: 50,
   },
+  email: {
+    min: 3,
+    max: 255,
+  },
 }

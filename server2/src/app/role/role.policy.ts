@@ -9,15 +9,17 @@ export class RolePolicy {
     //
   }
 
+
   canFindMany(arg?: {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageRole,
-      Permission.ShowRole,
+      Permission.ManageRoles,
+      Permission.ShowRoles,
     ]);
   }
+
 
   canFindOne(arg: {
     model: RoleModel;
@@ -25,35 +27,39 @@ export class RolePolicy {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageRole,
-      Permission.ShowRole,
+      Permission.ManageRoles,
+      Permission.ShowRoles,
     ]);
   }
+
 
   canCreate(arg?: {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageRole,
-      Permission.CreateRole,
+      Permission.ManageRoles,
+      Permission.CreateRoles,
     ]);
   }
+
 
   canUpdate(arg: {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
     if (model.isAdmin()) return false;
-    if (model.isPublic()) return false;
+    // TODO: don't allow changing public role name...
+    // if (model.isPublic()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageRole,
-      Permission.CreateRole,
+      Permission.ManageRoles,
+      Permission.UpdateRoles,
     ]);
   }
 
-  canDelete(arg: {
+
+  canSoftDelete(arg: {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
@@ -61,8 +67,36 @@ export class RolePolicy {
     if (model.isPublic()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageRole,
-      Permission.CreateRole,
+      Permission.ManageRoles,
+      Permission.SoftDeleteRoles,
+    ]);
+  }
+
+
+  canHardDelete(arg: {
+    model: RoleModel;
+  }): boolean {
+    const { model } = arg;
+    if (model.isAdmin()) return false;
+    if (model.isPublic()) return false;
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageRoles,
+      Permission.SoftDeleteRoles,
+    ]);
+  }
+
+
+  canRestore(arg: {
+    model: RoleModel;
+  }): boolean {
+    const { model } = arg;
+    if (model.isAdmin()) return false;
+    if (model.isPublic()) return false;
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageRoles,
+      Permission.CreateRoles,
     ]);
   }
 }

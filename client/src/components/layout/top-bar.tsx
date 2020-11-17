@@ -49,27 +49,13 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-  },
-  center: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+    // overflow: 'hidden',
+    whiteSpace: 'nowrap',
   },
   logout: {
     cursor: "pointer",
     overflow: 'hidden',
     whiteSpace: 'nowrap',
-  },
-  nav: {
-    //
-  },
-  navList: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  navItem: {
-    //
   },
   icon: {
     height: '100%',
@@ -104,112 +90,101 @@ export function TopBar(props: ITopBarProps) {
     <>
       <LoginFormDialog dialog={loginDialog} onSuccess={loginDialog.doClose} />
       <RegisterFormDialog dialog={registerDialog} onSuccess={registerDialog.doClose} />
-      <div className={classes.root}>
-        <div>
-          <Typography component="h1" variant="h3">
-            <ListItem>
-              <NextLink href="/" passHref>
-                <MUILink className={classes.center} color="inherit">
-                  <img style={{ height: '1em' }} src="/favicon.svg" />
-                  &nbsp;
-                  <span>
-                    The State of JavaScript
-                  </span>
-                </MUILink>
-              </NextLink>
-            </ListItem>
-          </Typography>
-        </div>
-        <nav className={classes.nav}>
-          <List className={classes.navList}>
-            <ListItem className={classes.navItem}>
-              <NextLink href="/users" passHref>
-                <MUILink color="inherit">
-                  Users
-                </MUILink>
-              </NextLink>
-            </ListItem>
-            <ListItem className={classes.navItem}>
-              <NextLink href="/roles" passHref>
-                <MUILink color="inherit">
-                  Roles
-                </MUILink>
-              </NextLink>
-            </ListItem>
-            <ListItem className={classes.navItem}>
-              <NextLink href="/stats" passHref>
-                <MUILink color="inherit">
-                  Stats
-                </MUILink>
-              </NextLink>
-            </ListItem>
-            <ListItem className={classes.navItem}>
-              <NextLink href="/resources" passHref>
-                <MUILink color="inherit">
-                  Resources
-                </MUILink>
-              </NextLink>
-            </ListItem>
-            <ListItem className={classes.navItem}>
-              <NextLink href="/news" passHref>
-                <MUILink color="inherit">
-                  News
-                </MUILink>
-              </NextLink>
-            </ListItem>
-            <ListItem className={classes.navItem}>
-              <NextLink href="/blog" passHref>
-                <MUILink color="inherit">
-                  Blog
-                </MUILink>
-              </NextLink>
-            </ListItem>
-            <ListItem>
-              {/* todo position menu UNDER button */}
-              <Menu
-                anchorEl={cogMenu.anchor}
-                keepMounted
-                open={cogMenu.isOpen}
-                onClose={cogMenu.doClose}
-              >
-                {!me && (
-                  <MenuItem color="primary" onClick={flsx(registerDialog.doOpen, cogMenu.doClose)}>
-                    <ListItemIcon><PersonAddIcon /></ListItemIcon>
-                    <ListItemText primary="register" />
-                  </MenuItem>
-                )}
-                {!me && (
-                  <MenuItem onClick={flsx(loginDialog.doOpen, cogMenu.doClose) }>
-                    <ListItemIcon><AccountCircleIcon /></ListItemIcon>
-                    <ListItemText primary="login" />
-                  </MenuItem>
-                )}
-                {me && (
-                  <MenuItem onClick={flsx(handleLogout, cogMenu.doClose)}>
-                    <ListItemIcon><ExitToAppIcon /></ListItemIcon>
-                    <ListItemText primary="logout" />
-                  </MenuItem>
-                )}
-                <MenuItem onClick={flsx(debugMode.toggle, cogMenu.doClose)}>
-                  <ListItemIcon><BugReportIcon color={debugMode.isOn ? 'primary' : 'inherit'} /></ListItemIcon>
-                  <ListItemText primary="debug mode" />
-                </MenuItem>
-              </Menu>
-              <Button onClick={cogMenu.doOpen}>
-                <SettingsIcon />
-              </Button>
-            </ListItem>
-            <ListItem className={classes.navItem}>
-              <MUILink
-                className={clsx('centered', classes.icon, classes.navItem)}
-                href="https://github.com/NickKelly1/state-of-js"
-                color="inherit">
-                <GitHubIcon />
+      <Box className={classes.root}>
+        <List component="nav" className="d-flex">
+          <ListItem>
+            <NextLink href="/" passHref>
+              <MUILink underline="none" color="inherit">
+                <Typography noWrap component="h1" variant="h3">
+                  <Box display="flex" justifyContent="flex-start" alignItems="center">
+                    <img style={{ height: '1em' }} src="/favicon.svg" />
+                    &nbsp;
+                    <span>
+                      Nick Kelly
+                    </span>
+                  </Box>
+                </Typography>
               </MUILink>
+            </NextLink>
+          </ListItem>
+          <ListItem><NextLink href="/hire-me" passHref><MUILink color="inherit">Hire me</MUILink></NextLink></ListItem>
+          <ListItem><NextLink href="/blog" passHref><MUILink color="inherit">Blog</MUILink></NextLink></ListItem>
+          <ListItem><NextLink href="/news" passHref><MUILink color="inherit">News</MUILink></NextLink></ListItem>
+          <ListItem><NextLink href="/roles" passHref><MUILink color="inherit">Roles</MUILink></NextLink></ListItem>
+          <ListItem><NextLink href="/users" passHref><MUILink color="inherit">Users</MUILink></NextLink></ListItem>
+        </List>
+        <List component="nav" className="d-flex">
+          {!me && (
+            <ListItem color="primary" onClick={flsx(registerDialog.doOpen, cogMenu.doClose)}>
+              {/* <ListItemIcon><PersonAddIcon /></ListItemIcon> */}
+              <Button className="text-transform-none"><ListItemText primary="register" /></Button>
             </ListItem>
-          </List>
-        </nav>
-      </div>
+          )}
+          {!me && (
+            <ListItem onClick={flsx(loginDialog.doOpen, cogMenu.doClose) }>
+              {/* <ListItemIcon><AccountCircleIcon /></ListItemIcon> */}
+              <Button className="text-transform-none"><ListItemText primary="login" /></Button>
+            </ListItem>
+          )}
+          {me && (
+            <ListItem>
+              <ListItem className="text-transform-none">
+                <ListItemIcon><AccountCircleIcon /></ListItemIcon>
+                <ListItemText primary={me.name} />
+              </ListItem>
+            </ListItem>
+          )}
+          {me && (
+            <ListItem onClick={flsx(handleLogout, cogMenu.doClose)}>
+              {/* <ListItemIcon></ListItemIcon> */}
+              <Button startIcon={<ExitToAppIcon />} className="text-transform-none"><ListItemText primary="logout" /></Button>
+            </ListItem>
+          )}
+          <ListItem>
+            {/* todo position menu UNDER button */}
+            <Menu
+              anchorEl={cogMenu.anchor}
+              keepMounted
+              open={cogMenu.isOpen}
+              onClose={cogMenu.doClose}
+            >
+              {!me && (
+                <MenuItem color="primary" onClick={flsx(registerDialog.doOpen, cogMenu.doClose)}>
+                  <ListItemIcon><PersonAddIcon /></ListItemIcon>
+                  <ListItemText primary="register" />
+                </MenuItem>
+              )}
+              {!me && (
+                <MenuItem onClick={flsx(loginDialog.doOpen, cogMenu.doClose) }>
+                  <ListItemIcon><AccountCircleIcon /></ListItemIcon>
+                  <ListItemText primary="login" />
+                </MenuItem>
+              )}
+              {me && (
+                <MenuItem onClick={flsx(handleLogout, cogMenu.doClose)}>
+                  <ListItemIcon><ExitToAppIcon /></ListItemIcon>
+                  <ListItemText primary="logout" />
+                </MenuItem>
+              )}
+              <MenuItem onClick={flsx(debugMode.toggle, cogMenu.doClose)}>
+                <ListItemIcon><BugReportIcon color={debugMode.isOn ? 'primary' : 'inherit'} /></ListItemIcon>
+                <ListItemText primary="debug mode" />
+              </MenuItem>
+            </Menu>
+            <Button onClick={cogMenu.doOpen}>
+              <SettingsIcon />
+            </Button>
+          </ListItem>
+          <ListItem>
+            <MUILink
+              className={clsx('centered', classes.icon)}
+              href="https://github.com/NickKelly1/state-of-js"
+              color="inherit">
+              <GitHubIcon />
+            </MUILink>
+          </ListItem>
+        </List>
+      </Box>
     </>
   );
 }

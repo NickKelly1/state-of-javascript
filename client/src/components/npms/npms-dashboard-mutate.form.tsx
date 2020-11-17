@@ -76,7 +76,8 @@ mutation CreateNpmsDashboardForm(
     can{
       show
       update
-      delete
+      softDelete
+      hardDelete
     }
     data{
       id
@@ -103,7 +104,8 @@ mutation UpdateNpmsDashboardForm(
     can{
       show
       update
-      delete
+      softDelete
+      hardDelete
     }
     data{
       id
@@ -179,21 +181,22 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
     return { ...prev, npmsPackages };
   }), [setFormState]);
 
-  interface ISubmitFnArgs { name: string; npms_package_ids: number[]; }
-  const [doSubmit, submitState] = useMutation<INpmsDashboardMutateFormOnSuccessFnArg, IApiException, ISubmitFnArgs>(
-    async (arg: ISubmitFnArgs) => {
-      const name = formState.name;
-      const npms_package_ids = formState
-        .npmsPackages
-        .map(pkg => pkg.option?.id)
-        .filter(ist.notNullable)
-        .map(Number);
+  const [doSubmit, submitState] = useMutation<INpmsDashboardMutateFormOnSuccessFnArg, IApiException>(
+    async () => {
+      const _vars = {
+        name: formState.name,
+        npms_package_ids: formState
+          .npmsPackages
+          .map(pkg => pkg.option?.id)
+          .filter(ist.notNullable)
+          .map(Number),
+      };
 
       if (ist.nullable(_initial)) {
         // create
         const vars: CreateNpmsDashboardFormMutationVariables = {
-          name: arg.name,
-          npms_package_ids: arg.npms_package_ids,
+          name: _vars.name,
+          npms_package_ids: _vars.npms_package_ids,
         };
         const result = await api
           .connector
@@ -213,8 +216,8 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
         // update
         const vars: UpdateNpmsDashboardFormMutationVariables = {
           id: Number(_initial.id),
-          name: arg.name,
-          npms_package_ids: arg.npms_package_ids,
+          name: _vars.name,
+          npms_package_ids: _vars.npms_package_ids,
         };
         const result = await api
           .connector

@@ -29,9 +29,18 @@ export class NpmsApiConnector {
   async json<T>(url: string, init?: RequestInit): Promise<T> {
     const info = new Request(this.url(url), init);
     logger.debug(`npms-connector::json "${prettyQ(info.url)}"`);
+    // TODO: verify this works...
     const response = await nodeFetch(info);
-    const json: T = await response.json();
-    if (!response.ok) throw json;
+    const json: T = await response
+      .json()
+      .catch(error => {
+        logger.error(`npms-connector::json [error]: "${prettyQ(error)}"`);
+        throw error;
+      });
+    if (!response.ok) {
+      logger.error(`npms-connector::json [fail ${response.status}]: "${prettyQ(json)}"`);
+      throw json;
+    }
     return json;
   }
 }

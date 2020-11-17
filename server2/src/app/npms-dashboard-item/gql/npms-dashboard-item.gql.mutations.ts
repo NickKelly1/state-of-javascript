@@ -4,7 +4,7 @@ import { GqlContext } from "../../../common/context/gql.context";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { NpmsDashboardAssociation } from "../../npms-dashboard/npms-dashboard.associations";
 import { CreateNpmsDashboardItemGqlInput, CreateNpmsDashboardItemValidator } from "../dtos/create-npms-dashboard-item.gql";
-import { DeleteNpmsDashboardItemGqlInput, DeleteNpmsDashboardItemValidator } from "../dtos/delete-npms-dashboard-item.gql";
+import { SoftDeleteNpmsDashboardItemGqlInput, SoftDeleteNpmsDashboardItemValidator } from "../dtos/soft-delete-npms-dashboard-item.gql";
 import { NpmsDashboardItemAssociation } from "../npms-dashboard-item.associations";
 import { INpmsDashboardItemGqlNodeSource, NpmsDashboardItemGqlNode } from "./npms-dashboard-item.gql.node";
 
@@ -13,7 +13,6 @@ export const NpmsDashboardItemGqlMutations: Thunk<GraphQLFieldConfigMap<undefine
     type: GraphQLNonNull(NpmsDashboardItemGqlNode),
     args: { dto: { type: GraphQLNonNull(CreateNpmsDashboardItemGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardItemGqlNodeSource> => {
-      ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate());
       const dto = ctx.validate(CreateNpmsDashboardItemValidator, args.dto);
       const model = await ctx.services.universal.db.transact(async ({ runner }) => {
         const [dashboard, npmsPackage] = await Promise.all([
@@ -34,6 +33,7 @@ export const NpmsDashboardItemGqlMutations: Thunk<GraphQLFieldConfigMap<undefine
             .npmsPackageRepository
             .findByPkOrfail(dto.npms_package_id, { runner }),
         ]);
+        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard }));
 
         const items = assertDefined(dashboard.items);
         const newItem = await ctx.services.npmsDashboardItemService.create({
@@ -54,11 +54,11 @@ export const NpmsDashboardItemGqlMutations: Thunk<GraphQLFieldConfigMap<undefine
     },
   },
 
-  deleteNpmsDashboardItem: {
+  hardDeleteNpmsDashboardItem: {
     type: GraphQLNonNull(NpmsDashboardItemGqlNode),
-    args: { dto: { type: GraphQLNonNull(DeleteNpmsDashboardItemGqlInput) } },
+    args: { dto: { type: GraphQLNonNull(SoftDeleteNpmsDashboardItemGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardItemGqlNodeSource> => {
-      const dto = ctx.validate(DeleteNpmsDashboardItemValidator, args.dto);
+      const dto = ctx.validate(SoftDeleteNpmsDashboardItemValidator, args.dto);
       const model = await ctx.services.universal.db.transact(async ({ runner }) => {
         const NpmsDashboardItem: NpmsDashboardItemModel = await ctx.services.npmsDashboardItemRepository.findByPkOrfail(dto.id, {
           runner,
@@ -71,7 +71,7 @@ export const NpmsDashboardItemGqlMutations: Thunk<GraphQLFieldConfigMap<undefine
         });
         const dashboard = assertDefined(NpmsDashboardItem.dashboard);
         const npmsPackage = assertDefined(NpmsDashboardItem.npmsPackage);
-        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canDelete({ model: NpmsDashboardItem }));
+        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canHardDelete({ model: NpmsDashboardItem, dashboard }));
         await ctx.services.npmsDashboardItemService.delete({ runner, dashboard, npmsPackage, model: NpmsDashboardItem });
         return NpmsDashboardItem;
       });

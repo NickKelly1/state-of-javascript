@@ -1,19 +1,14 @@
-import { Box, Button, Grid, Input, InputLabel, ListItem, makeStyles, Paper, TextField, Typography } from "@material-ui/core";
+import { Button, Grid, ListItem, makeStyles, Typography } from "@material-ui/core";
 import NextLink from 'next/link';
 import MUILink from '@material-ui/core/Link';
 import { gql } from "graphql-request";
-import React, { ReactNode, useContext, useMemo, } from "react";
-import { Permission } from "../../backend-api/services/permission/permission.const";
+import React, { useContext, } from "react";
 import { ApiContext } from "../../components-contexts/api.context";
 import { IndexNewsPageQuery, IndexNewsPageQueryVariables } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
-import { staticPathsHandler, staticPropsHandler } from "../../helpers/static-props-handler.helper";
-import { Markdown } from "../../components/markdown/markdown";
-import { formatRelative } from 'date-fns';
-import { OrNull } from "../../types/or-null.type";
-import { DateString } from "../../types/date-string.type";
-import { WithMemo } from "../../components/with-memo/with-memo";
+import { staticPropsHandler } from "../../helpers/static-props-handler.helper";
 import { INewsArticleTeaserProps, NewsArticleTeaser } from "../../components/news/news-article.teaser";
+import { WithMemo } from "../../components-hoc/with-memo/with-memo";
 
 const pageQuery = gql`
 query IndexNewsPage(
@@ -43,7 +38,8 @@ query IndexNewsPage(
       can{
         show
         update
-        delete
+        softDelete
+        hardDelete
       }
       data{
         id
@@ -61,6 +57,8 @@ query IndexNewsPage(
           can{
             show
             update
+            softDelete
+            hardDelete
           }
           data{
             id
@@ -138,7 +136,7 @@ function IndexNewsPage(props: IIndexNewsPageProps) {
                       deleted_at: node.data.deleted_at ? new Date(node.data.deleted_at) : null,
                     },
                     can: {
-                      delete: node.can.delete,
+                      softDelete: node.can.softDelete,
                       update: node.can.update,
                       show: node.can.show,
                     },

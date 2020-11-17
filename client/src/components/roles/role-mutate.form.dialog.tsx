@@ -28,8 +28,9 @@ mutation MutateRoleFromCreate(
     can{
       show
       update
-      delete
-      createRolePermission
+      softDelete
+      hardDelete
+      createRolePermissions
     }
     data{
       id
@@ -54,8 +55,9 @@ mutation MutateRoleFormUpdate(
     can{
       show
       update
-      delete
-      createRolePermission
+      softDelete
+      hardDelete
+      createRolePermissions
     }
     data{
       id

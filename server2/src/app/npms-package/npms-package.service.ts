@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
+import { ist } from '../../common/helpers/ist.helper';
 import { NpmsLang } from '../../common/i18n/packs/npms.lang';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { logger } from '../../common/logger/logger';
@@ -14,19 +15,36 @@ export class NpmsPackageService {
     //
   }
 
+  /**
+   * Check that data won't violate db constraints
+   *
+   * @param arg
+   */
+  async checkConstraints(arg: {
+    runner: QueryRunner;
+    dataKey?: string;
+    dtos: { names: string[]; }[];
+  }): Promise<void> {
+    const { dtos, runner, dataKey } = arg;
+    const { transaction } = runner;
+    const names = Array.from(new Set(dtos.flatMap(dto => dto.names)));
+    const existing = await NpmsPackageModel.findAll({ where: { [NpmsPackageField.name]: { [Op.in]: names} }, transaction });
+    if (existing.length) {
+      const message = this.ctx.lang(NpmsLang.AlreadyExists({ names: existing.map(ex => ex.name) }));
+      const nameViolation = this.ctx.except(BadRequestException({
+        message,
+        data: ist.notUndefined(dataKey) ? { [NpmsPackageField.name]: [message] } : undefined,
+      }));
+      throw nameViolation;
+    }
+  }
+
   async create(arg: {
     runner: QueryRunner;
     dto: { names: string[] };
   }): Promise<NpmsPackageModel[]> {
     const { dto, runner } = arg;
     const { transaction } = runner;
-    const existing = await NpmsPackageModel.findAll({ where: { [NpmsPackageField.name]: { [Op.in]: dto.names } }, transaction });
-    if (existing.length) {
-      const nameViolation = this.ctx.except(BadRequestException({
-        data: { [NpmsPackageField.name]: [this.ctx.lang(NpmsLang.AlreadyExists({ names: dto.names }))] }
-      }));
-      throw nameViolation;
-    }
     const now = new Date();
     logger.info(`creating news npms records: "${dto.names.join('", "')}"`);
     const results = await this.ctx.services.universal.npmsApi.packageInfos({ names: dto.names });

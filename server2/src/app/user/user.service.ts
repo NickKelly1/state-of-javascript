@@ -1,17 +1,14 @@
 import { UserModel } from '../../circle';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
-import { auditableRo } from '../../common/helpers/auditable-ro.helper';
 import { Combinator } from '../../common/helpers/combinator.helper';
 import { ist } from '../../common/helpers/ist.helper';
-import { softDeleteableRo } from '../../common/helpers/soft-deleteable-ro.helper';
 import { UserLang } from '../../common/i18n/packs/user.lang';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { RoleModel } from '../role/role.model';
 import { UserRoleModel } from '../user-role/user-role.model';
-import { ICreateUserDto } from './dtos/create-user.dto';
-import { IUpdateUserDto } from './dtos/update-user.dto';
-import { IUserRo } from './dtos/user.ro';
+import { IUserServiceCreateUserDto } from './service-dto/user-service.create-user.dto';
+import { IUserServiceUpdateUserDto } from './service-dto/user-service.update-user.dto';
 import { UserField } from './user.attributes';
 
 export class UserService {
@@ -63,7 +60,7 @@ export class UserService {
    */
   async create(arg: {
     runner: QueryRunner;
-    dto: ICreateUserDto;
+    dto: IUserServiceCreateUserDto;
   }): Promise<UserModel> {
     const { dto, runner } = arg;
     const { transaction } = runner;
@@ -78,6 +75,9 @@ export class UserService {
 
     const user = UserModel.build({
       name: dto.name,
+      email: dto.email,
+      verified: dto.verified,
+      deactivated: dto.deactivated,
     });
 
     await user.save({ transaction });
@@ -93,11 +93,14 @@ export class UserService {
   async update(arg: {
     runner: QueryRunner;
     model: UserModel;
-    dto: IUpdateUserDto;
-  }) {
+    dto: IUserServiceUpdateUserDto;
+  }): Promise<UserModel> {
     const { model, dto, runner } = arg;
     const { transaction } = runner;
     if (ist.notUndefined(dto.name)) model.name = dto.name;
+    if (ist.notUndefined(dto.email)) model.email = dto.email;
+    if (ist.notUndefined(dto.verified)) model.verified = dto.verified;
+    if (ist.notUndefined(dto.deactivated)) model.deactivated = dto.deactivated;
     await model.save({ transaction });
     return model;
   }

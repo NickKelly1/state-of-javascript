@@ -61,7 +61,7 @@ export const RolePermissionGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, 
         });
         const role = assertDefined(model.role);
         const permission = assertDefined(model.permission);
-        ctx.authorize(ctx.services.rolePermissionPolicy.canDelete({ model, role, permission, }));
+        ctx.authorize(ctx.services.rolePermissionPolicy.canHardDelete({ model, role, permission, }));
         await ctx.services.rolePermissionService.delete({ runner, model });
         return model;
       });

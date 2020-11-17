@@ -37,21 +37,21 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
   const { onSuccess, dialog, } = props;
   const { api } = useContext(ApiContext);
 
-  interface IFormState { name: string; password: string; };
-  const [ formState, setFormState ] = useState<IFormState>({ name: '', password: '', });
+  interface IFormState { name_or_email: string; password: string; };
+  const [ formState, setFormState ] = useState<IFormState>({ name_or_email: '', password: '', });
   const [ doSubmit, submitState ] = useMutation<IAuthenticationRo, ApiException>(
     async (): Promise<IAuthenticationRo> => {
-      const { name, password } = formState;
+      const { name_or_email, password } = formState;
       const result = await api
         .credentials
-        .signIn({ name, password })
+        .signIn({ name_or_email, password })
         .catch(rethrow(normaliseApiException));
       return result;
     },
     { onSuccess, },
   );
   const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
-  const handleNameChange = useCallback(change(setFormState, 'name'), [setFormState]);
+  const handleNameOrEmail = useCallback(change(setFormState, 'name_or_email'), [setFormState]);
   const handlePasswordChange = useCallback(change(setFormState, 'password'), [setFormState]);
 
   const error = submitState.error;
@@ -66,15 +66,14 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
             <Grid item xs={12}>
               <TextField
                 label="name"
-                id="signup_name"
                 margin="dense"
                 fullWidth
                 autoFocus
                 disabled={isDisabled}
-                value={formState.name}
-                error={!!error?.data?.name}
-                helperText={error?.data?.name?.join('\n')}
-                onChange={handleNameChange}
+                value={formState.name_or_email}
+                error={!!error?.data?.name_or_email}
+                helperText={error?.data?.name_or_email?.join('\n')}
+                onChange={handleNameOrEmail}
               />
             </Grid>
             <Grid item xs={12}>

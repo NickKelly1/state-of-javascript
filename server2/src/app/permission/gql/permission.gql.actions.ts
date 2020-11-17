@@ -16,16 +16,16 @@ export const PermissionGqlActions = new GraphQLObjectType<IPermissionGqlActionsS
         return ctx.services.permissionPolicy.canFindOne({ model: parent });
       },
     },
-    createRolePermission: {
+    createRolePermissions: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
         return ctx.services.rolePermissionPolicy.canCreateForPermission({ permission: parent });
       },
     },
-    deleteRolePermission: {
+    hardDeleteRolePermissions: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.rolePermissionPolicy.canDeleteForPermission({ permission: parent });
+        return ctx.services.rolePermissionPolicy.canHardDeleteForPermission({ permission: parent });
       },
     },
   },

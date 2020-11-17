@@ -9,13 +9,17 @@ export class UserPolicy {
     //
   }
 
+  protected isProtectedUser(user: UserModel): boolean {
+    return (user.isAdmin() || user.isAnonymous() || user.isSystem());
+  }
+
   canFindMany(arg?: {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUser,
-      Permission.ShowUser,
+      Permission.ManageUsers,
+      Permission.ShowUsers,
     ]);
   }
 
@@ -25,8 +29,32 @@ export class UserPolicy {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUser,
-      Permission.ShowUser,
+      Permission.ManageUsers,
+      Permission.ShowUsers,
+    ]);
+  }
+
+  canShowIdentity(arg: {
+    model: UserModel;
+  }): boolean {
+    const { model } = arg;
+    // self
+    if (this.ctx.auth.isMe(model) && this.ctx.auth.hasAnyPermissions([Permission.ShowUsers])) return true;
+    // other
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUsers,
+      Permission.ShowUserIdentities,
+    ]);
+  }
+
+  canRegister(arg?: {
+    //
+  }): boolean {
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUsers,
+      Permission.RegisterUsers,
     ]);
   }
 
@@ -35,8 +63,8 @@ export class UserPolicy {
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUser,
-      Permission.CreateUser,
+      Permission.ManageUsers,
+      Permission.CreateUsers,
     ]);
   }
 
@@ -44,27 +72,92 @@ export class UserPolicy {
     model: UserModel;
   }): boolean {
     const { model } = arg;
-    if (model.isAdmin()) return false;
-    if (model.isAnonymous()) return false;
-    if (model.isSystem()) return false;
+    // protected?
+    if (this.isProtectedUser(model)) return false;
+    // self
+    if (this.ctx.auth.isMe(model) && this.ctx.auth.hasAnyPermissions([Permission.UpdateUserSelf])) return true;
+    // other
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUser,
-      Permission.CreateUser,
+      Permission.ManageUsers,
+      Permission.UpdateUsers,
     ]);
   }
 
-  canDelete(arg: {
+  canUpdatePassword(arg: {
     model: UserModel;
   }): boolean {
     const { model } = arg;
-    if (model.isAdmin()) return false;
-    if (model.isAnonymous()) return false;
-    if (model.isSystem()) return false;
+    // protected?
+    if (this.isProtectedUser(model)) return false;
+    // self
+    if (this.ctx.auth.isMe(model) && this.ctx.auth.hasAnyPermissions([Permission.UpdateUserSelf])) return true;
+    // other
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
-      Permission.ManageUser,
-      Permission.CreateUser,
+      Permission.UpdateUserPasswords
+    ]);
+  }
+
+  canDeactivate(arg: {
+    model: UserModel;
+  }): boolean {
+    const { model } = arg;
+    // protected?
+    if (this.isProtectedUser(model)) return false;
+    // other
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUsers,
+      Permission.DeactivateUsers,
+    ]);
+  }
+
+  canSoftDelete(arg: {
+    model: UserModel;
+  }): boolean {
+    const { model } = arg;
+    // already deleted?
+    if (model.isSoftDeleted()) return false;
+    // protected?
+    if (this.isProtectedUser(model)) return false;
+    // self
+    if (this.ctx.auth.isMe(model) && this.ctx.auth.hasAnyPermissions([Permission.SoftDeleteUserSelf])) return true;
+    // other
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUsers,
+      Permission.SoftDeleteUsers,
+    ]);
+  }
+
+  canHardDelete(arg: {
+    model: UserModel;
+  }): boolean {
+    const { model } = arg;
+    // protected?
+    if (this.isProtectedUser(model)) return false;
+    // other
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUsers,
+      Permission.HardDeleteUsers,
+    ]);
+  }
+
+  canRestore(arg: {
+    model: UserModel;
+  }): boolean {
+    const { model } = arg;
+    // not deleted?
+    if (!model.isSoftDeleted()) return false;
+    // protected?
+    if (this.isProtectedUser(model)) return false;
+    // other
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageUsers,
+      Permission.RestoreNewsArticles,
     ]);
   }
 }

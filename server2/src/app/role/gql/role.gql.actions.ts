@@ -22,34 +22,40 @@ export const RoleGqlActions = new GraphQLObjectType<IRoleGqlActionsSource, GqlCo
         return ctx.services.rolePolicy.canUpdate({ model: parent });
       },
     },
-    delete: {
+    softDelete: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.rolePolicy.canDelete({ model: parent });
+        return ctx.services.rolePolicy.canSoftDelete({ model: parent });
       },
     },
-    createUserRole: {
+    hardDelete: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.rolePolicy.canHardDelete({ model: parent });
+      },
+    },
+    createUserRoles: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
         return ctx.services.userRolePolicy.canCreateForRole({ role: parent });
       },
     },
-    deleteUserRole: {
+    hardDeleteUserRoles: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userRolePolicy.canDeleteForRole({ role: parent });
+        return ctx.services.userRolePolicy.canHardDeleteForRole({ role: parent });
       },
     },
-    createRolePermission: {
+    createRolePermissions: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
         return ctx.services.rolePermissionPolicy.canCreateForRole({ role: parent });
       },
     },
-    deleteRolePermission: {
+    hardDeleteRolePermissions: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.rolePermissionPolicy.canDeleteForRole({ role: parent });
+        return ctx.services.rolePermissionPolicy.canHardDeleteForRole({ role: parent });
       },
     },
   },

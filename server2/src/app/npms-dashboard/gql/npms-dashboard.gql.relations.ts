@@ -38,7 +38,7 @@ export const NpmsDashboardGqlRelations: GraphQLObjectType<INpmsDashboardGqlRelat
         const pagination = collectionMeta({ data: rows, total: count, page });
         const collection: INpmsDashboardItemCollectionGqlNodeSource = {
           models: rows.map((model): OrNull<NpmsDashboardItemModel> =>
-            ctx.services.npmsDashboardItemPolicy.canFindOne({ model })
+            ctx.services.npmsDashboardItemPolicy.canFindOne({ model, dashboard: parent, })
               ? model
               : null,
           ),

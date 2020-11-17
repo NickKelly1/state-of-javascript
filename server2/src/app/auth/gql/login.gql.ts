@@ -7,20 +7,17 @@ import { UserDefinition } from "../../user/user.definition";
 // ---- input ----
 // ---------------
 
-export interface ILoginGqlInput {
-  name: string;
+export interface ILoginDto {
+  name_or_email: string;
   password: string;
 }
 
-export const LoginGqlInputValidator = Joi.object<ILoginGqlInput>({
-  name: Joi.string().min(UserDefinition.name.min).max(UserDefinition.name.max).required(),
+export const LoginDtoValidator = Joi.object<ILoginDto>({
+  name_or_email: Joi.alternatives(
+    // name
+    Joi.string().min(UserDefinition.name.min).max(UserDefinition.name.max),
+    // email
+    Joi.string().email().min(UserDefinition.name.min).max(UserDefinition.name.max),
+  ).required(),
   password: Joi.string().min(UserPasswordDefinition.password.min).max(UserPasswordDefinition.password.max).required(),
-});
-
-export const LoginGqlInput = new GraphQLInputObjectType({
-  name: 'LoginInput',
-  fields: () => ({
-    name: { type: GraphQLNonNull(GraphQLString) },
-    password: { type: GraphQLNonNull(GraphQLString) },
-  }),
 });

@@ -19,6 +19,7 @@ import { NewsArticleStatusId } from '../news-article-status/news-article-status.
 import { NewsArticleStatusModel } from '../news-article-status/news-article-status.model';
 import { NewsArticleStatusField } from '../news-article-status/news-article-status.attributes';
 import { UserField } from '../user/user.attributes';
+import { NewsArticleStatus } from '../news-article-status/news-article-status.const';
 
 
 export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticleCreationAttributes> implements INewsArticleAttributes {
@@ -41,10 +42,17 @@ export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticle
 
   // eager loaded associations
   [NewsArticleAssociation.author]?: UserModel;
-  [NewsArticleAssociation.status]?: NewsArticleStatusId;
+  [NewsArticleAssociation.status]?: NewsArticleStatusModel;
 
   // associations
-  getAuthor!: BelongsToGetAssociationMixin<UserModel>;
+  //
+
+  // helpers
+  isDraft() { return this[NewsArticleField.status_id] === NewsArticleStatus.Draft; }
+  isRejected() { return this[NewsArticleField.status_id] === NewsArticleStatus.Rejected; }
+  isSubmitted() { return this[NewsArticleField.status_id] === NewsArticleStatus.Submitted; }
+  isApproved() { return this[NewsArticleField.status_id] === NewsArticleStatus.Approved; }
+  isPublished() { return this[NewsArticleField.status_id] === NewsArticleStatus.Published; }
 }
 
 

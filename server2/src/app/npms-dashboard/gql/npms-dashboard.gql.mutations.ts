@@ -2,16 +2,24 @@ import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "gr
 import { Op } from "sequelize";
 import { NpmsDashboardModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
-import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { NpmsPackageField } from "../../npms-package/npms-package.attributes";
-import { CreateNpmsDashboardGqlInput, CreateNpmsDashboardValidator } from "../dtos/create-npms-dashboard.gql";
-import { DeleteNpmsDashboardGqlInput, DeleteNpmsDashboardValidator } from "../dtos/delete-npms-dashboard.gql";
-import { SortNpmsDashboardGqlInput, SortNpmsDashboardValidator } from "../dtos/sort-npms-dashboard.gql";
-import { UpdateNpmsDashboardGqlInput, UpdateNpmsDashboardValidator } from "../dtos/update-npms-dashboard.gql";
+import { CreateNpmsDashboardGqlInput, CreateNpmsDashboardValidator } from "../gql-input/create-npms-dashboard.gql";
+import { SoftDeleteNpmsDashboardGqlInput, SoftDeleteNpmsDashboardGqlInputValidator } from "../gql-input/soft-delete-npms-dashboard.gql";
+import { RestoreNpmsDashboardGqlInput, RestoreNpmsDashboardGqlInputValidator } from "../gql-input/restore-npms-dashboard.gql";
+import { SortNpmsDashboardGqlInput, SortNpmsDashboardValidator } from "../gql-input/sort-npms-dashboard.gql";
+import { UpdateNpmsDashboardGqlInput, UpdateNpmsDashboardValidator } from "../gql-input/update-npms-dashboard.gql";
 import { NpmsDashboardAssociation } from "../npms-dashboard.associations";
-import { NpmsDashboardCollectionOptionsGqlInput } from "./npms-dashboard.collection.gql.options";
 import { INpmsDashboardGqlNodeSource, NpmsDashboardGqlNode } from "./npms-dashboard.gql.node";
+import { HardDeleteNpmsDashboardGqlInput } from "../gql-input/hard-delete-npms-dashboard.gql";
+import { INpmsDashboardServiceCreateNpmsDashboardDto } from "../dto/npms-dashboard-service.create-npms-dashboard.dto";
+import { INpmsDashboardServiceUpdateNpmsDashboardDto } from "../dto/npms-dashboard-service.update-npms-dashboard.dto";
+import { NpmsDashboardStatus } from "../../npms-dashboard-status/npms-dashboard-status.const";
+import { SubmitNpmsDashboardGqlInput, SubmitNpmsDashboardGqlInputValidator } from "../gql-input/submit-npms-dashboard.gql";
+import { RejectNpmsDashboardGqlInput, RejectNpmsDashboardGqlInputValidator } from "../gql-input/reject-npms-dashboard.gql";
+import { ApproveNpmsDashboardGqlInput, ApproveNpmsDashboardGqlInputValidator } from "../gql-input/approve-npms-dashboard.gql";
+import { UnpublishNpmsDashboardGqlInput, UnpublishNpmsDashboardGqlInputValidator } from "../gql-input/unpublish-npms-dashboard.gql";
+import { PublishNpmsDashboardGqlInput, PublishNpmsDashboardGqlInputValidator } from "../gql-input/publish-npms-dashboard.gql";
 
 export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext>> = () => ({
   sortNpmsDashboards: {
@@ -32,13 +40,25 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     args: { dto: { type: GraphQLNonNull(CreateNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
       ctx.authorize(ctx.services.npmsDashboardPolicy.canCreate());
+      console.log('---- fuck');
+      console.log('---- fuck');
+      console.log('---- fuck');
+      console.log('---- fuck');
+      console.log(args);
       const dto = ctx.validate(CreateNpmsDashboardValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const dashboard = await ctx.services.npmsDashboardService.create({ runner, dto });
+      const owner_id = ctx.assertAuthentication();
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const owner = await ctx.services.userRepository.findByPkOrfail(owner_id, { runner, unscoped: true });
+        const serviceDto: INpmsDashboardServiceCreateNpmsDashboardDto = {
+          name: dto.name,
+          npms_package_ids: dto.npms_package_ids,
+          status_id: NpmsDashboardStatus.Draft,
+        };
+        const dashboard = await ctx.services.npmsDashboardService.create({ runner, dto: serviceDto, owner });
 
         // link to packages
         if (dto.npms_package_ids && dto.npms_package_ids.length) {
-          ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate());
+          ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard }));
           // TODO: verify each individually can be linked...
           const nextPackagesUnsorted = await ctx
             .services
@@ -66,7 +86,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
 
         return dashboard;
       });
-      return model;
+      return final;
     },
   },
 
@@ -75,20 +95,23 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     args: { dto: { type: GraphQLNonNull(UpdateNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
       const dto = ctx.validate(UpdateNpmsDashboardValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const dashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
             include: [{ association: NpmsDashboardAssociation.items, }],
           }
         });
+        const serviceDto: INpmsDashboardServiceUpdateNpmsDashboardDto = {
+          name: dto.name,
+        };
         await ctx.services.npmsDashboardService.update({ runner, dto, model: dashboard });
 
         ctx.authorize(ctx.services.npmsDashboardPolicy.canUpdate({ model: dashboard }));
         // link to packages
         if (dto.npms_package_ids && dto.npms_package_ids.length) {
           const prevDashboardItems = assertDefined(dashboard.items);
-          ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate());
+          ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard }));
           // TODO: verify each individually can be linked...
           const nextPackagesUnsorted = await ctx
             .services
@@ -111,28 +134,155 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
 
         return dashboard;
       });
-      return model;
+      return final;
     },
   },
 
-  deleteNpmsDashboard: {
-    type: GraphQLNonNull(NpmsDashboardGqlNode),
-    args: { dto: { type: GraphQLNonNull(DeleteNpmsDashboardGqlInput) } },
-    resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
-      const dto = ctx.validate(DeleteNpmsDashboardValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+
+  softDeleteNpmsDashboard: {
+    args: { dto: { type: GraphQLNonNull(SoftDeleteNpmsDashboardGqlInput) } },
+    type: GraphQLNonNull(GraphQLBoolean),
+    resolve: async (parent, args, ctx): Promise<boolean> => {
+      const dto = ctx.validate(SoftDeleteNpmsDashboardGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
+          runner,
+        });
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canSoftDelete({ model: npmsDashboard }));
+        await ctx.services.npmsDashboardService.softDelete({ runner, model: npmsDashboard });
+        return npmsDashboard;
+      });
+      return true;
+    },
+  },
+
+
+  hardDeleteNpmsDashboard: {
+    args: { dto: { type: GraphQLNonNull(HardDeleteNpmsDashboardGqlInput) } },
+    type: GraphQLNonNull(GraphQLBoolean),
+    resolve: async (parent, args, ctx): Promise<boolean> => {
+      const dto = ctx.validate(SoftDeleteNpmsDashboardGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
             include: [{ association: NpmsDashboardAssociation.items, }],
           }
         });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canDelete({ model: npmsDashboard }));
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canHardDelete({ model: npmsDashboard }));
         const items = assertDefined(npmsDashboard.items);
         await ctx.services.npmsDashboardService.hardDelete({ runner, model: npmsDashboard, items });
         return npmsDashboard;
       });
-      return model;
+      return true;
     },
   },
+
+
+  restoreNpmsDashboard: {
+    type: GraphQLNonNull(NpmsDashboardGqlNode),
+    args: { dto: { type: GraphQLNonNull(RestoreNpmsDashboardGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      const dto = ctx.validate(RestoreNpmsDashboardGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
+          runner,
+        });
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canRestore({ model: npmsDashboard }));
+        await ctx.services.npmsDashboardService.restore({ runner, model: npmsDashboard });
+        return npmsDashboard;
+      });
+      return final;
+    },
+  },
+
+
+  submitNpmsDashboard: {
+    type: GraphQLNonNull(NpmsDashboardGqlNode),
+    args: { dto: { type: GraphQLNonNull(SubmitNpmsDashboardGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      const dto = ctx.validate(SubmitNpmsDashboardGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
+          runner,
+        });
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canSubmit({ model: npmsDashboard }));
+        await ctx.services.npmsDashboardService.submit({ runner, model: npmsDashboard });
+        return npmsDashboard;
+      });
+      return final;
+    },
+  },
+
+
+  rejectNpmsDashboard: {
+    type: GraphQLNonNull(NpmsDashboardGqlNode),
+    args: { dto: { type: GraphQLNonNull(RejectNpmsDashboardGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      const dto = ctx.validate(RejectNpmsDashboardGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
+          runner,
+        });
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canReject({ model: npmsDashboard }));
+        await ctx.services.npmsDashboardService.reject({ runner, model: npmsDashboard });
+        return npmsDashboard;
+      });
+      return final;
+    },
+  },
+
+
+  approveNpmsDashboard: {
+    type: GraphQLNonNull(NpmsDashboardGqlNode),
+    args: { dto: { type: GraphQLNonNull(ApproveNpmsDashboardGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      const dto = ctx.validate(ApproveNpmsDashboardGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
+          runner,
+        });
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canApprove({ model: npmsDashboard }));
+        await ctx.services.npmsDashboardService.approve({ runner, model: npmsDashboard });
+        return npmsDashboard;
+      });
+      return final;
+    },
+  },
+
+
+  publishNpmsDashboard: {
+    type: GraphQLNonNull(NpmsDashboardGqlNode),
+    args: { dto: { type: GraphQLNonNull(PublishNpmsDashboardGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      const dto = ctx.validate(PublishNpmsDashboardGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
+          runner,
+        });
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canPublish({ model: npmsDashboard }));
+        await ctx.services.npmsDashboardService.publish({ runner, model: npmsDashboard });
+        return npmsDashboard;
+      });
+      return final;
+    },
+  },
+
+
+  unpublishNpmsDashboard: {
+    type: GraphQLNonNull(NpmsDashboardGqlNode),
+    args: { dto: { type: GraphQLNonNull(UnpublishNpmsDashboardGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      const dto = ctx.validate(UnpublishNpmsDashboardGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
+          runner,
+        });
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canUnpublish({ model: npmsDashboard }));
+        await ctx.services.npmsDashboardService.unpublish({ runner, model: npmsDashboard });
+        return npmsDashboard;
+      });
+      return final;
+    },
+  }
 });

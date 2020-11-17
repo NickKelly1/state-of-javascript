@@ -5,10 +5,12 @@ import { GqlContext } from "../../../common/context/gql.context";
 import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
 import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
 import { andWhere } from "../../../common/helpers/and-where.helper.ts";
+import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { collectionMeta } from "../../../common/responses/collection-meta";
 import { OrNull } from "../../../common/types/or-null.type";
 import { INpmsDashboardItemCollectionGqlNodeSource, NpmsDashboardItemCollectionGqlNode } from "../../npms-dashboard-item/gql/npms-dashboard-item.collection.gql.node";
 import { NpmsDashboardItemCollectionOptionsGqlInput } from "../../npms-dashboard-item/gql/npms-dashboard-item.collection.gql.options";
+import { NpmsDashboardItemAssociation } from "../../npms-dashboard-item/npms-dashboard-item.associations";
 import { NpmsDashboardItemField } from "../../npms-dashboard-item/npms-dashboard-item.attributes";
 import { INpmsDashboardCollectionGqlNodeSource, NpmsDashboardCollectionGqlNode } from "../../npms-dashboard/gql/npms-dashboard.collection.gql.node";
 import { NpmsDashboardCollectionOptionsGqlInput } from "../../npms-dashboard/gql/npms-dashboard.collection.gql.options";
@@ -31,6 +33,7 @@ export const NpmsPackageGqlRelations: GraphQLObjectType<INpmsPackageGqlRelations
           runner: null,
           options: {
             ...options,
+            include: [{ association: NpmsDashboardItemAssociation.dashboard }],
             where: andWhere([
               options.where,
               { [NpmsDashboardItemField.npms_package_id]: { [Op.eq]: parent.id } }
@@ -40,7 +43,7 @@ export const NpmsPackageGqlRelations: GraphQLObjectType<INpmsPackageGqlRelations
         const pagination = collectionMeta({ data: rows, total: count, page });
         const collection: INpmsDashboardItemCollectionGqlNodeSource = {
           models: rows.map((model): OrNull<NpmsDashboardItemModel> =>
-            ctx.services.npmsDashboardItemPolicy.canFindOne({ model })
+            ctx.services.npmsDashboardItemPolicy.canFindOne({ model, dashboard: assertDefined(model.dashboard) })
               ? model
               : null,
           ),

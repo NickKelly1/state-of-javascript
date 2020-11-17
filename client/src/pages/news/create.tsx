@@ -77,7 +77,7 @@ function CreateNewsPage(props: ICreateNewsPageProps) {
       isDisabled={result.isLoading}
       lastSavedAt={undefined}
       canShow={false}
-      canDelete={false}
+      canSoftDelete={false}
       // TODO: canSave
       canSave={true}
       initial={{

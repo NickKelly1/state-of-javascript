@@ -53,8 +53,39 @@ export class AuthSerivce {
 
   unauthenticate(arg: { res: Response }): void {
     const { res } = arg;
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    // unset the access_token
+    res.cookie(
+      'access_token',
+      '',
+      {
+        sameSite: false,
+        domain: this.ctx.services.universal.env.HOST,
+        secure: this.ctx.services.universal.env.is_prod(),
+        path: '/',
+        httpOnly: true,
+        expires: new Date(0), // @ the beginning of UTC time... 1970
+      },
+    );
+
+    // unset the refresh_token
+    // @note: path must be the same as was set, otherwise won't be cleared...
+    res.cookie(
+      'refresh_token',
+      '',
+      {
+        // only send the refresh_token on the refresh route...
+        // this means we can't use gql for the refresh route
+        // by only using this route, we reduce the risk of
+        // csrf attack
+        sameSite: false,
+        domain: this.ctx.services.universal.env.HOST,
+        secure: this.ctx.services.universal.env.is_prod(),
+        path: '/v1/auth/refresh',
+        httpOnly: true,
+        expires: new Date(0), // @ the beginning of UTC time... 1970
+      },
+    );
+
   }
 
   authenticate(arg: {

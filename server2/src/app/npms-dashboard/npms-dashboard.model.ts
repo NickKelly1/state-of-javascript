@@ -1,4 +1,9 @@
-import { Model, DataTypes, HasManyGetAssociationsMixin, BelongsToManyGetAssociationsMixin, } from 'sequelize';
+import {
+  Model,
+  DataTypes,
+  HasManyGetAssociationsMixin,
+  BelongsToManyGetAssociationsMixin,
+} from 'sequelize';
 import { AuditableSchema } from '../../common/schemas/auditable.schema';
 import { AutoIncrementingId } from '../../common/schemas/auto-incrementing-id.schema';
 import { pretendAuditable } from '../../common/schemas/helpers/pretend-auditable.helper';
@@ -9,7 +14,11 @@ import { pretendSoftDeleteable } from '../../common/schemas/helpers/pretend-soft
 import { NpmsDashboardDefinition } from './npms-dashboard.definition';
 import { SoftDeleteableSchema } from '../../common/schemas/soft-deleteable.schema';
 import { INpmsDashboardAttributes, INpmsDashboardCreationAttributes, NpmsDashboardField } from './npms-dashboard.attributes';
-import { NpmsDashboardItemModel } from '../../circle';
+import { NpmsDashboardItemModel, UserModel } from '../../circle';
+import { UserId } from '../user/user.id.type';
+import { NpmsDashboardStatus } from '../npms-dashboard-status/npms-dashboard-status.const';
+import { NpmsDashboardStatusField } from '../npms-dashboard-status/npms-dashboard-status.attributes';
+import { NpmsDashboardStatusModel } from '../npms-dashboard-status/npms-dashboard-status.model';
 
 
 export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDashboardCreationAttributes> implements INpmsDashboardAttributes {
@@ -17,6 +26,8 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   [NpmsDashboardField.id]!: NpmsDashboardId;
   [NpmsDashboardField.name]!: string;
   [NpmsDashboardField.order]!: number;
+  [NpmsDashboardField.owner_id]!: UserId;
+  [NpmsDashboardField.status_id]!: UserId;
 
   [NpmsDashboardField.created_at]!: Date;
   [NpmsDashboardField.updated_at]!: Date;
@@ -26,12 +37,20 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   static associations: NpmsDashboardAssociations;
 
   // eager loaded associations
+  [NpmsDashboardAssociation.owner]?: UserModel;
   [NpmsDashboardAssociation.items]?: NpmsDashboardItemModel[];
   [NpmsDashboardAssociation.npmsPackages]?: NpmsDashboardModel[];
+  [NpmsDashboardAssociation.status]?: NpmsDashboardStatus;
 
   // associations
-  getItems!: HasManyGetAssociationsMixin<NpmsDashboardItemModel>;
-  getNpmsPackages!: BelongsToManyGetAssociationsMixin<NpmsDashboardModel>;
+  //
+
+  // helpers
+  isDraft() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Draft; }
+  isRejected() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Rejected; }
+  isSubmitted() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Submitted; }
+  isApproved() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Approved; }
+  isPublished() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Published; }
 }
 
 
@@ -41,6 +60,8 @@ export const initNpmsDashboardModel: ModelInitFn = (arg) => {
     id: AutoIncrementingId,
     name: { type: DataTypes.STRING(NpmsDashboardDefinition.name.max), allowNull: false, },
     order: { type: DataTypes.INTEGER, allowNull: false, },
+    owner_id: { type: DataTypes.INTEGER, references: { model: UserModel as typeof Model, key: NpmsDashboardField.id }, allowNull: false, },
+    status_id: { type: DataTypes.INTEGER, references: { model: NpmsDashboardStatusModel as typeof Model, key: NpmsDashboardStatusField.id }, allowNull: false, },
     ...pretendAuditable,
     ...pretendSoftDeleteable,
   }, {

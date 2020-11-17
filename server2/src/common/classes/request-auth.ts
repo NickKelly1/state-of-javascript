@@ -2,6 +2,8 @@ import { PermissionId } from "../../app/permission/permission-id.type";
 import { UserId } from "../../app/user/user.id.type";
 import { OrUndefined } from "../types/or-undefined.type";
 import { IAccessToken } from "../../app/auth/token/access.token.gql";
+import { UserModel } from "../../circle";
+import { ist } from "../helpers/ist.helper";
 
 export class RequestAuth {
   protected _permissions: Set<PermissionId>;
@@ -16,6 +18,17 @@ export class RequestAuth {
     this._permissions = new Set(permissions);
     this._user_id = user_id;
   }
+
+  isMe(user: UserModel): boolean {
+    if (ist.nullable(this.user_id)) return false;
+    return this.isMeByUserId(user.id);
+  }
+
+  isMeByUserId(id: UserId): boolean {
+    if (ist.nullable(this.user_id)) return false;
+    return this.user_id === id;
+  }
+
 
   hasAnyPermissions(permissions: PermissionId[]): boolean {
     return permissions.some(perm => this.permissions.has(perm));

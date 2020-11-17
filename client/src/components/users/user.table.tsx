@@ -96,7 +96,8 @@ query UsersTableData(
       can{
         show
         update
-        delete
+        softDelete
+        hardDelete
       }
       data{
         id
@@ -233,7 +234,7 @@ function UsersTableContent(props: IUsersTableContentProps) {
     updated_at: string;
     created_at: string;
     deleted_at: string;
-    canDelete: boolean;
+    canHardDelete: boolean;
   }
 
   const tableData = useMemo<IUserRow[]>((): IUserRow[] => {
@@ -248,7 +249,7 @@ function UsersTableContent(props: IUsersTableContentProps) {
           created_at: dayjs(node.data.created_at).format('YYYY-M-D hh:mm:ss'),
           updated_at: dayjs(node.data.updated_at).format('YYYY-M-D hh:mm:ss'),
           deleted_at: node.data.deleted_at ? dayjs(node.data.deleted_at).format('YYYY-M-D hh:mm:ss') : '',
-          canDelete: node.can.delete,
+          canHardDelete: node.can.hardDelete,
         };
       });
   }, [queryData]);
@@ -293,14 +294,14 @@ function UsersTableContent(props: IUsersTableContentProps) {
           ? formatRelative(new Date(original.deleted_at), new Date())
           : '',
     }];
-    const canDeleteSome = tableData.some(dat => dat.canDelete);
+    const canDeleteSome = tableData.some(dat => dat.canHardDelete);
     if (canDeleteSome) {
       cols.push({
         Header: 'Delete',
         accessor: (original) => (
           <IconButton
             color="primary"
-            disabled={!original.canDelete}
+            disabled={!original.canHardDelete}
             onClick={() => doDelete({ id: Number(original.id) })}
             size="small"
           >

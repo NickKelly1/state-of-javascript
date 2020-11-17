@@ -91,8 +91,8 @@ query UserUserRolesFormData(
   ){
     nodes{
       can{
-        createUserRole
-        deleteUserRole
+        createUserRoles
+        hardDeleteUserRoles
       }
       data{
         id
@@ -118,8 +118,8 @@ query UserUserRolesFormData(
           }
           nodes{
             can{
-              createUserRole
-              deleteUserRole
+              createUserRoles
+              hardDeleteUserRoles
             }
             data{
               id
@@ -142,8 +142,8 @@ query UserUserRolesFormData(
     nodes{
       can{
         show
-        createUserRole
-        deleteUserRole
+        createUserRoles
+        hardDeleteUserRoles
       }
       data{
         id
@@ -286,7 +286,7 @@ function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
         .nodes
         .filter(ist.notNullable)
         .map((role): IListBuilderItem<IUserRoleListItem> => ({
-          disabled: !(role.can.deleteUserRole && role.can.createUserRole),
+          disabled: !(role.can.hardDeleteUserRoles && role.can.createUserRoles),
           data: {
             id: role.data.id,
             name: role.data.name,
@@ -297,7 +297,7 @@ function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
       const available: IListBuilderItem<IUserRoleListItem>[] = roles
         .filter(role => !currentIds.has(role.data.id))
         .map((role): IListBuilderItem<IUserRoleListItem> => ({
-          disabled: !(role.can.deleteUserRole && role.can.createUserRole),
+          disabled: !(role.can.hardDeleteUserRoles && role.can.createUserRoles),
           data: {
             id: role.data.id,
             name: role.data.name,
@@ -346,7 +346,7 @@ function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
   }, [doSubmit, user.data.id, roleLists]);
 
   // || !role.can.update;
-  const isDisabled = submitState.isLoading || !(user.can.createUserRole) || !(user.can.deleteUserRole);
+  const isDisabled = submitState.isLoading || !(user.can.createUserRoles) || !(user.can.hardDeleteUserRoles);
   const isLoading = submitState.isLoading;
   const error = submitState.error;
 

@@ -91,8 +91,8 @@ query RoleRolePermissionsFormData(
   ){
     nodes{
       can{
-        createRolePermission
-        deleteRolePermission
+        createRolePermissions
+        hardDeleteRolePermissions
       }
       data{
         id
@@ -118,8 +118,8 @@ query RoleRolePermissionsFormData(
           }
           nodes{
             can{
-              createRolePermission
-              deleteRolePermission
+              createRolePermissions
+              hardDeleteRolePermissions
             }
             data{
               id
@@ -142,8 +142,8 @@ query RoleRolePermissionsFormData(
   ){
     nodes{
       can{
-        createRolePermission
-        deleteRolePermission
+        createRolePermissions
+        hardDeleteRolePermissions
       }
       data{
         id
@@ -287,7 +287,7 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
         .filter(ist.notNullable)
         .map((permission): IListBuilderItem<IRolePermissionListItem> => ({
           // TODO: check if can DELETE rolePermission too....
-          disabled: !(permission.can.createRolePermission && permission.can.deleteRolePermission),
+          disabled: !(permission.can.createRolePermissions && permission.can.hardDeleteRolePermissions),
           data: {
             id: permission.data.id,
             name: permission.data.name,
@@ -298,7 +298,7 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
       const available: IListBuilderItem<IRolePermissionListItem>[] = permissions
         .filter(permission => !currentIds.has(permission.data.id))
         .map((permission): IListBuilderItem<IRolePermissionListItem> => ({
-          disabled: !(permission.can.createRolePermission && permission.can.deleteRolePermission),
+          disabled: !(permission.can.createRolePermissions && permission.can.hardDeleteRolePermissions),
           data: {
             id: permission.data.id,
             name: permission.data.name,
@@ -347,7 +347,7 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
   }, [submit, role.data.id, permissionLists]);
 
   // TODO:
-  const isDisabled = submitState.isLoading || !(role.can.createRolePermission && role.can.deleteRolePermission);
+  const isDisabled = submitState.isLoading || !(role.can.createRolePermissions && role.can.hardDeleteRolePermissions);
   const isLoading = submitState.isLoading;
   const error = submitState.error;
 

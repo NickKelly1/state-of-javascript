@@ -38,7 +38,7 @@ export const NewsArticleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, Gql
           },
         });
         const author: UserModel = assertDefined(model.author);
-        ctx.authorize(ctx.services.newsArticlePolicy.canUpdate({ author, model }));
+        ctx.authorize(ctx.services.newsArticlePolicy.canUpdate({ model }));
         await ctx.services.newsArticleService.update({ runner, author, dto, model });
         return model;
       });
@@ -59,7 +59,7 @@ export const NewsArticleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, Gql
           },
         });
         const author: UserModel = assertDefined(model.author);
-        ctx.authorize(ctx.services.newsArticlePolicy.canDelete({ author, model }));
+        ctx.authorize(ctx.services.newsArticlePolicy.canSoftDelete({ model }));
         await ctx.services.newsArticleService.delete({ runner, author, model });
         return model;
       });

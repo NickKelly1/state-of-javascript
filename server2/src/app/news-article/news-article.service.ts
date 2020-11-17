@@ -14,6 +14,12 @@ export class NewsArticleService {
     //
   }
 
+
+  /**
+   * Create a NewsArticle
+   *
+   * @param arg
+   */
   async create(arg: {
     runner: QueryRunner;
     author: UserModel,
@@ -35,8 +41,9 @@ export class NewsArticleService {
     return NewsArticle;
   }
 
+
   /**
-   * Update the model
+   * Update the NewsArticle
    *
    * @param arg
    */
@@ -55,8 +62,9 @@ export class NewsArticleService {
     return model;
   }
 
+
   /**
-   * Delete the model
+   * Delete the NewsArticle
    * 
    * @param arg
    */
@@ -86,8 +94,9 @@ export class NewsArticleService {
     return model;
   }
 
+
   /**
-   * Reject the news articles submission
+   * Reject the NewsArticle's Submission
    *
    * @param arg
    */
@@ -121,7 +130,7 @@ export class NewsArticleService {
 
 
   /**
-   * Schedule the news article for publishing
+   * Schedule the NewsArticle for Publishing
    *
    * @param arg
    */
@@ -139,7 +148,7 @@ export class NewsArticleService {
 
 
   /**
-   * Publish the news article
+   * Publish the NewsArticle
    *
    * @param arg
    */
@@ -156,11 +165,11 @@ export class NewsArticleService {
 
 
   /**
-   * Unpublish the news article
+   * Unpublish the NewsArticle
    *
    * @param arg
    */
-  async upublish(arg: {
+  async unpublish(arg: {
     model: NewsArticleModel;
     runner: QueryRunner;
   }): Promise<NewsArticleModel> {

@@ -48,8 +48,9 @@ query RoleDetailData(
       can{
         show
         update
-        delete
-        createRolePermission
+        softDelete
+        hardDelete
+        createRolePermissions
       }
       data{
         id

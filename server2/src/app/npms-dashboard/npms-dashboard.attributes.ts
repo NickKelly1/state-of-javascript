@@ -9,17 +9,22 @@ import { UserId } from "../user/user.id.type";
 import { deleted_at } from "../../common/schemas/constants/deleted_at.const";
 import { OrNull } from "../../common/types/or-null.type";
 import { NpmsDashboardId } from "./npms-dashboard.id.type";
+import { NpmsDashboardStatusId } from "../npms-dashboard-status/npms-dashboard-status.id.type";
 
 export interface INpmsDashboardAttributes extends IAuditable, ISoftDeleteable {
   id: NpmsDashboardId;
   name: string;
   order: number;
+  owner_id: UserId;
+  status_id: NpmsDashboardStatusId;
 }
 
 export const NpmsDashboardField: K2K<INpmsDashboardAttributes> = {
   id: 'id',
   name: 'name',
   order: 'order',
+  owner_id: 'owner_id',
+  status_id: 'status_id',
   [created_at]: created_at,
   [updated_at]: updated_at,
   [deleted_at]: deleted_at,

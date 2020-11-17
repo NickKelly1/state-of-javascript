@@ -12,6 +12,7 @@ export const NpmsPackageGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, Gql
       ctx.authorize(ctx.services.npmsPackagePolicy.canCreate());
       const dto = ctx.validate(CreateNpmsPackageValidator, args.dto);
       const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+        await ctx.services.npmsPackageService.checkConstraints({ runner, dataKey: 'name', dtos: [{ names: [dto.name] }]});
         const [model] = await ctx.services.npmsPackageService.create({ runner, dto: { names: [dto.name] } });
         return model;
       });

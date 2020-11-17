@@ -20,7 +20,7 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { gql } from 'graphql-request';
-import { JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables } from '../../generated/graphql';
+import { NpmsDashboardSoftDeleteDashboardMutation, NpmsDashboardSoftDeleteDashboardMutationVariables } from '../../generated/graphql';
 import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
 import { Legend } from '../legend/legend';
@@ -37,26 +37,15 @@ import { useDialog } from '../../hooks/use-dialog.hook';
 import { FittedBarChart } from '../../components-charts/fitted-bar-chart/fitted-bar-chart';
 import { FittedPieChart } from '../../components-charts/fitted-pie-chart/fitted-pie-chart';
 
-const jsPageDeleteDashboardQuery = gql`
-mutation JsPageDeleteDashboard(
+const npmsDashboardSoftDeleteDashboardQuery = gql`
+mutation NpmsDashboardSoftDeleteDashboard(
   $id:Int!
 ){
-  deleteNpmsDashboard(
+  softDeleteNpmsDashboard(
     dto:{
       id:$id
     }
-  ){
-    cursor,
-    can{
-      show
-      update
-      delete
-    }
-    data{
-      id
-      name
-    }
-  }
+  )
 }
 `;
 
@@ -73,7 +62,7 @@ export interface INpmsDashboardDatasets {
     can: {
       show: boolean,
       update: boolean,
-      delete: boolean,
+      softDelete: boolean,
     },
     overview: {
       legend: { names: string[]; colours: string[]; };
@@ -124,12 +113,12 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
   const { api, me } = useContext(ApiContext);
   const colours = useRandomDashColours();
 
-  const handleDeleteDashboard = useCallback(async () => {
-    const vars: JsPageDeleteDashboardMutationVariables = { id: Number(dashboard.original.id) };
+  const handleSoftDeleteDashboard = useCallback(async () => {
+    const vars: NpmsDashboardSoftDeleteDashboardMutationVariables = { id: Number(dashboard.original.id) };
     const result = await api
       .connector
-      .graphql<JsPageDeleteDashboardMutation, JsPageDeleteDashboardMutationVariables>(
-        jsPageDeleteDashboardQuery,
+      .graphql<NpmsDashboardSoftDeleteDashboardMutation, NpmsDashboardSoftDeleteDashboardMutationVariables>(
+        npmsDashboardSoftDeleteDashboardQuery,
         vars,
       )
       .catch(rethrow(normaliseApiException));
@@ -216,9 +205,9 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
                 </IconButton>
               </Box>
             )}
-            {dashboard.graphical.can.delete && (
+            {dashboard.graphical.can.softDelete && (
               <Box px={1}>
-                <IconButton color="primary" onClick={handleDeleteDashboard}>
+                <IconButton color="primary" onClick={handleSoftDeleteDashboard}>
                   <DeleteIcon />
                 </IconButton>
               </Box>
@@ -229,15 +218,19 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
           <Legend names={dashboard.graphical.overview.legend.names} colours={dashboard.graphical.colours} />
         </Grid>
         <Grid className="centered col" item xs={12} sm={4}>
-          <Typography>
-            Downloads
-          </Typography>
+          <Box mb={1}>
+            <Typography>
+              Downloads
+            </Typography>
+          </Box>
           <FittedPieChart borderless colours={dashboard.graphical.colours} data={dashboard.graphical.overview.downloads} radius={50} />
         </Grid>
         <Grid className="centered col" item xs={12} sm={4}>
-          <Typography>
-            Growth
-          </Typography>
+          <Box mb={1}>
+            <Typography>
+              Growth
+            </Typography>
+          </Box>
           <FittedPieChart borderless colours={dashboard.graphical.colours} data={dashboard.graphical.overview.growth} radius={50} />
         </Grid>
         <Grid className="centered col" item xs={12}>

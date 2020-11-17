@@ -9,4 +9,9 @@ export const InternalServerExceptionLang = {
     [Language.En]: 'GraphQL Query Runner is already initialised',
     [Language.Ger]: '__TODO__',
   },
+  // for when we fail to find unique user...
+  FailedToFindUser: {
+    [Language.En]: 'Failed to find user',
+    [Language.Ger]: '__TODO__',
+  },
 }
