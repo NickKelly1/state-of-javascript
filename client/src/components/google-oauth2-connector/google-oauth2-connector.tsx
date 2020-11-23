@@ -283,7 +283,7 @@ const InitialiseIntegrationFormDialog = WithDialogue<IInitialiseIntegrationFormD
           initialiseIntegrationFormMutation,
           vars,
         )
-        .then(rethrow(normaliseApiException));
+        .catch(rethrow(normaliseApiException));
       return result;
     },
     { onSuccess: handleSuccess, }
