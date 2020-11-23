@@ -27,7 +27,7 @@ export class UserPasswordService {
   }): Promise<boolean> {
     const { raw, password } = arg;
 
-    const comparison = await this.ctx.services.universal.hash.bcryptCompare({
+    const comparison = await this.ctx.services.universal.encryption.bcryptCompare({
       raw: `${password.salt}${raw}`,
       hash: password.hash,
     })
@@ -46,12 +46,12 @@ export class UserPasswordService {
   }): Promise<{ salt: string, hash: string }> {
     const { raw } = arg;
 
-    const salt = await this.ctx.services.universal.hash.bcryptHash({
+    const salt = await this.ctx.services.universal.encryption.bcryptHash({
       raw: Math.random().toString(),
       rounds: this.ctx.services.universal.env.PSW_SALT_ROUNDS,
     });
 
-    const hash = await this.ctx.services.universal.hash.bcryptHash({
+    const hash = await this.ctx.services.universal.encryption.bcryptHash({
       raw: `${salt}${raw}`,
       rounds: this.ctx.services.universal.env.PSW_SALT_ROUNDS,
     });

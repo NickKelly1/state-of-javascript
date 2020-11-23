@@ -75,6 +75,10 @@ export const Permission = {
   ManageNpmsDashboardItem: 1040,
 
   ShowNpmsDashboardStatus: 1100,
+
+  ShowIntegrations: 1200,
+  ShowIntegrationSecrets: 1201,
+  ManageIntegrations: 1220,
 } as const;
 export type Permission = typeof Permission;
 export type APermission = Permission[keyof Permission];

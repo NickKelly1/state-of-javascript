@@ -40,6 +40,8 @@ export class EnvService {
 
   public readonly DELAY = to.int('DELAY');
 
+  public readonly SECRET = to.string('SECRET');
+
   public readonly ADMIN_INITIAL_PSW = to.string('ADMIN_INITIAL_PSW');
 
   public readonly EXT = path.extname(__filename);

@@ -67,6 +67,9 @@ import { Api } from "../../backend-api/api";
 import { IMeHash } from "../../backend-api/api.me";
 import { IConstructor } from "../../types/constructor.interface";
 import { IIdentityFn } from "../../types/identity-fn.type";
+import { IOnErrorFn } from "../../types/on-error-fn.type";
+import { useSnackbar } from "notistack";
+import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 
 
 const RoleRolePermissionsFormDataQueryName = (id: Id) => `RoleRolePermissionsFormDataQuery_${id}`;
@@ -185,10 +188,11 @@ export interface IRoleRolePermissionFormOnSuccessFn {
 export interface IRoleRolePermissionFormProps {
   role_id: Id;
   onSuccess?: IRoleRolePermissionFormOnSuccessFn;
+  onError?: IOnErrorFn;
 }
 
 export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
-  const { role_id, onSuccess, } = props;
+  const { role_id, onSuccess, onError, } = props;
   const { api, me, } = useContext(ApiContext);
 
   const [vars, setVars] = useState<RoleRolePermissionsFormDataQueryVariables>(() => ({
@@ -251,30 +255,50 @@ interface IRoleRolePermissionFormContentProps {
   role: NonNullable<RoleRolePermissionsFormDataQuery['roles']['nodes'][0]>;
   permissions: NonNullable<RoleRolePermissionsFormDataQuery['permissions']['nodes'][0]>[];
   onSuccess?: IRoleRolePermissionFormOnSuccessFn;
+  onError?: IOnErrorFn;
 }
 
 
 function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProps) {
-  const { role, permissions, onSuccess } = props;
+  const { role, permissions, onSuccess, onError } = props;
   const { api, me } = useContext(ApiContext);
 
   const [isDirty, setIsDirty] = useState(false);
-  const submitCb = useCallback(async (vars: RoleRolePermissionFormUpdateMutationVariables): Promise<IRoleRolePermissionFormOnSuccessFnArg> => {
-    const result = await api
-      .connector
-      .graphql<RoleRolePermissionFormUpdateMutation, RoleRolePermissionFormUpdateMutationVariables>(
-        rolePermissionFormUpdateUpdateMutation,
-        vars,
-      )
-      .catch(rethrow(normaliseApiException));
-    return {
-      id: result.updateRole.data.id,
-      name: result.updateRole.data.name,
-    };
-  }, [api])
-  const [submit, submitState] = useMutation<IRoleRolePermissionFormOnSuccessFnArg, ApiException, RoleRolePermissionFormUpdateMutationVariables>(
-    submitCb,
-    { onSuccess, }
+
+  const { enqueueSnackbar, } = useSnackbar();
+
+  const handleSuccess: IRoleRolePermissionFormOnSuccessFn = useCallback((arg) => {
+    enqueueSnackbar(`Updated role "${arg.name}"`, { variant: 'success', });
+    onSuccess?.(arg);
+  }, [enqueueSnackbar, onSuccess]);
+
+  const handleError: IOnErrorFn = useCallback((arg) => {
+    enqueueSnackbar(`Failed to update role "${arg.name}"`, { variant: 'error' });
+    onError?.(arg);
+  }, [onError, role]);
+
+  const [doSubmit, submitState] = useMutation<IRoleRolePermissionFormOnSuccessFnArg, ApiException>(
+    async (): Promise<IRoleRolePermissionFormOnSuccessFnArg> => {
+      const vars: RoleRolePermissionFormUpdateMutationVariables = {
+        id: role.data.id,
+        permission_ids: permissionLists[1].map(perm => Number(perm.data.id)),
+      };
+      const result = await api
+        .connector
+        .graphql<RoleRolePermissionFormUpdateMutation, RoleRolePermissionFormUpdateMutationVariables>(
+          rolePermissionFormUpdateUpdateMutation,
+          vars,
+        )
+        .catch(rethrow(normaliseApiException));
+      return {
+        id: result.updateRole.data.id,
+        name: result.updateRole.data.name,
+      };
+    },
+    {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    },
   );
 
   interface IRolePermissionListItem { id: Id; name: string };
@@ -338,15 +362,7 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
     [],
   );
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback((evt) => {
-    evt.preventDefault();
-    submit({
-      id: role.data.id,
-      permission_ids: permissionLists[1].map(perm => Number(perm.data.id)),
-    });
-  }, [submit, role.data.id, permissionLists]);
-
-  // TODO:
+  const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
   const isDisabled = submitState.isLoading || !(role.can.createRolePermissions && role.can.hardDeleteRolePermissions);
   const isLoading = submitState.isLoading;
   const error = submitState.error;
@@ -373,7 +389,7 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
               </Grid>
             )}
             <Grid className="centered col" item xs={12} sm={12}>
-              <Button variant="outlined" disabled={isDisabled || !isDirty} type="submit">
+              <Button variant="outlined" disabled={isDisabled || !isDirty} type="submit" color="primary">
                 Save
               </Button>
             </Grid>

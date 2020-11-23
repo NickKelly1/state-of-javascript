@@ -21,6 +21,7 @@ import { OrNull } from "../../types/or-null.type";
 import { OrPromise } from "../../types/or-promise.type";
 import { Debounce } from "../../helpers/debounce.helper";
 import { _ls } from "../../helpers/_ls.helper";
+import { useSnackbar } from "notistack";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -86,6 +87,7 @@ export function NewsArticleForm(props: ICreateNewsPageProps) {
   } = props;
   const { api, me } = useContext(ApiContext);
   const classes = useStyles();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [lsDebounce] = useState(() => ({
     title: new Debounce(750),
@@ -96,6 +98,7 @@ export function NewsArticleForm(props: ICreateNewsPageProps) {
   const [title, setTitle] = useState(initial?.title ?? '');
   const [teaser, setTeaser] = useState(initial?.teaser ?? '');
   const [body, setBody] = useState(initial?.body ?? '');
+
 
   // initialise from localstorage...
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { Sequelize } from "sequelize";
 import { createSequelize } from "../../app/db/create-sequelize";
 import { DbService } from "../../app/db/db.service";
-import { HashService } from "../../app/hash/hash.service";
+import { EncryptionService } from "../../app/encryption/encryption.service";
 import { NpmsApi } from "../../app/npms-package/api/npms-api";
 import { NpmsApiConnector } from "../../app/npms-package/api/npms-api-connector";
 import { PublicAuthorisation } from "../classes/public-authorisation";
@@ -19,7 +19,6 @@ export function universalServiceContainerFactory(arg: {
     sequelize,
     new PublicAuthorisation(env, sequelize),
     new NpmsApi(env, new NpmsApiConnector(env)),
-    new HashService(),
     new DbService(sequelize),
   );
 

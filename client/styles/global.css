@@ -126,3 +126,8 @@
   max-width: 1px;
   padding: 0 !important;
 }
+
+.nowrap {
+  overflow: hidden;
+  white-space: nowrap;
+}

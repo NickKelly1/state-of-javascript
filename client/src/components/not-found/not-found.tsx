@@ -1,5 +1,7 @@
 import { makeStyles, Typography } from "@material-ui/core";
+import clsx from "clsx";
 import React from "react";
+import { OrNullable } from "../../types/or-nullable.type";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -12,17 +14,18 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export interface INotFoundProps {
-  message: string;
+  className?: OrNullable<string>;
+  message?: string;
 }
 
 export function NotFound(props: INotFoundProps) {
-  const { message } = props;
+  const { message, className } = props;
   const classes = useStyles();
 
   return (
-    <div className={classes.root}>
+    <div className={clsx(className, classes.root)}>
       <Typography component="h2" variant="h2">
-        {message}
+        {message ?? 'Not found'}
       </Typography>
     </div>
   )

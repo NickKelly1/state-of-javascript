@@ -122,7 +122,7 @@ export function DebugException(props: IDebugExceptionProps) {
             <Typography variant="body2">
               Stack:
             </Typography>
-            <Typography variant="body2" color="error">
+            <Typography component="div" variant="body2" color="error">
               {stack.split('\n').map((tr, i) => (
                 <div key={i}>
                   <span>

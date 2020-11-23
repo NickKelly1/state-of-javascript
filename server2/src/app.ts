@@ -28,6 +28,7 @@ import { prettyQ } from './common/helpers/pretty.helper';
 import { universalServiceContainerFactory } from './common/containers/universal.service.container.factory';
 import { GqlContext } from './common/context/gql.context';
 import { npmsApiFactory } from './app/npms-package/api/npms-api.factory';
+import { JsonResponder } from './common/responses/json.responder';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
@@ -195,29 +196,6 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
     return data;
   })));
   app.use(Routes({ app }));
-  app.use('/zing', mw((ctx, next) => {
-    const { req, res } = ctx;
-
-    const html = /* html */ `
-    <html>
-      <head>
-        <title>
-          The Title
-        </title>
-      </head>
-      <body>
-        <div>
-          hoe hoe hoe
-        </div>
-      </body>
-    </htm>
-    `;
-
-    res
-      .status(200)
-      .contentType('html')
-      .send(html);
-  }));
   app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
   app.use(errorHandlerMw());
 

@@ -13,6 +13,7 @@ import { PublicEnvProvider } from '../components-contexts/public-env.context';
 import { AppProps } from 'next/app';
 import { DebugModeProvider } from '../components-contexts/debug-mode.context';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
+import { SnackbarProvider } from 'notistack';
 
 interface IMyAppProps extends AppProps {
   //
@@ -37,23 +38,25 @@ export default function MyApp(props: IMyAppProps) {
         <title>The State of JavaScript</title>
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
-      <ReactQueryCacheProvider queryCache={queryCache}>
-        <PublicEnvProvider>
-          <DebugModeProvider>
-            <ApiProvider>
-              <CmsProvider>
-                <NpmsApiProvider>
-                  <ThemeProvider theme={theme}>
-                    {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-                    <CssBaseline />
-                    <Layout appProps={props} />
-                  </ThemeProvider>
-                </NpmsApiProvider>
-              </CmsProvider>
-            </ApiProvider>
-          </DebugModeProvider>
-        </PublicEnvProvider>
-      </ReactQueryCacheProvider>
+      <SnackbarProvider maxSnack={3}>
+        <ReactQueryCacheProvider queryCache={queryCache}>
+          <PublicEnvProvider>
+            <DebugModeProvider>
+              <ApiProvider>
+                <CmsProvider>
+                  <NpmsApiProvider>
+                    <ThemeProvider theme={theme}>
+                      {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+                      <CssBaseline />
+                      <Layout appProps={props} />
+                    </ThemeProvider>
+                  </NpmsApiProvider>
+                </CmsProvider>
+              </ApiProvider>
+            </DebugModeProvider>
+          </PublicEnvProvider>
+        </ReactQueryCacheProvider>
+      </SnackbarProvider>
     </React.Fragment>
   );
 }

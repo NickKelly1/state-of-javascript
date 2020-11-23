@@ -39,6 +39,12 @@ import { NpmsDashboardItemService } from "../../app/npms-dashboard-item/npms-das
 import { NpmsDashboardStatusPolicy } from "../../app/npms-dashboard-status/npms-dashboard-status.policy";
 import { NpmsDashboardStatusRepository } from "../../app/npms-dashboard-status/npms-dashboard-status.repository";
 import { NpmsDashboardStatusService } from "../../app/npms-dashboard-status/npms-dashboard-status.service";
+import { EmailService } from "../../app/email/email.service";
+import { IntegrationRepository } from "../../app/integration/integration.repository";
+import { IntegrationPolicy } from "../../app/integration/integration.policy";
+import { IntegrationService } from "../../app/integration/integration.service";
+import { GoogleService } from "../../app/google/google.service";
+import { GooglePolicy } from "../../app/google/google.policy";
 
 export class RequestSerivceContainer implements IRequestServices {
   constructor(
@@ -293,6 +299,27 @@ export class RequestSerivceContainer implements IRequestServices {
     return this._npmsDashboardStatusPolicy;
   }
 
+  protected _integrationService: OrUndefined<IntegrationService>
+  get integrationService(): IntegrationService {
+    if (this._integrationService) return this._integrationService;
+    this._integrationService = new IntegrationService(this._ctx);
+    return this._integrationService;
+  }
+
+  protected _integrationRepository: OrUndefined<IntegrationRepository>
+  get integrationRepository(): IntegrationRepository {
+    if (this._integrationRepository) return this._integrationRepository;
+    this._integrationRepository = new IntegrationRepository(this._ctx);
+    return this._integrationRepository;
+  }
+
+  protected _integrationPolicy: OrUndefined<IntegrationPolicy>
+  get integrationPolicy(): IntegrationPolicy {
+    if (this._integrationPolicy) return this._integrationPolicy;
+    this._integrationPolicy = new IntegrationPolicy(this._ctx);
+    return this._integrationPolicy;
+  }
+
   protected _jwtService: OrUndefined<JwtService>
   get jwtService(): JwtService {
     if (this._jwtService) return this._jwtService;
@@ -305,5 +332,27 @@ export class RequestSerivceContainer implements IRequestServices {
     if (this._authService) return this._authService;
     this._authService = new AuthSerivce(this._ctx);
     return this._authService;
+  }
+
+  protected _googleService: OrUndefined<GoogleService>
+  get googleService(): GoogleService {
+    if (this._googleService) return this._googleService;
+    this._googleService = new GoogleService(this._ctx);
+    return this._googleService;
+  }
+
+  protected _googlePolicy: OrUndefined<GooglePolicy>
+  get googlePolicy(): GooglePolicy {
+    if (this._googlePolicy) return this._googlePolicy;
+    this._googlePolicy = new GooglePolicy(this._ctx);
+    return this._googlePolicy;
+  }
+
+
+  protected _emailService: OrUndefined<EmailService>
+  get emailService(): EmailService {
+    if (this._emailService) return this._emailService;
+    this._emailService = new EmailService(this._ctx);
+    return this._emailService;
   }
 }

@@ -121,7 +121,7 @@ const defaultQueryVars: NpmsDashbortSortFormQueryVariables = {
 }
 
 
-export const NpmsDashboardSortForm = WithDialogue<INpmsDashboardSortFormProps>()((props) => {
+export const NpmsDashboardSortForm = WithDialogue<INpmsDashboardSortFormProps>({ fullWidth: true })((props) => {
   const { onSuccess, dialog } = props;
   const { api, me } = useContext(ApiContext);
 

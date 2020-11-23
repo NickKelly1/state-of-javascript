@@ -27,6 +27,11 @@ import { IRoleMutateFormRole, RoleMutateFormDialog } from "./role-mutate.form.di
 import { IIdentityFn } from "../../types/identity-fn.type";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { flsx } from "../../helpers/flsx.helper";
+import { IApiException } from "../../backend-api/types/api.exception.interface";
+import { OrNull } from "../../types/or-null.type";
+import { OrNullable } from "../../types/or-nullable.type";
+import { INodeable, nodeify } from "../../helpers/nodeify.helper";
+import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 
 const RoleDetailDataQueryName = (id: Id) => `RoleDetailDataQuery_${id}`;
 const roleDetailDataQuery = gql`
@@ -97,33 +102,12 @@ export function RoleDetail(props: IRoleDetailProps) {
   }, [onUpdated, refetch])
 
   return (
-    <Grid container spacing={2}>
-      {isLoading && (
-        <Grid className="centered" item xs={12}>
-          <CircularProgress />
-        </Grid>
-      )}
-      {error && (
-        <Grid item xs={12}>
-          <DebugException centered always exception={error} />
-        </Grid>
-      )}
-      {roles?.length === 0 && (
-        <Grid item xs={12}>
-          <NotFound message={`Role "${role_id}" not found`} />
-        </Grid>
-      )}
-      {roles?.length === 1 && (
-        <Grid item xs={12}>
-          <RoleDetailContent
-            role={roles[0]}
-            onSuccess={handleSuccess}
-          />
-        </Grid>
-      )}
-    </Grid>
+    <WithLoadable data={roles?.[0]} error={error} isLoading={isLoading}>
+      {dat => <RoleDetailContent role={dat} onSuccess={handleSuccess} />}
+    </WithLoadable>
   );
 }
+
 
 interface IRoleDetailContentProps {
   role: NonNullable<RoleDetailDataQuery['roles']['nodes'][0]>

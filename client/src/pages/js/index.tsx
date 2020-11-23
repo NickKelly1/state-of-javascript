@@ -47,7 +47,7 @@ import { useQuery } from 'react-query';
 import { IIdentityFn } from '../../types/identity-fn.type';
 import { DebugException } from '../../components/debug-exception/debug-exception';
 import { useDialog } from '../../hooks/use-dialog.hook';
-import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form';
+import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form.dialog';
 import { flsx } from '../../helpers/flsx.helper';
 
 const JsPageDashboardQueryName = 'JsPageDashboardQuery';

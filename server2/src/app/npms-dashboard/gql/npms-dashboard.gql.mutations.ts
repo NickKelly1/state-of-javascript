@@ -40,11 +40,6 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     args: { dto: { type: GraphQLNonNull(CreateNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
       ctx.authorize(ctx.services.npmsDashboardPolicy.canCreate());
-      console.log('---- fuck');
-      console.log('---- fuck');
-      console.log('---- fuck');
-      console.log('---- fuck');
-      console.log(args);
       const dto = ctx.validate(CreateNpmsDashboardValidator, args.dto);
       const owner_id = ctx.assertAuthentication();
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {

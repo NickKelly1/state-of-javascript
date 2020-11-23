@@ -1,4 +1,6 @@
 import { GraphQLObjectType } from 'graphql';
+import { GoogleGqlMutations } from './app/google/gql/google.gql.mutations';
+import { IntegrationGqlMutations } from './app/integration/gql/integration.gql.mutations';
 import { NewsArticleGqlMutations } from './app/news-article/gql/news-article.gql.mutations';
 import { NpmsDashboardItemGqlMutations } from './app/npms-dashboard-item/gql/npms-dashboard-item.gql.mutations';
 import { NpmsDashboardGqlMutations } from './app/npms-dashboard/gql/npms-dashboard.gql.mutations';
@@ -19,5 +21,7 @@ export const GqlRootMutation = new GraphQLObjectType<undefined, GqlContext>({
     ...unthunk(RolePermissionGqlMutations),
     ...unthunk(RoleGqlMutations),
     ...unthunk(UserGqlMutations),
+    ...unthunk(IntegrationGqlMutations),
+    ...unthunk(GoogleGqlMutations),
   }),
 });

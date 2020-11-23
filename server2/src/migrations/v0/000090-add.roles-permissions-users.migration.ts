@@ -130,6 +130,11 @@ function getData() {
 
     // npms-dashboard-statuses
     { id: 1100, name: 'show-npms-dashboard-statuses', created_at: now, updated_at: now, deleted_at: null, },
+
+    // integrations
+    { id: 1200, name: 'show-integrations', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1201, name: 'show-integrations-secrets', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1220, name: 'manage-integrations', created_at: now, updated_at: now, deleted_at: null, },
   ];
 
   const roles: IMigrationRole[] = [{

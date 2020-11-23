@@ -36,6 +36,12 @@ import { NpmsDashboardItemRepository } from "../../app/npms-dashboard-item/npms-
 import { NpmsDashboardStatusPolicy } from "../../app/npms-dashboard-status/npms-dashboard-status.policy";
 import { NpmsDashboardStatusRepository } from "../../app/npms-dashboard-status/npms-dashboard-status.repository";
 import { NpmsDashboardStatusService } from "../../app/npms-dashboard-status/npms-dashboard-status.service";
+import { EmailService } from "../../app/email/email.service";
+import { IntegrationService } from "../../app/integration/integration.service";
+import { IntegrationRepository } from "../../app/integration/integration.repository";
+import { IntegrationPolicy } from "../../app/integration/integration.policy";
+import { GoogleService } from "../../app/google/google.service";
+import { GooglePolicy } from "../../app/google/google.policy";
 
 export interface IRequestServices {
   universal: IUniversalServices;
@@ -87,6 +93,14 @@ export interface IRequestServices {
   npmsDashboardItemRepository: NpmsDashboardItemRepository;
   npmsDashboardItemPolicy: NpmsDashboardItemPolicy;
 
+  integrationService: IntegrationService;
+  integrationRepository: IntegrationRepository;
+  integrationPolicy: IntegrationPolicy;
+
+  googleService: GoogleService;
+  googlePolicy: GooglePolicy;
+
   jwtService: JwtService;
   authService: AuthSerivce;
+  emailService: EmailService;
 }

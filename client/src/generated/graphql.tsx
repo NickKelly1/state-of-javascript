@@ -24,6 +24,9 @@ export type RootQueryType = {
   npmsPackages: NpmsPackageCollectionNode;
   npmsDashboards: NpmsDashboardCollectionNode;
   npmsDashboardItems: NpmsDashboardItemCollectionNode;
+  integrations: IntegrationCollectionNode;
+  googleIntegration: IntegrationNode;
+  googleOAuth2GetUrl: Scalars['String'];
 };
 
 
@@ -69,6 +72,11 @@ export type RootQueryTypeNpmsDashboardsArgs = {
 
 export type RootQueryTypeNpmsDashboardItemsArgs = {
   query?: Maybe<NpmsDashboardItemQuery>;
+};
+
+
+export type RootQueryTypeIntegrationsArgs = {
+  query?: Maybe<IntegrationQuery>;
 };
 
 export type NewsArticleCollectionNode = {
@@ -1042,6 +1050,72 @@ export type NpmsPackageCollectionActions = {
   create: Scalars['Boolean'];
 };
 
+export type IntegrationCollectionNode = {
+  __typename?: 'IntegrationCollectionNode';
+  nodes: Array<Maybe<IntegrationNode>>;
+  actions: IntegrationCollectionActions;
+  pagination: Meta;
+};
+
+export type IntegrationNode = {
+  __typename?: 'IntegrationNode';
+  cursor: Scalars['String'];
+  data: IntegrationData;
+  can: IntegrationActions;
+  relations: IntegrationRelations;
+};
+
+export type IntegrationData = {
+  __typename?: 'IntegrationData';
+  id: Scalars['Int'];
+  name: Scalars['String'];
+  error?: Maybe<Scalars['JsonObject']>;
+  public?: Maybe<Scalars['JsonObject']>;
+  is_connected: Scalars['Boolean'];
+  decrypted_init?: Maybe<Scalars['JsonObject']>;
+  decrypted_state?: Maybe<Scalars['JsonObject']>;
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+};
+
+export type IntegrationActions = {
+  __typename?: 'IntegrationActions';
+  show: Scalars['Boolean'];
+  initialise: Scalars['Boolean'];
+};
+
+export type IntegrationRelations = {
+  __typename?: 'IntegrationRelations';
+  self?: Maybe<IntegrationNode>;
+};
+
+export type IntegrationCollectionActions = {
+  __typename?: 'IntegrationCollectionActions';
+  show: Scalars['Boolean'];
+  initialise: Scalars['Boolean'];
+  authenticateGoogle: Scalars['Boolean'];
+  sendGmails: Scalars['Boolean'];
+};
+
+export type IntegrationQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<IntegrationQueryFilterFilterConditionGroup>>;
+};
+
+export type IntegrationQueryFilterFilterConditionGroup = {
+  attr?: Maybe<IntegrationQueryFilterFilterAttributes>;
+  or?: Maybe<Array<IntegrationQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<IntegrationQueryFilterFilterConditionGroup>>;
+};
+
+export type IntegrationQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+};
+
 export type RootMutationType = {
   __typename?: 'RootMutationType';
   createNewsArticle: NewsArticleNode;
@@ -1070,6 +1144,9 @@ export type RootMutationType = {
   createUser: UserNode;
   updateUser: UserNode;
   deleteUser: Scalars['Boolean'];
+  initialiseIntegration: IntegrationNode;
+  googleOAuth2HandleCode: IntegrationNode;
+  googleSendEmail: Scalars['JsonObject'];
 };
 
 
@@ -1202,6 +1279,21 @@ export type RootMutationTypeDeleteUserArgs = {
   dto: DeleteUser;
 };
 
+
+export type RootMutationTypeInitialiseIntegrationArgs = {
+  dto: InitialiseIntegration;
+};
+
+
+export type RootMutationTypeGoogleOAuth2HandleCodeArgs = {
+  code: Scalars['String'];
+};
+
+
+export type RootMutationTypeGoogleSendEmailArgs = {
+  dto: GoogleSendEmail;
+};
+
 export type CreateNewsArticle = {
   title: Scalars['String'];
   teaser: Scalars['String'];
@@ -1322,6 +1414,73 @@ export type UpdateUser = {
 export type DeleteUser = {
   id: Scalars['Int'];
 };
+
+export type InitialiseIntegration = {
+  id: Scalars['Int'];
+  init: Scalars['JsonObject'];
+};
+
+export type GoogleSendEmail = {
+  to: Array<Scalars['String']>;
+  cc?: Maybe<Array<Scalars['String']>>;
+  subject?: Maybe<Scalars['String']>;
+  body?: Maybe<Scalars['String']>;
+};
+
+export type GoogleOAuth2ConnectorDataQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GoogleOAuth2ConnectorDataQuery = (
+  { __typename?: 'RootQueryType' }
+  & { googleIntegration: (
+    { __typename?: 'IntegrationNode' }
+    & { data: (
+      { __typename?: 'IntegrationData' }
+      & Pick<IntegrationData, 'id' | 'name' | 'error' | 'public' | 'is_connected' | 'decrypted_init' | 'decrypted_state' | 'created_at' | 'updated_at'>
+    ) }
+  ) }
+);
+
+export type GoogleOAuth2ConnectorUrlDataQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GoogleOAuth2ConnectorUrlDataQuery = (
+  { __typename?: 'RootQueryType' }
+  & Pick<RootQueryType, 'googleOAuth2GetUrl'>
+);
+
+export type GoogleOAuth2ConnectorCodeFormMutationVariables = Exact<{
+  code: Scalars['String'];
+}>;
+
+
+export type GoogleOAuth2ConnectorCodeFormMutation = (
+  { __typename?: 'RootMutationType' }
+  & { googleOAuth2HandleCode: (
+    { __typename?: 'IntegrationNode' }
+    & { data: (
+      { __typename?: 'IntegrationData' }
+      & Pick<IntegrationData, 'id' | 'name' | 'error' | 'public' | 'is_connected' | 'created_at' | 'updated_at'>
+    ) }
+  ) }
+);
+
+export type InitialiseIntegrationFormMutationVariables = Exact<{
+  id: Scalars['Int'];
+  init: Scalars['JsonObject'];
+}>;
+
+
+export type InitialiseIntegrationFormMutation = (
+  { __typename?: 'RootMutationType' }
+  & { initialiseIntegration: (
+    { __typename?: 'IntegrationNode' }
+    & { data: (
+      { __typename?: 'IntegrationData' }
+      & Pick<IntegrationData, 'id' | 'name' | 'error' | 'public' | 'is_connected' | 'created_at' | 'updated_at'>
+    ) }
+  ) }
+);
 
 export type CreateNpmsDashboardFormMutationVariables = Exact<{
   name: Scalars['String'];

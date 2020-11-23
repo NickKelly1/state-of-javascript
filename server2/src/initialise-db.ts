@@ -48,6 +48,7 @@ import { NpmsDashboardItemAssociation } from './app/npms-dashboard-item/npms-das
 import { initNpmsDashboardStatusModel, NpmsDashboardStatusModel } from './app/npms-dashboard-status/npms-dashboard-status.model';
 import { NpmsDashboardStatusAssociation } from './app/npms-dashboard-status/npms-dashboard-status.associations';
 import { NpmsDashboardStatusField } from './app/npms-dashboard-status/npms-dashboard-status.attributes';
+import { initIntegrationModel } from './app/integration/integration.model';
 
 
 /**
@@ -129,6 +130,7 @@ async function initialiseWithTransaction(arg: {
   initNpmsDashboardStatusModel({ env, sequelize, });
   initNpmsDashboardModel({ env, sequelize, });
   initNpmsDashboardItemModel({ env, sequelize, });
+  initIntegrationModel({ env, sequelize, });
 
 
   // -----------------------

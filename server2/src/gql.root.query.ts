@@ -13,6 +13,8 @@ import { UserRoleGqlQuery } from './app/user-role/gql/user-role.gql.query';
 import { NpmsPackageGqlQuery } from './app/npms-package/gql/npms-package.gql.query';
 import { NpmsDashboardsGqlQuery } from './app/npms-dashboard/gql/npms-dashboard.gql.query';
 import { NpmsDashboardItemsGqlQuery } from './app/npms-dashboard-item/gql/npms-dashboard-item.gql.query';
+import { IntegrationGqlQuery } from './app/integration/gql/integration.gql.query';
+import { GoogleGqlQuery } from './app/google/gql/google.gql.query';
 
 
 export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
@@ -28,5 +30,7 @@ export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
     ...unthunk(NpmsPackageGqlQuery),
     ...unthunk(NpmsDashboardsGqlQuery),
     ...unthunk(NpmsDashboardItemsGqlQuery),
+    ...unthunk(IntegrationGqlQuery),
+    ...unthunk(GoogleGqlQuery),
   }),
 });

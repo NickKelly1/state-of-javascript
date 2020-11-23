@@ -67,6 +67,10 @@ import { Api } from "../../backend-api/api";
 import { IMeHash } from "../../backend-api/api.me";
 import { IConstructor } from "../../types/constructor.interface";
 import { IIdentityFn } from "../../types/identity-fn.type";
+import { useSnackbar } from "notistack";
+import { flsx } from "../../helpers/flsx.helper";
+import { useSubmitForm } from "../../hooks/use-submit-form.hook";
+import { IOnErrorFn } from "../../types/on-error-fn.type";
 
 
 const UserUserRolesFormDataQueryName = (id: Id) => `UserUserRolesFormDataQuery_${id}`;
@@ -178,17 +182,16 @@ mutation UserUserRolesFormUpdate(
 
 
 export interface IUserUserRolesFormOnSuccessFnArg { id: Id; name: string; }
-export interface IUserUserRolesFormOnSuccessFn {
-  (arg: IUserUserRolesFormOnSuccessFnArg): any;
-}
+export interface IUserUserRolesFormOnSuccessFn { (arg: IUserUserRolesFormOnSuccessFnArg): any; }
 
 export interface IUserUserRolesFormProps {
   user_id: Id;
   onSuccess?: IUserUserRolesFormOnSuccessFn;
+  onError?: IOnErrorFn;
 }
 
 export function UserUserRolesForm(props: IUserUserRolesFormProps) {
-  const { user_id, onSuccess, } = props;
+  const { user_id, onSuccess, onError } = props;
   const { api, me, } = useContext(ApiContext);
 
   const [vars, setVars] = useState<UserUserRolesFormDataQueryVariables>(() => ({
@@ -238,6 +241,7 @@ export function UserUserRolesForm(props: IUserUserRolesFormProps) {
           <UserUserRolesFormContent
             user={users[0]}
             roles={roles}
+            onError={onError}
             onSuccess={onSuccess}
           />
         </Grid>
@@ -251,30 +255,49 @@ interface IUserUserRolesFormContentProps {
   user: NonNullable<UserUserRolesFormDataQuery['users']['nodes'][0]>;
   roles: NonNullable<UserUserRolesFormDataQuery['roles']['nodes'][0]>[];
   onSuccess?: IUserUserRolesFormOnSuccessFn;
+  onError?: IOnErrorFn;
 }
 
 
 function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
-  const { user, roles, onSuccess } = props;
+  const { user, roles, onSuccess, onError, } = props;
   const { api, me } = useContext(ApiContext);
+  const { enqueueSnackbar, } = useSnackbar();
 
   const [isDirty, setIsDirty] = useState(false);
-  const submitCb = useCallback(async (vars: UserUserRolesFormUpdateMutationVariables): Promise<IUserUserRolesFormOnSuccessFnArg> => {
-    const result = await api
-      .connector
-      .graphql<UserUserRolesFormUpdateMutation, UserUserRolesFormUpdateMutationVariables>(
-        userUserRolesFormMutationUpdateMutation,
-        vars,
-      )
-      .catch(rethrow(normaliseApiException));
-    return {
-      id: result.updateUser.data.id,
-      name: result.updateUser.data.name,
-    };
-  }, [api])
-  const [doSubmit, submitState] = useMutation<IUserUserRolesFormOnSuccessFnArg, ApiException, UserUserRolesFormUpdateMutationVariables>(
-    submitCb,
-    { onSuccess, }
+
+  const handleSuccess: IUserUserRolesFormOnSuccessFn = useCallback((arg) => {
+    enqueueSnackbar(`Updated roles for "${user.data.name}"`, { variant: 'success' });
+    onSuccess?.(arg);
+  }, [onSuccess, enqueueSnackbar, user.data.name]);
+
+  const handleError: IOnErrorFn = useCallback((arg) => {
+    enqueueSnackbar(`Failed to updated roles for "${user.data.name}"`, { variant: 'error' });
+    onError?.(arg);
+  }, [onError, user.data.name])
+
+  const [doSubmit, submitState] = useMutation<IUserUserRolesFormOnSuccessFnArg, ApiException>(
+    async (): Promise<IUserUserRolesFormOnSuccessFnArg> => {
+      const vars: UserUserRolesFormUpdateMutationVariables = {
+        id: user.data.id,
+        role_ids: roleLists[1].map(perm => Number(perm.data.id)),
+      }
+      const result = await api
+        .connector
+        .graphql<UserUserRolesFormUpdateMutation, UserUserRolesFormUpdateMutationVariables>(
+          userUserRolesFormMutationUpdateMutation,
+          vars,
+        )
+        .catch(rethrow(normaliseApiException));
+      return {
+        id: result.updateUser.data.id,
+        name: result.updateUser.data.name,
+      };
+    },
+    {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    }
   );
 
   interface IUserRoleListItem { id: Id; name: string };
@@ -337,13 +360,7 @@ function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
     [],
   );
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback((evt) => {
-    evt.preventDefault();
-    doSubmit({
-      id: user.data.id,
-      role_ids: roleLists[1].map(perm => Number(perm.data.id)),
-    });
-  }, [doSubmit, user.data.id, roleLists]);
+  const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
 
   // || !role.can.update;
   const isDisabled = submitState.isLoading || !(user.can.createUserRoles) || !(user.can.hardDeleteUserRoles);
@@ -372,7 +389,7 @@ function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
               </Grid>
             )}
             <Grid className="centered col" item xs={12} sm={12}>
-              <Button variant="outlined" disabled={isDisabled || !isDirty} type="submit">
+              <Button variant="outlined" disabled={isDisabled || !isDirty} type="submit" color="primary">
                 Save
               </Button>
             </Grid>
