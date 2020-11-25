@@ -94,7 +94,7 @@ export class RolePermissionPolicy {
 
     // is not the SuperAdmin Permission
     if (permission.isSuperAdmin()) return false;
-    j
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRolePermissions,
