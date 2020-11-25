@@ -53,6 +53,7 @@ import { WithRandomId } from '../../components-hoc/with-random-id/with-random-id
 import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dialog/with-dialog';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 import { useDialog } from '../../hooks/use-dialog.hook';
+import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 
 const NpmsDashbortSortFormQueryName = 'NpmsDashbortSortFormQuery';
 const npmsDashboardSortFormQuery = gql`
@@ -261,29 +262,7 @@ function NpmsDashboardSortFormContent(props: INpmsDashboardSortFormContentProps)
 
   return (
     <>
-      <Dialog open={debugDialog.isOpen} onClose={debugDialog.doClose}>
-        <DialogTitle>
-          Sort Dashboard
-        </DialogTitle>
-        <DialogContent dividers>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Box mx={3} p={3} display="flex" justifyContent="flex-start" alignItems="flex-start" flexDirection="column">
-                <Box display="flex" justifyContent="center" alignItems="center">
-                  <Typography component="h2">
-                    Source
-                  </Typography>
-                  <Box ml={2}>
-                    <JsonDownloadButton name={`sort-dashboards-data`} src={source} />
-                  </Box>
-                </Box>
-                <JsonPretty src={source} />
-              </Box>
-            </Grid>
-          </Grid>
-        </DialogContent>
-      </Dialog>
-
+      <DebugJsonDialog title="Source" data={source} dialog={debugDialog} />
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
           <Grid container spacing={2}>
