@@ -42,6 +42,12 @@ import { IntegrationRepository } from "../../app/integration/integration.reposit
 import { IntegrationPolicy } from "../../app/integration/integration.policy";
 import { GoogleService } from "../../app/google/google.service";
 import { GooglePolicy } from "../../app/google/google.policy";
+import { UserLinkTypePolicy } from "../../app/user-token-type/user-token-type.policy";
+import { UserTokenTypeRepository } from "../../app/user-token-type/user-token-type.repository";
+import { UserTokenTypeService } from "../../app/user-token-type/user-token-type.service";
+import { UserTokenRepository } from "../../app/user-token/user-token.repository";
+import { UserTokenService } from "../../app/user-token/user-token.service";
+import { UserTokenPolicy } from "../../app/user-token/user-token.policy";
 
 export interface IRequestServices {
   universal: IUniversalServices;
@@ -96,6 +102,14 @@ export interface IRequestServices {
   integrationService: IntegrationService;
   integrationRepository: IntegrationRepository;
   integrationPolicy: IntegrationPolicy;
+
+  userTokenService: UserTokenService;
+  userTokenRepository: UserTokenRepository;
+  userTokenPolicy: UserTokenPolicy;
+
+  userTokenTypeService: UserTokenTypeService;
+  userTokenTypeRepository: UserTokenTypeRepository;
+  userTokenTypePolicy: UserLinkTypePolicy;
 
   googleService: GoogleService;
   googlePolicy: GooglePolicy;

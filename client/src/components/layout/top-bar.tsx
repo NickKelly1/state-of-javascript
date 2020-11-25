@@ -112,6 +112,7 @@ export function TopBar(props: ITopBarProps) {
           <ListItem><NextLink href="/news" passHref><MUILink color="inherit">News</MUILink></NextLink></ListItem>
           <ListItem><NextLink href="/roles" passHref><MUILink color="inherit">Roles</MUILink></NextLink></ListItem>
           <ListItem><NextLink href="/users" passHref><MUILink color="inherit">Users</MUILink></NextLink></ListItem>
+          <ListItem><NextLink href="/admin/integrations" passHref><MUILink color="inherit">Integrations</MUILink></NextLink></ListItem>
         </List>
         <List component="nav" className="d-flex">
           {!me && (
@@ -148,7 +149,7 @@ export function TopBar(props: ITopBarProps) {
               open={cogMenu.isOpen}
               onClose={cogMenu.doClose}
             >
-              {!me && (
+              {/* {!me && (
                 <MenuItem color="primary" onClick={flsx(registerDialog.doOpen, cogMenu.doClose)}>
                   <ListItemIcon><PersonAddIcon /></ListItemIcon>
                   <ListItemText primary="register" />
@@ -165,7 +166,7 @@ export function TopBar(props: ITopBarProps) {
                   <ListItemIcon><ExitToAppIcon /></ListItemIcon>
                   <ListItemText primary="logout" />
                 </MenuItem>
-              )}
+              )} */}
               <MenuItem onClick={flsx(debugMode.toggle, cogMenu.doClose)}>
                 <ListItemIcon><BugReportIcon color={debugMode.isOn ? 'primary' : 'inherit'} /></ListItemIcon>
                 <ListItemText primary="debug mode" />

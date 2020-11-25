@@ -7,17 +7,11 @@ import { UserId } from "../../user/user.id.type";
 export interface IRefreshTokenData {
   user_id: UserId;
 }
+
 export interface IRefreshToken extends IRefreshTokenData, IWithIat {}
+
 export const RefreshTokenValidator = Joi.object<IRefreshToken>({
   user_id: Joi.number().integer().positive().required(),
   iat: Joi.number().integer().positive().required(),
   exp: Joi.number().integer().positive().required(),
-});
-export const RefreshTokenGqlObj = new GraphQLObjectType({
-  name: 'RefreshTokenObject',
-  fields: () => ({
-    user_id: { type: GraphQLNonNull(GraphQLInt) },
-    iat: { type: GraphQLNonNull(GraphQLString) },
-    exp: { type: GraphQLNonNull(GraphQLString) },
-  }),
 });

@@ -1,5 +1,7 @@
+import { logger } from "../logger/logger";
 import { OrUndefined } from "../types/or-undefined.type";
 import { ist } from "./ist.helper";
+import { prettyQ } from "./pretty.helper";
 
 export enum CacheState {
   Uninitialised,
@@ -35,7 +37,16 @@ export class InvalidatingCache<T> {
   isValid(): boolean {
     if (ist.nullable(this._last)) return false;
     const now = Date.now();
-    return this._last < (now + this._durationMs);
+    const expiredBy = now - (this._last + this._durationMs);
+    const isValid = expiredBy < 0;
+    // logger.warn(`CHECKING VALIDITY.... ${prettyQ({
+    //   now,
+    //   isValid,
+    //   _durationMs: this._durationMs,
+    //   _last: this._last,
+    //   expiredBy,
+    // })}`)
+    return isValid;
   }
 
   get(): ICacheResult<T> {

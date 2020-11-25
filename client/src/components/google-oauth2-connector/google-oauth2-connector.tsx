@@ -50,15 +50,25 @@ import { FilledCircularProgress } from "../filled-circular-progress/filled-circu
 const GoogleOAuth2ConnectorDataQueryName = 'GoogleOAuth2ConnectorData';
 const googleOAuth2ConnectorDataQuery = gql`
 query  GoogleOAuth2ConnectorData{
-  googleIntegration{
-    data{
-      id
-      name
-      error
-      public
-      is_connected
-      created_at
-      updated_at
+  google{
+    can{
+      oauth2
+      sendGmail
+    }
+    integration{
+      can{
+        show
+        initialise
+      }
+      data{
+        id
+        name
+        error
+        public
+        is_connected
+        created_at
+        updated_at
+      }
     }
   }
 }
@@ -76,14 +86,24 @@ mutation GoogleOAuth2ConnectorCodeForm(
   $code:String!
 ){
   googleOAuth2HandleCode(code:$code){
-    data{
-      id
-      name
-      error
-      public
-      is_connected
-      created_at
-      updated_at
+    can{
+      oauth2
+      sendGmail
+    }
+    integration{
+      can{
+        show
+        initialise
+      }
+      data{
+        id
+        name
+        error
+        public
+        is_connected
+        created_at
+        updated_at
+      }
     }
   }
 }
@@ -171,28 +191,32 @@ export function GoogleOAuth2ConnectorContents(props: IGoogleOAuth2ConnectorConte
     [oauth2Dialog.doClose, onStale, ],
   );
 
-  const statusColor = data.googleIntegration.data.is_connected ? 'primary' : 'secondary';
+  const statusColor = data.google.integration.data.is_connected ? 'primary' : 'secondary';
 
   return (
     <>
-      <InitialiseIntegrationFormDialog name="Google" dialog={initialiseDialog} integration_id={data.googleIntegration.data.id} onSuccess={handleResetSuccess} />
+      <InitialiseIntegrationFormDialog name="Google" dialog={initialiseDialog} integration_id={data.google.integration.data.id} onSuccess={handleResetSuccess} />
       <GoogleOAuth2FormDialog name="Google" dialog={oauth2Dialog} onSuccess={handleOAuth2Success} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="flex-start" alignItems="center">
             <Typography variant="h2">
-              {`${data.googleIntegration.data.id} ${data.googleIntegration.data.name}`}
+              {`${data.google.integration.data.id} ${data.google.integration.data.name}`}
             </Typography>
-            <Box ml={2}>
-              <Button variant="outlined" onClick={initialiseDialog.doOpen} color="primary">
-                Initialise
-              </Button>
-            </Box>
-            <Box ml={2}>
-              <Button variant="outlined" onClick={oauth2Dialog.doOpen} color="primary">
-                Authorise
-              </Button>
-            </Box>
+            {data.google.integration.can.initialise && (
+              <Box ml={2}>
+                <Button variant="outlined" onClick={initialiseDialog.doOpen} color="primary">
+                  Initialise
+                </Button>
+              </Box>
+            )}
+            {data.google.can.oauth2 && (
+              <Box ml={2}>
+                <Button variant="outlined" onClick={oauth2Dialog.doOpen} color="primary">
+                  Authorise
+                </Button>
+              </Box>
+            )}
           </Box>
         </Grid>
         <Grid item xs={12}>
@@ -202,12 +226,12 @@ export function GoogleOAuth2ConnectorContents(props: IGoogleOAuth2ConnectorConte
             </Typography>
             <Box ml={2}>
               <Typography color={statusColor}>
-                {data.googleIntegration.data.is_connected ? 'connected' : 'disconnected'}
+                {data.google.integration.data.is_connected ? 'connected' : 'disconnected'}
               </Typography>
             </Box>
           </Box>
         </Grid>
-        {data.googleIntegration.data.public && (
+        {data.google.integration.data.public && (
           <Grid item xs={12}>
             <Box display="flex" justifyContent="flex-start" alignItems="center">
               <Typography>
@@ -215,13 +239,13 @@ export function GoogleOAuth2ConnectorContents(props: IGoogleOAuth2ConnectorConte
               </Typography>
               <Box ml={2}>
                 <Typography>
-                  {data.googleIntegration.data.public}
+                  {data.google.integration.data.public}
                 </Typography>
               </Box>
             </Box>
           </Grid>
         )}
-        {data.googleIntegration.data.error && (
+        {data.google.integration.data.error && (
           <Grid item xs={12}>
             <Box display="flex" justifyContent="flex-start" alignItems="center">
               <Typography>
@@ -229,7 +253,7 @@ export function GoogleOAuth2ConnectorContents(props: IGoogleOAuth2ConnectorConte
               </Typography>
               <Box ml={2}>
                 <Typography color="secondary">
-                  {data.googleIntegration.data.error}
+                  {data.google.integration.data.error}
                 </Typography>
               </Box>
             </Box>
@@ -383,7 +407,7 @@ const GoogleOAuth2FormDialog = WithDialogue<IGoogleOAuth2FormDialogProps>({ full
 
   // OAuth2 Step 2. code - given by Google by visiting the url. Give to the server for it to receive access token
   const handleSubmitCodeSuccess: IGoogleOAuth2OnSuccessFn = useCallback((arg) => {
-    const success = !!arg.googleOAuth2HandleCode.data.is_connected;
+    const success = !!arg.googleOAuth2HandleCode.integration.data.is_connected;
     if (success) {
       // code accepted
       enqueueSnackbar(`Google OAuth2 code accepted`, { variant: 'success' });

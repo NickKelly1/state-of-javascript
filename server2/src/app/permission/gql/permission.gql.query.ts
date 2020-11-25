@@ -1,5 +1,5 @@
 import { GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
-import { NewsArticleModel, PermissionModel } from "../../../circle";
+import { PermissionModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
 import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
@@ -7,8 +7,13 @@ import { collectionMeta } from "../../../common/responses/collection-meta";
 import { OrNull } from "../../../common/types/or-null.type";
 import { IPermissionCollectionGqlNodeSource, PermissionCollectionGqlNode } from "./permission.collection.gql.node";
 import { PermissionCollectionOptionsGqlInput } from "./permission.collection.gql.options";
+import { SystemPermissionGqlNode, ISystemPermissionGqlNodeSource } from "./system-permissions.gql.node";
+
 
 export const PermissionGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = () => ({
+  /**
+   * Get Permissions
+   */
   permissions: {
     type: GraphQLNonNull(PermissionCollectionGqlNode),
     args: gqlQueryArg(PermissionCollectionOptionsGqlInput),
@@ -29,6 +34,19 @@ export const PermissionGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext
         pagination,
       };
       return connection;
+    },
+  },
+
+
+  /**
+   * Get System Permissions
+   */
+  systemPermissions: {
+    type: GraphQLNonNull(SystemPermissionGqlNode),
+    resolve: async (parent, args, ctx): Promise<ISystemPermissionGqlNodeSource> => {
+      ctx.authorize(ctx.services.permissionPolicy.canFindMany());
+      const systemPermissions = ctx.services.universal.systemPermissions.getPermissions();
+      return systemPermissions;
     },
   },
 });

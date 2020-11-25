@@ -9,103 +9,27 @@ export class GooglePolicy {
     //
   }
 
-  // TODO...
-
-  // /**
-  //  * Can Find many?
-  //  *
-  //  * @param arg
-  //  */
-  // canFindMany(arg?: {
-  //   //
-  // }): boolean {
-  //   return this.ctx.auth.hasAnyPermissions([
-  //     Permission.SuperAdmin,
-  //     Permission.ShowIntegrations,
-  //   ]);
-  // }
+  /**
+   * Can OAuth2 with google?
+   */
+  canOAuth2(arg: { model: IntegrationModel }): boolean {
+    const { model } = arg;
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageIntegrations,
+    ]);
+  }
 
 
-  // /**
-  //  * Can Find one?
-  //  *
-  //  * @param arg
-  //  */
-  // canFindOne(arg: {
-  //   model: IntegrationModel;
-  // }): boolean {
-  //   return this.ctx.auth.hasAnyPermissions([
-  //     Permission.SuperAdmin,
-  //     Permission.ShowIntegrations,
-  //   ]);
-  // }
-
-
-  // /**
-  //  * Can show encrypted data
-  //  */
-  // canShowSecrets(): boolean {
-  //   return this.ctx.auth.hasAnyPermissions([
-  //     Permission.SuperAdmin,
-  //     Permission.ShowIntegrationSecrets,
-  //   ]);
-  // }
-
-
-  // /**
-  //  * Can show encrypted data of a model
-  //  *
-  //  * @param arg
-  //  */
-  // canShowSecretsOf(arg: {
-  //   model: IntegrationModel;
-  //   //
-  // }): boolean {
-  //   return this.canShowSecrets();
-  // }
-
-
-  // /**
-  //  * Can initialise integrations?
-  //  */
-  // canInititialise(): boolean {
-  //   return this.ctx.auth.hasAnyPermissions([
-  //     Permission.SuperAdmin,
-  //     Permission.ManageIntegrations,
-  //   ]);
-  // }
-
-
-  // /**
-  //  * Can initialise this specific integration?
-  //  *
-  //  * @param arg
-  //  */
-  // canInititialiseOne(arg: {
-  //   model: IntegrationModel
-  // }): boolean {
-  //   return this.canInititialise();
-  // }
-
-
-  // /**
-  //  * Can authenticate with google?
-  //  */
-  // canAuthenticateGoogle(): boolean {
-  //   return this.ctx.auth.hasAnyPermissions([
-  //     Permission.SuperAdmin,
-  //     Permission.ManageIntegrations,
-  //   ]);
-  // }
-
-
-  // /**
-  //  * Can send gmails?
-  //  */
-  // canSendGmails(): boolean {
-  //   return this.ctx.auth.hasAnyPermissions([
-  //     Permission.SuperAdmin,
-  //     Permission.ManageIntegrations,
-  //   ]);
-  // }
+  /**
+   * Can send gmails?
+   */
+  canSendGmail(arg: { model: IntegrationModel }): boolean {
+    const { model } = arg;
+    if (!model.isConnected()) return false;
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin,
+      Permission.ManageIntegrations,
+    ]);
+  }
 }

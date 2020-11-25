@@ -12,6 +12,7 @@ import { UnauthenticatedException } from "../../common/exceptions/types/unauthen
 import { assertDefined } from "../../common/helpers/assert-defined.helper";
 import { ist } from "../../common/helpers/ist.helper";
 import { mw } from "../../common/helpers/mw.helper";
+import { toId } from "../../common/helpers/to-id.helper";
 import { ExceptionLang } from "../../common/i18n/packs/exception.lang";
 import { UserLang } from "../../common/i18n/packs/user.lang";
 import { JsonResponder } from "../../common/responses/json.responder";
@@ -20,10 +21,10 @@ import { RoleAssociation } from "../role/role.associations";
 import { ICreateUserPasswordDto } from "../user-password/dtos/create-user-password.dto";
 import { IUserServiceCreateUserDto } from "../user/service-dto/user-service.create-user.dto";
 import { UserAssociation } from "../user/user.associations";
-import { IAuthorisationRo } from "./gql/authorisation.gql";
-import { LoginDtoValidator } from "./gql/login.gql";
-import { RefreshDtoValidator } from "./gql/refresh.gql";
-import { SignupDtoValidator } from "./gql/signup.dto";
+import { IAuthorisationRo } from "./gql-input/authorisation.gql";
+import { LoginDtoValidator } from "./gql-input/login.gql";
+import { RefreshDtoValidator } from "./gql-input/refresh.gql";
+import { SignupDtoValidator } from "./gql-input/signup.dto";
 
 export function AuthRoutes(arg: { app: ExpressContext }): Router {
   const router = Router();
@@ -37,29 +38,41 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
     const dto = ctx.body(SignupDtoValidator);
 
     const { user } = await ctx.services.universal.db.transact(async ({ runner }) => {
-      const userDto: IUserServiceCreateUserDto = {
+      const userServiceDto: IUserServiceCreateUserDto = {
         name: dto.name,
         email: dto.email,
         verified: false,
         deactivated: false,
       };
-      const user = await ctx.services.userService.create({ runner, dto: userDto, });
-      const passwordDto: ICreateUserPasswordDto = { password: dto.password };
-      await ctx.services.userPasswordService.create({ runner, user, dto: passwordDto });
+      const user = await ctx.services.userService.create({
+        runner,
+        dto: userServiceDto,
+      });
+      const userPasswordServiceDto: ICreateUserPasswordDto = {
+        password: dto.password
+      };
+      await ctx.services.userPasswordService.create({
+        runner,
+        user,
+        dto: userPasswordServiceDto,
+      });
       return { user };
     });
 
     // grant public permissions...
-    const publicAuth = await ctx.services.universal.publicAuthorisation.retrieve();
+    const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions();
     const auth = ctx.services.authService.authenticate({
       res,
-      permissions: publicAuth.permissions.map(perm => perm.id),
+      permissions: systemPermissions.authenticated.map(toId)
+        .concat(...systemPermissions.pub.map(toId)),
       user,
     });
 
     return new JsonResponder(HttpCode.OK, auth);
   }));
 
+
+  // sign the user out
   router.post('/signout', mw<JsonResponder<null>>(async (ctx, next) => {
     const { req, res } = ctx;
     ctx.services.authService.unauthenticate({ res })
@@ -83,13 +96,15 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
             { association: UserAssociation.password, },
             {
               association: UserAssociation.roles,
-              include: [{
-                association: RoleAssociation.permissions,
-              }],
+              include: [
+                { association: RoleAssociation.permissions, },
+              ],
             },
           ],
         },
       });
+
+      // TODO: use policy to determine whether can log in...
 
       // user not matched
       if (!user) {
@@ -124,12 +139,14 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
       return { user: user, roles, permissions, };
     });
 
-    // grant public permissions...
-    const publicAuth = await ctx.services.universal.publicAuthorisation.retrieve();
+    // grant permissions...
+    const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions();
     const auth = ctx.services.authService.authenticate({
       user,
       res,
-      permissions: Array.from(new Set(permissions.concat(publicAuth.permissions).map(perm => perm.id))),
+      permissions: permissions.map(toId)
+        .concat(...systemPermissions.authenticated.map(toId))
+        .concat(...systemPermissions.pub.map(toId)),
     })
 
     return new JsonResponder(HttpCode.OK, auth);
@@ -195,10 +212,12 @@ export function AuthRoutes(arg: { app: ExpressContext }): Router {
     }
 
     // grant public permissions...
-    const publicAuth = await ctx.services.universal.publicAuthorisation.retrieve();
+    const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions();
     const auth = ctx.services.authService.authenticate({
       res,
-      permissions: Array.from(new Set(permissions.concat(publicAuth.permissions).map(perm => perm.id))),
+      permissions: permissions.map(toId)
+        .concat(...systemPermissions.authenticated.map(toId))
+        .concat(...systemPermissions.pub.map(toId)),
       user,
     })
 

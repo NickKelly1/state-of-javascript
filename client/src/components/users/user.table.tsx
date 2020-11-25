@@ -116,7 +116,7 @@ const usersTableDeleteMutation = gql`
 mutation UsersTableDelete(
   $id:Int!
 ){
-  deleteUser(
+  softDeleteUser(
     dto:{
       id:$id
     }

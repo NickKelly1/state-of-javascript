@@ -8,7 +8,7 @@ import { logger } from "../../common/logger/logger";
 import { OrNull } from "../../common/types/or-null.type";
 import { PermissionId } from "../permission/permission-id.type";
 import { UserModel } from "../user/user.model";
-import { IAuthorisationRo } from "./gql/authorisation.gql";
+import { IAuthorisationRo } from "./gql-input/authorisation.gql";
 import { IAccessToken } from "./token/access.token.gql";
 
 export class AuthSerivce {
@@ -18,6 +18,12 @@ export class AuthSerivce {
     //
   }
 
+
+  /**
+   * Get an access token
+   *
+   * @param arg
+   */
   getAccessToken(arg: { req: Request, }): OrNull<IAccessToken> {
     const { req } = arg;
     // try header
@@ -51,45 +57,61 @@ export class AuthSerivce {
     return mbAccess.right;
   }
 
-  unauthenticate(arg: { res: Response }): void {
+
+  /**
+   * Unauthenticate the requester
+   *
+   * @param arg
+   */
+  unauthenticate(arg: {
+    res?: Response;
+  }): void {
     const { res } = arg;
     // unset the access_token
-    res.cookie(
-      'access_token',
-      '',
-      {
-        sameSite: false,
-        domain: this.ctx.services.universal.env.HOST,
-        secure: this.ctx.services.universal.env.is_prod(),
-        path: '/',
-        httpOnly: true,
-        expires: new Date(0), // @ the beginning of UTC time... 1970
-      },
-    );
+    if (ist.notNullable(res)) {
+      res.cookie(
+        'access_token',
+        '',
+        {
+          sameSite: false,
+          domain: this.ctx.services.universal.env.HOST,
+          secure: this.ctx.services.universal.env.is_prod(),
+          path: '/',
+          httpOnly: true,
+          expires: new Date(0), // @ the beginning of UTC time... 1970
+        },
+      );
 
-    // unset the refresh_token
-    // @note: path must be the same as was set, otherwise won't be cleared...
-    res.cookie(
-      'refresh_token',
-      '',
-      {
-        // only send the refresh_token on the refresh route...
-        // this means we can't use gql for the refresh route
-        // by only using this route, we reduce the risk of
-        // csrf attack
-        sameSite: false,
-        domain: this.ctx.services.universal.env.HOST,
-        secure: this.ctx.services.universal.env.is_prod(),
-        path: '/v1/auth/refresh',
-        httpOnly: true,
-        expires: new Date(0), // @ the beginning of UTC time... 1970
-      },
-    );
+      // unset the refresh_token
+      // @note: path must be the same as was set, otherwise won't be cleared...
+      res.cookie(
+        'refresh_token',
+        '',
+        {
+          // only send the refresh_token on the refresh route...
+          // this means we can't use gql for the refresh route
+          // by only using this route, we reduce the risk of
+          // csrf attack
+          sameSite: false,
+          domain: this.ctx.services.universal.env.HOST,
+          secure: this.ctx.services.universal.env.is_prod(),
+          path: '/v1/auth/refresh',
+          httpOnly: true,
+          expires: new Date(0), // @ the beginning of UTC time... 1970
+        },
+      );
+    }
 
   }
 
+
+  /**
+   * Authenticate the requester
+   *
+   * @param arg
+   */
   authenticate(arg: {
-    res: Response,
+    res?: Response,
     user: UserModel;
     permissions: PermissionId[];
   }): IAuthorisationRo {
@@ -101,49 +123,52 @@ export class AuthSerivce {
     const refresh = this.ctx.services.jwtService.createRefreshToken({ partial: { user_id: user.id } });
     const access_token = this.ctx.services.jwtService.signAccessToken({ access });
     const refresh_token = this.ctx.services.jwtService.signRefreshToken({ refresh });
+    // add permissions to the current session...
+    // this is helpful in GraphQL where response can use the new authentication
+    this.ctx.auth.addPermissions({ permissions: access.permissions });
 
-    res.cookie(
-      'access_token',
-      access_token,
-      {
-        sameSite: false,
-        domain: this.ctx.services.universal.env.HOST,
-        secure: this.ctx.services.universal.env.is_prod(),
-        path: '/',
-        httpOnly: true,
-        // expires: new Date(Date.now() + this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS),
-        maxAge: this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS,
-      },
-    );
+    if (ist.notNullable(res)) {
+      res.cookie(
+        'access_token',
+        access_token,
+        {
+          sameSite: false,
+          domain: this.ctx.services.universal.env.HOST,
+          secure: this.ctx.services.universal.env.is_prod(),
+          path: '/',
+          httpOnly: true,
+          // expires: new Date(Date.now() + this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS),
+          maxAge: this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS,
+        },
+      );
 
 
-    // scoped refresh to user
-    res.cookie(
-      'refresh_token',
-      refresh_token,
-      {
-        // only send the refresh_token on the refresh route...
-        // this means we can't use gql for the refresh route
-        // by only using this route, we reduce the risk of
-        // csrf attack
-        sameSite: false,
-        domain: this.ctx.services.universal.env.HOST,
-        secure: this.ctx.services.universal.env.is_prod(),
-        path: '/v1/auth/refresh',
-        httpOnly: true,
-        // expires: new Date(Date.now() + this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS),
-        maxAge: this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS,
-      },
-    );
+      // scoped refresh to user
+      res.cookie(
+        'refresh_token',
+        refresh_token,
+        {
+          // only send the refresh_token on the refresh route...
+          // this means we can't use gql for the refresh route
+          // by only using this route, we reduce the risk of
+          // csrf attack
+          sameSite: false,
+          domain: this.ctx.services.universal.env.HOST,
+          secure: this.ctx.services.universal.env.is_prod(),
+          path: '/v1/auth/refresh',
+          httpOnly: true,
+          // expires: new Date(Date.now() + this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS),
+          maxAge: this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS,
+        },
+      );
+    }
 
     const obj: IAuthorisationRo = {
       access_token,
       refresh_token,
       access_token_object: access,
       refresh_token_object: refresh,
-      user: {
-        name: user.name,
-      },
+      user_name: user.name,
     };
 
     return obj;

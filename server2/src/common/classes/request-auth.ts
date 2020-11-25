@@ -43,4 +43,9 @@ export class RequestAuth {
     this._user_id = access.user_id;
     access.permissions.forEach(perm => this.permissions.add(perm));
   }
+
+  addPermissions(arg: { permissions: PermissionId[] }) {
+    const { permissions } = arg;
+    permissions.forEach(this._permissions.add.bind(this._permissions));
+  }
 }

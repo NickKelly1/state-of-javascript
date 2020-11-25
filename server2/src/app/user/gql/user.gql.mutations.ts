@@ -1,27 +1,48 @@
 import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
+import { Op } from "sequelize";
 import { UserModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
+import { BadRequestException } from "../../../common/exceptions/types/bad-request.exception";
 import { ForbiddenException } from "../../../common/exceptions/types/forbidden.exception";
 import { NotFoundException } from "../../../common/exceptions/types/not-found.exception";
+import { GqlJsonObjectScalar } from "../../../common/gql/gql.json.scalar";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { ist } from "../../../common/helpers/ist.helper";
+import { toId } from "../../../common/helpers/to-id.helper";
+import { ExceptionLang } from "../../../common/i18n/packs/exception.lang";
 import { RoleLang } from "../../../common/i18n/packs/role.lang";
+import { UserTokenLang } from "../../../common/i18n/packs/user-token.lang";
 import { UserLang } from "../../../common/i18n/packs/user.lang";
+import { IJson } from "../../../common/interfaces/json.interface";
+import { logger } from "../../../common/logger/logger";
+import { AuthorisationGqlNode, IAuthorisationGqlNodeSource, IAuthorisationRo } from "../../auth/gql-input/authorisation.gql";
+import { AccessTokenGqlNode, IAccessTokenGqlNodeSource } from "../../auth/gql/access-token.gql.node";
 import { QueryRunner } from "../../db/query-runner";
+import { RoleAssociation } from "../../role/role.associations";
 import { RoleId } from "../../role/role.id.type";
 import { RoleModel } from "../../role/role.model";
 import { ICreateUserPasswordDto } from "../../user-password/dtos/create-user-password.dto";
 import { IUpdateUserPasswordDto } from "../../user-password/dtos/update-user-password.dto";
 import { UserRoleModel } from "../../user-role/user-role.model";
+import { UserTokenAssociation } from "../../user-token/user-token.associations";
+import { ConsumeResetForgottenUserPasswordGqlInput, ConsumeResetForgottenUserPasswordGqlInputValidator } from "../gql-input/consume-reset-forgotten-user-password.gql";
 import { CreateUserGqlInput, CreateUserValidator } from "../gql-input/create-user.gql";
 import { DeleteUserGqlInput, DeleteUserValidator } from "../gql-input/delete-user.gql";
+import { RequestResetForgottenUserPasswordGqlInput, RequestResetForgottenUserPasswordGqlInputValidator } from "../gql-input/request-reset-forgotten-user-password.gql";
+import { RequestUserWelcomeGqlInput, RequestUserWelcomeGqlInputValidator } from "../gql-input/request-user-welcome.gql";
 import { UpdateUserGqlInput, UpdateUserValidator } from "../gql-input/update-user.gql";
+import { AcceptUserWelcomeGqlInput, AcceptUserWelcomeGqlInputValidator } from "../gql-input/welcome-user.gql";
 import { IUserServiceCreateUserDto } from "../service-dto/user-service.create-user.dto";
 import { IUserServiceUpdateUserDto } from "../service-dto/user-service.update-user.dto";
 import { UserAssociation } from "../user.associations";
+import { UserField } from "../user.attributes";
 import { IUserGqlNodeSource, UserGqlNode } from "./user.gql.node";
 
 export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = () => ({
+
+  /**
+   * Create a User
+   */
   createUser: {
     type: GraphQLNonNull(UserGqlNode),
     args: { dto: { type: GraphQLNonNull(CreateUserGqlInput), }, },
@@ -59,6 +80,10 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
     },
   },
 
+
+  /**
+   * Update a User
+   */
   updateUser: {
     type: GraphQLNonNull(UserGqlNode),
     args: { dto: { type: GraphQLNonNull(UpdateUserGqlInput), }, },
@@ -120,7 +145,11 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
     },
   },
 
-  deleteUser: {
+
+  /**
+   * SoftDelete a User
+   */
+  softDeleteUser: {
     type: GraphQLNonNull(GraphQLBoolean),
     args: { dto: { type: GraphQLNonNull(DeleteUserGqlInput), }, },
     resolve: async (parent, args, ctx): Promise<boolean> => {
@@ -134,6 +163,250 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
       return true;
     },
   },
+
+
+  /**
+   * HardDelete a User
+   */
+  hardDeleteUser: {
+    type: GraphQLNonNull(GraphQLBoolean),
+    args: { dto: { type: GraphQLNonNull(DeleteUserGqlInput), }, },
+    resolve: async (parent, args, ctx): Promise<boolean> => {
+      const dto = ctx.validate(DeleteUserValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const user = await ctx.services.userRepository.findByPkOrfail(dto.id, { runner, });
+        ctx.authorize(ctx.services.userPolicy.canSoftDelete({ model: user }));
+        await ctx.services.userService.delete({ model: user, runner });
+        return user;
+      });
+      return true;
+    },
+  },
+
+
+  /**
+   * Request a ForgottenPasswordReset email to be sent
+   */
+  requestForgottenUserPasswordReset: {
+    type: GraphQLNonNull(GraphQLBoolean),
+    args: { dto: { type: GraphQLNonNull(RequestResetForgottenUserPasswordGqlInput), }, },
+    resolve: async (parent, args, ctx): Promise<boolean> => {
+      const dto = ctx.validate(RequestResetForgottenUserPasswordGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const user = await ctx.services.userRepository.findOne({
+          runner,
+          options: { where: { [UserField.email]: { [Op.eq]: dto.email, }, }, },
+        });
+        if (!user) return false;
+        if (!ctx.services.userPolicy.canRequestForgottenPasswordReset({ model: user })) {
+          logger.warn(`Failed to reset password for user id: "${user.id}", email: "${user.email}", name: "${user.name}"`);
+          return false;
+        };
+        await ctx.services.userService.sendPasswordResetEmail({ model: user, runner });
+        return true;
+      });
+      return final;
+    },
+  },
+
+
+  /**
+   * Consume ForgottenUserPasswordReset token
+   */
+  consumeForgottenUserPasswordReset: {
+    type: GraphQLNonNull(AuthorisationGqlNode),
+    args: { dto: { type: GraphQLNonNull(ConsumeResetForgottenUserPasswordGqlInput), }, },
+    resolve: async (parent, args, ctx): Promise<IAuthorisationGqlNodeSource> => {
+      const dto = ctx.validate(ConsumeResetForgottenUserPasswordGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }): Promise<IAuthorisationGqlNodeSource> => {
+        const token = await ctx.services.userTokenRepository.findOneBySlugOrFail(dto.token, {
+          runner,
+          options: { include: [{
+            association: UserTokenAssociation.user,
+            include: [
+              { association: UserAssociation.password, },
+              {
+                association: UserAssociation.roles,
+                include: [ { association: RoleAssociation.permissions, }, ],
+              },
+            ],
+          },],},
+        });
+        // correct token type?
+        if (!token.isForgottenPasswordReset()) {
+          const message = ctx.lang(ExceptionLang.BadTokenType);
+          throw ctx.except(BadRequestException({ message }));
+        }
+
+        // expired?
+        if (token.isExpired()) {
+          const message = ctx.lang(UserTokenLang.TokenExpired);
+          throw ctx.except(BadRequestException({ message }));
+        }
+
+        const user = assertDefined(token.user);
+        const oldPassword = user.password;
+
+        // change password
+        if (ist.nullable(oldPassword)) {
+          // create a password
+          const userPasswordServiceDto: ICreateUserPasswordDto = { password: dto.password };
+          await ctx.services.userPasswordService.create({ runner, user, dto: userPasswordServiceDto, });
+        }
+        else {
+          // update password
+          const userPasswordServiceDto: IUpdateUserPasswordDto = { password: dto.password, };
+          await ctx.services.userPasswordService.update({ model: oldPassword, runner, dto: userPasswordServiceDto, });
+        }
+
+        const userPermissions = assertDefined(user.roles).flatMap(role => assertDefined(role.permissions));
+        const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions()
+        const authorisation = await ctx.services.authService.authenticate({
+          res: ctx.http?.res,
+          user,
+          permissions: userPermissions.map(toId)
+            .concat(...systemPermissions.authenticated.map(toId))
+            .concat(...systemPermissions .pub .map(toId)),
+        })
+
+        // delete the token so it can't be re-used
+        await ctx.services.userTokenService.softDelete({ model: token, runner });
+
+        return authorisation;
+      });
+
+      return final;
+    },
+  },
+
+
+  /**
+   * Send a Welcome Email to a User that's been created for someone else, prompting them to set a name and password
+   */
+  requestUserWelcome: {
+    type: GraphQLNonNull(GraphQLBoolean),
+    args: { dto: { type: GraphQLNonNull(RequestUserWelcomeGqlInput), }, },
+    resolve: async (parent, args, ctx): Promise<boolean> => {
+      const dto = ctx.validate(RequestUserWelcomeGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        const user = await ctx.services.userRepository.findByPkOrfail(dto.user_id, { runner });
+        ctx.authorize(ctx.services.userPolicy.canRequestWelcome({ model: user }));
+        const result = await ctx.services.userService.sendWelcomeEmail({ model: user, runner });
+        return result;
+      });
+      return final;
+    },
+  },
+
+
+  /**
+   * Accept a WelcomeEmail to a User that's been created for someone else, prompting them to set a name and password
+   * 
+   * TODO: return jwt & check cookies are being set...
+   */
+  acceptUserWelcome: {
+    type: GraphQLNonNull(AuthorisationGqlNode),
+    args: { dto: { type: GraphQLNonNull(AcceptUserWelcomeGqlInput), }, },
+    resolve: async (parent, args, ctx): Promise<IAuthorisationGqlNodeSource> => {
+      const dto = ctx.validate(AcceptUserWelcomeGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }): Promise<IAuthorisationGqlNodeSource> => {
+        const token = await ctx.services.userTokenRepository.findOneBySlugOrFail(dto.token, {
+          runner,
+          options: {
+            include: [{
+              association: UserTokenAssociation.user,
+              include: [
+                { association: UserAssociation.password, },
+                {
+                  association: UserAssociation.roles,
+                  include: [
+                    { association: RoleAssociation.permissions, },
+                  ],
+                },
+              ],
+            }],
+          },
+        });
+        const user = assertDefined(token.user);
+
+        // correct token type?
+        if (!token.isWelcome()) {
+          const message = ctx.lang(ExceptionLang.BadTokenType);
+          throw ctx.except(BadRequestException({ message }));
+        }
+
+        // expired?
+        if (token.isExpired()) {
+          const message = ctx.lang(UserTokenLang.TokenExpired);
+          throw ctx.except(BadRequestException({ message }));
+        }
+
+        // authorize
+        ctx.authorize(ctx.services.userPolicy.canAcceptWelcome({ model: user }));
+
+        // update user
+        const userServiceDto: IUserServiceUpdateUserDto = {
+          deactivated: false,
+          email: undefined,
+          name: undefined,
+          // mark as verified
+          verified: true,
+        };
+        await ctx.services.userService.update({ runner, dto: userServiceDto, model: user, });
+
+        // change password
+        const oldPassword = user.password;
+        if (ist.nullable(oldPassword)) {
+          // create a password
+          const userPasswordServiceDto: ICreateUserPasswordDto = { password: dto.password };
+          await ctx.services.userPasswordService.create({ runner, user, dto: userPasswordServiceDto, });
+        }
+        else {
+          // update password
+          const userPasswordServiceDto: IUpdateUserPasswordDto = { password: dto.password, };
+          await ctx.services.userPasswordService.update({ model: oldPassword, runner, dto: userPasswordServiceDto, });
+        }
+
+        const userPermissions = assertDefined(user.roles).flatMap(role => assertDefined(role.permissions));
+        const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions()
+
+        const result = await ctx.services.authService.authenticate({
+          res: ctx.http?.res,
+          user,
+          permissions: userPermissions.map(toId)
+            .concat(...systemPermissions.authenticated.map(toId))
+            .concat(...systemPermissions.pub.map(toId)),
+        })
+
+        // delete the token so it can't be re-used
+        await ctx.services.userTokenService.softDelete({ model: token, runner });
+        return result;
+      });
+
+      return final;
+    },
+  },
+
+
+  // TODO:
+  // // Request a user email change
+  // requestUserEmailChange: {
+  //   type: GraphQLNonNull(GraphQLBoolean),
+  //   args: { dto: { type: GraphQLNonNull(DeleteUserGqlInput), }, },
+  //   resolve: async (parent, args, ctx): Promise<boolean> => {
+  //     return true;
+  //   },
+  // },
+
+
+  // // Request a password reset
+  // requestForgottenUserPasswordReset: {
+  //   type: GraphQLNonNull(GraphQLBoolean),
+  //   args: { dto: { type: GraphQLNonNull(DeleteUserGqlInput), }, },
+  //   resolve: async (parent, args, ctx): Promise<boolean> => {
+  //     return true;
+  //   },
+  // }
 });
 
 

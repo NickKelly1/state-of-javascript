@@ -1,4 +1,5 @@
 import { ist } from '../../common/helpers/ist.helper';
+import { IJson } from '../../common/interfaces/json.interface';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { IIntegrationServiceInitialiseIntegrationCredentialsDto } from './dtos/integration-service.initialise-integration-credentials.dto';
@@ -75,11 +76,21 @@ export class IntegrationService {
     model.public = null;
     model.encrypted_state = null;
 
+    // TODO: handle init nicely for different integrations...
+    let init: IJson;
+    if (model.isGoogle()) {
+      init = this.ctx.services.googleService.getIntegrationInit({ dto });
+    }
+    else {
+      throw new Error(`TODO: unhandled integration: "${model.id}`);
+    }
+    
+
     // get a new iv
     model.iv = this.ctx.services.universal.encryption.iv();
 
     // update the encrypted init data
-    model.encrypted_init = this.encrypt({ model, decrypted: JSON.stringify(dto.init), });
+    model.encrypted_init = this.encrypt({ model, decrypted: JSON.stringify(init), });
 
     // save & finish
     await model.save({ transaction });

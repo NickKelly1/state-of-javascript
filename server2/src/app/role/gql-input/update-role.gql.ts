@@ -1,8 +1,6 @@
 import { GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import Joi from 'joi';
-import { RoleModel } from '../../../circle';
 import { RoleDefinition } from '../role.definition';
-import { RoleId } from '../role.id.type';
 
 export interface IUpdateRoleGqlInput {
   id: number;

@@ -42,6 +42,7 @@ export class RoleModel extends Model<IRoleAttributes, IRoleCreationAttributes> i
 
   // helpers
   isAdmin() { return this[RoleField.id] === Role.Admin; }
+  isAuthenticated() { return this[RoleField.id] === Role.Authenticated; }
   isPublic() { return this[RoleField.id] === Role.Public; }
 }
 

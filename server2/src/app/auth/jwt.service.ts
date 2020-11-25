@@ -112,7 +112,8 @@ export class JwtService {
     const full: IAccessToken = {
       exp,
       iat,
-      permissions: partial.permissions,
+      // ensure unique permissions...
+      permissions: Array.from(new Set(partial.permissions).values()),
       user_id: partial.user_id
     }
     return full;

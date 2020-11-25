@@ -28,7 +28,10 @@ export class DbService {
       transaction = await seq.transaction();
       const runner = new QueryRunner(transaction);
       const result = await fn({ runner });
+      // commit...
       await transaction.commit();
+      // run the after commit hooks...
+      await runner.runAfterCommitHooks();
       return result;
     } catch (error) {
       if (transaction) await transaction.rollback();

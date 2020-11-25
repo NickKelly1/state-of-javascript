@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ALanguage } from '../i18n/consts/language.enum';
+import { ALanguage, Language } from '../i18n/consts/language.enum';
 import { OrUndefined } from '../types/or-undefined.type';
 import { IRequestContext } from '../interfaces/request-context.interface';
 import { langMatch } from '../i18n/helpers/lange-match.helper';
@@ -18,16 +18,23 @@ import { RequestAuth } from '../classes/request-auth';
 
 export class GqlContext extends BaseContext implements IRequestContext {
   public readonly execution: ExecutionContext;
-  protected readonly _req: Request;
-  protected readonly _res: Response;
+  protected readonly _http?: { req: Request; res: Response };
+  protected readonly _auth: RequestAuth;
+  protected readonly _services: IRequestServices;
   protected _runner?: QueryRunner;
 
-  get req(): Request { return this._req; }
-  get res(): Response { return this._res; }
-  get services(): IRequestServices { return this._req.__locals__.services; }
-  get auth(): RequestAuth { return this._req.__locals__.auth; }
 
-  static create(arg: {
+  get http(): OrUndefined<{ req: Request; res: Response }> { return this._http; }
+  get auth(): RequestAuth { return this._auth; }
+  get services(): IRequestServices { return this._services; }
+
+
+  /**
+   * Create a GqlRequestContext from Http req & res
+   *
+   * @param arg
+   */
+  static createFromHttp(arg: {
     req: Request;
     res: Response;
   }): GqlContext {
@@ -35,7 +42,15 @@ export class GqlContext extends BaseContext implements IRequestContext {
     let ctx = req?.__locals__?.gqlCtx;
     if (!ctx) {
       const execution = new ExecutionContext({});
-      ctx = new GqlContext({ execution, req, res });
+      ctx = new GqlContext({
+        execution,
+        http: {
+          req,
+          res,
+        },
+        auth: req.__locals__.auth,
+        services: req.__locals__.services,
+      });
       execution.setGql(ctx);
       if (!req.__locals__) {
         req.__locals__ = ({} as Request['__locals__']);
@@ -45,28 +60,46 @@ export class GqlContext extends BaseContext implements IRequestContext {
     return ctx;
   }
 
+
+  /**
+   * Constructor
+   *
+   * @param arg
+   */
   constructor(
     arg: {
       readonly execution: ExecutionContext,
-      readonly req: Request,
-      readonly res: Response,
+      readonly auth: RequestAuth;
+      readonly services: IRequestServices;
+      readonly http: OrUndefined<{ req: Request, res: Response }>;
     }
   ) {
     super();
-    const { execution, req, res, } = arg;
+    const { execution, http, auth, services } = arg;
     this.execution = execution;
-    this._req = req;
-    this._res = res;
+    this._auth = auth;
+    this._services = services;
+    this._http = http;
   }
 
+
+  /**
+   * Lang
+   *
+   * @param switcher
+   */
   lang(switcher: Record<ALanguage, OrUndefined<string>>): string {
-    const languages = this._req.acceptsLanguages();
+    const languages = this.http?.req.acceptsLanguages() ?? [Language.En];
     return langMatch(languages, switcher);
   }
 
+
+  /**
+   * Info
+   */
   info(): IJson {
-    const url = this._req.url;
-    const ip = this._req.ip;
+    const url = this.http?.req.url;
+    const ip = this.http?.req.ip;
     return {
       url,
       ip,

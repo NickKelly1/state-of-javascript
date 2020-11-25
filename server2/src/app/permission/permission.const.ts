@@ -79,6 +79,10 @@ export const Permission = {
   ShowIntegrations: 1200,
   ShowIntegrationSecrets: 1201,
   ManageIntegrations: 1220,
+
+  ShowUserTokens: 1300,
+
+  ShowUserTokenTypes: 1400,
 } as const;
 export type Permission = typeof Permission;
 export type APermission = Permission[keyof Permission];

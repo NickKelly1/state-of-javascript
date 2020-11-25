@@ -22,6 +22,10 @@ import { TGoogleInit } from "./types/google.init.type";
 import { TGoogleState } from "./types/google.state.type";
 import { TGoogleToken } from "./types/google.token.type";
 import { IGoogleIntegrationServiceSendEmailDto } from "./dtos/google.service.send-email-dto";
+import { IJson } from "../../common/interfaces/json.interface";
+import { IIntegrationServiceInitialiseIntegrationCredentialsDto } from "../integration/dtos/integration-service.initialise-integration-credentials.dto";
+import { TGoogleCredentials } from "./types/google.credentials.type";
+import { $TS_FIX_ME } from "../../common/types/$ts-fix-me.type";
 
 
 export class GoogleService {
@@ -196,6 +200,24 @@ export class GoogleService {
     return program().then(unwrap.right);
   }
 
+
+  /**
+   * Get init for the 
+   */
+  getIntegrationInit(arg: {
+    dto: IIntegrationServiceInitialiseIntegrationCredentialsDto,
+  }): TGoogleInit {
+    const { dto } = arg;
+    return {
+      scopes: [
+        'https://www.googleapis.com/auth/gmail.readonly',
+        'https://www.googleapis.com/auth/gmail.send',
+      ],
+      credentials: dto.init as $TS_FIX_ME<any>,
+    }
+    //
+  }
+
   // scopes given by init
   // /**
   //  * Scopes
@@ -340,13 +362,21 @@ export class GoogleService {
     logger.info(`sending Gmail\nTo: ${dto.to.join(', ')}""\nCc: "${dto.cc?.join(', ')}"\nSubject: "${dto.subject}"\n...`);
 
     const rawMessage = Buffer.from([
+      // to
       `To: ${dto.to.join(', ')} `,
+
+      // cc
       ...(dto.cc?.length ? [`Cc: ${dto.cc.join(', ')} `] : []),
-      `Subject: ${dto.subject}`,
+
+      // subject
+      ...(ist.notNullable(dto.subject) ? [`Subject: ${dto.subject}`] : []),
+
       // `Date: Fri, 21 Nov 1997 09:55:06 -0600 `,
       // `Message-ID: <1234@local.machine.example>`,
       '',
-      dto.body,
+
+      // body
+      ...(ist.notNullable(dto.body) ? [dto.body] : []),
     ].join('\n'));
 
     const result = await gmail

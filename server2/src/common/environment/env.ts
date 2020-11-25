@@ -10,9 +10,18 @@ dotenv.config();
 const to = Extractor({ fromObj: process.env, fromName: 'Environment variable' });
 
 export class EnvService {
+  is_master(): boolean { return this.MASTER === true; };
+
   is_dev(): boolean { return this.NODE_ENV === 'development'; };
   is_testing(): boolean { return this.NODE_ENV === 'testing'; };
   is_prod(): boolean { return this.NODE_ENV === 'production'; };
+
+
+  public readonly MASTER = to.bool('MASTER');
+
+  public readonly PASSWORD_RESET_URI = to.string('PASSWORD_RESET_URI');
+  public readonly WELCOME_URI = to.string('WELCOME_URI');
+  public readonly VERIFY_EMAIL_URI = to.string('VERIFY_EMAIL_URI');
 
 
   public readonly HOST = to.string('HOST');

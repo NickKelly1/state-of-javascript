@@ -18,17 +18,5 @@ export const IntegrationCollectionGqlActions = new GraphQLObjectType<IIntegratio
         return ctx.services.integrationPolicy.canInititialise();
       },
     },
-    authenticateGoogle: {
-      type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.integrationPolicy.canAuthenticateGoogle();
-      },
-    },
-    sendGmails: {
-      type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.integrationPolicy.canSendGmails();
-      },
-    }
   },
 });

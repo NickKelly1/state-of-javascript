@@ -1,4 +1,5 @@
 export const Role = {
   Admin: 1,
-  Public: 2,
+  Authenticated: 2,
+  Public: 3,
 }

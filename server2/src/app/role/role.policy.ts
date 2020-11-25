@@ -48,9 +48,16 @@ export class RolePolicy {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
+
+    // is not Admin Role
     if (model.isAdmin()) return false;
-    // TODO: don't allow changing public role name...
-    // if (model.isPublic()) return false;
+
+    // is not Authenticated Role
+    if (model.isAuthenticated()) return false;
+
+    // is not Public Role
+    if (model.isPublic()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRoles,
@@ -63,7 +70,14 @@ export class RolePolicy {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
+
+    // is not Admin role
     if (model.isAdmin()) return false;
+
+    // is not Authenticated Role
+    if (model.isAuthenticated()) return false;
+
+    // is not Public Role
     if (model.isPublic()) return false;
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
@@ -77,8 +91,16 @@ export class RolePolicy {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
+
+    // is not Admin Role
     if (model.isAdmin()) return false;
+
+    // is not Authenticated Role
+    if (model.isAuthenticated()) return false;
+
+    // is not Public Role
     if (model.isPublic()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRoles,
@@ -91,8 +113,16 @@ export class RolePolicy {
     model: RoleModel;
   }): boolean {
     const { model } = arg;
+
+    // is not Admin Role
     if (model.isAdmin()) return false;
+
+    // is not Authenticated Role
+    if (model.isAuthenticated()) return false;
+
+    // is not Public Role
     if (model.isPublic()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRoles,

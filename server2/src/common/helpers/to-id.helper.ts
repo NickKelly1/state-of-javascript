@@ -1,0 +1,1 @@
+export function toId<T extends { id: any }>(arg: T): T['id'] { return arg.id; }

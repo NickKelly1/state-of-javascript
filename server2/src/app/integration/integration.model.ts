@@ -40,7 +40,7 @@ export class IntegrationModel extends Model<IIntegrationAttributes, IIntegration
    * Is connected?
    */
   isConnected(): boolean { return this.is_connected; }
-  isGmail(): boolean { return this.id === Integration.Google; }
+  isGoogle(): boolean { return this.id === Integration.Google; }
 }
 
 export const initIntegrationModel: ModelInitFn = (arg) => {

@@ -84,26 +84,4 @@ export class IntegrationPolicy {
   }): boolean {
     return this.canInititialise();
   }
-
-
-  /**
-   * Can authenticate with google?
-   */
-  canAuthenticateGoogle(): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageIntegrations,
-    ]);
-  }
-
-
-  /**
-   * Can send gmails?
-   */
-  canSendGmails(): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageIntegrations,
-    ]);
-  }
 }

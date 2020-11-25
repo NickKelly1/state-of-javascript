@@ -16,6 +16,7 @@ import { UserRoleModel } from '../user-role/user-role.model';
 import { NewsArticleModel } from '../news-article/news-article.model';
 import { User } from './user.const';
 import { NpmsDashboardModel } from '../npms-dashboard/npms-dashboard.model';
+import { UserTokenModel } from '../user-token/user-token.model';
 
 
 export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> implements IUserAttributes {
@@ -34,17 +35,19 @@ export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> i
   static associations: UserAssociations;
 
   // eager loaded associations
+  [UserAssociation.userLinks]?: UserTokenModel[];
   [UserAssociation.password]?: UserPasswordModel;
   [UserAssociation.roles]?: RoleModel[];
   [UserAssociation.userRoles]?: UserRoleModel[];
   [UserAssociation.npmsDashboards]?: NpmsDashboardModel[];
 
   // associations
-  getNewsArticles!: HasManyGetAssociationsMixin<NewsArticleModel>;
-  getPassword!: HasOneGetAssociationMixin<UserPasswordModel>;
-  getRoles!: HasManyGetAssociationsMixin<UserPasswordModel>;
-  getUserRoles!: HasManyGetAssociationsMixin<UserRoleModel>;
-  getNpmsDashboards!: HasManyGetAssociationsMixin<NpmsDashboardModel>;
+  //
+  // getNewsArticles!: HasManyGetAssociationsMixin<NewsArticleModel>;
+  // getPassword!: HasOneGetAssociationMixin<UserPasswordModel>;
+  // getRoles!: HasManyGetAssociationsMixin<UserPasswordModel>;
+  // getUserRoles!: HasManyGetAssociationsMixin<UserRoleModel>;
+  // getNpmsDashboards!: HasManyGetAssociationsMixin<NpmsDashboardModel>;
 
   // helpers
   isVerified() { return this[UserField.id] === User.Admin; }

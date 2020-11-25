@@ -1,6 +1,11 @@
 import { Language } from "../consts/language.enum";
 
 export const ExceptionLang = {
+  BadTokenType: {
+    [Language.En]: `Bad UserTokenType`,
+    [Language.Ger]: '__TODO__',
+  },
+
   FailedLogInUserCannotLogIn: {
     [Language.En]: `Failed to log in: this user cannot log in`,
     [Language.Ger]: '__TODO__',

@@ -36,7 +36,10 @@ export class RolePermissionPolicy {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
+
+    // is not the Admin Role
     if (role.isAdmin()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRolePermissions,
@@ -48,7 +51,10 @@ export class RolePermissionPolicy {
     permission: PermissionModel;
   }): boolean {
     const { permission } = arg;
+
+    // is not he SuperAdmin Permission
     if (permission.isSuperAdmin()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRolePermissions,
@@ -70,7 +76,10 @@ export class RolePermissionPolicy {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
+
+    // is not the Admin Role
     if (role.isAdmin()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRolePermissions,
@@ -82,7 +91,10 @@ export class RolePermissionPolicy {
     permission: PermissionModel;
   }): boolean {
     const { permission } = arg;
+
+    // is not the SuperAdmin Permission
     if (permission.isSuperAdmin()) return false;
+    j
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageRolePermissions,

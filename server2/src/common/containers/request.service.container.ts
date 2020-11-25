@@ -45,6 +45,12 @@ import { IntegrationPolicy } from "../../app/integration/integration.policy";
 import { IntegrationService } from "../../app/integration/integration.service";
 import { GoogleService } from "../../app/google/google.service";
 import { GooglePolicy } from "../../app/google/google.policy";
+import { UserTokenPolicy } from "../../app/user-token/user-token.policy";
+import { UserTokenRepository } from "../../app/user-token/user-token.repository";
+import { UserTokenService } from "../../app/user-token/user-token.service";
+import { UserLinkTypePolicy } from "../../app/user-token-type/user-token-type.policy";
+import { UserTokenTypeRepository } from "../../app/user-token-type/user-token-type.repository";
+import { UserTokenTypeService } from "../../app/user-token-type/user-token-type.service";
 
 export class RequestSerivceContainer implements IRequestServices {
   constructor(
@@ -318,6 +324,48 @@ export class RequestSerivceContainer implements IRequestServices {
     if (this._integrationPolicy) return this._integrationPolicy;
     this._integrationPolicy = new IntegrationPolicy(this._ctx);
     return this._integrationPolicy;
+  }
+
+  protected _userTokenService: OrUndefined<UserTokenService>
+  get userTokenService(): UserTokenService {
+    if (this._userTokenService) return this._userTokenService;
+    this._userTokenService = new UserTokenService(this._ctx);
+    return this._userTokenService;
+  }
+
+  protected _userTokenRepository: OrUndefined<UserTokenRepository>
+  get userTokenRepository(): UserTokenRepository {
+    if (this._userTokenRepository) return this._userTokenRepository;
+    this._userTokenRepository = new UserTokenRepository(this._ctx);
+    return this._userTokenRepository;
+  }
+
+  protected _userTokenPolicy: OrUndefined<UserTokenPolicy>
+  get userTokenPolicy(): UserTokenPolicy {
+    if (this._userTokenPolicy) return this._userTokenPolicy;
+    this._userTokenPolicy = new UserTokenPolicy(this._ctx);
+    return this._userTokenPolicy;
+  }
+
+  protected _userTokenTypeService: OrUndefined<UserTokenTypeService>
+  get userTokenTypeService(): UserTokenTypeService {
+    if (this._userTokenTypeService) return this._userTokenTypeService;
+    this._userTokenTypeService = new UserTokenTypeService(this._ctx);
+    return this._userTokenTypeService;
+  }
+
+  protected _userTokenTypeRepository: OrUndefined<UserTokenTypeRepository>
+  get userTokenTypeRepository(): UserTokenTypeRepository {
+    if (this._userTokenTypeRepository) return this._userTokenTypeRepository;
+    this._userTokenTypeRepository = new UserTokenTypeRepository(this._ctx);
+    return this._userTokenTypeRepository;
+  }
+
+  protected _userTokenTypePolicy: OrUndefined<UserLinkTypePolicy>
+  get userTokenTypePolicy(): UserLinkTypePolicy {
+    if (this._userTokenTypePolicy) return this._userTokenTypePolicy;
+    this._userTokenTypePolicy = new UserLinkTypePolicy(this._ctx);
+    return this._userTokenTypePolicy;
   }
 
   protected _jwtService: OrUndefined<JwtService>

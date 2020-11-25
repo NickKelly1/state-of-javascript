@@ -25,9 +25,7 @@ export interface IAuthenticationRo {
     iat: string;
     exp: string;
   };
-  user: {
-    name: string;
-  };
+  user_name: string;
 }
 
 function authToMe(auth: IAuthenticationRo): ApiMe {
@@ -35,7 +33,7 @@ function authToMe(auth: IAuthenticationRo): ApiMe {
     permissions: auth.access_token_object.permissions,
     user: {
       id: auth.access_token_object.user_id,
-      name: auth.user.name,
+      name: auth.user_name,
     },
     access_exp: Number(auth.access_token_object.exp),
     refresh_exp: Number(auth.refresh_token_object.exp),
@@ -208,6 +206,7 @@ export class ApiCredentials {
     }
 
     catch (error) {
+      console.warn('SignOut failed', error);
       this.saveAuthentication(undefined);
       this.event.sign_in_fail.fire(undefined);
       this.event.unauthenticated.fire(undefined);
@@ -259,6 +258,7 @@ export class ApiCredentials {
 
     catch (error) {
       // don't clear authentication...
+      console.warn('SignIn failed', error);
       this.event.sign_in_fail.fire(undefined);
       throw error;
     }
@@ -309,6 +309,7 @@ export class ApiCredentials {
 
     catch (error) {
       // don't clear authentication...
+      console.warn('SignUp failed', error);
       this.event.sign_up_fail.fire(undefined);
       throw error;
     }
@@ -351,6 +352,7 @@ export class ApiCredentials {
     }
 
     catch (error) {
+      console.warn('Refresh failed', error);
       if (!keepOnFail) {
         this.event.refresh_fail.fire(undefined);
         await this.signOut({ unlocked: true });

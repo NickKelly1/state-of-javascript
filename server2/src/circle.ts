@@ -11,3 +11,5 @@ export * from './app/npms-package/npms-package.model';
 export * from './app/npms-dashboard/npms-dashboard.model';
 export * from './app/npms-dashboard-status/npms-dashboard-status.model';
 export * from './app/npms-dashboard-item/npms-dashboard-item.model';
+export * from './app/user-token/user-token.model';
+export * from './app/user-token-type/user-token-type.model';

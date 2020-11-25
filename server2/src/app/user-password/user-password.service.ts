@@ -37,7 +37,7 @@ export class UserPasswordService {
 
 
   /**
-   * Encrypt a user password
+   * Encrypt a UserPassword
    *
    * @param arg
    */
@@ -61,7 +61,7 @@ export class UserPasswordService {
 
 
   /**
-   * Create a password
+   * Create a UserPassword
    *
    * @param arg
    */
@@ -86,7 +86,7 @@ export class UserPasswordService {
 
 
   /**
-   * Update a password
+   * Update a UserPassword
    *
    * @param arg
    */
@@ -108,11 +108,11 @@ export class UserPasswordService {
 
 
   /**
-   * Delete a password
+   * HardDelete a UserPassword
    *
    * @param arg
    */
-  async delete(arg: {
+  async hardDelete(arg: {
     model: UserPasswordModel;
     runner: QueryRunner;
   }): Promise<UserPasswordModel> {

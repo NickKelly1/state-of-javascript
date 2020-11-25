@@ -19,7 +19,15 @@ interface IMyAppProps extends AppProps {
   //
 }
 
-const queryCache = new QueryCache();
+const queryCache = new QueryCache({
+  defaultConfig: {
+    //
+    queries: {
+      retry: 2,
+      //
+    },
+  },
+});
 
 export default function MyApp(props: IMyAppProps) {
   const { Component, pageProps } = props;
@@ -39,9 +47,9 @@ export default function MyApp(props: IMyAppProps) {
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
       <SnackbarProvider maxSnack={3}>
-        <ReactQueryCacheProvider queryCache={queryCache}>
-          <PublicEnvProvider>
-            <DebugModeProvider>
+        <DebugModeProvider>
+          <ReactQueryCacheProvider queryCache={queryCache}>
+            <PublicEnvProvider>
               <ApiProvider>
                 <CmsProvider>
                   <NpmsApiProvider>
@@ -53,9 +61,9 @@ export default function MyApp(props: IMyAppProps) {
                   </NpmsApiProvider>
                 </CmsProvider>
               </ApiProvider>
-            </DebugModeProvider>
-          </PublicEnvProvider>
-        </ReactQueryCacheProvider>
+            </PublicEnvProvider>
+          </ReactQueryCacheProvider>
+        </DebugModeProvider>
       </SnackbarProvider>
     </React.Fragment>
   );

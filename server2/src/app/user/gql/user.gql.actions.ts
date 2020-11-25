@@ -65,5 +65,53 @@ export const UserGqlActions = new GraphQLObjectType<IUserGqlActionsSource, GqlCo
         return ctx.services.userRolePolicy.canHardDeleteForUser({ user: parent });
       },
     },
+    requestWelcome: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canRequestWelcome({ model: parent });
+      },
+    },
+    acceptWelcome: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canAcceptWelcome({ model: parent });
+      },
+    },
+    requestVerificationEmail: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canRequestVerificationEmail({ model: parent });
+      },
+    },
+    consumeVerificationEmail: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canConsumeVerificationEmail({ model: parent });
+      },
+    },
+    requestEmailChange: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canRequestEmailChange({ model: parent });
+      },
+    },
+    consumeEmailChange: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canConsumeEmailChange({ model: parent });
+      },
+    },
+    requestForgottenPasswordReset: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canRequestForgottenPasswordReset({ model: parent });
+      },
+    },
+    consumeForgottenPasswordReset: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canAcceptForgottenPasswordReset({ model: parent });
+      },
+    },
   },
 });

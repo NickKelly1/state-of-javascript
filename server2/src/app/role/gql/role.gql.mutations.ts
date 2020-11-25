@@ -5,14 +5,18 @@ import { GqlContext } from "../../../common/context/gql.context";
 import { ForbiddenException } from "../../../common/exceptions/types/forbidden.exception";
 import { NotFoundException } from "../../../common/exceptions/types/not-found.exception";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
+import { ist } from "../../../common/helpers/ist.helper";
+import { prettyQ } from "../../../common/helpers/pretty.helper";
 import { PermissionLang } from "../../../common/i18n/packs/permission.lang";
 import { RoleLang } from "../../../common/i18n/packs/role.lang";
+import { logger } from "../../../common/logger/logger";
 import { QueryRunner } from "../../db/query-runner";
 import { PermissionId } from "../../permission/permission-id.type";
 import { PermissionField } from "../../permission/permission.attributes";
 import { Permission } from "../../permission/permission.const";
 import { PermissionModel } from "../../permission/permission.model";
 import { RolePermissionModel } from "../../role-permission/role-permission.model";
+import { IRoleServiceUpdateRoleDto } from "../dto/role-service-update-role.dto";
 import { CreateRoleGqlInput, CreateRoleValidator } from "../gql-input/create-role.gql";
 import { DeleteRoleGqlInput, DeleteRoleValidator } from "../gql-input/delete-role.gql";
 import { UpdateRoleGqlInput, UpdateRoleValidator } from "../gql-input/update-role.gql";
@@ -21,6 +25,9 @@ import { RoleGqlNode, IRoleGqlNodeSource } from "./role.gql.node";
 
 
 export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext>> = () => ({
+  /**
+   * Create a Role
+   */
   createRole: {
     type: GraphQLNonNull(RoleGqlNode),
     args: { dto: { type: GraphQLNonNull(CreateRoleGqlInput) } },
@@ -44,12 +51,16 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
     },
   },
 
+
+  /**
+   * Update a Role
+   */
   updateRole: {
     type: GraphQLNonNull(RoleGqlNode),
     args: { dto: { type: GraphQLNonNull(UpdateRoleGqlInput) } },
     resolve: async (parent, args, ctx): Promise<IRoleGqlNodeSource> => {
       const dto = ctx.validate(UpdateRoleValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const model: RoleModel = await ctx.services.roleRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
@@ -57,9 +68,15 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
           },
         });
         const currentRolePermissions = assertDefined(model.rolePermissions);
-        ctx.authorize(ctx.services.rolePolicy.canUpdate({ model }));
-        await ctx.services.roleService.update({ runner, dto, model });
-        if (dto.permission_ids?.length) {
+
+        const serviceDto: IRoleServiceUpdateRoleDto = { name: dto.name, }
+        if (Object.values(serviceDto).filter(ist.notUndefined).length > 0) {
+          // only authorize "update" if actually updating...
+          ctx.authorize(ctx.services.rolePolicy.canUpdate({ model }));
+          await ctx.services.roleService.update({ runner, dto: serviceDto, model });
+        }
+
+        if (ist.notNullable(dto.permission_ids)) {
           await authorizeAndSyncrhoniseRolePermissions({
             runner,
             ctx,
@@ -68,13 +85,22 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
             role: model,
           });
         }
+
+        // TODO: public security hole where user can "show" role by making no changes...
+        logger.warn('TODO: public security hole where user can "show" role by making no changes...');
+
         return model;
       });
-      return model;
+
+      return final;
     },
   },
 
-  deleteRole: {
+
+  /**
+   * SoftDelete a Role
+   */
+  softDeleteRole: {
     type: GraphQLNonNull(GraphQLBoolean),
     args: { dto: { type: GraphQLNonNull(DeleteRoleGqlInput) } },
     resolve: async (parent, args, ctx): Promise<boolean> => {
@@ -95,6 +121,10 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
     },
   },
 
+
+  /**
+   * Restore a Role
+   */
   restoreRole: {
     type: GraphQLNonNull(GraphQLBoolean),
     args: { dto: { type: GraphQLNonNull(DeleteRoleGqlInput) } },

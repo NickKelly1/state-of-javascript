@@ -1,3 +1,4 @@
+import { useSnackbar } from 'notistack';
 import React, { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { _ls } from '../helpers/_ls.helper';
 import { useUpdate } from '../hooks/use-update.hook';
@@ -32,6 +33,8 @@ export function DebugModeProvider(props: IDebugModeProviderProps) {
   const toggle = useCallback(() => setIsOn(prev => (!prev)), []);
   const set = useCallback((to: boolean) => setIsOn(to), []);
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const ctx: IDebugModeContext = useMemo(
     (): IDebugModeContext => ( { isOn, on, off, toggle, set }),
     [ isOn, on, off, toggle, set, ],
@@ -52,6 +55,11 @@ export function DebugModeProvider(props: IDebugModeProviderProps) {
       else { _ls?.setItem(LsDebugKey, LsDebugFlag.off); }
     }
   }, [_ls, isOn]);
+
+  useUpdate(() => {
+    if (isOn) { enqueueSnackbar('Debug mode enabled'); }
+    else { enqueueSnackbar('Debug mode disabled'); }
+  }, [isOn])
 
   return (
     <DebugModeContext.Provider value={ctx}>

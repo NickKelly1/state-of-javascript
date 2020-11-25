@@ -135,22 +135,37 @@ function getData() {
     { id: 1200, name: 'show-integrations', created_at: now, updated_at: now, deleted_at: null, },
     { id: 1201, name: 'show-integrations-secrets', created_at: now, updated_at: now, deleted_at: null, },
     { id: 1220, name: 'manage-integrations', created_at: now, updated_at: now, deleted_at: null, },
+
+    // user-links
+    { id: 1300, name: 'show-user-tokens', created_at: now, updated_at: now, deleted_at: null, },
+
+    // user-link-types
+    { id: 1400, name: 'show-user-token-types', created_at: now, updated_at: now, deleted_at: null, },
   ];
 
-  const roles: IMigrationRole[] = [{
-    id: 1,
-    name: 'admin',
-    created_at: now,
-    updated_at: now,
-    deleted_at: null,
-  },
-  {
-    id: 2,
-    name: 'public',
-    created_at: now,
-    updated_at: now,
-    deleted_at: null,
-  }];
+  const roles: IMigrationRole[] = [
+    {
+      id: 1,
+      name: 'admin',
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+    },
+    {
+      id: 2,
+      name: 'authenticated',
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+    },
+    {
+      id: 3,
+      name: 'public',
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+    },
+  ];
 
 
   // give the admin role all permissions

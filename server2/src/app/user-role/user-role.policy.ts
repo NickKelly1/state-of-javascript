@@ -36,9 +36,16 @@ export class UserRolePolicy {
     user: UserModel;
   }): boolean {
     const { user } = arg;
+
+    // is not the Admin user
     if (user.isAdmin()) return false;
+
+    // is not the System User
     if (user.isSystem()) return false;
+
+    // is not the Anonymous User
     if (user.isAnonymous()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageUserRoles,
@@ -50,8 +57,16 @@ export class UserRolePolicy {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
+
+    // is not the Admin Role
     if (role.isAdmin()) return false;
+
+    // is not the Authenticated Role
+    if (role.isAuthenticated()) return false;
+    
+    // is not the Public Role
     if (role.isPublic()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageUserRoles,
@@ -72,9 +87,16 @@ export class UserRolePolicy {
     user: UserModel;
   }): boolean {
     const { user } = arg;
+
+    // is not the Admin user
     if (user.isAdmin()) return false;
+
+    // is not the System User
     if (user.isSystem()) return false;
+
+    // is not the Anonymous User
     if (user.isAnonymous()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageUserRoles,
@@ -87,8 +109,16 @@ export class UserRolePolicy {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
+
+    // is not the Admin Role
     if (role.isAdmin()) return false;
+
+    // is not the Authenticated Role
+    if (role.isAuthenticated()) return false;
+    
+    // is not the Public Role
     if (role.isPublic()) return false;
+
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin,
       Permission.ManageUserRoles,

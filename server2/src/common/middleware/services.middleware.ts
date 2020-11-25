@@ -6,6 +6,7 @@ import { EnvService } from "../environment/env";
 import { handler } from "../helpers/handler.helper";
 import { RequestSerivceContainer } from "../containers/request.service.container";
 import { IUniversalServices } from "../interfaces/universal.services.interface";
+import { toId } from "../helpers/to-id.helper";
 
 export const servicesMw = (arg: {
   universal: IUniversalServices,
@@ -14,8 +15,8 @@ export const servicesMw = (arg: {
   // initialise req locals
   const ctx = HttpContext.ensure({ req, res });
   const services = new RequestSerivceContainer(ctx, universal);
-  const publicAuth = await universal.publicAuthorisation.retrieve();
-  const auth = new RequestAuth(publicAuth.permissions.map(perm => perm.id));
+  const systemPermissions = await universal.systemPermissions.getPermissions();
+  const auth = new RequestAuth(systemPermissions.pub.map(toId));
   req.__locals__ = { auth, httpCtx: ctx, services, };
   next();
 });

@@ -36,6 +36,7 @@ import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-m
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { FittedBarChart } from '../../components-charts/fitted-bar-chart/fitted-bar-chart';
 import { FittedPieChart } from '../../components-charts/fitted-pie-chart/fitted-pie-chart';
+import { IWithDialogueProps } from '../../components-hoc/with-dialog/with-dialog';
 
 const npmsDashboardSoftDeleteDashboardQuery = gql`
 mutation NpmsDashboardSoftDeleteDashboard(

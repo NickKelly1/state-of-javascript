@@ -117,7 +117,7 @@ const roleTableDeleteMutation = gql`
 mutation RoleTableDelete(
   $id:Int!
 ){
-  deleteRole(
+  softDeleteRole(
     dto:{
       id:$id
 		}

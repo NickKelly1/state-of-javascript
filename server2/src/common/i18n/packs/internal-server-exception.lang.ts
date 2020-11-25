@@ -1,3 +1,5 @@
+import { UserTokenType } from "../../../app/user-token-type/user-token-type.const";
+import { UserTokenTypeId } from "../../../app/user-token-type/user-token-type.id.type";
 import { Language } from "../consts/language.enum";
 
 export const InternalServerExceptionLang = {
@@ -14,4 +16,8 @@ export const InternalServerExceptionLang = {
     [Language.En]: 'Failed to find user',
     [Language.Ger]: '__TODO__',
   },
+  UnhandledUserLinkType: (arg: { type_id: UserTokenTypeId }) => ({
+    [Language.En]: `Unhandled UserLinkType: "${arg.type_id}"`,
+    [Language.Ger]: '__TODO__',
+  }),
 }

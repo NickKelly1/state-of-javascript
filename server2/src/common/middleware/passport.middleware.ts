@@ -5,6 +5,7 @@ import { LoginExpiredException } from "../exceptions/types/login-expired.excepti
 import { ist } from "../helpers/ist.helper";
 import { mw } from "../helpers/mw.helper";
 import { prettyQ } from "../helpers/pretty.helper";
+import { toId } from "../helpers/to-id.helper";
 import { logger } from "../logger/logger";
 import { OrNull } from "../types/or-null.type";
 import { OrNullable } from "../types/or-nullable.type";
@@ -17,7 +18,7 @@ function authTokenCookieExtractor(req: Request): OrNull<string> {
 }
 
 // if access token is given, verify it
-export const passportMw = (): Handler => mw((ctx, next) => {
+export const passportMw = (): Handler => mw(async (ctx, next) => {
   const { req } = ctx;
 
   const access = ctx.services.authService.getAccessToken({ req });
@@ -28,6 +29,10 @@ export const passportMw = (): Handler => mw((ctx, next) => {
 
   // use the valid access token
   ctx.auth.addAccess({ access });
+
+  // is authenticated - add the authenticated permissions
+  const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions();
+  ctx.auth.addPermissions({ permissions: systemPermissions.authenticated.map(toId) });
 
   next();
 })

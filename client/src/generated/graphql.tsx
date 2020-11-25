@@ -17,15 +17,17 @@ export type RootQueryType = {
   __typename?: 'RootQueryType';
   newsArticles: NewsArticleCollectionNode;
   permissions: PermissionCollectionNode;
+  systemPermissions: SystemPermissionGqlNode;
   roles: RoleCollectionNode;
   rolePermissions: RolePermissionCollectionNode;
   users: UserCollectionNode;
+  userByToken: UserNode;
   userRoles: UserRoleCollectionNode;
   npmsPackages: NpmsPackageCollectionNode;
   npmsDashboards: NpmsDashboardCollectionNode;
   npmsDashboardItems: NpmsDashboardItemCollectionNode;
   integrations: IntegrationCollectionNode;
-  googleIntegration: IntegrationNode;
+  google: GoogleNode;
   googleOAuth2GetUrl: Scalars['String'];
 };
 
@@ -52,6 +54,11 @@ export type RootQueryTypeRolePermissionsArgs = {
 
 export type RootQueryTypeUsersArgs = {
   query?: Maybe<UserQuery>;
+};
+
+
+export type RootQueryTypeUserByTokenArgs = {
+  query?: Maybe<UserByToken>;
 };
 
 
@@ -159,6 +166,14 @@ export type UserActions = {
   updatePassword: Scalars['Boolean'];
   createUserRoles: Scalars['Boolean'];
   hardDeleteUserRoles: Scalars['Boolean'];
+  requestWelcome: Scalars['Boolean'];
+  acceptWelcome: Scalars['Boolean'];
+  requestVerificationEmail: Scalars['Boolean'];
+  consumeVerificationEmail: Scalars['Boolean'];
+  requestEmailChange: Scalars['Boolean'];
+  consumeEmailChange: Scalars['Boolean'];
+  requestForgottenPasswordReset: Scalars['Boolean'];
+  consumeForgottenPasswordReset: Scalars['Boolean'];
 };
 
 export type UserRelations = {
@@ -639,6 +654,16 @@ export type NewsArticleCollectionActions = {
   create: Scalars['Boolean'];
 };
 
+export type SystemPermissionGqlNode = {
+  __typename?: 'SystemPermissionGqlNode';
+  pub: Array<Maybe<PermissionNode>>;
+  authenticated: Array<Maybe<PermissionNode>>;
+};
+
+export type UserByToken = {
+  token: Scalars['String'];
+};
+
 export type NpmsPackageCollectionNode = {
   __typename?: 'NpmsPackageCollectionNode';
   nodes: Array<Maybe<NpmsPackageNode>>;
@@ -1093,8 +1118,6 @@ export type IntegrationCollectionActions = {
   __typename?: 'IntegrationCollectionActions';
   show: Scalars['Boolean'];
   initialise: Scalars['Boolean'];
-  authenticateGoogle: Scalars['Boolean'];
-  sendGmails: Scalars['Boolean'];
 };
 
 export type IntegrationQuery = {
@@ -1114,6 +1137,20 @@ export type IntegrationQueryFilterFilterAttributes = {
   id?: Maybe<FilterFieldNumber>;
   created_at?: Maybe<FilterFieldDateTime>;
   updated_at?: Maybe<FilterFieldDateTime>;
+};
+
+export type GoogleNode = {
+  __typename?: 'GoogleNode';
+  cursor: Scalars['String'];
+  integration: IntegrationNode;
+  can: GoogleActions;
+};
+
+export type GoogleActions = {
+  __typename?: 'GoogleActions';
+  show: Scalars['Boolean'];
+  oauth2: Scalars['Boolean'];
+  sendGmail: Scalars['Boolean'];
 };
 
 export type RootMutationType = {
@@ -1139,13 +1176,18 @@ export type RootMutationType = {
   deleteRolePermission: Scalars['Boolean'];
   createRole: RoleNode;
   updateRole: RoleNode;
-  deleteRole: Scalars['Boolean'];
+  softDeleteRole: Scalars['Boolean'];
   restoreRole: Scalars['Boolean'];
   createUser: UserNode;
   updateUser: UserNode;
-  deleteUser: Scalars['Boolean'];
+  softDeleteUser: Scalars['Boolean'];
+  hardDeleteUser: Scalars['Boolean'];
+  requestForgottenUserPasswordReset: Scalars['Boolean'];
+  consumeForgottenUserPasswordReset: AuthorisationGqlNode;
+  requestUserWelcome: Scalars['Boolean'];
+  acceptUserWelcome: AuthorisationGqlNode;
   initialiseIntegration: IntegrationNode;
-  googleOAuth2HandleCode: IntegrationNode;
+  googleOAuth2HandleCode: GoogleNode;
   googleSendEmail: Scalars['JsonObject'];
 };
 
@@ -1255,7 +1297,7 @@ export type RootMutationTypeUpdateRoleArgs = {
 };
 
 
-export type RootMutationTypeDeleteRoleArgs = {
+export type RootMutationTypeSoftDeleteRoleArgs = {
   dto: DeleteRole;
 };
 
@@ -1275,8 +1317,33 @@ export type RootMutationTypeUpdateUserArgs = {
 };
 
 
-export type RootMutationTypeDeleteUserArgs = {
+export type RootMutationTypeSoftDeleteUserArgs = {
   dto: DeleteUser;
+};
+
+
+export type RootMutationTypeHardDeleteUserArgs = {
+  dto: DeleteUser;
+};
+
+
+export type RootMutationTypeRequestForgottenUserPasswordResetArgs = {
+  dto: RequestResetForgottenUserPassword;
+};
+
+
+export type RootMutationTypeConsumeForgottenUserPasswordResetArgs = {
+  dto: ConsumeResetForgottenUserPassword;
+};
+
+
+export type RootMutationTypeRequestUserWelcomeArgs = {
+  dto: RequestUserWelcome;
+};
+
+
+export type RootMutationTypeAcceptUserWelcomeArgs = {
+  dto: AcceptUserWelcome;
 };
 
 
@@ -1415,6 +1482,70 @@ export type DeleteUser = {
   id: Scalars['Int'];
 };
 
+export type RequestResetForgottenUserPassword = {
+  email: Scalars['String'];
+};
+
+export type AuthorisationGqlNode = {
+  __typename?: 'AuthorisationGqlNode';
+  access_token: Scalars['String'];
+  refresh_token: Scalars['String'];
+  access_token_object: AccessTokenNode;
+  refresh_token_object: RefreshTokenNode;
+};
+
+export type AccessTokenNode = {
+  __typename?: 'AccessTokenNode';
+  data: AccessTokenData;
+  relations?: Maybe<AccessTokenRelations>;
+};
+
+export type AccessTokenData = {
+  __typename?: 'AccessTokenData';
+  user_id: Scalars['Int'];
+  permissions: Array<Scalars['Int']>;
+  iat: Scalars['Float'];
+  exp: Scalars['Float'];
+};
+
+export type AccessTokenRelations = {
+  __typename?: 'AccessTokenRelations';
+  user?: Maybe<UserNode>;
+};
+
+export type RefreshTokenNode = {
+  __typename?: 'RefreshTokenNode';
+  data: RefreshTokenData;
+  relations?: Maybe<RefreshTokenRelations>;
+};
+
+export type RefreshTokenData = {
+  __typename?: 'RefreshTokenData';
+  user_id: Scalars['Int'];
+  iat: Scalars['Float'];
+  exp: Scalars['Float'];
+};
+
+export type RefreshTokenRelations = {
+  __typename?: 'RefreshTokenRelations';
+  user?: Maybe<UserNode>;
+};
+
+export type ConsumeResetForgottenUserPassword = {
+  token: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type RequestUserWelcome = {
+  user_id: Scalars['Int'];
+};
+
+export type AcceptUserWelcome = {
+  token: Scalars['String'];
+  name: Scalars['String'];
+  password: Scalars['String'];
+};
+
 export type InitialiseIntegration = {
   id: Scalars['Int'];
   init: Scalars['JsonObject'];
@@ -1432,11 +1563,20 @@ export type GoogleOAuth2ConnectorDataQueryVariables = Exact<{ [key: string]: nev
 
 export type GoogleOAuth2ConnectorDataQuery = (
   { __typename?: 'RootQueryType' }
-  & { googleIntegration: (
-    { __typename?: 'IntegrationNode' }
-    & { data: (
-      { __typename?: 'IntegrationData' }
-      & Pick<IntegrationData, 'id' | 'name' | 'error' | 'public' | 'is_connected' | 'decrypted_init' | 'decrypted_state' | 'created_at' | 'updated_at'>
+  & { google: (
+    { __typename?: 'GoogleNode' }
+    & { can: (
+      { __typename?: 'GoogleActions' }
+      & Pick<GoogleActions, 'oauth2' | 'sendGmail'>
+    ), integration: (
+      { __typename?: 'IntegrationNode' }
+      & { can: (
+        { __typename?: 'IntegrationActions' }
+        & Pick<IntegrationActions, 'show' | 'initialise'>
+      ), data: (
+        { __typename?: 'IntegrationData' }
+        & Pick<IntegrationData, 'id' | 'name' | 'error' | 'public' | 'is_connected' | 'created_at' | 'updated_at'>
+      ) }
     ) }
   ) }
 );
@@ -1457,10 +1597,19 @@ export type GoogleOAuth2ConnectorCodeFormMutationVariables = Exact<{
 export type GoogleOAuth2ConnectorCodeFormMutation = (
   { __typename?: 'RootMutationType' }
   & { googleOAuth2HandleCode: (
-    { __typename?: 'IntegrationNode' }
-    & { data: (
-      { __typename?: 'IntegrationData' }
-      & Pick<IntegrationData, 'id' | 'name' | 'error' | 'public' | 'is_connected' | 'created_at' | 'updated_at'>
+    { __typename?: 'GoogleNode' }
+    & { can: (
+      { __typename?: 'GoogleActions' }
+      & Pick<GoogleActions, 'oauth2' | 'sendGmail'>
+    ), integration: (
+      { __typename?: 'IntegrationNode' }
+      & { can: (
+        { __typename?: 'IntegrationActions' }
+        & Pick<IntegrationActions, 'show' | 'initialise'>
+      ), data: (
+        { __typename?: 'IntegrationData' }
+        & Pick<IntegrationData, 'id' | 'name' | 'error' | 'public' | 'is_connected' | 'created_at' | 'updated_at'>
+      ) }
     ) }
   ) }
 );
@@ -1788,7 +1937,7 @@ export type RoleTableDeleteMutationVariables = Exact<{
 
 export type RoleTableDeleteMutation = (
   { __typename?: 'RootMutationType' }
-  & Pick<RootMutationType, 'deleteRole'>
+  & Pick<RootMutationType, 'softDeleteRole'>
 );
 
 export type UserMutateFormCreateMutationVariables = Exact<{
@@ -1928,13 +2077,33 @@ export type UserDetailDataQuery = (
       { __typename?: 'UserNode' }
       & { can: (
         { __typename?: 'UserActions' }
-        & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'deactivate' | 'updatePassword'>
+        & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'deactivate' | 'updatePassword' | 'requestWelcome' | 'acceptWelcome' | 'requestVerificationEmail' | 'requestEmailChange' | 'requestForgottenPasswordReset'>
       ), data: (
         { __typename?: 'UserData' }
         & Pick<UserData, 'id' | 'name' | 'email' | 'verified' | 'deactivated' | 'created_at' | 'updated_at' | 'deleted_at'>
       ) }
     )>> }
   ) }
+);
+
+export type UserDetailRequestSendWelcomeEmailMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type UserDetailRequestSendWelcomeEmailMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'requestUserWelcome'>
+);
+
+export type UserDetailRequestForgottenUserPasswordResetMutationVariables = Exact<{
+  email: Scalars['String'];
+}>;
+
+
+export type UserDetailRequestForgottenUserPasswordResetMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'requestForgottenUserPasswordReset'>
 );
 
 export type UsersTableDataQueryVariables = Exact<{
@@ -1973,7 +2142,7 @@ export type UsersTableDeleteMutationVariables = Exact<{
 
 export type UsersTableDeleteMutation = (
   { __typename?: 'RootMutationType' }
-  & Pick<RootMutationType, 'deleteUser'>
+  & Pick<RootMutationType, 'softDeleteUser'>
 );
 
 export type JsPageDashboardQueryVariables = Exact<{
@@ -2217,5 +2386,116 @@ export type ViewNewsArticlePageQuery = (
         )> }
       ) }
     )>> }
+  ) }
+);
+
+export type PasswordResetPageDataQueryVariables = Exact<{
+  token: Scalars['String'];
+}>;
+
+
+export type PasswordResetPageDataQuery = (
+  { __typename?: 'RootQueryType' }
+  & { userByToken: (
+    { __typename?: 'UserNode' }
+    & { can: (
+      { __typename?: 'UserActions' }
+      & Pick<UserActions, 'show' | 'acceptWelcome'>
+    ), data: (
+      { __typename?: 'UserData' }
+      & Pick<UserData, 'id' | 'name' | 'deactivated' | 'email' | 'verified' | 'created_at' | 'updated_at' | 'deleted_at'>
+    ) }
+  ) }
+);
+
+export type PasswordResetPageConsumeResetMutationVariables = Exact<{
+  token: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type PasswordResetPageConsumeResetMutation = (
+  { __typename?: 'RootMutationType' }
+  & { consumeForgottenUserPasswordReset: (
+    { __typename?: 'AuthorisationGqlNode' }
+    & Pick<AuthorisationGqlNode, 'access_token' | 'refresh_token'>
+    & { access_token_object: (
+      { __typename?: 'AccessTokenNode' }
+      & { data: (
+        { __typename?: 'AccessTokenData' }
+        & Pick<AccessTokenData, 'user_id' | 'permissions' | 'iat' | 'exp'>
+      ), relations?: Maybe<(
+        { __typename?: 'AccessTokenRelations' }
+        & { user?: Maybe<(
+          { __typename?: 'UserNode' }
+          & { data: (
+            { __typename?: 'UserData' }
+            & Pick<UserData, 'id' | 'name'>
+          ) }
+        )> }
+      )> }
+    ), refresh_token_object: (
+      { __typename?: 'RefreshTokenNode' }
+      & { data: (
+        { __typename?: 'RefreshTokenData' }
+        & Pick<RefreshTokenData, 'user_id' | 'iat' | 'exp'>
+      ) }
+    ) }
+  ) }
+);
+
+export type WelcomePageDataQueryVariables = Exact<{
+  token: Scalars['String'];
+}>;
+
+
+export type WelcomePageDataQuery = (
+  { __typename?: 'RootQueryType' }
+  & { userByToken: (
+    { __typename?: 'UserNode' }
+    & { can: (
+      { __typename?: 'UserActions' }
+      & Pick<UserActions, 'show' | 'acceptWelcome'>
+    ), data: (
+      { __typename?: 'UserData' }
+      & Pick<UserData, 'id' | 'name' | 'deactivated' | 'email' | 'verified' | 'created_at' | 'updated_at' | 'deleted_at'>
+    ) }
+  ) }
+);
+
+export type WelcomePageAcceptWelcomeMutationVariables = Exact<{
+  token: Scalars['String'];
+  name: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type WelcomePageAcceptWelcomeMutation = (
+  { __typename?: 'RootMutationType' }
+  & { acceptUserWelcome: (
+    { __typename?: 'AuthorisationGqlNode' }
+    & Pick<AuthorisationGqlNode, 'access_token' | 'refresh_token'>
+    & { access_token_object: (
+      { __typename?: 'AccessTokenNode' }
+      & { data: (
+        { __typename?: 'AccessTokenData' }
+        & Pick<AccessTokenData, 'user_id' | 'permissions' | 'iat' | 'exp'>
+      ), relations?: Maybe<(
+        { __typename?: 'AccessTokenRelations' }
+        & { user?: Maybe<(
+          { __typename?: 'UserNode' }
+          & { data: (
+            { __typename?: 'UserData' }
+            & Pick<UserData, 'id' | 'name'>
+          ) }
+        )> }
+      )> }
+    ), refresh_token_object: (
+      { __typename?: 'RefreshTokenNode' }
+      & { data: (
+        { __typename?: 'RefreshTokenData' }
+        & Pick<RefreshTokenData, 'user_id' | 'iat' | 'exp'>
+      ) }
+    ) }
   ) }
 );

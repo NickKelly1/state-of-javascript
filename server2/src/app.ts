@@ -1,6 +1,6 @@
 import { GqlSchema } from './gql.schema';
 import * as overrides from './custom';
-import Bull, { DoneCallback, Job } from 'bull';
+import Bull, { DoneCallback, Job, ProcessCallbackFunction, ProcessPromiseFunction } from 'bull';
 import express, { Handler, Request, Response } from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
@@ -27,8 +27,9 @@ import { ScriptGuard } from './script-guard';
 import { prettyQ } from './common/helpers/pretty.helper';
 import { universalServiceContainerFactory } from './common/containers/universal.service.container.factory';
 import { GqlContext } from './common/context/gql.context';
-import { npmsApiFactory } from './app/npms-package/api/npms-api.factory';
-import { JsonResponder } from './common/responses/json.responder';
+import { IGoogleIntegrationServiceSendEmailDto } from './app/google/dtos/google.service.send-email-dto';
+import { Integration } from './app/integration/integration.const';
+import { jb } from './common/helpers/jb.helper';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
@@ -41,114 +42,29 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   // block scripts from accidentally firing
   // might save your life in production if something dumb happens...
   ScriptGuard.setNo();
-  const queue = new Bull('my-first-queue', {
-    // limiter: {
-    //   duration: 5,
-    //   max: 5,
-    //   bounceBack: true,
-    //   groupKey: '_k',
-    // },
-    // defaultJobOptions: {
-    //   attempts: 5,
-    //   backoff: 5,
-    //   delay: 5,
-    //   jobId: '5',
-    //   lifo: true,
-    //   priority: 5,
-    //   preventParsingData: true,
-    //   removeOnComplete: true,
-    //   removeOnFail: true,
-    //   repeat: { cron: '* * * * *' },
-    //   // stackTraceLimit: true,
-    //   stackTraceLimit: 5,
-    //   timeout: 500,
-    // },
-    // prefix: '_pfx',
-    // settings: {
-    //   backoffStrategies: { _test_: (attempts: number, err: Error) => 5, },
-    //   drainDelay: 5,
-    //   guardInterval: 5,
-    //   lockDuration: 5,
-    //   lockRenewTime: 5,
-    //   maxStalledCount: 5,
-    //   retryProcessDelay: 5,
-    //   stalledInterval: 5,
-    // },
-    // redis: {
-    //   autoResendUnfulfilledCommands: true,
-    //   autoResubscribe: true,
-    //   connectTimeout: 500,
-    //   connectionName: '__queue__conn__',
-    //   db: 5,
-    //   dropBufferSupport: true,
-    //   enableOfflineQueue: true,
-    //   enableReadyCheck: true,
-    //   enableTLSForSentinelMode: true,
-    //   family: 5,
-    //   host: 'localhost',
-    //   keepAlive: 5,
-    //   keyPrefix: '__key__',
-    //   lazyConnect: true,
-    //   maxRetriesPerRequest: 5,
-    //   name: '__name__',
-    //   port: 6379,
-    //   path: '/path',
-    //   username: '__redis__usrname__',
-    // },
-    redis: {
-      password: env.REDIS_PSW,
-      host: env.REDIS_HOST,
-      port: env.REDIS_PORT,
-    },
-  });
 
-  // interface IJobFnArg {
-  //   ctx: SystemContext;
-  // }
-
-  // function jb<T>() {
-  //   //
-  // } 
-  // try {
-  //   //
-  // }
-
-  interface INpmStatsJobData {
-    names: string[];
-  }
-
-  const npmsQueue = new Bull<INpmStatsJobData>(
-    'npms-stats',
-    {
-      redis: {
-        password: env.REDIS_PSW,
-        host: env.REDIS_HOST,
-        port: env.REDIS_PORT,
-      },
-    },
-  );
-
-  npmsQueue.process(async (job, done) => {
-    logger.debug(`npmsQueue: ${prettyQ(job.data)}`);
-    // const records = await universal.npmsApi.packageInfos({ names: job.data.names });
-    done();
-  });
-
-  npmsQueue.add({ names: ['sequelize'], });
-
-  npmsQueue.process('image', async (job, done) => {
-    done();
-  });
-
-  queue.process(async (job: Job<null>, done: DoneCallback) => {
-    logger.info(`procesing job... ${prettyQ(job.id)} - ${prettyQ(await job.getState())} - ${prettyQ(job.data)}`);
-    done();
-  });
-
-  setInterval(() => {
-    logger.info('adding job...');
-    queue.add(null);
-  }, 5000);
+  // TODO: put job runner somewhere else...
+  const jobRunner = jb(universal);
+  universal.gmailQueue.process(jobRunner(async ({ ctx, job }) => {
+    logger.info(`Processing gmail:\n${prettyQ(job.data)}`);
+    await ctx.services.universal.db.transact(async ({ runner }) => {
+      const serviceDto: IGoogleIntegrationServiceSendEmailDto = {
+        to: job.data.to,
+        body: job.data.body,
+        subject: job.data.subject,
+        cc: job.data.cc,
+      };
+      const model = await ctx
+        .services
+        .integrationRepository
+        .findByPkOrfail(Integration.Google, { runner, });
+      const result = await ctx.services.googleService.sendEmail({
+        runner,
+        dto: serviceDto,
+        model,
+      });
+    });
+  }));
 
   const app = new ExpressContext({ root: express() });
 
@@ -170,9 +86,10 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   app.use(passportMw());
   app.use('/v1/graphql', graphqlHTTP(mwGql(async (ctx): Promise<OptionsData> => {
     const { req, res } = ctx;
-    const gql = GqlContext.create({ req, res, });
+    const gql = GqlContext.createFromHttp({ req, res, });
     const data: OptionsData = {
       customFormatErrorFn: (error) => {
+        logger.error(`Error in GraphQL: ${prettyQ(error)}`);
         const exception = makeException(ctx, error.originalError);
 
         if (exception.code === 500) { logger.error(exception.name, exception.toJsonDev()); }

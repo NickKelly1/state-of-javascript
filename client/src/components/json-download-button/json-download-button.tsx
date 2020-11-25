@@ -34,7 +34,7 @@ export function JsonDownloadButton(props: IJsonDownloadButton) {
   }, [name, src]);
 
   return (
-    <Button style={style} className={className} onClick={handleClick}>
+    <Button style={style} className={className} onClick={handleClick} color="primary">
       <GetAppIcon />
     </Button>
   )

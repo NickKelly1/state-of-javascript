@@ -15,6 +15,7 @@ import { User } from '../../app/user/user.const';
 import { UniversalSerivceContainer } from '../containers/universal.service.container';
 import { BaseContext } from './base.context';
 import { RequestAuth } from '../classes/request-auth';
+import { IUniversalServices } from '../interfaces/universal.services.interface';
 
 
 export class SystemContext extends BaseContext {
@@ -22,7 +23,7 @@ export class SystemContext extends BaseContext {
   public readonly services: IRequestServices;
 
   constructor(
-    universal: UniversalSerivceContainer,
+    universal: IUniversalServices,
   ) {
     super();
     // give ambient context all permissions

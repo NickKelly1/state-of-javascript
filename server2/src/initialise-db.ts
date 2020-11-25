@@ -49,6 +49,12 @@ import { initNpmsDashboardStatusModel, NpmsDashboardStatusModel } from './app/np
 import { NpmsDashboardStatusAssociation } from './app/npms-dashboard-status/npms-dashboard-status.associations';
 import { NpmsDashboardStatusField } from './app/npms-dashboard-status/npms-dashboard-status.attributes';
 import { initIntegrationModel } from './app/integration/integration.model';
+import { initUserTokenModel, UserTokenModel } from './app/user-token/user-token.model';
+import { initUserTokenTypeModel, UserTokenTypeModel } from './app/user-token-type/user-token-type.model';
+import { UserTokenField } from './app/user-token/user-token.attributes';
+import { UserTokenAssociation } from './app/user-token/user-token.associations';
+import { UserTokenTypeField } from './app/user-token-type/user-token-type.attributes';
+import { UserTokenTypeAssociation } from './app/user-token-type/user-token-type.associations';
 
 
 /**
@@ -131,6 +137,8 @@ async function initialiseWithTransaction(arg: {
   initNpmsDashboardModel({ env, sequelize, });
   initNpmsDashboardItemModel({ env, sequelize, });
   initIntegrationModel({ env, sequelize, });
+  initUserTokenTypeModel({ env, sequelize, });
+  initUserTokenModel({ env, sequelize, });
 
 
   // -----------------------
@@ -144,6 +152,7 @@ async function initialiseWithTransaction(arg: {
   UserModel.belongsToMany(RoleModel, { as: UserAssociation.roles, through: UserRoleModel as typeof Model, sourceKey: UserField.id, targetKey: RoleField.id, foreignKey: UserRoleField.user_id, otherKey: UserRoleField.role_id });
   UserModel.hasMany(NewsArticleModel, { as: UserAssociation.newsArticles, sourceKey: UserField.id, foreignKey: NewsArticleField.author_id, })
   UserModel.hasMany(NpmsDashboardModel, { as: UserAssociation.npmsDashboards, sourceKey: UserField.id, foreignKey: NpmsDashboardField.owner_id, })
+  UserModel.hasMany(UserTokenModel, { as: UserAssociation.userLinks, sourceKey: UserField.id, foreignKey: UserTokenField.user_id, })
 
   // user password
   UserPasswordModel.belongsTo(UserModel, { as: UserPasswordAssociation.user, foreignKey: UserPasswordField.user_id, targetKey: UserField.id, });
@@ -189,4 +198,11 @@ async function initialiseWithTransaction(arg: {
   // npms dashboard item
   NpmsDashboardItemModel.belongsTo(NpmsPackageModel, { as: NpmsDashboardItemAssociation.package, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })
   NpmsDashboardItemModel.belongsTo(NpmsDashboardModel, { as: NpmsDashboardItemAssociation.dashboard, targetKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, })
+
+  // user link
+  UserTokenModel.belongsTo(UserModel, { as: UserTokenAssociation.user, targetKey: UserField.id, foreignKey: UserTokenField.user_id, })
+  UserTokenModel.belongsTo(UserTokenTypeModel, { as: UserTokenAssociation.type, targetKey: UserTokenTypeField.id, foreignKey: UserTokenField.type_id, })
+
+  // user link type
+  UserTokenTypeModel.hasMany(UserTokenModel, { as: UserTokenTypeAssociation.links, sourceKey: UserTokenTypeField.id, foreignKey: UserTokenField.type_id, })
 }
