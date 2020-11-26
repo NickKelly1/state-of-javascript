@@ -7,8 +7,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  DialogContentText,
+  IconButton,
 } from "@material-ui/core";
 import React, { MouseEventHandler, useCallback, useContext, useEffect, useState } from "react";
+import LockOpenIcon from '@material-ui/icons/LockOpen';
 import { useMutation } from "react-query";
 import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
@@ -20,6 +23,12 @@ import { change } from "../../helpers/change.helper";
 import { ApiException } from "../../backend-api/api.exception";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
+import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
+import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
+import { BugReport } from "@material-ui/icons";
+import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { useDialog } from "../../hooks/use-dialog.hook";
+import { ForgottenPasswordDialog } from "../forgotten-password-reset-dialog/forgotten-password-reset-dialog";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -57,8 +66,13 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
   const error = submitState.error;
   const isDisabled = submitState.isLoading || submitState.isSuccess;
 
+  const forgottenPasswordDialog = useDialog();
+  const debugDialog = useDialog();
+
   return (
     <>
+      <DebugJsonDialog title="Login Form" dialog={debugDialog} data={formState} />
+      <ForgottenPasswordDialog onSuccess={forgottenPasswordDialog.doClose} initialEmail={formState.name_or_email} dialog={forgottenPasswordDialog} />
       <DialogTitle>Login</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
@@ -81,13 +95,18 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
                 label="password"
                 margin="dense"
                 fullWidth
-                disabled={isDisabled}
                 type="password"
+                disabled={isDisabled}
                 value={formState.password}
                 error={!!error?.data?.password}
                 helperText={error?.data?.password?.join('\n')}
                 onChange={handlePasswordChange}
               />
+            </Grid>
+            <Grid item xs={12}>
+              <Button startIcon={<LockOpenIcon />} className="text-transform-none" color="primary" onClick={forgottenPasswordDialog.doToggle}>
+                I've forgotten my password
+              </Button>
             </Grid>
             {error && (
               <Grid className="centered col" item xs={12}>
@@ -104,6 +123,11 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
           </Grid>
         </DialogContent>
         <DialogActions >
+          <WhenDebugMode>
+            <IconButton color="primary" onClick={debugDialog.doToggle}>
+              <BugReport />
+            </IconButton>
+          </WhenDebugMode>
           <Button disabled={isDisabled} color="primary" onClick={dialog.doClose}>
             Cancel
           </Button>

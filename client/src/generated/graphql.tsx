@@ -1558,6 +1558,16 @@ export type GoogleSendEmail = {
   body?: Maybe<Scalars['String']>;
 };
 
+export type RequestForgottenUserPasswordResetMutationVariables = Exact<{
+  email: Scalars['String'];
+}>;
+
+
+export type RequestForgottenUserPasswordResetMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'requestForgottenUserPasswordReset'>
+);
+
 export type GoogleOAuth2ConnectorDataQueryVariables = Exact<{ [key: string]: never; }>;
 
 

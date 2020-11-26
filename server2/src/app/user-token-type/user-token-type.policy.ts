@@ -16,8 +16,8 @@ export class UserLinkTypePolicy {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowUserTokenTypes,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserTokenTypes.Show,
     ]);
   }
 
@@ -26,8 +26,8 @@ export class UserLinkTypePolicy {
   }): boolean {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowUserTokenTypes,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserTokenTypes.Show,
     ]);
   }
 }

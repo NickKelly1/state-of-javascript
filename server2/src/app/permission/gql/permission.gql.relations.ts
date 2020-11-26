@@ -7,6 +7,7 @@ import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
 import { andWhere } from "../../../common/helpers/and-where.helper.ts";
 import { collectionMeta } from "../../../common/responses/collection-meta";
 import { OrNull } from "../../../common/types/or-null.type";
+import { IPermissionCategoryGqlNodeSource, PermissionCategoryGqlNode } from "../../permission-category/gql/permission-category.gql.node";
 import { IRolePermissionCollectionGqlNodeSource, RolePermissionCollectionGqlNode } from "../../role-permission/gql/role-permission.collection.gql.node";
 import { RolePermissionField } from "../../role-permission/role-permission.attributes";
 import { RoleCollectionGqlNode, IRoleCollectionGqlNodeSource } from "../../role/gql/role.collection.gql.node";
@@ -23,6 +24,16 @@ export type IPermissionGqlRelationsSource = PermissionModel;
 export const PermissionGqlRelations = new GraphQLObjectType<IPermissionGqlRelationsSource, GqlContext>({
   name: 'PermissionRelations',
   fields: () => ({
+    category: {
+      type: PermissionCategoryGqlNode,
+      resolve: async (parent, args, ctx): Promise<OrNull<IPermissionCategoryGqlNodeSource>> => {
+        const category = await ctx.loader.permissionCategories.load(parent.category_id);
+        if (!category) return null;
+        if (!ctx.services.permissionCategoryPolicy.canFindOne({ model: category })) return null;
+        return category;
+      },
+    },
+
     rolePermissions: {
       type: GraphQLNonNull(RolePermissionCollectionGqlNode),
       args: gqlQueryArg(PermissionCollectionOptionsGqlInput),

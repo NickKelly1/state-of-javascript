@@ -16,8 +16,8 @@ export class NewsArticleStatusPolicy {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowNewsArticleStatus,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticleStatuses.Show,
     ]);
   }
 
@@ -26,8 +26,8 @@ export class NewsArticleStatusPolicy {
   }): boolean {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowNewsArticleStatus,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticleStatuses.Show,
     ]);
   }
 }

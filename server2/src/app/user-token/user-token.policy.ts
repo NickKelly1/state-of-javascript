@@ -16,8 +16,8 @@ export class UserTokenPolicy {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowUserTokens,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserTokens.Show,
     ]);
   }
 
@@ -25,9 +25,11 @@ export class UserTokenPolicy {
     model: UserTokenTypeModel;
   }): boolean {
     const { model } = arg;
+
+    // TODO: heavier authorisation?...
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowUserTokens,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserTokens.Show,
     ]);
   }
 }

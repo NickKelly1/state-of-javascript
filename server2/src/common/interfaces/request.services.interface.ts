@@ -48,6 +48,11 @@ import { UserTokenTypeService } from "../../app/user-token-type/user-token-type.
 import { UserTokenRepository } from "../../app/user-token/user-token.repository";
 import { UserTokenService } from "../../app/user-token/user-token.service";
 import { UserTokenPolicy } from "../../app/user-token/user-token.policy";
+import { JobPolicy } from "../../app/job/job.policy";
+import { LogPolicy } from "../../app/log/log.policy";
+import { PermissionCategoryPolicy } from "../../app/permission-category/permission-category.policy";
+import { PermissionCategoryRepository } from "../../app/permission-category/permission-category.repository";
+import { PermissionCategoryService } from "../../app/permission-category/permission-category.service";
 
 export interface IRequestServices {
   universal: IUniversalServices;
@@ -59,6 +64,10 @@ export interface IRequestServices {
   roleService: RoleService;
   roleRepository: RoleRepository;
   rolePolicy: RolePolicy;
+
+  permissionCategoryService: PermissionCategoryService;
+  permissionCategoryRepository: PermissionCategoryRepository;
+  permissionCategoryPolicy: PermissionCategoryPolicy;
 
   permissionService: PermissionService;
   permissionRepository: PermissionRepository;
@@ -113,6 +122,10 @@ export interface IRequestServices {
 
   googleService: GoogleService;
   googlePolicy: GooglePolicy;
+
+  jobPolicy: JobPolicy;
+
+  logPolicy: LogPolicy;
 
   jwtService: JwtService;
   authService: AuthSerivce;

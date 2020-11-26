@@ -201,7 +201,7 @@ export function GoogleOAuth2ConnectorContents(props: IGoogleOAuth2ConnectorConte
         <Grid item xs={12}>
           <Box display="flex" justifyContent="flex-start" alignItems="center">
             <Typography variant="h2">
-              {`${data.google.integration.data.id} ${data.google.integration.data.name}`}
+              {data.google.integration.data.name}
             </Typography>
             {data.google.integration.can.initialise && (
               <Box ml={2}>

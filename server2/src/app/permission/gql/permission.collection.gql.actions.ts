@@ -12,11 +12,5 @@ export const PermissionCollectionGqlActions = new GraphQLObjectType<IPermissionC
         return ctx.services.permissionPolicy.canFindMany();
       },
     },
-    create: {
-      type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.permissionPolicy.canCreate();
-      },
-    },
   },
 });

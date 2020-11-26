@@ -10,6 +10,7 @@ export const PermissionGqlData: GraphQLObjectType<IPermissionGqlDataSource, GqlC
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), },
     name: { type: GraphQLNonNull(GraphQLString), },
+    category_id: { type: GraphQLNonNull(GraphQLString), },
     ...AuditableGql,
     ...SoftDeleteableGql,
   }),

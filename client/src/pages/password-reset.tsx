@@ -54,7 +54,7 @@ query PasswordResetPageData(
 }
 `;
 
-const passwordResetPageConsumeReesetMutation = gql`
+const passwordResetPageConsumeResetMutation = gql`
 mutation PasswordResetPageConsumeReset(
   $token:String!
   $password:String!
@@ -176,7 +176,7 @@ function WelcomePageContents(props: IPasswordResetPageContentsProps) {
       const result = await api
         .connector
         .graphql<PasswordResetPageConsumeResetMutation, PasswordResetPageConsumeResetMutationVariables>(
-          passwordResetPageConsumeReesetMutation,
+          passwordResetPageConsumeResetMutation,
           vars,
         )
         .catch(rethrow(normaliseApiException));

@@ -23,8 +23,8 @@ export class NpmsDashboardStatusPolicy {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowNpmsDashboardStatus,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboardStatuses.Show,
     ]);
   }
 
@@ -39,8 +39,8 @@ export class NpmsDashboardStatusPolicy {
   }): boolean {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowNpmsDashboardStatus,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboardStatuses.Show,
     ]);
   }
 }

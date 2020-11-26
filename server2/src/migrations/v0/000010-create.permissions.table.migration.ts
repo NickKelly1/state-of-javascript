@@ -11,6 +11,7 @@ export default class implements IMigration {
     await queryInterface.createTable('permissions', {
       id: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false, },
       name: { type: DataTypes.STRING(100), allowNull: false, },
+      category_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'permission_categories', key: 'id' } },
       created_at: { type: DataTypes.DATE, allowNull: false },
       updated_at: { type: DataTypes.DATE, allowNull: false },
       deleted_at: { type: DataTypes.DATE, allowNull: true },

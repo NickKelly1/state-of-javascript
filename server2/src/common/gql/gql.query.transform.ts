@@ -6,7 +6,7 @@ import { OrUndefined } from "../types/or-undefined.type";
 import { transformGqlFilter } from "./gql.filter.transformer";
 import { IGqlCollectionOptions } from "./gql.collection.options";
 import { IGqlQueryArg } from "./gql.query.arg";
-import { IGqlSortInput, GqlSortInput, GqlDirEnum } from "./gql.sort";
+import { IGqlSortInput, GqlSortInput, GqlDirEnum } from "./gql.sort.enum";
 
 export function transformGqlQuery(arg: { [_q: string]: any }): {
   page: IPaginateInput;

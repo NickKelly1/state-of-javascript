@@ -12,12 +12,15 @@ import { PermissionDefinition } from './permission.definition';
 import { RoleModel, RolePermissionModel, UserModel } from '../../circle';
 import { PermissionId } from './permission-id.type';
 import { Permission } from './permission.const';
+import { PermissionCategoryId } from '../permission-category/permission-category-id.type';
+import { PermissionCategoryModel } from '../permission-category/permission-category.model';
 
 
 export class PermissionModel extends Model<IPermissionAttributes, IPermissionCreationAttributes> implements IPermissionAttributes {
   // fields
   [PermissionField.id]!: PermissionId;
   [PermissionField.name]!: string;
+  [PermissionField.category_id]!: PermissionCategoryId;
   [PermissionField.created_at]!: Date;
   [PermissionField.updated_at]!: Date;
   [PermissionField.deleted_at]!: OrNull<Date>;
@@ -29,24 +32,22 @@ export class PermissionModel extends Model<IPermissionAttributes, IPermissionCre
   // eager loaded associations
   [PermissionAssociation.roles]?: RoleModel[];
   [PermissionAssociation.rolePermissions]?: RolePermissionModel[];
+  [PermissionAssociation.category]?: PermissionCategoryModel;
 
   // associations
   getRoles!: HasManyGetAssociationsMixin<RoleModel>;
   getRolePermissions!: HasManyGetAssociationsMixin<RolePermissionModel>;
 
   // helpers
-  isSuperAdmin() { return this[PermissionField.id] === Permission.SuperAdmin; }
+  isSuperAdmin() { return this[PermissionField.id] === Permission.SuperAdmin.SuperAdmin; }
 }
 
 export const initPermissionModel: ModelInitFn = (arg) => {
   const { env, sequelize } = arg;
   PermissionModel.init({
     id: { type: DataTypes.INTEGER, primaryKey: true, },
-    name: {
-      type: DataTypes.STRING(PermissionDefinition.name.max),
-      unique: true,
-      allowNull: false,
-    },
+    category_id: { type: DataTypes.INTEGER, references: { model: PermissionCategoryModel as typeof Model, key: 'id', }, },
+    name: { type: DataTypes.STRING(PermissionDefinition.name.max), unique: false, allowNull: false, },
     ...pretendAuditable,
     ...pretendSoftDeleteable,
   }, {

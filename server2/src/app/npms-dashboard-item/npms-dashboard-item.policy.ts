@@ -19,10 +19,12 @@ export class NpmsDashboardItemPolicy {
   canFindMany(arg?: {
     //
   }): boolean {
+
+    // is Admin or Manager or Shower
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboardItem,
-      Permission.ShowNpmsDashboardItem,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboardItems.Manage,
+      Permission.NpmsDashboardItems.Show,
     ]);
   }
 
@@ -39,14 +41,15 @@ export class NpmsDashboardItemPolicy {
 
     if (
       !dashboard.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.ShowNpmsDashboardItem])
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.Show])
     ) {
       return true;
     }
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboardItem,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboardItems.Manage,
     ]);
   }
 
@@ -62,6 +65,7 @@ export class NpmsDashboardItemPolicy {
   }): boolean {
     const { model, dashboard } = arg;
 
+    // can FindOne for the Dashboard
     return this.canFindOneForDashboard({ dashboard });
   }
 
@@ -76,10 +80,12 @@ export class NpmsDashboardItemPolicy {
   }) {
     const { dashboard } = arg;
     if (dashboard.isSoftDeleted()) return false;
+
+    // is Admon or Manager or Creator
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboardItem,
-      Permission.CreateNpmsDashboardItem,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboardItems.Manage,
+      Permission.NpmsDashboardItems.Create,
     ]);
   }
 
@@ -93,6 +99,8 @@ export class NpmsDashboardItemPolicy {
     dashboard: NpmsDashboardModel;
   }): boolean {
     const { dashboard } = arg;
+
+    // can Create for the Dashboard
     return this.canCreateForDashboard({ dashboard });
   }
 
@@ -110,21 +118,22 @@ export class NpmsDashboardItemPolicy {
     if (
       !dashboard.isSoftDeleted()
       && this.ctx.auth.isMeByUserId(dashboard.owner_id)
-      && this.ctx.auth.hasAnyPermissions([Permission.UpdateOwnNpmsDashboardItem])
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.UpdateOwn])
     ) {
       return true;
     }
 
     if (
       !dashboard.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.UpdateNpmsDashboards])
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboards.Update])
     ) {
       return true;
     }
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboardItem,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboardItems.Manage,
     ]);
   }
 
@@ -156,21 +165,21 @@ export class NpmsDashboardItemPolicy {
     if (
       !dashboard.isSoftDeleted()
       && this.ctx.auth.isMeByUserId(dashboard.owner_id)
-      && this.ctx.auth.hasAnyPermissions([Permission.HardDeleteOwnNpmsDashboardItem])
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.HardDeleteOwn])
     ) {
       return true;
     }
 
     if (
       !dashboard.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.HardDeleteNpmsDashboardItem])
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.HardDelete])
     ) {
       return true;
     }
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboardItem,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboardItems.Manage,
     ]);
   }
 

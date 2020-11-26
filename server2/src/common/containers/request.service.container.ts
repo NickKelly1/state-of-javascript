@@ -51,6 +51,11 @@ import { UserTokenService } from "../../app/user-token/user-token.service";
 import { UserLinkTypePolicy } from "../../app/user-token-type/user-token-type.policy";
 import { UserTokenTypeRepository } from "../../app/user-token-type/user-token-type.repository";
 import { UserTokenTypeService } from "../../app/user-token-type/user-token-type.service";
+import { JobPolicy } from "../../app/job/job.policy";
+import { LogPolicy } from "../../app/log/log.policy";
+import { PermissionCategoryPolicy } from "../../app/permission-category/permission-category.policy";
+import { PermissionCategoryRepository } from "../../app/permission-category/permission-category.repository";
+import { PermissionCategoryService } from "../../app/permission-category/permission-category.service";
 
 export class RequestSerivceContainer implements IRequestServices {
   constructor(
@@ -121,6 +126,27 @@ export class RequestSerivceContainer implements IRequestServices {
     if (this._rolePolicy) return this._rolePolicy;
     this._rolePolicy = new RolePolicy(this._ctx);
     return this._rolePolicy;
+  }
+
+  protected _permissionCategoryService: OrUndefined<PermissionCategoryService>
+  get permissionCategoryService(): PermissionCategoryService {
+    if (this._permissionCategoryService) return this._permissionCategoryService;
+    this._permissionCategoryService = new PermissionCategoryService(this._ctx);
+    return this._permissionCategoryService;
+  }
+
+  protected _permissionCategoryRepository: OrUndefined<PermissionCategoryRepository>
+  get permissionCategoryRepository(): PermissionCategoryRepository {
+    if (this._permissionCategoryRepository) return this._permissionCategoryRepository;
+    this._permissionCategoryRepository = new PermissionCategoryRepository(this._ctx);
+    return this._permissionCategoryRepository;
+  }
+
+  protected _permissionCategoryPolicy: OrUndefined<PermissionCategoryPolicy>
+  get permissionCategoryPolicy(): PermissionCategoryPolicy {
+    if (this._permissionCategoryPolicy) return this._permissionCategoryPolicy;
+    this._permissionCategoryPolicy = new PermissionCategoryPolicy(this._ctx);
+    return this._permissionCategoryPolicy;
   }
 
   protected _permissionService: OrUndefined<PermissionService>
@@ -396,6 +422,19 @@ export class RequestSerivceContainer implements IRequestServices {
     return this._googlePolicy;
   }
 
+  protected _jobPolicy: OrUndefined<JobPolicy>
+  get jobPolicy(): JobPolicy {
+    if (this._jobPolicy) return this._jobPolicy;
+    this._jobPolicy = new JobPolicy(this._ctx);
+    return this._jobPolicy;
+  }
+
+  protected _logPolicy: OrUndefined<LogPolicy>
+  get logPolicy(): LogPolicy {
+    if (this._logPolicy) return this._logPolicy;
+    this._logPolicy = new LogPolicy(this._ctx);
+    return this._logPolicy;
+  }
 
   protected _emailService: OrUndefined<EmailService>
   get emailService(): EmailService {

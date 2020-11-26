@@ -55,6 +55,10 @@ import { UserTokenField } from './app/user-token/user-token.attributes';
 import { UserTokenAssociation } from './app/user-token/user-token.associations';
 import { UserTokenTypeField } from './app/user-token-type/user-token-type.attributes';
 import { UserTokenTypeAssociation } from './app/user-token-type/user-token-type.associations';
+import { initPermissionCategoryModel, PermissionCategoryModel } from './app/permission-category/permission-category.model';
+import { PermissionCategory } from './app/permission-category/permission-category.const';
+import { PermissionCategoryAssociation } from './app/permission-category/permission-category.associations';
+import { PermissionCategoryField } from './app/permission-category/permission-category.attributes';
 
 
 /**
@@ -127,6 +131,7 @@ async function initialiseWithTransaction(arg: {
   initUserPasswordModel({ env, sequelize });
   initUserModel({ env, sequelize, });
   initRoleModel({ env, sequelize, });
+  initPermissionCategoryModel({ env, sequelize, });
   initPermissionModel({ env, sequelize, });
   initUserRoleModel({ env, sequelize, });
   initRolePermissionModel({ env, sequelize, });
@@ -163,9 +168,13 @@ async function initialiseWithTransaction(arg: {
   RoleModel.belongsToMany(UserModel, { as: RoleAssociation.users, through: UserRoleModel as typeof Model, sourceKey: RoleField.id, targetKey: UserField.id, foreignKey: UserRoleField.role_id, otherKey: UserRoleField.user_id });
   RoleModel.belongsToMany(PermissionModel, { as : RoleAssociation.permissions, through: RolePermissionModel as typeof Model, sourceKey: RoleField.id, targetKey: PermissionField.id, foreignKey: RolePermissionField.role_id, otherKey: RolePermissionField.permission_id });
 
+  // permission category
+  PermissionCategoryModel.hasMany(PermissionModel, { as: PermissionCategoryAssociation.permissions, sourceKey: PermissionCategoryField.id, foreignKey: PermissionField.category_id, })
+
   // permission
   PermissionModel.hasMany(RolePermissionModel, { as: PermissionAssociation.rolePermissions, sourceKey: PermissionField.id, foreignKey: RolePermissionField.permission_id, })
   PermissionModel.belongsToMany(RoleModel, { as: PermissionAssociation.roles, through: RolePermissionModel as typeof Model, sourceKey: PermissionField.id, targetKey: RoleField.id, foreignKey: RolePermissionField.permission_id, otherKey: RolePermissionField.role_id });
+  PermissionModel.belongsTo(PermissionCategoryModel, { as: PermissionAssociation.category, targetKey: PermissionCategoryField.id, foreignKey: PermissionField.category_id, })
 
   // role permission
   RolePermissionModel.belongsTo(RoleModel, { as: RolePermissionAssociation.role, targetKey: RoleField.id, foreignKey: RolePermissionField.role_id, })

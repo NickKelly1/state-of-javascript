@@ -18,8 +18,8 @@ export class IntegrationPolicy {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowIntegrations,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Integrations.Show,
     ]);
   }
 
@@ -33,8 +33,8 @@ export class IntegrationPolicy {
     model: IntegrationModel;
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowIntegrations,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Integrations.Show,
     ]);
   }
 
@@ -44,8 +44,8 @@ export class IntegrationPolicy {
    */
   canShowSecrets(): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowIntegrationSecrets,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Integrations.ShowSecrets,
     ]);
   }
 
@@ -68,8 +68,8 @@ export class IntegrationPolicy {
    */
   canInititialise(): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageIntegrations,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Integrations.Manage,
     ]);
   }
 

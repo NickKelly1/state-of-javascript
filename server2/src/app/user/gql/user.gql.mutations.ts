@@ -190,9 +190,9 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
   requestForgottenUserPasswordReset: {
     type: GraphQLNonNull(GraphQLBoolean),
     args: { dto: { type: GraphQLNonNull(RequestResetForgottenUserPasswordGqlInput), }, },
-    resolve: async (parent, args, ctx): Promise<boolean> => {
+    resolve: async (parent, args, ctx): Promise<true> => {
       const dto = ctx.validate(RequestResetForgottenUserPasswordGqlInputValidator, args.dto);
-      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+      await ctx.services.universal.db.transact(async ({ runner }) => {
         const user = await ctx.services.userRepository.findOne({
           runner,
           options: { where: { [UserField.email]: { [Op.eq]: dto.email, }, }, },
@@ -203,9 +203,8 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
           return false;
         };
         await ctx.services.userService.sendPasswordResetEmail({ model: user, runner });
-        return true;
       });
-      return final;
+      return true;
     },
   },
 

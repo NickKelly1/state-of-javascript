@@ -9,27 +9,36 @@ export class PermissionPolicy {
     //
   }
 
+
+  /**
+   * Can the Requester FindMany Permissions?
+   *
+   * @param arg
+   */
   canFindMany(arg?: {
     //
   }): boolean {
+
+    // is Admin or Shower
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowPermissions,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Permissions.Show,
     ]);
   }
 
+  /**
+   * Can the Requester Find this Permission?
+   *
+   * @param arg
+   */
   canFindOne(arg: {
     model: PermissionModel;
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ShowPermissions,
-    ]);
-  }
 
-  canCreate(arg?: {
-    //
-  }): boolean {
-    return false;
+    // is Admin or Shower
+    return this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Permissions.Show,
+    ]);
   }
 }

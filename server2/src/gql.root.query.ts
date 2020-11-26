@@ -15,6 +15,8 @@ import { NpmsDashboardsGqlQuery } from './app/npms-dashboard/gql/npms-dashboard.
 import { NpmsDashboardItemsGqlQuery } from './app/npms-dashboard-item/gql/npms-dashboard-item.gql.query';
 import { IntegrationGqlQuery } from './app/integration/gql/integration.gql.query';
 import { GoogleGqlQuery } from './app/google/gql/google.gql.query';
+import { JobGqlQuery } from './app/job/job.query';
+import { ActionsGqlQuery } from './app/actions/actions.query';
 
 
 export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
@@ -32,5 +34,7 @@ export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
     ...unthunk(NpmsDashboardItemsGqlQuery),
     ...unthunk(IntegrationGqlQuery),
     ...unthunk(GoogleGqlQuery),
+    ...unthunk(JobGqlQuery),
+    ...unthunk(ActionsGqlQuery),
   }),
 });

@@ -3,11 +3,18 @@ import Dataloader from 'dataloader';
 import { Op } from 'sequelize';
 import { QueryRunner } from '../../app/db/query-runner';
 import { NewsArticleStatusId } from '../../app/news-article-status/news-article-status.id.type';
+import { NewsArticleField } from '../../app/news-article/news-article.attributes';
 import { NewsArticleId } from '../../app/news-article/news-article.id.type';
+import { NpmsDashboardItemField } from '../../app/npms-dashboard-item/npms-dashboard-item.attributes';
 import { NpmsDashboardItemId } from '../../app/npms-dashboard-item/npms-dashboard-item.id.type';
 import { NpmsDashboardId } from '../../app/npms-dashboard/npms-dashboard.id.type';
+import { NpmsPackageField } from '../../app/npms-package/npms-package.attributes';
 import { NpmsPackageId } from '../../app/npms-package/npms-package.id.type';
+import { PermissionCategoryId } from '../../app/permission-category/permission-category-id.type';
+import { PermissionCategoryField } from '../../app/permission-category/permission-category.attributes';
+import { PermissionCategoryModel } from '../../app/permission-category/permission-category.model';
 import { PermissionId } from '../../app/permission/permission-id.type';
+import { PermissionField } from '../../app/permission/permission.attributes';
 import { RolePermissionId } from '../../app/role-permission/role-permission.id.type';
 import { RoleField } from '../../app/role/role.attributes';
 import { RoleId } from '../../app/role/role.id.type';
@@ -34,6 +41,7 @@ export type IUserDataLoader = Dataloader<UserId, OrNull<UserModel>>;
 export type IUserRoleDataLoader = Dataloader<UserRoleId, OrNull<UserRoleModel>>;
 export type IRoleDataLoader = Dataloader<RoleId, OrNull<RoleModel>>;
 export type IRolePermissionDataLoader = Dataloader<RolePermissionId, OrNull<RolePermissionModel>>;
+export type IPermissionCategoryDataLoader = Dataloader<PermissionCategoryId, OrNull<PermissionCategoryModel>>;
 export type IPermissionDataLoader = Dataloader<PermissionId, OrNull<PermissionModel>>;
 export type INewsArticleDataLoader = Dataloader<NewsArticleId, OrNull<NewsArticleModel>>;
 export type INewsArticleStatusDataLoader = Dataloader<NewsArticleStatusId, OrNull<NewsArticleStatusModel>>;
@@ -111,6 +119,26 @@ export class Loader {
     return this._userRoles;
   }
 
+  // ================================
+  // ===== permission-category ======
+  // ================================
+  protected _permissionCategories?: IPermissionCategoryDataLoader;
+  public get permissionCategories(): IPermissionCategoryDataLoader {
+    if (this._permissionCategories) return this._permissionCategories;
+    this._permissionCategories = new Dataloader(async (keys): Promise<(OrNull<PermissionCategoryModel>)[]> => {
+      const { runner } = this;
+      const models = await this.ctx.services.permissionCategoryRepository.findAll({
+        runner,
+        unscoped: true,
+        options: { where: { [PermissionCategoryField.id]: { [Op.in]: keys as PermissionCategoryId[] } }, },
+      });
+      const map = new Map(models.map(model => [model.id, model]));
+      return keys.map(key => map.get(key) ?? null);
+    })
+    return this._permissionCategories;
+  }
+
+
   // =======================
   // ===== permission ======
   // =======================
@@ -122,7 +150,7 @@ export class Loader {
       const models = await this.ctx.services.permissionRepository.findAll({
         runner,
         unscoped: true,
-        options: { where: { id: { [Op.in]: keys as PermissionId[] } }, },
+        options: { where: { [PermissionField.id]: { [Op.in]: keys as PermissionId[] } }, },
       });
       const map = new Map(models.map(model => [model.id, model]));
       return keys.map(key => map.get(key) ?? null);
@@ -160,7 +188,7 @@ export class Loader {
       const models = await this.ctx.services.newsArticleRepository.findAll({
           runner,
           unscoped: true,
-        options: { where: { id: { [Op.in]: keys as NewsArticleId[] } } },
+        options: { where: { [NewsArticleField.id]: { [Op.in]: keys as NewsArticleId[] } } },
       });
       const map = new Map(models.map(model => [model.id, model]));
       return keys.map(key => map.get(key) ?? null)
@@ -198,7 +226,7 @@ export class Loader {
       const models = await this.ctx.services.npmsPackageRepository.findAll({
         runner,
         unscoped: true,
-        options: { where: { id: { [Op.in]: keys as NpmsPackageId[] } } },
+        options: { where: { [NpmsPackageField.id]: { [Op.in]: keys as NpmsPackageId[] } } },
       });
       const map = new Map(models.map(model => [model.id, model]));
       return keys.map(key => map.get(key) ?? null);
@@ -236,7 +264,7 @@ export class Loader {
       const models = await this.ctx.services.npmsDashboardItemRepository.findAll({
         runner,
         unscoped: true,
-        options: { where: { id: { [Op.in]: keys as NpmsDashboardItemId[] } } },
+        options: { where: { [NpmsDashboardItemField.id]: { [Op.in]: keys as NpmsDashboardItemId[] } } },
       });
       const map = new Map(models.map(model => [model.id, model]));
       return keys.map(key => map.get(key) ?? null);

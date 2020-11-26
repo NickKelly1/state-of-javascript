@@ -30,10 +30,11 @@ export class UserPolicy {
     //
   }): boolean {
 
+    // is Admin, Manager or Shower
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.ShowUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.Show,
     ]);
   }
 
@@ -48,10 +49,11 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
+    // is Admin, Manager or Shower
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.ShowUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.Show,
     ]);
   }
 
@@ -67,13 +69,16 @@ export class UserPolicy {
     const { model } = arg;
 
     // self
-    if (this.ctx.auth.isMe(model) && this.ctx.auth.hasAnyPermissions([Permission.ShowUsers])) return true;
+    if (
+      this.ctx.auth.isMe(model)
+      && this.ctx.auth.hasAnyPermissions([Permission.Users.Show])
+    ) return true;
 
     // other
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.ShowUserIdentities,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.ShowIdentities,
     ]);
   }
 
@@ -86,10 +91,12 @@ export class UserPolicy {
   canRegister(arg?: {
     //
   }): boolean {
+
+    // is Admin, Manager or Registerer
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.RegisterUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.Register,
     ]);
   }
 
@@ -103,9 +110,9 @@ export class UserPolicy {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.CreateUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.Create,
     ]);
   }
 
@@ -124,13 +131,17 @@ export class UserPolicy {
     if (this.isProtectedUser(model)) return false;
 
     // self
-    if (this.ctx.auth.isMe(model) && this.ctx.auth.hasAnyPermissions([Permission.UpdateUserSelf])) return true;
+    if (this.ctx.auth.isMe(model)
+      && this.ctx.auth.hasAnyPermissions([Permission.Users.UpdateSelf])
+    ) {
+      return true;
+    }
 
     // other
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.UpdateUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.Update,
     ]);
   }
 
@@ -149,12 +160,17 @@ export class UserPolicy {
     if (this.isProtectedUser(model)) return false;
 
     // self
-    if (this.ctx.auth.isMe(model) && this.ctx.auth.hasAnyPermissions([Permission.UpdateUserSelf])) return true;
+    if (this.ctx.auth.isMe(model)
+      && this.ctx.auth.hasAnyPermissions([Permission.Users.UpdateSelf])
+    ) {
+      return true;
+    }
 
-    // other
+    // is Admin, Manager or PasswordUpdater
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.UpdateUserPasswords
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.UpdatePasswords,
     ]);
   }
 
@@ -172,11 +188,11 @@ export class UserPolicy {
     // protected?
     if (this.isProtectedUser(model)) return false;
 
-    // other
+    // is Admin, Manager or Deactivator
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.DeactivateUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.Deactivate,
     ]);
   }
 
@@ -191,20 +207,24 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // already deleted?
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // protected?
+    // is not Protected
     if (this.isProtectedUser(model)) return false;
 
-    // self
-    if (this.ctx.auth.isMe(model) && this.ctx.auth.hasAnyPermissions([Permission.SoftDeleteUserSelf])) return true;
+    // is Self
+    if (this.ctx.auth.isMe(model)
+      && this.ctx.auth.hasAnyPermissions([Permission.Users.SoftDeleteSelf])
+    ) {
+      return true;
+    }
 
-    // other
+    // is Admin, Manager or SoftDeleter
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.SoftDeleteUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.SoftDelete,
     ]);
   }
 
@@ -219,14 +239,14 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // protected?
+    // is not Protected
     if (this.isProtectedUser(model)) return false;
 
-    // other
+    // is Admin, Manager or HardDeleter
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.HardDeleteUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.HardDelete,
     ]);
   }
 
@@ -240,15 +260,18 @@ export class UserPolicy {
     model: UserModel;
   }): boolean {
     const { model } = arg;
-    // not deleted?
+
+    // is not SoftDeleted
     if (!model.isSoftDeleted()) return false;
-    // protected?
+
+    // is not Protected
     if (this.isProtectedUser(model)) return false;
-    // other
+
+    // is Admin, Manager or Restorer
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
-      Permission.RestoreNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
+      Permission.Users.Restore,
     ]);
   }
 
@@ -263,12 +286,13 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
+    // can AcceptWelcome
     if (!this.canAcceptWelcome({ model })) return false;
 
-    // is UserManager or SuperAdmin
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
     ]);
   }
 
@@ -312,12 +336,13 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
+    // can ConsumeEmailChange
     if (!this.canConsumeEmailChange({ model })) return false;
 
-    // is UserManager or SuperAdmin
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
     ]);
   }
 
@@ -368,8 +393,8 @@ export class UserPolicy {
 
     // is UserManager or SuperAdmin
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
     ]);
   }
 
@@ -426,8 +451,8 @@ export class UserPolicy {
 
     // is Manager or Admin
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUsers,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Users.Manage,
     ]);
   }
 

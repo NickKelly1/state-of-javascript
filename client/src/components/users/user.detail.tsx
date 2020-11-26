@@ -20,7 +20,14 @@ import { useMutation, useQuery } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { ApiContext } from "../../components-contexts/api.context";
-import { UserDetailDataQuery, UserDetailDataQueryVariables, UserDetailRequestForgottenUserPasswordResetMutation, UserDetailRequestForgottenUserPasswordResetMutationVariables, UserDetailSendWelcomeEmailMutation, UserDetailSendWelcomeEmailMutationVariables } from "../../generated/graphql";
+import {
+  UserDetailDataQuery,
+  UserDetailDataQueryVariables,
+  UserDetailRequestForgottenUserPasswordResetMutation,
+  UserDetailRequestForgottenUserPasswordResetMutationVariables,
+  UserDetailRequestSendWelcomeEmailMutation,
+  UserDetailRequestSendWelcomeEmailMutationVariables,
+} from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
 import { Id } from "../../types/id.type";
 import { DebugException } from "../debug-exception/debug-exception";
@@ -34,6 +41,7 @@ import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-m
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { useSnackbar } from "notistack";
 import { LoadingDialog } from "../loading-dialog/loading-dialog";
+import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 
 const UserDetailDataQueryName = (id: Id) => `UserDetailDataQuery_${id}`;
 const userDetailDataQuery = gql`
@@ -149,31 +157,9 @@ export function UserDetail(props: IUserDetailProps) {
   const handleSuccess: IIdentityFn = useCallback(() => flsx(refetch, onUpdated)(), [onUpdated, refetch])
 
   return (
-    <Grid container spacing={2}>
-      {isLoading && (
-        <Grid className="centered" item xs={12}>
-          <CircularProgress />
-        </Grid>
-      )}
-      {error && (
-        <Grid item xs={12}>
-          <DebugException centered always exception={error} />
-        </Grid>
-      )}
-      {users?.length === 0 && (
-        <Grid item xs={12}>
-          <NotFound message={`Role "${user_id}" not found`} />
-        </Grid>
-      )}
-      {users?.length === 1 && (
-        <Grid item xs={12}>
-          <UserDetailContent
-            user={users[0]}
-            onSuccess={handleSuccess}
-          />
-        </Grid>
-      )}
-    </Grid>
+    <WithLoadable isLoading={isLoading} error={error} data={users?.[0]}>
+      {(data) => <UserDetailContent user={data} onSuccess={handleSuccess} />}
+    </WithLoadable>
   );
 }
 
@@ -221,8 +207,7 @@ function UserDetailContent(props: IRoleDetailContentProps) {
   // Send PasswordReset Email: (maybe) success
   const handleResetPasswordSuccess = useCallback((arg: UserDetailRequestForgottenUserPasswordResetMutation) => {
     resetPasswordDialog.doClose();
-    if (arg.requestForgottenUserPasswordReset) { enqueueSnackbar(`Password Reset email sent to "${user.data.email}"`, { variant: 'success' }); }
-    else { enqueueSnackbar('Failed to send Password Reset email. Something went wrong', { variant: 'warning' }); }
+    enqueueSnackbar(`Password Reset email sent to "${user.data.email}"`, { variant: 'success' });
   }, [resetPasswordDialog]);
 
   const [resetPassword, resetPasswordState] = useMutation<UserDetailRequestForgottenUserPasswordResetMutation, IApiException>(
@@ -273,20 +258,20 @@ function UserDetailContent(props: IRoleDetailContentProps) {
   }, [welcomeEmailSendingDialog]);
 
   // Send Welcome Email: (maybe) success
-  const handleSendWelcomeEmailSuccess = useCallback((arg: UserDetailSendWelcomeEmailMutation) => {
+  const handleSendWelcomeEmailSuccess = useCallback((arg: UserDetailRequestSendWelcomeEmailMutation) => {
     welcomeEmailSendingDialog.doClose();
     if (arg.requestUserWelcome) { enqueueSnackbar(`Welcome email sent to "${user.data.email}"`, { variant: 'success' }); }
     else { enqueueSnackbar('Failed to send welcome email. Something went wrong', { variant: 'warning' }); }
   }, [welcomeEmailSendingDialog]);
 
-  const [sendWelcomeEmail, sendWelcomeEmailState] = useMutation<UserDetailSendWelcomeEmailMutation, IApiException>(
-    async (): Promise<UserDetailSendWelcomeEmailMutation> => {
-      const vars: UserDetailSendWelcomeEmailMutationVariables = {
+  const [sendWelcomeEmail, sendWelcomeEmailState] = useMutation<UserDetailRequestSendWelcomeEmailMutation, IApiException>(
+    async (): Promise<UserDetailRequestSendWelcomeEmailMutation> => {
+      const vars: UserDetailRequestSendWelcomeEmailMutationVariables = {
         id: Number(user.data.id),
       };
       const result = await api
         .connector
-        .graphql<UserDetailSendWelcomeEmailMutation, UserDetailSendWelcomeEmailMutationVariables>(
+        .graphql<UserDetailRequestSendWelcomeEmailMutation, UserDetailRequestSendWelcomeEmailMutationVariables>(
           userDetailRequestSendWelcomeEmailMutation,
           vars,
         )
@@ -314,7 +299,7 @@ function UserDetailContent(props: IRoleDetailContentProps) {
           <Box display="flex" justifyContent="flex-start" alignItems="center">
             <Box>
               <Typography component="h2" variant="h2">
-                {`${user.data.id} - ${user.data.name}`}
+                {user.data.name}
               </Typography>
             </Box>
             <WhenDebugMode>

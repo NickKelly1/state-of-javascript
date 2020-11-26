@@ -13,7 +13,8 @@ import {
   Modal,
   Paper,
   TextField,
-  Typography } from '@material-ui/core';
+  Typography, 
+  IconButton} from '@material-ui/core';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import clsx from 'clsx';
 import { gql } from 'graphql-request';
@@ -59,6 +60,9 @@ import { useDialog } from '../../hooks/use-dialog.hook';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dialog/with-dialog';
 import { change } from '../../helpers/change.helper';
+import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { BugReport } from '@material-ui/icons';
+import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 
 // TODO: updating vs creating...
 const CreateNpmsDashboardQuery = gql`
@@ -273,8 +277,12 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
   const isDisabled = submitState.isLoading;
   const error = submitState.error;
 
+  const debugDialog = useDialog();
+  const debugData = useMemo(() => ({ formState, initial }), [formState, initial]);
+
   return (
     <>
+      <DebugJsonDialog title="form" data={debugData} dialog={debugDialog} />
       <NpmsPackageCreateForm dialog={createNpmsPackageDialog} onSuccess={handleNpmsPackageCreated} />
       <DialogTitle>{`${initial?.id ? 'Edit' : 'Create'} Npms Dashbard`}</DialogTitle>
       <form onSubmit={handleSubmit}>
@@ -354,6 +362,11 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
           </Grid>
         </DialogContent>
         <DialogActions>
+          <WhenDebugMode>
+            <IconButton onClick={debugDialog.doToggle} color="primary">
+              <BugReport />
+            </IconButton>
+          </WhenDebugMode>
           <Button color="primary" onClick={dialog.doClose}>
             Cancel
           </Button>

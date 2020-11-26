@@ -37,6 +37,7 @@ import { useDialog } from '../../hooks/use-dialog.hook';
 import { FittedBarChart } from '../../components-charts/fitted-bar-chart/fitted-bar-chart';
 import { FittedPieChart } from '../../components-charts/fitted-pie-chart/fitted-pie-chart';
 import { IWithDialogueProps } from '../../components-hoc/with-dialog/with-dialog';
+import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 
 const npmsDashboardSoftDeleteDashboardQuery = gql`
 mutation NpmsDashboardSoftDeleteDashboard(
@@ -140,7 +141,7 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
   return (
     <>
       <NpmsDashboardMutateForm
-      dialog={mutationDialog}
+        dialog={mutationDialog}
         initial={{
           id: dashboard.original.id,
           name: dashboard.original.name,
@@ -149,41 +150,7 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
         onSuccess={handleNpmsDialogCreated}
       />
       {/* debug */}
-      <Dialog open={debugDialog.isOpen} onClose={debugDialog.doClose} fullWidth>
-        <DialogTitle>
-          {`Debug information (${dashboard.original.name})`}
-        </DialogTitle>
-        <DialogContent dividers>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Box mx={3} p={3} display="flex" justifyContent="flex-start" alignItems="flex-start" flexDirection="column">
-                <Box display="flex" justifyContent="center" alignItems="center">
-                  <Typography component="h2">
-                    Data
-                  </Typography>
-                  <Box ml={2}>
-                    <JsonDownloadButton name={`dashboard-${dashboard.original.name}-data`} src={dashboard.original} />
-                  </Box>
-                </Box>
-                <JsonPretty src={dashboard.original} />
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Box mx={3} p={3} display="flex" justifyContent="flex-start" alignItems="flex-start" flexDirection="column">
-                <Box display="flex" justifyContent="center" alignItems="center">
-                  <Typography component="h2">
-                    Visual
-                  </Typography>
-                  <Box ml={2}>
-                    <JsonDownloadButton name={`dashboard-${dashboard.original.name}-visual`} src={dashboard.original} />
-                  </Box>
-                </Box>
-                <JsonPretty src={dashboard.graphical} />
-              </Box>
-            </Grid>
-          </Grid>
-        </DialogContent>
-      </Dialog>
+      <DebugJsonDialog dialog={debugDialog} title={dashboard.original.name} data={dashboard.original} />
       <Grid className="text-center" container spacing={2}>
         <Grid item xs={12}>
           <Typography className="centered" component="h2" variant="h2">
@@ -194,7 +161,7 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
           <Box display="flex" justifyContent="center">
             <WhenDebugMode>
               <Box px={1}>
-                <IconButton color="primary" onClick={debugDialog.doClose}>
+                <IconButton color="primary" onClick={debugDialog.doToggle}>
                   <BugReportIcon />
                 </IconButton>
               </Box>

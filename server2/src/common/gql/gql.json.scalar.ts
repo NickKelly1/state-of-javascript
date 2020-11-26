@@ -3,7 +3,6 @@ import { IJson } from "../interfaces/json.interface";
 import { OrNull } from "../types/or-null.type";
 
 // https://github.com/graphql/graphql-js/issues/497
-export type IGqlJsonObjectScalar = Date;
 export const GqlJsonObjectScalar = new GraphQLScalarType({
   name: 'JsonObject',
   description: 'Json object with unknown keys & values',

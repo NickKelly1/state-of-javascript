@@ -28,6 +28,8 @@ import { useFormStyles } from "../../hooks/use-form-styles.hook";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { OrPromise } from "../../types/or-promise.type";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
+import { useDialog } from "../../hooks/use-dialog.hook";
+import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 
 
 export interface IRegisterFormDialogProps extends IWithDialogueProps {
@@ -58,8 +60,11 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
   const error = submitState.error;
   const isDisabled = submitState.isLoading || submitState.isSuccess;
 
+  const debugDialog = useDialog();
+
   return (
     <>
+      <DebugJsonDialog title="Register Form" dialog={debugDialog} data={formState} />
       <DialogTitle>Register</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>

@@ -15,9 +15,9 @@ export class RolePermissionPolicy {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageRolePermissions,
-      Permission.ShowRolePermissions,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.RolePermissions.Manage,
+      Permission.RolePermissions.Show,
     ]);
   }
 
@@ -26,9 +26,9 @@ export class RolePermissionPolicy {
   }): boolean {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageRolePermissions,
-      Permission.ShowRolePermissions,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.RolePermissions.Manage,
+      Permission.RolePermissions.Show,
     ]);
   }
 
@@ -41,9 +41,9 @@ export class RolePermissionPolicy {
     if (role.isAdmin()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageRolePermissions,
-      Permission.CreateRolePermissions,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.RolePermissions.Manage,
+      Permission.RolePermissions.Create,
     ]);
   }
 
@@ -56,9 +56,9 @@ export class RolePermissionPolicy {
     if (permission.isSuperAdmin()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageRolePermissions,
-      Permission.CreateRolePermissions,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.RolePermissions.Manage,
+      Permission.RolePermissions.Create,
     ]);
   }
 
@@ -81,9 +81,9 @@ export class RolePermissionPolicy {
     if (role.isAdmin()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageRolePermissions,
-      Permission.CreateRolePermissions,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.RolePermissions.Manage,
+      Permission.RolePermissions.HardDelete,
     ]);
   }
 
@@ -96,9 +96,9 @@ export class RolePermissionPolicy {
     if (permission.isSuperAdmin()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageRolePermissions,
-      Permission.CreateRolePermissions,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.RolePermissions.Manage,
+      Permission.RolePermissions.HardDelete,
     ]);
   }
 

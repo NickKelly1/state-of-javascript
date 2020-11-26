@@ -1,7 +1,7 @@
 import { GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull } from "graphql";
 import { OrNullable } from "../types/or-nullable.type";
 import { GqlFilterFieldType, GqlFilterInputFactory, IGqlFilterGroup } from "./gql.filter.types";
-import { IGqlSortInput, GqlSortInput } from "./gql.sort";
+import { IGqlSortInput, GqlSortInput } from "./gql.sort.enum";
 
 export interface IGqlCollectionOptions {
   offset?: OrNullable<number>;

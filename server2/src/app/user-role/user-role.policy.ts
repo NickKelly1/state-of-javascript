@@ -11,27 +11,45 @@ export class UserRolePolicy {
     //
   }
 
+
+  /**
+   * Can the Requester FindMany UserRoles?
+   *
+   * @param arg
+   */
   canFindMany(arg?: {
     //
   }): boolean {
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUserRoles,
-      Permission.ShowUserRoles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserRoles.Manage,
+      Permission.UserRoles.Show,
     ]);
   }
 
+
+  /**
+   * Can the Requester Find this UserRole?
+   *
+   * @param arg
+   */
   canFindOne(arg: {
     model: UserRoleModel;
   }): boolean {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUserRoles,
-      Permission.ShowUserRoles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserRoles.Manage,
+      Permission.UserRoles.Show,
     ]);
   }
 
+
+  /**
+   * Can the Requester Create UserRoles for the User?
+   *
+   * @param arg
+   */
   canCreateForUser(arg: {
     user: UserModel;
   }): boolean {
@@ -47,12 +65,18 @@ export class UserRolePolicy {
     if (user.isAnonymous()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUserRoles,
-      Permission.CreateUserRoles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserRoles.Manage,
+      Permission.UserRoles.Create,
     ]);
   }
 
+
+  /**
+   * Can the Requester Create UserRoles for the Role?
+   *
+   * @param arg
+   */
   canCreateForRole(arg: {
     role: RoleModel;
   }): boolean {
@@ -68,12 +92,18 @@ export class UserRolePolicy {
     if (role.isPublic()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUserRoles,
-      Permission.CreateUserRoles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserRoles.Manage,
+      Permission.UserRoles.Create,
     ]);
   }
 
+
+  /**
+   * Can the Requester Create UserRoles?
+   *
+   * @param arg
+   */
   canCreate(arg: {
     user: UserModel;
     role: RoleModel;
@@ -83,6 +113,11 @@ export class UserRolePolicy {
   }
 
 
+  /**
+   * Can the Requester HardDelete UserRoles for the User?
+   *
+   * @param arg
+   */
   canHardDeleteForUser(arg: {
     user: UserModel;
   }): boolean {
@@ -98,13 +133,18 @@ export class UserRolePolicy {
     if (user.isAnonymous()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUserRoles,
-      Permission.HardDeleteUserRoles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserRoles.Manage,
+      Permission.UserRoles.HardDelete,
     ]);
   }
 
 
+  /**
+   * Can the Requester HardDelete UserRoles for the Role?
+   *
+   * @param arg
+   */
   canHardDeleteForRole(arg: {
     role: RoleModel;
   }): boolean {
@@ -120,13 +160,18 @@ export class UserRolePolicy {
     if (role.isPublic()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageUserRoles,
-      Permission.HardDeleteUserRoles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.UserRoles.Manage,
+      Permission.UserRoles.HardDelete,
     ]);
   }
 
 
+  /**
+   * Can teh Requester HardDelete this UserRole?
+   *
+   * @param arg
+   */
   canHardDelete(arg: {
     model: UserRoleModel;
     user: UserModel;

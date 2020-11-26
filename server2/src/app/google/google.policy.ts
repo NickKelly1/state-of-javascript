@@ -15,8 +15,8 @@ export class GooglePolicy {
   canOAuth2(arg: { model: IntegrationModel }): boolean {
     const { model } = arg;
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageIntegrations,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Integrations.Manage,
     ]);
   }
 
@@ -28,8 +28,8 @@ export class GooglePolicy {
     const { model } = arg;
     if (!model.isConnected()) return false;
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageIntegrations,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Integrations.Manage,
     ]);
   }
 }

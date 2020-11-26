@@ -1,5 +1,6 @@
 export * from './app/user/user.model';
 export * from './app/role/role.model';
+export * from './app/permission-category/permission-category.model';
 export * from './app/permission/permission.model';
 export * from './app/integration/integration.model';
 export * from './app/user-password/user-password.model';

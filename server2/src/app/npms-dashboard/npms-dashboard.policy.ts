@@ -18,10 +18,12 @@ export class NpmsDashboardPolicy {
   canFindMany(arg?: {
     //
   }): boolean {
+
+    // is Admin or Manager or Shower
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
-      Permission.ShowNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
+      Permission.NpmsDashboards.Show,
     ]);
   }
 
@@ -37,14 +39,15 @@ export class NpmsDashboardPolicy {
     const { model } = arg;
 
     if (!model.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.ShowNpmsDashboards])
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboards.Show])
     ) {
       return true;
     }
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
     ]);
   }
 
@@ -57,9 +60,11 @@ export class NpmsDashboardPolicy {
   canSort(arg?: {
     //
   }): boolean {
+
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
     ]);
   }
 
@@ -72,10 +77,12 @@ export class NpmsDashboardPolicy {
   canCreate(arg?: {
     //
   }): boolean {
+
+    // is Admin or Manager or Creator
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
-      Permission.CreateNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
+      Permission.NpmsDashboards.Create,
     ]);
   }
 
@@ -93,21 +100,22 @@ export class NpmsDashboardPolicy {
     if (
       !model.isSoftDeleted()
       && this.ctx.auth.isMeByUserId(model.owner_id)
-      && this.ctx.auth.hasAnyPermissions([Permission.UpdateOwnNpmsDashboards])
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboards.UpdateOwn])
     ) {
       return true;
     }
 
     if (
       !model.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.UpdateNpmsDashboards])
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboards.Update])
     ) {
       return true;
     }
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
     ]);
   }
 
@@ -121,11 +129,15 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel;
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
+
+    // is Admin or Manager or SoftDeleter
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
-      Permission.SoftDeleteNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
+      Permission.NpmsDashboards.SoftDelete,
     ]);
   }
 
@@ -139,10 +151,12 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel;
   }): boolean {
     const { model } = arg;
+
+    // is Admin or Manager or HardDeleter
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
-      Permission.HardDeleteNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
+      Permission.NpmsDashboards.HardDelete,
     ]);
   }
 
@@ -156,10 +170,12 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel;
   }): boolean {
     const { model } = arg;
+
+    // is Admin or Manager or Restorer
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
-      Permission.RestoreNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
+      Permission.NpmsDashboards.Restore,
     ]);
   }
 
@@ -173,9 +189,14 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
-    // can only submit drafts
+
+    // is Draft
     if (!model.isDraft()) return false;
+
+    // can also Update
     return this.canUpdate({ model });
   }
 
@@ -189,13 +210,16 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
-    // can only reject submitted articles
+
+    // is Submitted
     if (!model.isSubmitted()) return false;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
     ]);
   }
 
@@ -209,13 +233,17 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
-    // can only approve submitted articles
+
+    // is Submitted
     if (!model.isSubmitted()) return false;
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
     ]);
   }
 
@@ -229,13 +257,17 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
+
+    // is Approved
     if (!model.isApproved()) return false;
 
-    // admin
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
     ]);
   }
 
@@ -249,13 +281,17 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel,
   }): boolean {
     const { model } = arg;
+
+    // is SoftDeleted
     if (model.isSoftDeleted()) return false;
+
+    // is Publsihed
     if (!model.isPublished()) return false;
 
-    // admin
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNpmsDashboards,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboards.Manage,
     ]);
   }
 

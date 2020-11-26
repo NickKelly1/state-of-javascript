@@ -1,10 +1,5 @@
-import { isatty } from "tty";
 import { IRequestContext } from "../../common/interfaces/request-context.interface";
-import { OrNull } from "../../common/types/or-null.type";
-import { OrNullable } from "../../common/types/or-nullable.type";
-import { NewsArticleStatus } from "../news-article-status/news-article-status.const";
 import { Permission } from "../permission/permission.const";
-import { UserModel } from "../user/user.model";
 import { NewsArticleModel } from "./news-article.model";
 
 export class NewsArticlePolicy {
@@ -23,10 +18,11 @@ export class NewsArticlePolicy {
   canFindMany(arg?: {
     //
   }): boolean {
+    // is Admin or Manager or Shower
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
-      Permission.ShowNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
+      Permission.NewsArticles.Show,
     ]);
   }
 
@@ -45,14 +41,15 @@ export class NewsArticlePolicy {
     if (
       isAuthor
       && !model.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.ShowNewsArticles])
+      && this.ctx.auth.hasAnyPermissions([Permission.NewsArticles.Show])
     ) {
       return true;
     }
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
     ]);
   }
 
@@ -65,10 +62,12 @@ export class NewsArticlePolicy {
   canCreate(arg?: {
     //
   }): boolean {
+
+    // is Admin or Manager or Creator
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
-      Permission.CreateNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
+      Permission.NewsArticles.Create,
     ]);
   }
 
@@ -86,20 +85,21 @@ export class NewsArticlePolicy {
     const isAuthor = this.ctx.auth.isMeByUserId(model.author_id);
     if (isAuthor
       && !model.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.UpdateOwnNewsArticles])
+      && this.ctx.auth.hasAnyPermissions([Permission.NewsArticles.Update])
     ) {
       return true;
     };
 
     if (!model.isSoftDeleted()
-      && Permission.UpdateNewsArticles
+      && Permission.NewsArticles.Update
     ) {
       return true;
     }
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
     ]);
   }
 
@@ -113,12 +113,15 @@ export class NewsArticlePolicy {
     model: NewsArticleModel;
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
 
+    // is Admin or Manager or SoftDeleter
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
-      Permission.SoftDeleteDeleteNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
+      Permission.NewsArticles.SoftDelete,
     ]);
   }
 
@@ -134,9 +137,9 @@ export class NewsArticlePolicy {
     const { model } = arg;
 
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
-      Permission.HardDeleteDeleteNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
+      Permission.NewsArticles.HardDelete,
     ]);
   }
 
@@ -150,12 +153,15 @@ export class NewsArticlePolicy {
     model: NewsArticleModel;
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (!model.isSoftDeleted()) return false;
 
+    // is Admin, Manager, or Restorer
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
-      Permission.RestoreNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
+      Permission.NewsArticles.Restore,
     ]);
   }
 
@@ -169,9 +175,14 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
-    // can only submit drafts
+
+    // is a Draft
     if (!model.isDraft()) return false;
+
+    // have permission to Update
     return this.canUpdate({ model });
   }
 
@@ -185,13 +196,17 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
-    // can only reject submitted articles
+
+    // Is Submitted
     if (!model.isSubmitted()) return false;
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
     ]);
   }
 
@@ -205,13 +220,18 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
-    // can only approve submitted articles
+
+
+    // is Submitted
     if (!model.isSubmitted()) return false;
 
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
     ]);
   }
 
@@ -225,13 +245,17 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
+
+    // is Approved
     if (!model.isApproved()) return false;
 
-    // admin
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
     ]);
   }
 
@@ -245,13 +269,17 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
+
+    // is Published
     if (!model.isPublished()) return false;
 
-    // admin
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles,
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
     ]);
   }
 
@@ -265,13 +293,17 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // is not SoftDeleted
     if (model.isSoftDeleted()) return false;
+
+    // is Approved
     if (!model.isApproved()) return false;
 
-    // admin
+    // is Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin,
-      Permission.ManageNewsArticles
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticles.Manage,
     ]);
   }
 }
