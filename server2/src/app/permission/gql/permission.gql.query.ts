@@ -31,7 +31,9 @@ export const PermissionGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext
       });
 
       // eager load categories too...
-      rows.map(row => assertDefined(row.category)).forEach(category => ctx.loader.permissionCategories.prime(category.id, category))
+      rows
+        .map(row => assertDefined(row.category))
+        .forEach(category => ctx.loader.permissionCategories.prime(category.id, category))
 
       const pagination = collectionMeta({ data: rows, total: count, page });
       const connection: IPermissionCollectionGqlNodeSource = {

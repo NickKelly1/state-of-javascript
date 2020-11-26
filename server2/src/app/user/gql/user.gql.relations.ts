@@ -24,6 +24,7 @@ import { PermissionModel, RoleModel } from "../../../circle";
 import { PermissionCollectionGqlNode, IPermissionCollectionGqlNodeSource } from "../../permission/gql/permission.collection.gql.node";
 import { PermissionCollectionOptionsGqlInput } from "../../permission/gql/permission.collection.gql.options";
 import { PermissionAssociation } from "../../permission/permission.associations";
+import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 
 export type IUserGqlRelationsSource = UserModel;
 export const UserGqlRelations = new GraphQLObjectType<IUserGqlRelationsSource, GqlContext>({
@@ -96,15 +97,24 @@ export const UserGqlRelations = new GraphQLObjectType<IUserGqlRelationsSource, G
           options: {
             ...options,
             where: andWhere([ options.where, ]),
-            include: [{
-              association: PermissionAssociation.roles,
-              include: [{
-                association: RoleAssociation.users,
-                where: { [UserField.id]: { [Op.eq]: parent.id } },
-              }],
-            }],
+            include: [
+              { association: PermissionAssociation.category, },
+              {
+                association: PermissionAssociation.roles,
+                include: [{
+                  association: RoleAssociation.users,
+                  where: { [UserField.id]: { [Op.eq]: parent.id } },
+                }],
+              }
+            ],
           },
         });
+
+        // eager load categories too...
+        rows
+          .map(row => assertDefined(row.category))
+          .forEach(category => ctx.loader.permissionCategories.prime(category.id, category))
+
         const pagination = collectionMeta({ data: rows, total: count, page });
         const collection: IPermissionCollectionGqlNodeSource = {
           models: rows.map((model): OrNull<PermissionModel> =>

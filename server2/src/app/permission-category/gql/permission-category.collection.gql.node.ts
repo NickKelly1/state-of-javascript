@@ -4,9 +4,9 @@ import { ICollectionMeta } from "../../../common/interfaces/collection-meta.inte
 import { GqlMeta, IGqlMetaSource } from "../../../common/gql/gql.meta";
 import { OrNull } from "../../../common/types/or-null.type";
 import { GqlNever } from "../../../common/gql/gql.ever";
-import { PermissionCategoryModel } from "../permission-category-category.model";
-import { IPermissionCategoryGqlNodeSource, PermissionCategoryGqlNode } from "./permission-category-category.gql.node";
-import { IPermissionCategoryCollectionGqlActionSource, PermissionCategoryCollectionGqlActions } from "./permission-category-category.collection.gql.actions";
+import { PermissionCategoryModel } from "../../../circle";
+import { PermissionCategoryCollectionGqlActions, IPermissionCategoryCollectionGqlActionSource } from "./permission-category.collection.gql.actions";
+import { PermissionCategoryGqlNode, IPermissionCategoryGqlNodeSource } from "./permission-category.gql.node";
 
 
 export interface IPermissionCategoryCollectionGqlNodeSource {

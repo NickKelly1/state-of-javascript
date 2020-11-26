@@ -1,4 +1,5 @@
 import { Button, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
+import MailOutlineIcon from '@material-ui/icons/MailOutline';
 import { fail } from 'assert';
 import { gql } from 'graphql-request';
 import { useRouter } from 'next/router';

@@ -29,6 +29,9 @@ export type RootQueryType = {
   integrations: IntegrationCollectionNode;
   google: GoogleNode;
   googleOAuth2GetUrl: Scalars['String'];
+  gmailJobs: Array<JobNode>;
+  actions: ActionsNode;
+  permissionCategoryies: PermissionCategoryCollectionNode;
 };
 
 
@@ -84,6 +87,16 @@ export type RootQueryTypeNpmsDashboardItemsArgs = {
 
 export type RootQueryTypeIntegrationsArgs = {
   query?: Maybe<IntegrationQuery>;
+};
+
+
+export type RootQueryTypeGmailJobsArgs = {
+  query?: Maybe<JobOptions>;
+};
+
+
+export type RootQueryTypePermissionCategoryiesArgs = {
+  query?: Maybe<PermissionCategoryQuery>;
 };
 
 export type NewsArticleCollectionNode = {
@@ -417,6 +430,7 @@ export type PermissionData = {
   __typename?: 'PermissionData';
   id: Scalars['Int'];
   name: Scalars['String'];
+  category_id: Scalars['String'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
@@ -431,6 +445,7 @@ export type PermissionActions = {
 
 export type PermissionRelations = {
   __typename?: 'PermissionRelations';
+  category?: Maybe<PermissionCategoryNode>;
   rolePermissions: RolePermissionCollectionNode;
   roles: RoleCollectionNode;
   users: UserCollectionNode;
@@ -451,6 +466,61 @@ export type PermissionRelationsUsersArgs = {
   query?: Maybe<UserQuery>;
 };
 
+export type PermissionCategoryNode = {
+  __typename?: 'PermissionCategoryNode';
+  cursor: Scalars['String'];
+  data: PermissionCategoryData;
+  can: PermissionCategoryActions;
+  relations: PermissionCategoryRelations;
+};
+
+export type PermissionCategoryData = {
+  __typename?: 'PermissionCategoryData';
+  id: Scalars['Int'];
+  name: Scalars['String'];
+  colour: Scalars['String'];
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+  deleted_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type PermissionCategoryActions = {
+  __typename?: 'PermissionCategoryActions';
+  show: Scalars['Boolean'];
+};
+
+export type PermissionCategoryRelations = {
+  __typename?: 'PermissionCategoryRelations';
+  permissions: PermissionCollectionNode;
+};
+
+
+export type PermissionCategoryRelationsPermissionsArgs = {
+  query?: Maybe<PermissionQuery>;
+};
+
+export type PermissionCollectionNode = {
+  __typename?: 'PermissionCollectionNode';
+  nodes: Array<Maybe<PermissionNode>>;
+  actions: PermissionCollectionActions;
+  pagination: Meta;
+};
+
+export type PermissionCollectionActions = {
+  __typename?: 'PermissionCollectionActions';
+  show: Scalars['Boolean'];
+};
+
+export type Meta = {
+  __typename?: 'meta';
+  limit: Scalars['Int'];
+  offset: Scalars['Int'];
+  total: Scalars['Int'];
+  page_number: Scalars['Int'];
+  pages: Scalars['Int'];
+  more: Scalars['Boolean'];
+};
+
 export type PermissionQuery = {
   offset?: Maybe<Scalars['Int']>;
   limit?: Maybe<Scalars['Int']>;
@@ -466,51 +536,8 @@ export type PermissionQueryFilterFilterConditionGroup = {
 
 export type PermissionQueryFilterFilterAttributes = {
   id?: Maybe<FilterFieldNumber>;
-  role_id?: Maybe<FilterFieldNumber>;
-  permission_id?: Maybe<FilterFieldNumber>;
-  created_at?: Maybe<FilterFieldDateTime>;
-  updated_at?: Maybe<FilterFieldDateTime>;
-};
-
-export type RoleCollectionNode = {
-  __typename?: 'RoleCollectionNode';
-  nodes: Array<Maybe<RoleNode>>;
-  can: RoleCollectionActions;
-  pagination: Meta;
-};
-
-export type RoleCollectionActions = {
-  __typename?: 'RoleCollectionActions';
-  show: Scalars['Boolean'];
-  create: Scalars['Boolean'];
-};
-
-export type Meta = {
-  __typename?: 'meta';
-  limit: Scalars['Int'];
-  offset: Scalars['Int'];
-  total: Scalars['Int'];
-  page_number: Scalars['Int'];
-  pages: Scalars['Int'];
-  more: Scalars['Boolean'];
-};
-
-export type RoleQuery = {
-  offset?: Maybe<Scalars['Int']>;
-  limit?: Maybe<Scalars['Int']>;
-  sorts?: Maybe<Array<QuerySort>>;
-  filter?: Maybe<Array<RoleQueryFilterFilterConditionGroup>>;
-};
-
-export type RoleQueryFilterFilterConditionGroup = {
-  attr?: Maybe<RoleQueryFilterFilterAttributes>;
-  or?: Maybe<Array<RoleQueryFilterFilterConditionGroup>>;
-  and?: Maybe<Array<RoleQueryFilterFilterConditionGroup>>;
-};
-
-export type RoleQueryFilterFilterAttributes = {
-  id?: Maybe<FilterFieldNumber>;
   name?: Maybe<FilterFieldString>;
+  category_id?: Maybe<FilterFieldNumber>;
   created_at?: Maybe<FilterFieldDateTime>;
   updated_at?: Maybe<FilterFieldDateTime>;
   deleted_at?: Maybe<FilterFieldDateTime>;
@@ -542,6 +569,40 @@ export type FilterFieldString = {
 export type FilterRangeString = {
   from: Scalars['String'];
   to: Scalars['String'];
+};
+
+export type RoleCollectionNode = {
+  __typename?: 'RoleCollectionNode';
+  nodes: Array<Maybe<RoleNode>>;
+  can: RoleCollectionActions;
+  pagination: Meta;
+};
+
+export type RoleCollectionActions = {
+  __typename?: 'RoleCollectionActions';
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
+};
+
+export type RoleQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<RoleQueryFilterFilterConditionGroup>>;
+};
+
+export type RoleQueryFilterFilterConditionGroup = {
+  attr?: Maybe<RoleQueryFilterFilterAttributes>;
+  or?: Maybe<Array<RoleQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<RoleQueryFilterFilterConditionGroup>>;
+};
+
+export type RoleQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  name?: Maybe<FilterFieldString>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+  deleted_at?: Maybe<FilterFieldDateTime>;
 };
 
 export type UserCollectionNode = {
@@ -604,19 +665,6 @@ export type RolePermissionQueryFilterFilterAttributes = {
   created_at?: Maybe<FilterFieldDateTime>;
   updated_at?: Maybe<FilterFieldDateTime>;
   deleted_at?: Maybe<FilterFieldDateTime>;
-};
-
-export type PermissionCollectionNode = {
-  __typename?: 'PermissionCollectionNode';
-  nodes: Array<Maybe<PermissionNode>>;
-  actions: PermissionCollectionActions;
-  pagination: Meta;
-};
-
-export type PermissionCollectionActions = {
-  __typename?: 'PermissionCollectionActions';
-  show: Scalars['Boolean'];
-  create: Scalars['Boolean'];
 };
 
 export type UserRoleCollectionActions = {
@@ -1151,6 +1199,111 @@ export type GoogleActions = {
   show: Scalars['Boolean'];
   oauth2: Scalars['Boolean'];
   sendGmail: Scalars['Boolean'];
+};
+
+export type JobNode = {
+  __typename?: 'JobNode';
+  id: Scalars['String'];
+  name: Scalars['String'];
+  data?: Maybe<Scalars['JsonObject']>;
+  opts: JobNodeOptions;
+  progress: Scalars['Float'];
+  delay: Scalars['Float'];
+  timestamp: Scalars['Float'];
+  attemptsMade: Scalars['Float'];
+  stacktrace?: Maybe<Array<Scalars['String']>>;
+  stacktrace2?: Maybe<Array<Array<Scalars['String']>>>;
+  returnvalue?: Maybe<Scalars['JsonObject']>;
+  finishedOn?: Maybe<Scalars['Float']>;
+  processedOn?: Maybe<Scalars['Float']>;
+};
+
+export type JobNodeOptions = {
+  __typename?: 'JobNodeOptions';
+  attempts: Scalars['Int'];
+  backoff?: Maybe<Scalars['JsonObject']>;
+  delay?: Maybe<Scalars['Float']>;
+};
+
+export type JobOptions = {
+  statuses?: Maybe<Array<JobStatus>>;
+  start?: Maybe<Scalars['Int']>;
+  end?: Maybe<Scalars['Int']>;
+  asc?: Maybe<Scalars['Boolean']>;
+};
+
+export enum JobStatus {
+  Active = 'Active',
+  Completed = 'Completed',
+  Delayed = 'Delayed',
+  Failed = 'Failed',
+  Paused = 'Paused',
+  Waiting = 'Waiting'
+}
+
+export type ActionsNode = {
+  __typename?: 'ActionsNode';
+  users?: Maybe<UserCollectionActions>;
+  roles?: Maybe<RoleCollectionActions>;
+  userRoles?: Maybe<UserRoleCollectionActions>;
+  permissions?: Maybe<PermissionCollectionActions>;
+  rolePermissions?: Maybe<RolePermissionCollectionActions>;
+  npmsPackages?: Maybe<NpmsPackageCollectionActions>;
+  npmsDashboards?: Maybe<NpmsDashboardCollectionActions>;
+  npmsDashboardItems?: Maybe<NpmsDashboardItemCollectionActions>;
+  newsArticles?: Maybe<NewsArticleCollectionActions>;
+  newsArticleStatuses?: Maybe<NewsArticleStatusCollectionActions>;
+  jobs?: Maybe<JobCollectionActions>;
+  logs?: Maybe<LogCollectionActions>;
+};
+
+export type NewsArticleStatusCollectionActions = {
+  __typename?: 'NewsArticleStatusCollectionActions';
+  show: Scalars['Boolean'];
+};
+
+export type JobCollectionActions = {
+  __typename?: 'JobCollectionActions';
+  show: Scalars['Boolean'];
+};
+
+export type LogCollectionActions = {
+  __typename?: 'LogCollectionActions';
+  show: Scalars['Boolean'];
+};
+
+export type PermissionCategoryCollectionNode = {
+  __typename?: 'PermissionCategoryCollectionNode';
+  nodes: Array<Maybe<PermissionCategoryNode>>;
+  actions: PermissionCategoryCollectionActions;
+  pagination: Meta;
+};
+
+export type PermissionCategoryCollectionActions = {
+  __typename?: 'PermissionCategoryCollectionActions';
+  show: Scalars['Boolean'];
+};
+
+export type PermissionCategoryQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<PermissionCategoryQueryFilterFilterConditionGroup>>;
+};
+
+export type PermissionCategoryQueryFilterFilterConditionGroup = {
+  attr?: Maybe<PermissionCategoryQueryFilterFilterAttributes>;
+  or?: Maybe<Array<PermissionCategoryQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<PermissionCategoryQueryFilterFilterConditionGroup>>;
+};
+
+export type PermissionCategoryQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  name?: Maybe<FilterFieldString>;
+  colour?: Maybe<FilterFieldString>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+  deleted_at?: Maybe<FilterFieldDateTime>;
 };
 
 export type RootMutationType = {
@@ -1851,6 +2004,15 @@ export type RoleRolePermissionsFormDataQuery = (
             ), data: (
               { __typename?: 'PermissionData' }
               & Pick<PermissionData, 'id' | 'name'>
+            ), relations: (
+              { __typename?: 'PermissionRelations' }
+              & { category?: Maybe<(
+                { __typename?: 'PermissionCategoryNode' }
+                & { data: (
+                  { __typename?: 'PermissionCategoryData' }
+                  & Pick<PermissionCategoryData, 'id' | 'name' | 'colour'>
+                ) }
+              )> }
             ) }
           )>> }
         ) }
@@ -1866,6 +2028,15 @@ export type RoleRolePermissionsFormDataQuery = (
       ), data: (
         { __typename?: 'PermissionData' }
         & Pick<PermissionData, 'id' | 'name'>
+      ), relations: (
+        { __typename?: 'PermissionRelations' }
+        & { category?: Maybe<(
+          { __typename?: 'PermissionCategoryNode' }
+          & { data: (
+            { __typename?: 'PermissionCategoryData' }
+            & Pick<PermissionCategoryData, 'id' | 'name' | 'colour'>
+          ) }
+        )> }
       ) }
     )>> }
   ) }

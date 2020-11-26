@@ -128,6 +128,15 @@ query RoleRolePermissionsFormData(
               id
               name
             }
+            relations{
+              category{
+                data{
+                  id
+                  name
+                  colour
+                }
+              }
+            }
           }
         }
       }
@@ -151,6 +160,15 @@ query RoleRolePermissionsFormData(
       data{
         id
         name
+      }
+      relations{
+        category{
+          data{
+            id
+            name
+            colour
+          }
+        }
       }
     }
   }
@@ -301,7 +319,13 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
     },
   );
 
-  interface IRolePermissionListItem { id: Id; name: string };
+  interface IRolePermissionListItem { id: number; name: string, category: { id: number; name: string; colour: string; } };
+  const sortList = useCallback((a: IListBuilderItem<IRolePermissionListItem>, b: IListBuilderItem<IRolePermissionListItem>): number => {
+    const byCategory = a.data.category.id - b.data.category.id;
+    if (byCategory !== 0) return byCategory;
+    const byId = a.data.id - b.data.id;
+    return byId;
+  }, []);
   const incomingPermissionsList = useMemo<IListBuilderLists<IRolePermissionListItem>>(
     (): IListBuilderLists<IRolePermissionListItem> => {
       const current: IListBuilderItem<IRolePermissionListItem>[] = role
@@ -315,9 +339,14 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
           data: {
             id: permission.data.id,
             name: permission.data.name,
+            category: {
+              colour: permission.relations.category?.data.colour ?? 'red',
+              id: permission.relations.category?.data.id ?? -1,
+              name: permission.relations.category?.data.name ?? '_unknown_',
+            },
           },
         }))
-        .sort((a, b) => Number(a.data.id) - Number(b.data.id));
+        .sort((a, b) => sortList(a, b));
       const currentIds = new Set(current.map(itm => itm.data.id));
       const available: IListBuilderItem<IRolePermissionListItem>[] = permissions
         .filter(permission => !currentIds.has(permission.data.id))
@@ -326,12 +355,17 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
           data: {
             id: permission.data.id,
             name: permission.data.name,
+            category: {
+              colour: permission.relations.category?.data.colour ?? 'red',
+              id: permission.relations.category?.data.id ?? -1,
+              name: permission.relations.category?.data.name ?? '_unknown_',
+            },
           },
         }))
-        .sort((a, b) => Number(a.data.id) - Number(b.data.id));
+        .sort(sortList);
       return [available, current];
     },
-    [role, permissions],
+    [role, permissions, sortList],
   );
 
   const [permissionLists, setPermissionLists] = useState(incomingPermissionsList);
@@ -345,8 +379,8 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
     names: ['Available', 'Permissions'],
     key: ({ list, index, item }) => item.data.id,
     accessor: ({ list, index, item }) => (
-      <Box color={ring(DashColours, Math.floor(Number(item.data.id) / 100))}>
-        {`${item.data.id.toString().padStart(4, ' ')} - ${item.data.name}`}
+      <Box style={{ color: item.data.category.colour }}>
+        {`${item.data.category.name} - ${item.data.name}`}
       </Box>
     ),
   }), []);

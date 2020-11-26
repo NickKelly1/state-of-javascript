@@ -17,6 +17,7 @@ import { IntegrationGqlQuery } from './app/integration/gql/integration.gql.query
 import { GoogleGqlQuery } from './app/google/gql/google.gql.query';
 import { JobGqlQuery } from './app/job/job.query';
 import { ActionsGqlQuery } from './app/actions/actions.query';
+import { PermissionCategoryGqlQuery } from './app/permission-category/gql/permission-category.gql.query';
 
 
 export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
@@ -36,5 +37,6 @@ export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
     ...unthunk(GoogleGqlQuery),
     ...unthunk(JobGqlQuery),
     ...unthunk(ActionsGqlQuery),
+    ...unthunk(PermissionCategoryGqlQuery),
   }),
 });
