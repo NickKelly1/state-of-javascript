@@ -4866,6 +4866,22 @@
             "deprecationReason": null
           },
           {
+            "name": "logout",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "create",
             "description": null,
             "args": [],
@@ -10272,6 +10288,22 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "LogCollectionActions",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "integrations",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "IntegrationCollectionActions",
                 "ofType": null
               }
             },

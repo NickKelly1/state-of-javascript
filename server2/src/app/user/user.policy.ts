@@ -116,6 +116,19 @@ export class UserPolicy {
 
 
   /**
+   * Can the Requester Logout?
+   *
+   * @TODO: put this in an auth policy
+   *
+   * @param arg
+   */
+  canLogout() {
+    // Can LogOut if LoggedIn
+    return this.ctx.auth.isAuthenticated();
+  }
+
+
+  /**
    * Can the Requester Login as a User?
    *
    * @param arg

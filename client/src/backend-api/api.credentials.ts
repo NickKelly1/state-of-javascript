@@ -26,6 +26,7 @@ fragment AuthorisedActionsFields on ActionsNode {
     login
     register
     create
+    logout
   }
   roles{
     show
@@ -64,6 +65,10 @@ fragment AuthorisedActionsFields on ActionsNode {
   }
   logs{
     show
+  }
+  integrations{
+    show
+    initialise
   }
 }
 `;

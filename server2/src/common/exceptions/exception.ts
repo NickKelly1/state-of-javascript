@@ -27,13 +27,19 @@ export interface IExceptionCtorArg {
 export class Exception extends Error implements IApiException {
   public readonly __is_exception = true;
 
-  public readonly code: number;
+  public code: number;
   public readonly error: string;
   public readonly message: string;
   public readonly data?: IExceptionData;
   public readonly debug?: Printable;
   public trace?: string[];
   protected readonly ctx: IRequestContext;
+
+
+  switchCodeTo(to: number): void {
+    // naughty hack to switch 403 to 401 to notify front-ends their log-in is expired...
+    this.code = to;
+  }
 
 
   constructor(arg: IExceptionCtorArg) {

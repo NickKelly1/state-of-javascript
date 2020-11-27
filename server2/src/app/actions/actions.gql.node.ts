@@ -1,6 +1,7 @@
 import { GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { GqlContext } from "../../common/context/gql.context";
 import { GqlNever, IGqlNever } from "../../common/gql/gql.ever";
+import { IIntegrationCollectionGqlActionSource, IntegrationCollectionGqlActions } from "../integration/gql/integration.collection.gql.actions";
 import { JobCollectionGqlActions, IJobCollectionGqlActionSource } from "../job/job.collection.gql.actions";
 import { ILogCollectionGqlActionSource, LogCollectionGqlActions } from "../log/log.collection.gql.actions";
 import { NewsArticleStatusCollectionGqlActions, INewsArticleStatusCollectionGqlActionSource } from "../news-article-status/gql/news-article-status.collection.gql.actions";
@@ -66,5 +67,10 @@ export const ActionsGqlNode = new GraphQLObjectType<IActionsGqlNodeSource, GqlCo
       type: GraphQLNonNull(LogCollectionGqlActions),
       resolve: (): ILogCollectionGqlActionSource => GqlNever,
     },
+    integrations: {
+      type: GraphQLNonNull(IntegrationCollectionGqlActions),
+      resolve: (): IIntegrationCollectionGqlActionSource => GqlNever,
+    },
+    // TODO: blogs
   }),
 });

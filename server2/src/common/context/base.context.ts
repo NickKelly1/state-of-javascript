@@ -48,6 +48,10 @@ export abstract class BaseContext implements IRequestContext {
   except(throwable: IThrowable): Exception {
     const exception = throwable(this);
     exception.shiftTrace(2);
+    // if 403 but unauthenticated, switch to 401... (naughty but lets us notify frontend of expired creds)
+    if (!this.auth.isAuthenticated() && exception.code === 403) {
+      exception.switchCodeTo(401);
+    }
     return exception;
   }
 

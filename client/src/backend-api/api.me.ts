@@ -4,6 +4,7 @@ import { AuthenticationFieldsFragment, AuthorisedActionsFieldsFragment } from '.
 import objectHash from 'object-hash';
 import { OrNull } from "../types/or-null.type";
 import { IApiMeSerialized } from "../types/api-me-serialized.hinterface";
+import { IJson } from "../types/json.interface";
 
 
 type IAuthenticatedMeFactoryArg =
@@ -157,5 +158,21 @@ export class ApiMe {
    */
   hasEveryPermissions(perms: number[]): boolean {
     return perms.every(this.permission_set.has.bind(this.permission_set))
+  }
+
+
+  /**
+   * @inheritdoc
+   */
+  toJSON(): IJson {
+    return {
+      user: this.user,
+      isAuthenticated: this.isAuthenticated,
+      instance: this.instance,
+      createdAt: this.createdAt.valueOf(),
+      hash: this.hash,
+      can: this.can,
+      permissions: this.permissions,
+    };
   }
 }

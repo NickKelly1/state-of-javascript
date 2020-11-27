@@ -38,6 +38,8 @@ import { RegisterFormDialog } from "../register/register.form.dialog";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { useMenu } from "../../hooks/use-menu.hook";
 import { flsx } from "../../helpers/flsx.helper";
+import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
+import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 
 interface ITopBarProps {
   //
@@ -98,8 +100,11 @@ export function TopBar(props: ITopBarProps) {
     }
   }, [loginDialog, cogMenu, api]);
 
+  const debugDialog = useDialog()
+
   return (
     <>
+      <DebugJsonDialog title="me" dialog={debugDialog} data={me} />
       <LoginFormDialog dialog={loginDialog} onSuccess={loginDialog.doClose} />
       <RegisterFormDialog dialog={registerDialog} onSuccess={registerDialog.doClose} />
       <Box className={classes.root}>
@@ -120,11 +125,22 @@ export function TopBar(props: ITopBarProps) {
             </NextLink>
           </ListItem>
           <ListItem><NextLink href="/hire-me" passHref><MUILink color="inherit">Hire me</MUILink></NextLink></ListItem>
+          {/* {me.can.blogs.show && (
+
+          )} */}
           <ListItem><NextLink href="/blog" passHref><MUILink color="inherit">Blog</MUILink></NextLink></ListItem>
-          <ListItem><NextLink href="/news" passHref><MUILink color="inherit">News</MUILink></NextLink></ListItem>
-          <ListItem><NextLink href="/roles" passHref><MUILink color="inherit">Roles</MUILink></NextLink></ListItem>
-          <ListItem><NextLink href="/users" passHref><MUILink color="inherit">Users</MUILink></NextLink></ListItem>
-          <ListItem><NextLink href="/admin/integrations" passHref><MUILink color="inherit">Integrations</MUILink></NextLink></ListItem>
+          {me.can.newsArticles.show && (
+            <ListItem><NextLink href="/news" passHref><MUILink color="inherit">News</MUILink></NextLink></ListItem>
+          )}
+          {me.can.roles.show && (
+            <ListItem><NextLink href="/roles" passHref><MUILink color="inherit">Roles</MUILink></NextLink></ListItem>
+          )}
+          {me.can.users.show && (
+            <ListItem><NextLink href="/users" passHref><MUILink color="inherit">Users</MUILink></NextLink></ListItem>
+          )}
+          {me.can.integrations.show && (
+            <ListItem><NextLink href="/admin/integrations" passHref><MUILink color="inherit">Integrations</MUILink></NextLink></ListItem>
+          )}
         </List>
         <List component="nav" className="d-flex">
           {!me.isAuthenticated && me.can.users.register && (
@@ -153,6 +169,13 @@ export function TopBar(props: ITopBarProps) {
               <Button startIcon={<ExitToAppIcon />} className="text-transform-none"><ListItemText primary="logout" /></Button>
             </ListItem>
           )}
+          <WhenDebugMode>
+            <ListItem>
+              <IconButton color="primary" onClick={debugDialog.doToggle}>
+                <BugReportIcon />
+              </IconButton>
+            </ListItem>
+          </WhenDebugMode>
           <ListItem>
             {/* todo position menu UNDER button */}
             <Menu

@@ -618,6 +618,7 @@ export type UserCollectionActions = {
   show: Scalars['Boolean'];
   login: Scalars['Boolean'];
   register: Scalars['Boolean'];
+  logout: Scalars['Boolean'];
   create: Scalars['Boolean'];
 };
 
@@ -1257,6 +1258,7 @@ export type ActionsNode = {
   newsArticleStatuses: NewsArticleStatusCollectionActions;
   jobs: JobCollectionActions;
   logs: LogCollectionActions;
+  integrations: IntegrationCollectionActions;
 };
 
 export type NewsArticleStatusCollectionActions = {
@@ -1759,7 +1761,7 @@ export type AuthorisedActionsFieldsFragment = (
   { __typename?: 'ActionsNode' }
   & { users: (
     { __typename?: 'UserCollectionActions' }
-    & Pick<UserCollectionActions, 'show' | 'login' | 'register' | 'create'>
+    & Pick<UserCollectionActions, 'show' | 'login' | 'register' | 'create' | 'logout'>
   ), roles: (
     { __typename?: 'RoleCollectionActions' }
     & Pick<RoleCollectionActions, 'show' | 'create'>
@@ -1793,6 +1795,9 @@ export type AuthorisedActionsFieldsFragment = (
   ), logs: (
     { __typename?: 'LogCollectionActions' }
     & Pick<LogCollectionActions, 'show'>
+  ), integrations: (
+    { __typename?: 'IntegrationCollectionActions' }
+    & Pick<IntegrationCollectionActions, 'show' | 'initialise'>
   ) }
 );
 

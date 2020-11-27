@@ -24,6 +24,13 @@ export const UserCollectionGqlActions = new GraphQLObjectType<IUserCollectionGql
         return ctx.services.userPolicy.canRegister();
       },
     },
+    // TODO: auth policy...
+    logout: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canLogout();
+      },
+    },
     create: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
