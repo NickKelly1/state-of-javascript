@@ -65,13 +65,10 @@ export const ForgottenPasswordDialog = WithDialogue<IForgottenPasswordDialogProp
       const vars: RequestForgottenUserPasswordResetMutationVariables = {
         email: formState.email,
       };
-      const result = await api
-        .connector
-        .graphql<RequestForgottenUserPasswordResetMutation, RequestForgottenUserPasswordResetMutationVariables>(
-          requestForgottenUserPasswordResetMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<RequestForgottenUserPasswordResetMutation, RequestForgottenUserPasswordResetMutationVariables>(
+        requestForgottenUserPasswordResetMutation,
+        vars,
+      )
       return result;
     },
     {

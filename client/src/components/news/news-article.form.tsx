@@ -1,23 +1,36 @@
-import { Box, Button, ButtonGroup, CircularProgress, FormHelperText, Grid, Input, InputLabel, LinearProgress, makeStyles, Paper, Switch, TextField, Typography } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  CircularProgress,
+  FormHelperText,
+  Grid,
+  Input,
+  InputLabel,
+  LinearProgress,
+  makeStyles,
+  Paper,
+  Switch,
+  TextField,
+  Typography,
+} from "@material-ui/core";
 import NextLink from 'next/link';
 import MUILink from '@material-ui/core/Link';
-import { gql } from "graphql-request";
-import { ApiError } from "next/dist/next-server/server/api-utils";
-import React, { ChangeEventHandler, FormEvent, FormEventHandler, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useMutation } from "react-query";
-import { IAuthenticationRo } from "../../backend-api/api.credentials";
-import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
+import React, {
+  ChangeEventHandler,
+  FormEvent,
+  FormEventHandler,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { Markdown } from "../markdown/markdown";
 import { ApiContext } from "../../components-contexts/api.context";
-import { CreateNewsArticle, CreateNewsArticleMutationVariables, } from "../../generated/graphql";
-import { pretty } from "../../helpers/pretty.helper";
-import { serverSidePropsHandler } from "../../helpers/server-side-props-handler.helper";
-import { staticPathsHandler, staticPropsHandler } from "../../helpers/static-props-handler.helper";
 import { OrNullable } from "../../types/or-nullable.type";
-import { OrUndefined } from "../../types/or-undefined.type";
 import { ist } from "../../helpers/ist.helper";
-import { OrNull } from "../../types/or-null.type";
 import { OrPromise } from "../../types/or-promise.type";
 import { Debounce } from "../../helpers/debounce.helper";
 import { _ls } from "../../helpers/_ls.helper";

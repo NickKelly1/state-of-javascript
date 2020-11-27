@@ -77,7 +77,7 @@ export function TopBar(props: ITopBarProps) {
 
   const router = useRouter();
   const [doLogout, logoutResult] = useMutation(async () => {
-    await api.credentials.signOut();
+    await api.logout();
     // router.push('/'); 
   });
 
@@ -85,6 +85,18 @@ export function TopBar(props: ITopBarProps) {
   const cogMenu = useMenu();
   const loginDialog = useDialog();
   const registerDialog = useDialog();
+
+  const handleLoginClicked = useCallback(async () => {
+    // try to refresh...
+    try {
+      // try to refresh
+      await api.refresh();
+    } catch (error) {
+      // unable to refresh (probably no creds in cookies) -> open a login dialog
+      loginDialog.doOpen();
+      cogMenu.doClose();
+    }
+  }, [loginDialog, cogMenu, api]);
 
   return (
     <>
@@ -115,19 +127,19 @@ export function TopBar(props: ITopBarProps) {
           <ListItem><NextLink href="/admin/integrations" passHref><MUILink color="inherit">Integrations</MUILink></NextLink></ListItem>
         </List>
         <List component="nav" className="d-flex">
-          {!me && (
+          {!me.isAuthenticated && me.can.users.register && (
             <ListItem color="primary" onClick={flsx(registerDialog.doOpen, cogMenu.doClose)}>
               {/* <ListItemIcon><PersonAddIcon /></ListItemIcon> */}
               <Button className="text-transform-none"><ListItemText primary="register" /></Button>
             </ListItem>
           )}
-          {!me && (
-            <ListItem onClick={flsx(loginDialog.doOpen, cogMenu.doClose) }>
+          {!me.isAuthenticated && me.can.users.login && (
+            <ListItem onClick={handleLoginClicked}>
               {/* <ListItemIcon><AccountCircleIcon /></ListItemIcon> */}
               <Button className="text-transform-none"><ListItemText primary="login" /></Button>
             </ListItem>
           )}
-          {me && (
+          {me.isAuthenticated && (
             <ListItem>
               <ListItem className="text-transform-none">
                 <ListItemIcon><AccountCircleIcon /></ListItemIcon>
@@ -135,7 +147,7 @@ export function TopBar(props: ITopBarProps) {
               </ListItem>
             </ListItem>
           )}
-          {me && (
+          {me.isAuthenticated && (
             <ListItem onClick={flsx(handleLogout, cogMenu.doClose)}>
               {/* <ListItemIcon></ListItemIcon> */}
               <Button startIcon={<ExitToAppIcon />} className="text-transform-none"><ListItemText primary="logout" /></Button>

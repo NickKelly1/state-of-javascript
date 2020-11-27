@@ -30,6 +30,11 @@ import { GqlContext } from './common/context/gql.context';
 import { IGoogleIntegrationServiceSendEmailDto } from './app/google/dtos/google.service.send-email-dto';
 import { Integration } from './app/integration/integration.const';
 import { jb } from './common/helpers/jb.helper';
+import { ist } from './common/helpers/ist.helper';
+import { InternalServerException } from './common/exceptions/types/internal-server.exception';
+import { BadRequestException } from './common/exceptions/types/bad-request.exception';
+import { IApiException } from './common/exceptions/exception';
+import { IExceptionData } from './common/interfaces/exception-data.interface';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
@@ -84,25 +89,44 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(servicesMw({ universal }));
   app.use(passportMw());
-  app.use('/v1/graphql', graphqlHTTP(mwGql(async (ctx): Promise<OptionsData> => {
+
+  const gqlMiddleware = graphqlHTTP(mwGql(async (ctx): Promise<OptionsData> => {
     const { req, res } = ctx;
     const gql = GqlContext.createFromHttp({ req, res, });
     const data: OptionsData = {
-      customFormatErrorFn: (error) => {
-        logger.error(`Error in GraphQL: ${prettyQ(error)}`);
-        const exception = makeException(ctx, error.originalError);
+      customFormatErrorFn: (err) => {
+        logger.error(`Error in GraphQL: ${prettyQ(err)}`);
+        if (ist.nullable(err.originalError)) {
+          // probably a GraphQL error
+          const message: string = err.message;
+          const error = 'GraphQLError';
+          const data: IExceptionData = {
+            locations: err.locations ? err.locations.map(loc => `line: ${loc.line}, column: ${loc.column}`) : undefined,
+            positions: err.positions ? err.positions.map(String) : undefined,
+            path: err.path ? err.path.map(String) : undefined,
+          };
+          const exception = ctx.except(BadRequestException({
+            error,
+            message,
+            data,
+            debug: prettyQ(err),
+          }));
+          return exception;
+        }
+
+        const exception = makeException(ctx, err.originalError);
 
         if (exception.code === 500) { logger.error(exception.name, exception.toJsonDev()); }
         else { logger.warn(exception.name, exception.toJsonDev()); }
 
         const modifiedError = new GraphQLError(
-          error.message,
-          error.nodes,
-          error.source,
-          error.positions,
-          error.path,
-          error.originalError,
-          { ...error.extensions, exception: exception.toJson() },
+          err.message,
+          err.nodes,
+          err.source,
+          err.positions,
+          err.path,
+          err.originalError,
+          { ...err.extensions, exception: exception.toJson() },
         );
         return modifiedError;
       },
@@ -111,7 +135,14 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
       graphiql: true,
     };
     return data;
-  })));
+  }));
+
+  // serve graphql on the primary gql route
+  app.use('/v1/gql', gqlMiddleware);
+  // also serve graphql on the refresh_token route...
+  // refresh_token cookie is scoped to this
+  app.use('/refresh/v1/gql', gqlMiddleware);
+
   app.use(Routes({ app }));
   app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
   app.use(errorHandlerMw());

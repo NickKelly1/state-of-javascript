@@ -74,13 +74,10 @@ export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
 
   type IFetchArg = string;
   const io = useAsync<IFetchArg, SearchNpmsPackageQuery, ApiException>((search) => {
-    const response = api
-      .connector
-      .graphql<SearchNpmsPackageQuery, SearchNpmsPackageQueryVariables>(
-        npmsPackageSearchQuery,
-        { likeName: `%${search}%`, },
-      )
-      .catch(rethrow(normaliseApiException));
+    const response = api.gql<SearchNpmsPackageQuery, SearchNpmsPackageQueryVariables>(
+      npmsPackageSearchQuery,
+      { likeName: `%${search}%`, },
+    );
     return response;
   }, []);
   const debounce = useDebounce({ ms: 300, abortOnUnmount: true });

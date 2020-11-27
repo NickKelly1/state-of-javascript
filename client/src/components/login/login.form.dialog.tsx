@@ -13,11 +13,9 @@ import {
 import React, { MouseEventHandler, useCallback, useContext, useEffect, useState } from "react";
 import LockOpenIcon from '@material-ui/icons/LockOpen';
 import { useMutation } from "react-query";
-import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { ApiContext } from "../../components-contexts/api.context";
-import { useFormStyles } from "../../hooks/use-form-styles.hook";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { change } from "../../helpers/change.helper";
 import { ApiException } from "../../backend-api/api.exception";
@@ -29,6 +27,7 @@ import { BugReport } from "@material-ui/icons";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { ForgottenPasswordDialog } from "../forgotten-password-reset-dialog/forgotten-password-reset-dialog";
+import { LoginMutation } from "../../generated/graphql";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -39,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 interface IILoginFormContentProps extends IWithDialogueProps {
-  onSuccess: (result: IAuthenticationRo) => any;
+  onSuccess: (result: LoginMutation) => any;
 }
 
 export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth: true })((props) => {
@@ -48,13 +47,10 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
 
   interface IFormState { name_or_email: string; password: string; };
   const [ formState, setFormState ] = useState<IFormState>({ name_or_email: '', password: '', });
-  const [ doSubmit, submitState ] = useMutation<IAuthenticationRo, ApiException>(
-    async (): Promise<IAuthenticationRo> => {
+  const [ doSubmit, submitState ] = useMutation<LoginMutation, ApiException>(
+    async (): Promise<LoginMutation> => {
       const { name_or_email, password } = formState;
-      const result = await api
-        .credentials
-        .signIn({ name_or_email, password })
-        .catch(rethrow(normaliseApiException));
+      const result = await api.login({ name_or_email, password })
       return result;
     },
     { onSuccess, },

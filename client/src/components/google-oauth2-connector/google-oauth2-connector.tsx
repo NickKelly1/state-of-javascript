@@ -148,16 +148,13 @@ export const GoogleOAuth2Connector = WithoutSsr((props: IGoogleOAuth2ConnectorPr
   const { api, me } = useContext(ApiContext);
   const classes = useGoogleOAuth2ConnectorStyles();
   const { data, error, isLoading, refetch } = useQuery<GoogleOAuth2ConnectorDataQuery, IApiException>(
-    [GoogleOAuth2ConnectorDataQueryName, me?.hash],
+    [GoogleOAuth2ConnectorDataQueryName, me.hash],
     async (): Promise<GoogleOAuth2ConnectorDataQuery> => {
       const vars: GoogleOAuth2ConnectorDataQueryVariables = {};
-      const result = await api
-        .connector
-        .graphql<GoogleOAuth2ConnectorDataQuery, GoogleOAuth2ConnectorDataQueryVariables>(
-          googleOAuth2ConnectorDataQuery,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<GoogleOAuth2ConnectorDataQuery, GoogleOAuth2ConnectorDataQueryVariables>(
+        googleOAuth2ConnectorDataQuery,
+        vars,
+      );
       return result;
     },
   );
@@ -301,13 +298,10 @@ const InitialiseIntegrationFormDialog = WithDialogue<IInitialiseIntegrationFormD
         id: Number(integration_id),
         init: parsedInit,
       };
-      const result = await api
-        .connector
-        .graphql<InitialiseIntegrationFormMutation, InitialiseIntegrationFormMutationVariables>(
-          initialiseIntegrationFormMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<InitialiseIntegrationFormMutation, InitialiseIntegrationFormMutationVariables>(
+        initialiseIntegrationFormMutation,
+        vars,
+      )
       return result;
     },
     { onSuccess: handleSuccess, }
@@ -393,13 +387,10 @@ const GoogleOAuth2FormDialog = WithDialogue<IGoogleOAuth2FormDialogProps>({ full
   const [doSubmitGetUrl, submitGetUrlState] = useMutation<GoogleOAuth2ConnectorUrlDataQuery, IApiException>(
     async () => {
       const vars: GoogleOAuth2ConnectorUrlDataQueryVariables = {};
-      const result = await api
-        .connector
-        .graphql<GoogleOAuth2ConnectorUrlDataQuery, GoogleOAuth2ConnectorUrlDataQueryVariables>(
-          googleOAuth2ConnectorUrlDataQuery,
-          vars
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<GoogleOAuth2ConnectorUrlDataQuery, GoogleOAuth2ConnectorUrlDataQueryVariables>(
+        googleOAuth2ConnectorUrlDataQuery,
+        vars
+      );
       return result;
     },
     { onSuccess: handleGetUrlSuccess },
@@ -423,13 +414,10 @@ const GoogleOAuth2FormDialog = WithDialogue<IGoogleOAuth2FormDialogProps>({ full
       const vars: GoogleOAuth2ConnectorCodeFormMutationVariables = {
         code: formState.code,
       };
-      const result = await api
-        .connector
-        .graphql<GoogleOAuth2ConnectorCodeFormMutation, GoogleOAuth2ConnectorCodeFormMutationVariables>(
-          googleOAuth2ConnectorCodeFormMutation,
-          vars
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<GoogleOAuth2ConnectorCodeFormMutation, GoogleOAuth2ConnectorCodeFormMutationVariables>(
+        googleOAuth2ConnectorCodeFormMutation,
+        vars
+      )
       return result;
     },
     { onSuccess: handleSubmitCodeSuccess },

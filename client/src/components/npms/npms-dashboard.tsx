@@ -117,14 +117,10 @@ export function NpmsDashboard(props: INpmsDashboardProps) {
 
   const handleSoftDeleteDashboard = useCallback(async () => {
     const vars: NpmsDashboardSoftDeleteDashboardMutationVariables = { id: Number(dashboard.original.id) };
-    const result = await api
-      .connector
-      .graphql<NpmsDashboardSoftDeleteDashboardMutation, NpmsDashboardSoftDeleteDashboardMutationVariables>(
-        npmsDashboardSoftDeleteDashboardQuery,
-        vars,
-      )
-      .catch(rethrow(normaliseApiException));
-
+    const result = await api.gql<NpmsDashboardSoftDeleteDashboardMutation, NpmsDashboardSoftDeleteDashboardMutationVariables>(
+      npmsDashboardSoftDeleteDashboardQuery,
+      vars,
+    );
     onChange?.();
   }, [dashboard.original.id]);
 

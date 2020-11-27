@@ -205,13 +205,10 @@ export function UserUserRolesForm(props: IUserUserRolesFormProps) {
   const { data, refetch, isLoading, error, } = useQuery<UserUserRolesFormDataQuery, ApiException>(
     [UserUserRolesFormDataQueryName(user_id), vars, me?.hash],
     async (): Promise<UserUserRolesFormDataQuery> => {
-        const result = await api
-          .connector
-          .graphql<UserUserRolesFormDataQuery, UserUserRolesFormDataQueryVariables>(
-            userUserRolesFormDataQuery,
-            vars,
-          )
-          .catch(rethrow(normaliseApiException))
+        const result = await api.gql<UserUserRolesFormDataQuery, UserUserRolesFormDataQueryVariables>(
+          userUserRolesFormDataQuery,
+          vars,
+        );
         return result;
       },
   );
@@ -282,13 +279,10 @@ function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
         id: user.data.id,
         role_ids: roleLists[1].map(perm => Number(perm.data.id)),
       }
-      const result = await api
-        .connector
-        .graphql<UserUserRolesFormUpdateMutation, UserUserRolesFormUpdateMutationVariables>(
-          userUserRolesFormMutationUpdateMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<UserUserRolesFormUpdateMutation, UserUserRolesFormUpdateMutationVariables>(
+        userUserRolesFormMutationUpdateMutation,
+        vars,
+      );
       return {
         id: result.updateUser.data.id,
         name: result.updateUser.data.name,

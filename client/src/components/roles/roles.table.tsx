@@ -160,12 +160,12 @@ export function RolesTable(props: IRolesTableProps) {
     error,
     refetch,
   } = useQuery<RolesTableDataQuery, ApiException>(
-    [RolesTableDataQueryName, vars, me?.hash],
+    [RolesTableDataQueryName, vars, me.hash],
     async (): Promise<RolesTableDataQuery> => {
-      const result = await api
-        .connector
-        .graphql<RolesTableDataQuery, RolesTableDataQueryVariables>(rolesTableDataQuery, vars)
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<RolesTableDataQuery, RolesTableDataQueryVariables>(
+        rolesTableDataQuery,
+        vars,
+      );
       return result;
     },
     {
@@ -256,13 +256,10 @@ function RolesTableContent(props: IRolesTableContentProps) {
   }, [queryData]);
 
   const handleDeleteCb = useCallback(async (vars: RoleTableDeleteMutationVariables): Promise<RoleTableDeleteMutation> => {
-    const result = await api
-      .connector
-      .graphql<RoleTableDeleteMutation, RoleTableDeleteMutationVariables>(
-        roleTableDeleteMutation,
-        vars,
-      )
-      .catch(rethrow(normaliseApiException));
+    const result = await api.gql<RoleTableDeleteMutation, RoleTableDeleteMutationVariables>(
+      roleTableDeleteMutation,
+      vars,
+    );
     return result;
   }, [api, me,]);
   const [doDelete, doDeleteState] = useMutation<RoleTableDeleteMutation, ApiException, RoleTableDeleteMutationVariables>(

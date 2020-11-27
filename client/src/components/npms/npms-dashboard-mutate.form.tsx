@@ -65,7 +65,7 @@ import { BugReport } from '@material-ui/icons';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 
 // TODO: updating vs creating...
-const CreateNpmsDashboardQuery = gql`
+const createNpmsDashboardQuery = gql`
 mutation CreateNpmsDashboardForm(
   $name:String!,
   $npms_package_ids:[Int!]
@@ -91,7 +91,7 @@ mutation CreateNpmsDashboardForm(
 }
 `;
 
-const UpdateNpmsDashboardQuery = gql`
+const updateNpmsDashboardQuery = gql`
 mutation UpdateNpmsDashboardForm(
   $id:Int!,
   $name:String!
@@ -202,13 +202,10 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
           name: _vars.name,
           npms_package_ids: _vars.npms_package_ids,
         };
-        const result = await api
-          .connector
-          .graphql<CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables>(
-            CreateNpmsDashboardQuery,
-            vars,
-          )
-          .catch(rethrow(normaliseApiException));
+        const result = await api.gql<CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables>(
+          createNpmsDashboardQuery,
+          vars,
+        )
         const final: INpmsDashboardMutateFormOnSuccessFnArg = {
           id: result.createNpmsDashboard.data.id,
           name: result.createNpmsDashboard.data.name,
@@ -223,13 +220,10 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
           name: _vars.name,
           npms_package_ids: _vars.npms_package_ids,
         };
-        const result = await api
-          .connector
-          .graphql<UpdateNpmsDashboardFormMutation, UpdateNpmsDashboardFormMutationVariables>(
-            UpdateNpmsDashboardQuery,
-            vars,
-          )
-          .catch(rethrow(normaliseApiException));
+        const result = await api.gql<UpdateNpmsDashboardFormMutation, UpdateNpmsDashboardFormMutationVariables>(
+          updateNpmsDashboardQuery,
+          vars,
+        )
         const final: INpmsDashboardMutateFormOnSuccessFnArg = {
           id: result.updateNpmsDashboard.data.id,
           name: result.updateNpmsDashboard.data.name,

@@ -11,8 +11,7 @@ export const AccessTokenGqlRelations = new GraphQLObjectType<IAccessTokenGqlRela
     user: {
       type: UserGqlNode,
       resolve: async (parent, args, ctx): Promise<OrNull<IUserGqlNodeSource>> => {
-        const user = await ctx.services.userRepository.findByPk(parent.user_id, { runner: null });
-        ctx.loader.users.prime(parent.user_id, user);
+        const user = await ctx.loader.users.load(parent.user_id);
         if (!user) return null;
         if (!ctx.services.userPolicy.canFindOne({ model: user })) return null;
         return user;

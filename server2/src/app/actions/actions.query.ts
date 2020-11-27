@@ -22,5 +22,5 @@ import { ActionsGqlNode, IActionsGqlNodeSource } from "./actions.gql.node";
 
 
 export const ActionsGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = () => ({
-  actions: { type: GraphQLNonNull(ActionsGqlNode), resolve: (): IActionsGqlNodeSource => GqlNever, },
+  can: { type: GraphQLNonNull(ActionsGqlNode), resolve: (): IActionsGqlNodeSource => GqlNever, },
 });

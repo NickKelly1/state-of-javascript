@@ -137,15 +137,12 @@ export const NpmsDashboardSortForm = WithDialogue<INpmsDashboardSortFormProps>({
     isLoading,
     refetch,
   } = useQuery<NpmsDashbortSortFormQuery, ApiException>(
-    [NpmsDashbortSortFormQueryName, vars, me?.hash],
+    [NpmsDashbortSortFormQueryName, vars, me.hash],
     async (): Promise<NpmsDashbortSortFormQuery> => {
-      const result = await api
-        .connector
-        .graphql<NpmsDashbortSortFormQuery, NpmsDashbortSortFormQueryVariables>(
-          npmsDashboardSortFormQuery,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<NpmsDashbortSortFormQuery, NpmsDashbortSortFormQueryVariables>(
+        npmsDashboardSortFormQuery,
+        vars,
+      );
       return result;
     },
   );
@@ -241,14 +238,10 @@ function NpmsDashboardSortFormContent(props: INpmsDashboardSortFormContentProps)
       const vars: NpmsDashbortSortFormSubmitMutationVariables = {
         dashboard_ids: formState.dashboards.map(dash => Number(dash.id)),
       };
-      const result = await api
-        .connector
-        .graphql<NpmsDashbortSortFormSubmitMutation, NpmsDashbortSortFormSubmitMutationVariables>(
-          npmsDashbortSortFormMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
-
+      const result = await api.gql<NpmsDashbortSortFormSubmitMutation, NpmsDashbortSortFormSubmitMutationVariables>(
+        npmsDashbortSortFormMutation,
+        vars,
+      )
       return result;
     },
     { onSuccess, },

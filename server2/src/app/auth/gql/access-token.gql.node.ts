@@ -12,7 +12,7 @@ export const AccessTokenGqlNode = new GraphQLObjectType({
       resolve: (parent, args, ctx): IAccessTokenGqlDataSource => parent,
     },
     relations: {
-      type: AccessTokenGqlRelations,
+      type: GraphQLNonNull(AccessTokenGqlRelations),
       resolve: (parent, args, ctx): IAccessTokenGqlRelationsSource => parent,
     },
   }),

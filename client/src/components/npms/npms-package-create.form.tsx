@@ -76,13 +76,10 @@ export const NpmsPackageCreateForm = WithDialogue<INpmsPackageCreateFormProps>({
       const vars: CreateNpmsPackageFormMutationVariables = {
         name: formState.name,
       };
-      const result = await api
-        .connector
-        .graphql<CreateNpmsPackageFormMutation, CreateNpmsPackageFormMutationVariables>(
-          createNpmsPackageQuery,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<CreateNpmsPackageFormMutation, CreateNpmsPackageFormMutationVariables>(
+        createNpmsPackageQuery,
+        vars,
+      );
       return result;
     },
     { onSuccess, }

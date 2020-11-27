@@ -12,28 +12,24 @@ import {
   CircularProgress, 
   DialogTitle,
   DialogContent,
-  DialogActions} from "@material-ui/core";
-import clsx from 'clsx';
-import { gql } from "graphql-request";
-import React, { MouseEventHandler, useCallback, useContext, useState } from "react";
+  DialogActions,
+} from "@material-ui/core";
+import React, { useCallback, useContext, useState } from "react";
 import { useMutation } from "react-query";
-import { IAuthenticationRo } from "../../backend-api/api.credentials";
 import { ApiException } from "../../backend-api/api.exception";
-import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
-import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import { ApiContext } from "../../components-contexts/api.context";
 import { change } from "../../helpers/change.helper";
-import { useFormStyles } from "../../hooks/use-form-styles.hook";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { OrPromise } from "../../types/or-promise.type";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { RegisterMutation } from "../../generated/graphql";
 
 
 export interface IRegisterFormDialogProps extends IWithDialogueProps {
-  onSuccess: (result: IAuthenticationRo) => OrPromise<any>;
+  onSuccess: (result: RegisterMutation) => OrPromise<any>;
 }
 
 export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullWidth: true })((props) => {
@@ -42,13 +38,10 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
 
   interface IFormState { name: string; email: string; password: string; };
   const [ formState, setFormState ] = useState<IFormState>({ name: '', email: '', password: '', });
-  const [ doSubmit, submitState ] = useMutation<IAuthenticationRo, ApiException>(
-    async (): Promise<IAuthenticationRo> => {
+  const [ doSubmit, submitState ] = useMutation<RegisterMutation, ApiException>(
+    async (): Promise<RegisterMutation> => {
       const { name, email, password } = formState;
-      const result = await api
-        .credentials
-        .signUp({ name, email, password })
-        .catch(rethrow(normaliseApiException));
+      const result = await api.register({ name, email, password })
       return result;
     },
     { onSuccess, },

@@ -19,31 +19,74 @@ export class RequestAuth {
     this._user_id = user_id;
   }
 
+
+  /**
+   * Is the Request authenticated? (attached to an actual User)
+   */
+  isAuthenticated(): boolean {
+    return ist.defined(this.user_id);
+  }
+
+
+  /**
+   * Is a given User the Requester?
+   *
+   * @param user
+   */
   isMe(user: UserModel): boolean {
     if (ist.nullable(this.user_id)) return false;
     return this.isMeByUserId(user.id);
   }
 
+
+  /**
+   * Does a given UserId belong to the Requester?
+   *
+   * @param id
+   */
   isMeByUserId(id: UserId): boolean {
     if (ist.nullable(this.user_id)) return false;
     return this.user_id === id;
   }
 
 
+  /**
+   * Does the Requester have any of the given Permissions?
+   *
+   * @param permissions
+   */
   hasAnyPermissions(permissions: PermissionId[]): boolean {
     return permissions.some(perm => this.permissions.has(perm));
   }
 
+
+  /**
+   * Does the Requester have all of the given Permissions?
+   *
+   * @param permissions
+   */
   hasAllPermissions(permissions: PermissionId[]): boolean {
     return permissions.every(perm => this.permissions.has(perm));
   }
 
+
+  /**
+   * Bind Authorisation to the Request
+   *
+   * @param arg
+   */
   addAccess(arg: { access: IAccessToken }) {
     const { access } = arg;
     this._user_id = access.user_id;
     access.permissions.forEach(perm => this.permissions.add(perm));
   }
 
+
+  /**
+   * Add Permissions to the Request
+   *
+   * @param arg
+   */
   addPermissions(arg: { permissions: PermissionId[] }) {
     const { permissions } = arg;
     permissions.forEach(this._permissions.add.bind(this._permissions));

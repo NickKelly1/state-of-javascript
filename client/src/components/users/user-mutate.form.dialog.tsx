@@ -159,13 +159,10 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
           // set if given, otherwise undefined
           deactivated: formState.deactivated ?? undefined,
         };
-        const result = await api
-          .connector
-          .graphql<UserMutateFormUpdateMutation, UserMutateFormUpdateMutationVariables>(
-            userMutateFormUpdateMutation,
-            vars
-          )
-          .catch(rethrow(normaliseApiException));
+        const result = await api.gql<UserMutateFormUpdateMutation, UserMutateFormUpdateMutationVariables>(
+          userMutateFormUpdateMutation,
+          vars
+        );
         return {
           id: result.updateUser.data.id,
           name: result.updateUser.data.name,
@@ -180,13 +177,10 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
         // undefined if empty string
         password: formState.password || undefined,
       };
-      const result = await api
-        .connector
-        .graphql<UserMutateFormCreateMutation, UserMutateFormCreateMutationVariables>(
-          userMutateFormCreateMutation,
-          vars
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<UserMutateFormCreateMutation, UserMutateFormCreateMutationVariables>(
+        userMutateFormCreateMutation,
+        vars
+      );
       return {
         id: result.createUser.data.id,
         name: result.createUser.data.name,

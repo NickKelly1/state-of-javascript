@@ -49,6 +49,7 @@ import { DebugException } from '../../components/debug-exception/debug-exception
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form.dialog';
 import { flsx } from '../../helpers/flsx.helper';
+import { IPageProps } from '../../types/page-props.interface';
 
 const JsPageDashboardQueryName = 'JsPageDashboardQuery';
 const jsPageDashboardQuery = gql`
@@ -224,7 +225,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
   const { api, me } = useContext(ApiContext);
 
   const { data, isLoading, refetch, error, } = useQuery<JsPageDashboardQuery, ApiException>(
-    [ JsPageDashboardQueryName, defaultQueryVars, me?.hash ],
+    [ JsPageDashboardQueryName, defaultQueryVars, me.hash ],
     async (): Promise<JsPageDashboardQuery> => {
       const result = await runPageDataQuery(api, defaultQueryVars);
       return result;
@@ -548,14 +549,10 @@ async function runPageDataQuery(
   api: Api,
   vars: JsPageDashboardQueryVariables,
 ): Promise<JsPageDashboardQuery> {
-  const dashboards = await api
-    .connector
-    .graphql<JsPageDashboardQuery, JsPageDashboardQueryVariables>(
-      jsPageDashboardQuery,
-      vars,
-    )
-    .catch(rethrow(normaliseApiException));
-
+  const dashboards = await api.gql<JsPageDashboardQuery, JsPageDashboardQueryVariables>(
+    jsPageDashboardQuery,
+    vars,
+  );
   return dashboards;
 }
 

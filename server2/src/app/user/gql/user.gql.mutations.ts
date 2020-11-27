@@ -15,7 +15,7 @@ import { UserTokenLang } from "../../../common/i18n/packs/user-token.lang";
 import { UserLang } from "../../../common/i18n/packs/user.lang";
 import { IJson } from "../../../common/interfaces/json.interface";
 import { logger } from "../../../common/logger/logger";
-import { AuthorisationGqlNode, IAuthorisationGqlNodeSource, IAuthorisationRo } from "../../auth/gql-input/authorisation.gql";
+import { AuthenticationGqlNode, IAuthenticationGqlNodeSource, IAuthorisationRo } from "../../auth/gql-input/authorisation.gql";
 import { AccessTokenGqlNode, IAccessTokenGqlNodeSource } from "../../auth/gql/access-token.gql.node";
 import { QueryRunner } from "../../db/query-runner";
 import { RoleAssociation } from "../../role/role.associations";
@@ -213,11 +213,11 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
    * Consume ForgottenUserPasswordReset token
    */
   consumeForgottenUserPasswordReset: {
-    type: GraphQLNonNull(AuthorisationGqlNode),
+    type: GraphQLNonNull(AuthenticationGqlNode),
     args: { dto: { type: GraphQLNonNull(ConsumeResetForgottenUserPasswordGqlInput), }, },
-    resolve: async (parent, args, ctx): Promise<IAuthorisationGqlNodeSource> => {
+    resolve: async (parent, args, ctx): Promise<IAuthenticationGqlNodeSource> => {
       const dto = ctx.validate(ConsumeResetForgottenUserPasswordGqlInputValidator, args.dto);
-      const final = await ctx.services.universal.db.transact(async ({ runner }): Promise<IAuthorisationGqlNodeSource> => {
+      const final = await ctx.services.universal.db.transact(async ({ runner }): Promise<IAuthenticationGqlNodeSource> => {
         const token = await ctx.services.userTokenRepository.findOneBySlugOrFail(dto.token, {
           runner,
           options: { include: [{
@@ -260,7 +260,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
 
         const userPermissions = assertDefined(user.roles).flatMap(role => assertDefined(role.permissions));
         const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions()
-        const authorisation = await ctx.services.authService.authenticate({
+        const auth = await ctx.services.authService.authenticate({
           res: ctx.http?.res,
           user,
           permissions: userPermissions.map(toId)
@@ -271,7 +271,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         // delete the token so it can't be re-used
         await ctx.services.userTokenService.softDelete({ model: token, runner });
 
-        return authorisation;
+        return ctx.services.authService.toAuthenticationGqlNodeSource({ user, auth });
       });
 
       return final;
@@ -304,11 +304,11 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
    * TODO: return jwt & check cookies are being set...
    */
   acceptUserWelcome: {
-    type: GraphQLNonNull(AuthorisationGqlNode),
+    type: GraphQLNonNull(AuthenticationGqlNode),
     args: { dto: { type: GraphQLNonNull(AcceptUserWelcomeGqlInput), }, },
-    resolve: async (parent, args, ctx): Promise<IAuthorisationGqlNodeSource> => {
+    resolve: async (parent, args, ctx): Promise<IAuthenticationGqlNodeSource> => {
       const dto = ctx.validate(AcceptUserWelcomeGqlInputValidator, args.dto);
-      const final = await ctx.services.universal.db.transact(async ({ runner }): Promise<IAuthorisationGqlNodeSource> => {
+      const final = await ctx.services.universal.db.transact(async ({ runner }): Promise<IAuthenticationGqlNodeSource> => {
         const token = await ctx.services.userTokenRepository.findOneBySlugOrFail(dto.token, {
           runner,
           options: {
@@ -369,7 +369,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         const userPermissions = assertDefined(user.roles).flatMap(role => assertDefined(role.permissions));
         const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions()
 
-        const result = await ctx.services.authService.authenticate({
+        const auth = await ctx.services.authService.authenticate({
           res: ctx.http?.res,
           user,
           permissions: userPermissions.map(toId)
@@ -379,7 +379,8 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
 
         // delete the token so it can't be re-used
         await ctx.services.userTokenService.softDelete({ model: token, runner });
-        return result;
+
+        return ctx.services.authService.toAuthenticationGqlNodeSource({ user, auth });
       });
 
       return final;

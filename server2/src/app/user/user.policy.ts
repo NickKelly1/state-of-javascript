@@ -84,7 +84,7 @@ export class UserPolicy {
 
 
   /**
-   * Can the Requester Register Users?
+   * Can the Requester Register?
    *
    * @param arg
    */
@@ -99,6 +99,44 @@ export class UserPolicy {
       Permission.Users.Register,
     ]);
   }
+
+
+  /**
+   * Can the Requester Login?
+   *
+   * @param arg
+   */
+  canLogin(): boolean {
+
+    // ability to LogIn is required
+    // if you can't LogIn as anything, not even Admin,
+    // all hope is lost
+    return true;
+  }
+
+
+  /**
+   * Can the Requester Login as a User?
+   *
+   * @param arg
+   */
+  canLoginAs(arg: {
+    model: UserModel;
+  }): boolean {
+    const { model } = arg;
+
+    // must be able to log in as anyone
+    if (!this.canLogin()) return false;
+
+    // is not SoftDeleted
+    if (model.isSoftDeleted()) return false;
+
+    // is not Deactivated
+    if (model.isDeactivated()) return false;
+
+    return true;
+  }
+
 
 
   /**

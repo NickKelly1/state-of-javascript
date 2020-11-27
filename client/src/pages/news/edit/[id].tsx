@@ -3,7 +3,6 @@ import NextLink from 'next/link';
 import MUILink from '@material-ui/core/Link';
 import { gql } from "graphql-request";
 import React, { useCallback, useContext, } from "react";
-import { Permission } from "../../../backend-api/services/permission/permission.const";
 import { ApiContext } from "../../../components-contexts/api.context";
 import { EditNewsArticlePageQuery, UpdateNewsArticle, UpdateNewsArticleMutationVariables, ViewNewsArticlePageQuery, ViewNewsArticlePageQueryVariables } from "../../../generated/graphql";
 import { ist } from "../../../helpers/ist.helper";
@@ -129,10 +128,10 @@ function EditNewsArticlePage(props: IEditNewsArticlePageProps) {
 
   const [saveNewsArticle, result] = useMutation<UpdateNewsArticle, ApiException, UpdateNewsArticleMutationVariables>(
     async (vars: UpdateNewsArticleMutationVariables): Promise<UpdateNewsArticle> => {
-      const result = await api
-        .connector
-        .graphql<UpdateNewsArticle, UpdateNewsArticleMutationVariables>(updateNewsQuery, vars)
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<UpdateNewsArticle, UpdateNewsArticleMutationVariables>(
+        updateNewsQuery,
+        vars
+      );
       return result;
     },
   );
@@ -182,9 +181,10 @@ function EditNewsArticlePage(props: IEditNewsArticlePageProps) {
 
 async function runPageQuery(arg: { id: number, api: Api }): Promise<ViewNewsArticlePageQuery> {
   const { id, api } = arg;
-  const query = await api
-    .connector
-    .graphql<ViewNewsArticlePageQuery, ViewNewsArticlePageQueryVariables>(pageQuery, { news_article_id: id });
+  const query = await api.gql<ViewNewsArticlePageQuery, ViewNewsArticlePageQueryVariables>(
+    pageQuery,
+    { news_article_id: id },
+  );
   return query;
 }
 

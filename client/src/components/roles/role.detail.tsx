@@ -82,17 +82,14 @@ export function RoleDetail(props: IRoleDetailProps) {
     isLoading,
     refetch,
   } = useQuery<RoleDetailDataQuery, ApiException>(
-    [RoleDetailDataQueryName(role_id), vars, me?.hash],
+    [RoleDetailDataQueryName(role_id), vars, me.hash],
     async (): Promise<RoleDetailDataQuery> => {
-        const result = await api
-          .connector
-          .graphql<RoleDetailDataQuery, RoleDetailDataQueryVariables>(
-            roleDetailDataQuery,
-            vars,
-          )
-          .catch(rethrow(normaliseApiException));
-        return result;
-      },
+      const result = await api.gql<RoleDetailDataQuery, RoleDetailDataQueryVariables>(
+        roleDetailDataQuery,
+        vars,
+      );
+      return result;
+    },
   );
 
   const roles = useMemo(() => data?.roles.nodes.filter(ist.notNullable), [data?.roles]);

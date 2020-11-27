@@ -173,13 +173,10 @@ function WelcomePageContents(props: IPasswordResetPageContentsProps) {
         token,
         password: formState.password,
       }
-      const result = await api
-        .connector
-        .graphql<PasswordResetPageConsumeResetMutation, PasswordResetPageConsumeResetMutationVariables>(
-          passwordResetPageConsumeResetMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<PasswordResetPageConsumeResetMutation, PasswordResetPageConsumeResetMutationVariables>(
+        passwordResetPageConsumeResetMutation,
+        vars,
+      );
       return result;
     },
     {
@@ -253,12 +250,10 @@ function WelcomePageContents(props: IPasswordResetPageContentsProps) {
 async function getPageData(arg: { api: Api; vars: PasswordResetPageDataQueryVariables; }): Promise<Attempt<PasswordResetPageDataQuery, IApiException>> {
   const { api, vars } = arg;
   const result: Attempt<PasswordResetPageDataQuery, IApiException> = await attemptAsync(
-    api
-      .connector
-      .graphql<PasswordResetPageDataQuery, PasswordResetPageDataQueryVariables>(
-        passwordResetPageDataQuery,
-        vars,
-      ),
+    api.gql<PasswordResetPageDataQuery, PasswordResetPageDataQueryVariables>(
+      passwordResetPageDataQuery,
+      vars,
+    ),
     normaliseApiException,
   );
   return result;

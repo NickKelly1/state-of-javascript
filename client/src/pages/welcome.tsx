@@ -177,13 +177,10 @@ function WelcomePageContents(props: IWelcomePageContentsProps) {
         name: formState.name,
         password: formState.password,
       }
-      const result = await api
-        .connector
-        .graphql<WelcomePageAcceptWelcomeMutation, WelcomePageAcceptWelcomeMutationVariables>(
-          welcomePageAcceptWelcomeMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<WelcomePageAcceptWelcomeMutation, WelcomePageAcceptWelcomeMutationVariables>(
+        welcomePageAcceptWelcomeMutation,
+        vars,
+      );
       return result;
     },
     {
@@ -271,12 +268,10 @@ function WelcomePageContents(props: IWelcomePageContentsProps) {
 async function getPageData(arg: { api: Api; vars: WelcomePageDataQueryVariables; }): Promise<Attempt<WelcomePageDataQuery, IApiException>> {
   const { api, vars } = arg;
   const result: Attempt<WelcomePageDataQuery, IApiException> = await attemptAsync(
-    api
-      .connector
-      .graphql<WelcomePageDataQuery, WelcomePageDataQueryVariables>(
-        welcomePageDataQuery,
-        vars,
-      ),
+    api.gql<WelcomePageDataQuery, WelcomePageDataQueryVariables>(
+      welcomePageDataQuery,
+      vars,
+    ),
     normaliseApiException,
   );
   return result;

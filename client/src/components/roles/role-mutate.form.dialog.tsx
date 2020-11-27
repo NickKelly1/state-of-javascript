@@ -89,13 +89,10 @@ export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWid
           id: Number(role.id),
           name: formState.name,
         };
-        const result = await api
-          .connector
-          .graphql<MutateRoleFormUpdateMutation, MutateRoleFormUpdateMutationVariables>(
-            mutateRoleFormUpdateMutation,
-            vars
-          )
-          .catch(rethrow(normaliseApiException));
+        const result = await api.gql<MutateRoleFormUpdateMutation, MutateRoleFormUpdateMutationVariables>(
+          mutateRoleFormUpdateMutation,
+          vars
+        );
         return {
           id: result.updateRole.data.id,
           name: result.updateRole.data.name,
@@ -106,13 +103,10 @@ export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWid
       const vars: MutateRoleFromCreateMutationVariables = {
         name: formState.name,
       };
-      const result = await api
-        .connector
-        .graphql<MutateRoleFromCreateMutation, MutateRoleFromCreateMutationVariables>(
-          mutateRoleFormCreateMutation,
-          vars
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<MutateRoleFromCreateMutation, MutateRoleFromCreateMutationVariables>(
+        mutateRoleFormCreateMutation,
+        vars
+      );
       return {
         id: result.createRole.data.id,
         name: result.createRole.data.name,

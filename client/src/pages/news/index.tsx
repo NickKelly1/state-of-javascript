@@ -164,7 +164,7 @@ function IndexNewsPage(props: IIndexNewsPageProps) {
 
 
 export const getStaticProps = staticPropsHandler<IIndexNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {
-  const query = await api.connector.graphql<IndexNewsPageQuery, IndexNewsPageQueryVariables>(
+  const query = await api.gql<IndexNewsPageQuery, IndexNewsPageQueryVariables>(
     pageQuery,
     {
       news_limit: 10,

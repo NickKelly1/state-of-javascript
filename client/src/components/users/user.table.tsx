@@ -160,12 +160,12 @@ export function UsersTable(props: IUsersTableProps) {
     error,
     refetch,
   } = useQuery<any, ApiException>(
-    [UsersTableDataQueryName, vars, me?.hash],
+    [UsersTableDataQueryName, vars, me.hash],
     async (): Promise<UsersTableDataQuery> => {
-      const result = await api
-        .connector
-        .graphql<UsersTableDataQuery, UsersTableDataQueryVariables>(usersTableDataQuery, vars)
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<UsersTableDataQuery, UsersTableDataQueryVariables>(
+        usersTableDataQuery,
+        vars,
+      );
       return result;
     },
     {
@@ -256,13 +256,10 @@ function UsersTableContent(props: IUsersTableContentProps) {
 
   const [doDelete, doDeleteState] = useMutation<UsersTableDeleteMutation, ApiException, UsersTableDeleteMutationVariables>(
     async (vars: UsersTableDeleteMutationVariables): Promise<UsersTableDeleteMutation> => {
-      const result = await api
-        .connector
-        .graphql<UsersTableDeleteMutation, UsersTableDeleteMutationVariables>(
-          usersTableDeleteMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<UsersTableDeleteMutation, UsersTableDeleteMutationVariables>(
+        usersTableDeleteMutation,
+        vars,
+      );
       return result;
     },
     { onSuccess: refetch, },

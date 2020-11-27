@@ -30,7 +30,7 @@ export type RootQueryType = {
   google: GoogleNode;
   googleOAuth2GetUrl: Scalars['String'];
   gmailJobs: Array<JobNode>;
-  actions: ActionsNode;
+  can: ActionsNode;
   permissionCategoryies: PermissionCategoryCollectionNode;
 };
 
@@ -176,6 +176,7 @@ export type UserActions = {
   hardDelete: Scalars['Boolean'];
   restore: Scalars['Boolean'];
   deactivate: Scalars['Boolean'];
+  login: Scalars['Boolean'];
   updatePassword: Scalars['Boolean'];
   createUserRoles: Scalars['Boolean'];
   hardDeleteUserRoles: Scalars['Boolean'];
@@ -615,6 +616,7 @@ export type UserCollectionNode = {
 export type UserCollectionActions = {
   __typename?: 'UserCollectionActions';
   show: Scalars['Boolean'];
+  login: Scalars['Boolean'];
   register: Scalars['Boolean'];
   create: Scalars['Boolean'];
 };
@@ -1243,18 +1245,18 @@ export enum JobStatus {
 
 export type ActionsNode = {
   __typename?: 'ActionsNode';
-  users?: Maybe<UserCollectionActions>;
-  roles?: Maybe<RoleCollectionActions>;
-  userRoles?: Maybe<UserRoleCollectionActions>;
-  permissions?: Maybe<PermissionCollectionActions>;
-  rolePermissions?: Maybe<RolePermissionCollectionActions>;
-  npmsPackages?: Maybe<NpmsPackageCollectionActions>;
-  npmsDashboards?: Maybe<NpmsDashboardCollectionActions>;
-  npmsDashboardItems?: Maybe<NpmsDashboardItemCollectionActions>;
-  newsArticles?: Maybe<NewsArticleCollectionActions>;
-  newsArticleStatuses?: Maybe<NewsArticleStatusCollectionActions>;
-  jobs?: Maybe<JobCollectionActions>;
-  logs?: Maybe<LogCollectionActions>;
+  users: UserCollectionActions;
+  roles: RoleCollectionActions;
+  userRoles: UserRoleCollectionActions;
+  permissions: PermissionCollectionActions;
+  rolePermissions: RolePermissionCollectionActions;
+  npmsPackages: NpmsPackageCollectionActions;
+  npmsDashboards: NpmsDashboardCollectionActions;
+  npmsDashboardItems: NpmsDashboardItemCollectionActions;
+  newsArticles: NewsArticleCollectionActions;
+  newsArticleStatuses: NewsArticleStatusCollectionActions;
+  jobs: JobCollectionActions;
+  logs: LogCollectionActions;
 };
 
 export type NewsArticleStatusCollectionActions = {
@@ -1336,12 +1338,16 @@ export type RootMutationType = {
   softDeleteUser: Scalars['Boolean'];
   hardDeleteUser: Scalars['Boolean'];
   requestForgottenUserPasswordReset: Scalars['Boolean'];
-  consumeForgottenUserPasswordReset: AuthorisationGqlNode;
+  consumeForgottenUserPasswordReset: AuthenticationNode;
   requestUserWelcome: Scalars['Boolean'];
-  acceptUserWelcome: AuthorisationGqlNode;
+  acceptUserWelcome: AuthenticationNode;
   initialiseIntegration: IntegrationNode;
   googleOAuth2HandleCode: GoogleNode;
   googleSendEmail: Scalars['JsonObject'];
+  refresh: AuthenticationNode;
+  register: AuthenticationNode;
+  login: AuthenticationNode;
+  logout: LogoutNode;
 };
 
 
@@ -1514,6 +1520,21 @@ export type RootMutationTypeGoogleSendEmailArgs = {
   dto: GoogleSendEmail;
 };
 
+
+export type RootMutationTypeRefreshArgs = {
+  dto?: Maybe<Refresh>;
+};
+
+
+export type RootMutationTypeRegisterArgs = {
+  dto?: Maybe<Register>;
+};
+
+
+export type RootMutationTypeLoginArgs = {
+  dto?: Maybe<Login>;
+};
+
 export type CreateNewsArticle = {
   title: Scalars['String'];
   teaser: Scalars['String'];
@@ -1639,8 +1660,11 @@ export type RequestResetForgottenUserPassword = {
   email: Scalars['String'];
 };
 
-export type AuthorisationGqlNode = {
-  __typename?: 'AuthorisationGqlNode';
+export type AuthenticationNode = {
+  __typename?: 'AuthenticationNode';
+  user_id: Scalars['Int'];
+  user_name: Scalars['String'];
+  can: ActionsNode;
   access_token: Scalars['String'];
   refresh_token: Scalars['String'];
   access_token_object: AccessTokenNode;
@@ -1650,7 +1674,7 @@ export type AuthorisationGqlNode = {
 export type AccessTokenNode = {
   __typename?: 'AccessTokenNode';
   data: AccessTokenData;
-  relations?: Maybe<AccessTokenRelations>;
+  relations: AccessTokenRelations;
 };
 
 export type AccessTokenData = {
@@ -1710,6 +1734,149 @@ export type GoogleSendEmail = {
   subject?: Maybe<Scalars['String']>;
   body?: Maybe<Scalars['String']>;
 };
+
+export type Refresh = {
+  refresh_token?: Maybe<Scalars['String']>;
+};
+
+export type Register = {
+  name: Scalars['String'];
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type Login = {
+  name_or_email: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type LogoutNode = {
+  __typename?: 'LogoutNode';
+  can: ActionsNode;
+};
+
+export type AuthorisedActionsFieldsFragment = (
+  { __typename?: 'ActionsNode' }
+  & { users: (
+    { __typename?: 'UserCollectionActions' }
+    & Pick<UserCollectionActions, 'show' | 'login' | 'register' | 'create'>
+  ), roles: (
+    { __typename?: 'RoleCollectionActions' }
+    & Pick<RoleCollectionActions, 'show' | 'create'>
+  ), userRoles: (
+    { __typename?: 'UserRoleCollectionActions' }
+    & Pick<UserRoleCollectionActions, 'show'>
+  ), permissions: (
+    { __typename?: 'PermissionCollectionActions' }
+    & Pick<PermissionCollectionActions, 'show'>
+  ), rolePermissions: (
+    { __typename?: 'RolePermissionCollectionActions' }
+    & Pick<RolePermissionCollectionActions, 'show'>
+  ), npmsPackages: (
+    { __typename?: 'NpmsPackageCollectionActions' }
+    & Pick<NpmsPackageCollectionActions, 'show' | 'create'>
+  ), npmsDashboards: (
+    { __typename?: 'NpmsDashboardCollectionActions' }
+    & Pick<NpmsDashboardCollectionActions, 'show' | 'sort' | 'create'>
+  ), npmsDashboardItems: (
+    { __typename?: 'NpmsDashboardItemCollectionActions' }
+    & Pick<NpmsDashboardItemCollectionActions, 'show'>
+  ), newsArticles: (
+    { __typename?: 'NewsArticleCollectionActions' }
+    & Pick<NewsArticleCollectionActions, 'show' | 'create'>
+  ), newsArticleStatuses: (
+    { __typename?: 'NewsArticleStatusCollectionActions' }
+    & Pick<NewsArticleStatusCollectionActions, 'show'>
+  ), jobs: (
+    { __typename?: 'JobCollectionActions' }
+    & Pick<JobCollectionActions, 'show'>
+  ), logs: (
+    { __typename?: 'LogCollectionActions' }
+    & Pick<LogCollectionActions, 'show'>
+  ) }
+);
+
+export type AuthenticationFieldsFragment = (
+  { __typename?: 'AuthenticationNode' }
+  & Pick<AuthenticationNode, 'user_id' | 'user_name' | 'access_token' | 'refresh_token'>
+  & { access_token_object: (
+    { __typename?: 'AccessTokenNode' }
+    & { data: (
+      { __typename?: 'AccessTokenData' }
+      & Pick<AccessTokenData, 'permissions'>
+    ) }
+  ), can: (
+    { __typename?: 'ActionsNode' }
+    & AuthorisedActionsFieldsFragment
+  ) }
+);
+
+export type ActionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ActionsQuery = (
+  { __typename?: 'RootQueryType' }
+  & { can: (
+    { __typename?: 'ActionsNode' }
+    & AuthorisedActionsFieldsFragment
+  ) }
+);
+
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutMutation = (
+  { __typename?: 'RootMutationType' }
+  & { logout: (
+    { __typename?: 'LogoutNode' }
+    & { can: (
+      { __typename?: 'ActionsNode' }
+      & AuthorisedActionsFieldsFragment
+    ) }
+  ) }
+);
+
+export type RefreshMutationVariables = Exact<{
+  refresh_token?: Maybe<Scalars['String']>;
+}>;
+
+
+export type RefreshMutation = (
+  { __typename?: 'RootMutationType' }
+  & { refresh: (
+    { __typename?: 'AuthenticationNode' }
+    & AuthenticationFieldsFragment
+  ) }
+);
+
+export type LoginMutationVariables = Exact<{
+  name_or_email: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type LoginMutation = (
+  { __typename?: 'RootMutationType' }
+  & { login: (
+    { __typename?: 'AuthenticationNode' }
+    & AuthenticationFieldsFragment
+  ) }
+);
+
+export type RegisterMutationVariables = Exact<{
+  name: Scalars['String'];
+  email: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type RegisterMutation = (
+  { __typename?: 'RootMutationType' }
+  & { register: (
+    { __typename?: 'AuthenticationNode' }
+    & AuthenticationFieldsFragment
+  ) }
+);
 
 export type RequestForgottenUserPasswordResetMutationVariables = Exact<{
   email: Scalars['String'];
@@ -2598,14 +2765,14 @@ export type PasswordResetPageConsumeResetMutationVariables = Exact<{
 export type PasswordResetPageConsumeResetMutation = (
   { __typename?: 'RootMutationType' }
   & { consumeForgottenUserPasswordReset: (
-    { __typename?: 'AuthorisationGqlNode' }
-    & Pick<AuthorisationGqlNode, 'access_token' | 'refresh_token'>
+    { __typename?: 'AuthenticationNode' }
+    & Pick<AuthenticationNode, 'access_token' | 'refresh_token'>
     & { access_token_object: (
       { __typename?: 'AccessTokenNode' }
       & { data: (
         { __typename?: 'AccessTokenData' }
         & Pick<AccessTokenData, 'user_id' | 'permissions' | 'iat' | 'exp'>
-      ), relations?: Maybe<(
+      ), relations: (
         { __typename?: 'AccessTokenRelations' }
         & { user?: Maybe<(
           { __typename?: 'UserNode' }
@@ -2614,7 +2781,7 @@ export type PasswordResetPageConsumeResetMutation = (
             & Pick<UserData, 'id' | 'name'>
           ) }
         )> }
-      )> }
+      ) }
     ), refresh_token_object: (
       { __typename?: 'RefreshTokenNode' }
       & { data: (
@@ -2654,14 +2821,14 @@ export type WelcomePageAcceptWelcomeMutationVariables = Exact<{
 export type WelcomePageAcceptWelcomeMutation = (
   { __typename?: 'RootMutationType' }
   & { acceptUserWelcome: (
-    { __typename?: 'AuthorisationGqlNode' }
-    & Pick<AuthorisationGqlNode, 'access_token' | 'refresh_token'>
+    { __typename?: 'AuthenticationNode' }
+    & Pick<AuthenticationNode, 'access_token' | 'refresh_token'>
     & { access_token_object: (
       { __typename?: 'AccessTokenNode' }
       & { data: (
         { __typename?: 'AccessTokenData' }
         & Pick<AccessTokenData, 'user_id' | 'permissions' | 'iat' | 'exp'>
-      ), relations?: Maybe<(
+      ), relations: (
         { __typename?: 'AccessTokenRelations' }
         & { user?: Maybe<(
           { __typename?: 'UserNode' }
@@ -2670,7 +2837,7 @@ export type WelcomePageAcceptWelcomeMutation = (
             & Pick<UserData, 'id' | 'name'>
           ) }
         )> }
-      )> }
+      ) }
     ), refresh_token_object: (
       { __typename?: 'RefreshTokenNode' }
       & { data: (

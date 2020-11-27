@@ -8,7 +8,7 @@ import { logger } from "../../common/logger/logger";
 import { OrNull } from "../../common/types/or-null.type";
 import { PermissionId } from "../permission/permission-id.type";
 import { UserModel } from "../user/user.model";
-import { IAuthorisationRo } from "./gql-input/authorisation.gql";
+import { IAuthenticationGqlNodeSource, IAuthorisationRo } from "./gql-input/authorisation.gql";
 import { IAccessToken } from "./token/access.token.gql";
 
 export class AuthSerivce {
@@ -95,13 +95,12 @@ export class AuthSerivce {
           sameSite: false,
           domain: this.ctx.services.universal.env.HOST,
           secure: this.ctx.services.universal.env.is_prod(),
-          path: '/v1/auth/refresh',
+          path: '/refresh/',
           httpOnly: true,
           expires: new Date(0), // @ the beginning of UTC time... 1970
         },
       );
     }
-
   }
 
 
@@ -155,7 +154,7 @@ export class AuthSerivce {
           sameSite: false,
           domain: this.ctx.services.universal.env.HOST,
           secure: this.ctx.services.universal.env.is_prod(),
-          path: '/v1/auth/refresh',
+          path: '/refresh/',
           httpOnly: true,
           // expires: new Date(Date.now() + this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS),
           maxAge: this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS,
@@ -172,5 +171,25 @@ export class AuthSerivce {
     };
 
     return obj;
+  }
+
+
+
+  /**
+   * todo: docs
+   *
+   * @param arg
+   */
+  toAuthenticationGqlNodeSource(arg: { auth: IAuthorisationRo, user: UserModel }): IAuthenticationGqlNodeSource {
+    const { auth, user, } = arg;
+    const result: IAuthenticationGqlNodeSource = {
+      access_token: auth.access_token,
+      access_token_object: auth.access_token_object,
+      refresh_token: auth.refresh_token,
+      refresh_token_object: auth.refresh_token_object,
+      user_id: user.id,
+      user_name: user.name,
+    };
+    return result;
   }
 }

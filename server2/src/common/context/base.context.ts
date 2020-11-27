@@ -32,7 +32,12 @@ export abstract class BaseContext implements IRequestContext {
   }
 
   authorize(can: boolean): void | never {
-    if (!can) throw this.except(ForbiddenException());
+    if (!can) {
+      // 401 if not authenticated (allows front-end to logout the user)
+      if (!this.auth.isAuthenticated()) { throw this.except(UnauthenticatedException()) }
+      // 403 if authenticated
+      throw this.except(ForbiddenException())
+    };
   }
 
   assertFound<T>(arg: OrNullable<T>): T {

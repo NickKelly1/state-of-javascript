@@ -22,9 +22,11 @@ import { ICreateUserPasswordDto } from "../user-password/dtos/create-user-passwo
 import { IUserServiceCreateUserDto } from "../user/service-dto/user-service.create-user.dto";
 import { UserAssociation } from "../user/user.associations";
 import { IAuthorisationRo } from "./gql-input/authorisation.gql";
-import { LoginDtoValidator } from "./gql-input/login.gql";
-import { RefreshDtoValidator } from "./gql-input/refresh.gql";
+import { LoginDtoValidator } from "./gql-input/login.gql.input";
+import { RefreshDtoValidator } from "./gql-input/refresh.gql.input";
 import { SignupDtoValidator } from "./gql-input/signup.dto";
+
+// TODO: deprecate in favour of graphql auth routes
 
 export function AuthRoutes(arg: { app: ExpressContext }): Router {
   const router = Router();

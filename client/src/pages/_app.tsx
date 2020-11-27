@@ -14,6 +14,7 @@ import { AppProps } from 'next/app';
 import { DebugModeProvider } from '../components-contexts/debug-mode.context';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 import { SnackbarProvider } from 'notistack';
+import { IPageProps } from '../types/page-props.interface';
 
 interface IMyAppProps extends AppProps {
   //
@@ -31,6 +32,8 @@ const queryCache = new QueryCache({
 
 export default function MyApp(props: IMyAppProps) {
   const { Component, pageProps } = props;
+
+  const { _me, ..._pageProps } = pageProps as IPageProps;
 
   React.useEffect(() => {
     // Remove the server-side injected CSS.
@@ -50,7 +53,7 @@ export default function MyApp(props: IMyAppProps) {
         <DebugModeProvider>
           <ReactQueryCacheProvider queryCache={queryCache}>
             <PublicEnvProvider>
-              <ApiProvider>
+              <ApiProvider initialMe={_me}>
                 <CmsProvider>
                   <NpmsApiProvider>
                     <ThemeProvider theme={theme}>

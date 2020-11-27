@@ -224,13 +224,10 @@ export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
   const { data, refetch, isLoading, error, } = useQuery<RoleRolePermissionsFormDataQuery, ApiException>(
     [RoleRolePermissionsFormDataQueryName(role_id), vars, me?.hash],
     async (): Promise<RoleRolePermissionsFormDataQuery> => {
-        const result = await api
-          .connector
-          .graphql<RoleRolePermissionsFormDataQuery, RoleRolePermissionsFormDataQueryVariables>(
-            roleRolePermissionsFormDataQuery,
-            vars,
-          )
-          .catch(rethrow(normaliseApiException))
+        const result = await api.gql<RoleRolePermissionsFormDataQuery, RoleRolePermissionsFormDataQueryVariables>(
+          roleRolePermissionsFormDataQuery,
+          vars,
+        );
         return result;
       },
   );
@@ -301,13 +298,10 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
         id: role.data.id,
         permission_ids: permissionLists[1].map(perm => Number(perm.data.id)),
       };
-      const result = await api
-        .connector
-        .graphql<RoleRolePermissionFormUpdateMutation, RoleRolePermissionFormUpdateMutationVariables>(
-          rolePermissionFormUpdateUpdateMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<RoleRolePermissionFormUpdateMutation, RoleRolePermissionFormUpdateMutationVariables>(
+        rolePermissionFormUpdateUpdateMutation,
+        vars,
+      );
       return {
         id: result.updateRole.data.id,
         name: result.updateRole.data.name,
@@ -389,11 +383,11 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
     ({ lists }) => {
       setIsDirty(true);
       setPermissionLists([
-        Array.from(lists[0]).sort((a, b) => Number(a.data.id) - Number(b.data.id)),
-        Array.from(lists[1]).sort((a, b) => Number(a.data.id) - Number(b.data.id)),
+        Array.from(lists[0]).sort(sortList),
+        Array.from(lists[1]).sort(sortList),
       ]);
     },
-    [],
+    [sortList],
   );
 
   const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);

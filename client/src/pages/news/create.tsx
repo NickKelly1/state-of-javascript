@@ -54,10 +54,10 @@ function CreateNewsPage(props: ICreateNewsPageProps) {
 
   const [postNewsArticle, result] = useMutation<CreateNewsArticle, IApiException, CreateNewsArticleMutationVariables>(
     async (vars: CreateNewsArticleMutationVariables): Promise<CreateNewsArticle> => {
-      const result = await api
-        .connector
-        .graphql<CreateNewsArticle, CreateNewsArticleMutationVariables>(createNewsQuery, vars)
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<CreateNewsArticle, CreateNewsArticleMutationVariables>(
+        createNewsQuery,
+        vars
+      );
       return result;
     },
   );

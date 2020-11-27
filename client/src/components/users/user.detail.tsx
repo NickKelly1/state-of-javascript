@@ -142,13 +142,10 @@ export function UserDetail(props: IUserDetailProps) {
   } = useQuery<UserDetailDataQuery, ApiException>(
     [UserDetailDataQueryName(user_id), vars, me?.hash],
     async (): Promise<UserDetailDataQuery> => {
-        const result = await api
-          .connector
-          .graphql<UserDetailDataQuery, UserDetailDataQueryVariables>(
-            userDetailDataQuery,
-            vars,
-          )
-          .catch(rethrow(normaliseApiException));
+        const result = await api.gql<UserDetailDataQuery, UserDetailDataQueryVariables>(
+          userDetailDataQuery,
+          vars,
+        );
         return result;
       },
   );
@@ -223,13 +220,10 @@ function UserDetailContent(props: IRoleDetailContentProps) {
       const vars: UserDetailRequestForgottenUserPasswordResetMutationVariables = {
         email: user.data.email,
       };
-      const result = await api
-        .connector
-        .graphql<UserDetailRequestForgottenUserPasswordResetMutation, UserDetailRequestForgottenUserPasswordResetMutationVariables>(
-          userDetailRequestForgottenUserPasswordResetMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<UserDetailRequestForgottenUserPasswordResetMutation, UserDetailRequestForgottenUserPasswordResetMutationVariables>(
+        userDetailRequestForgottenUserPasswordResetMutation,
+        vars,
+      );
       return result;
     },
     {
@@ -269,13 +263,10 @@ function UserDetailContent(props: IRoleDetailContentProps) {
       const vars: UserDetailRequestSendWelcomeEmailMutationVariables = {
         id: Number(user.data.id),
       };
-      const result = await api
-        .connector
-        .graphql<UserDetailRequestSendWelcomeEmailMutation, UserDetailRequestSendWelcomeEmailMutationVariables>(
-          userDetailRequestSendWelcomeEmailMutation,
-          vars,
-        )
-        .catch(rethrow(normaliseApiException));
+      const result = await api.gql<UserDetailRequestSendWelcomeEmailMutation, UserDetailRequestSendWelcomeEmailMutationVariables>(
+        userDetailRequestSendWelcomeEmailMutation,
+        vars,
+      );
       return result;
     },
     {

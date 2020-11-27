@@ -1,4 +1,5 @@
 import { GraphQLObjectType } from 'graphql';
+import { AuthGqlMutations } from './app/auth/auth.gql.mutations';
 import { GoogleGqlMutations } from './app/google/gql/google.gql.mutations';
 import { IntegrationGqlMutations } from './app/integration/gql/integration.gql.mutations';
 import { NewsArticleGqlMutations } from './app/news-article/gql/news-article.gql.mutations';
@@ -23,5 +24,6 @@ export const GqlRootMutation = new GraphQLObjectType<undefined, GqlContext>({
     ...unthunk(UserGqlMutations),
     ...unthunk(IntegrationGqlMutations),
     ...unthunk(GoogleGqlMutations),
+    ...unthunk(AuthGqlMutations),
   }),
 });
