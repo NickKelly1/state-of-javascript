@@ -17,9 +17,21 @@ export interface IApiEvents {
   register_success: TsEvent<ApiMe>;
   register_fail: TsEvent<undefined>;
 
+  verify_email_start: TsEvent<undefined>;
+  verify_email_success: TsEvent<ApiMe>;
+  verify_email_fail: TsEvent<undefined>;
+
+  reset_password_start: TsEvent<undefined>;
+  reset_password_success: TsEvent<ApiMe>;
+  reset_password_fail: TsEvent<undefined>;
+
   refresh_start: TsEvent<undefined>;
   refresh_success: TsEvent<ApiMe>;
   refresh_fail: TsEvent<undefined>;
+
+  accept_welcome_start: TsEvent<undefined>;
+  accept_welcome_success: TsEvent<ApiMe>;
+  accept_welcome_fail: TsEvent<undefined>;
 }
 
 export const ApiEventsFactory = (): IApiEvents => ({
@@ -38,7 +50,19 @@ export const ApiEventsFactory = (): IApiEvents => ({
   register_success: new TsEvent<ApiMe>(),
   register_fail: new TsEvent<undefined>(),
 
+  verify_email_start: new TsEvent<undefined>(),
+  verify_email_success: new TsEvent<ApiMe>(),
+  verify_email_fail: new TsEvent<undefined>(),
+
+  reset_password_start: new TsEvent<undefined>(),
+  reset_password_success: new TsEvent<ApiMe>(),
+  reset_password_fail: new TsEvent<undefined>(),
+
   refresh_start: new TsEvent<undefined>(),
   refresh_success: new TsEvent<ApiMe>(),
   refresh_fail: new TsEvent<undefined>(),
+
+  accept_welcome_start: new TsEvent<undefined>(),
+  accept_welcome_success: new TsEvent<ApiMe>(),
+  accept_welcome_fail: new TsEvent<undefined>(),
 });

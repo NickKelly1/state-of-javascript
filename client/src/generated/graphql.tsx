@@ -1213,6 +1213,7 @@ export type JobNode = {
   progress: Scalars['Float'];
   delay: Scalars['Float'];
   timestamp: Scalars['Float'];
+  timestamp_iso: Scalars['String'];
   attemptsMade: Scalars['Float'];
   stacktrace?: Maybe<Array<Scalars['String']>>;
   stacktrace2?: Maybe<Array<Array<Scalars['String']>>>;
@@ -1343,6 +1344,7 @@ export type RootMutationType = {
   consumeForgottenUserPasswordReset: AuthenticationNode;
   requestUserWelcome: Scalars['Boolean'];
   acceptUserWelcome: AuthenticationNode;
+  consumeEmailVerification: AuthenticationNode;
   initialiseIntegration: IntegrationNode;
   googleOAuth2HandleCode: GoogleNode;
   googleSendEmail: Scalars['JsonObject'];
@@ -1505,6 +1507,11 @@ export type RootMutationTypeRequestUserWelcomeArgs = {
 
 export type RootMutationTypeAcceptUserWelcomeArgs = {
   dto: AcceptUserWelcome;
+};
+
+
+export type RootMutationTypeConsumeEmailVerificationArgs = {
+  dto: ConsumeVerifyEmail;
 };
 
 
@@ -1725,6 +1732,10 @@ export type AcceptUserWelcome = {
   password: Scalars['String'];
 };
 
+export type ConsumeVerifyEmail = {
+  token: Scalars['String'];
+};
+
 export type InitialiseIntegration = {
   id: Scalars['Int'];
   init: Scalars['JsonObject'];
@@ -1878,6 +1889,48 @@ export type RegisterMutationVariables = Exact<{
 export type RegisterMutation = (
   { __typename?: 'RootMutationType' }
   & { register: (
+    { __typename?: 'AuthenticationNode' }
+    & AuthenticationFieldsFragment
+  ) }
+);
+
+export type VerifyEmailMutationVariables = Exact<{
+  token: Scalars['String'];
+}>;
+
+
+export type VerifyEmailMutation = (
+  { __typename?: 'RootMutationType' }
+  & { consumeEmailVerification: (
+    { __typename?: 'AuthenticationNode' }
+    & AuthenticationFieldsFragment
+  ) }
+);
+
+export type ResetPasswordMutationVariables = Exact<{
+  token: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type ResetPasswordMutation = (
+  { __typename?: 'RootMutationType' }
+  & { consumeForgottenUserPasswordReset: (
+    { __typename?: 'AuthenticationNode' }
+    & AuthenticationFieldsFragment
+  ) }
+);
+
+export type AcceptWelcomeMutationVariables = Exact<{
+  token: Scalars['String'];
+  name: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type AcceptWelcomeMutation = (
+  { __typename?: 'RootMutationType' }
+  & { acceptUserWelcome: (
     { __typename?: 'AuthenticationNode' }
     & AuthenticationFieldsFragment
   ) }
@@ -2761,42 +2814,6 @@ export type PasswordResetPageDataQuery = (
   ) }
 );
 
-export type PasswordResetPageConsumeResetMutationVariables = Exact<{
-  token: Scalars['String'];
-  password: Scalars['String'];
-}>;
-
-
-export type PasswordResetPageConsumeResetMutation = (
-  { __typename?: 'RootMutationType' }
-  & { consumeForgottenUserPasswordReset: (
-    { __typename?: 'AuthenticationNode' }
-    & Pick<AuthenticationNode, 'access_token' | 'refresh_token'>
-    & { access_token_object: (
-      { __typename?: 'AccessTokenNode' }
-      & { data: (
-        { __typename?: 'AccessTokenData' }
-        & Pick<AccessTokenData, 'user_id' | 'permissions' | 'iat' | 'exp'>
-      ), relations: (
-        { __typename?: 'AccessTokenRelations' }
-        & { user?: Maybe<(
-          { __typename?: 'UserNode' }
-          & { data: (
-            { __typename?: 'UserData' }
-            & Pick<UserData, 'id' | 'name'>
-          ) }
-        )> }
-      ) }
-    ), refresh_token_object: (
-      { __typename?: 'RefreshTokenNode' }
-      & { data: (
-        { __typename?: 'RefreshTokenData' }
-        & Pick<RefreshTokenData, 'user_id' | 'iat' | 'exp'>
-      ) }
-    ) }
-  ) }
-);
-
 export type WelcomePageDataQueryVariables = Exact<{
   token: Scalars['String'];
 }>;
@@ -2812,43 +2829,6 @@ export type WelcomePageDataQuery = (
     ), data: (
       { __typename?: 'UserData' }
       & Pick<UserData, 'id' | 'name' | 'deactivated' | 'email' | 'verified' | 'created_at' | 'updated_at' | 'deleted_at'>
-    ) }
-  ) }
-);
-
-export type WelcomePageAcceptWelcomeMutationVariables = Exact<{
-  token: Scalars['String'];
-  name: Scalars['String'];
-  password: Scalars['String'];
-}>;
-
-
-export type WelcomePageAcceptWelcomeMutation = (
-  { __typename?: 'RootMutationType' }
-  & { acceptUserWelcome: (
-    { __typename?: 'AuthenticationNode' }
-    & Pick<AuthenticationNode, 'access_token' | 'refresh_token'>
-    & { access_token_object: (
-      { __typename?: 'AccessTokenNode' }
-      & { data: (
-        { __typename?: 'AccessTokenData' }
-        & Pick<AccessTokenData, 'user_id' | 'permissions' | 'iat' | 'exp'>
-      ), relations: (
-        { __typename?: 'AccessTokenRelations' }
-        & { user?: Maybe<(
-          { __typename?: 'UserNode' }
-          & { data: (
-            { __typename?: 'UserData' }
-            & Pick<UserData, 'id' | 'name'>
-          ) }
-        )> }
-      ) }
-    ), refresh_token_object: (
-      { __typename?: 'RefreshTokenNode' }
-      & { data: (
-        { __typename?: 'RefreshTokenData' }
-        & Pick<RefreshTokenData, 'user_id' | 'iat' | 'exp'>
-      ) }
     ) }
   ) }
 );

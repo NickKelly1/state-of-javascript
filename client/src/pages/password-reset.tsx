@@ -1,4 +1,4 @@
-import { Button, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
+import { Button, CircularProgress, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
 import { fail } from 'assert';
 import { gql } from 'graphql-request';
 import { useRouter } from 'next/router';
@@ -15,8 +15,7 @@ import { FilledCircularProgress } from '../components/filled-circular-progress/f
 import {
   PasswordResetPageDataQueryVariables,
   PasswordResetPageDataQuery,
-  PasswordResetPageConsumeResetMutation,
-  PasswordResetPageConsumeResetMutationVariables,
+  ResetPasswordMutation,
 } from '../generated/graphql';
 import { Attempt, attemptAsync, isFail, isSuccess } from '../helpers/attempted.helper';
 import { change } from '../helpers/change.helper';
@@ -25,6 +24,7 @@ import { serverSidePropsHandler } from '../helpers/server-side-props-handler.hel
 import { staticPropsHandler } from "../helpers/static-props-handler.helper";
 import { useSubmitForm } from '../hooks/use-submit-form.hook';
 import { OrNull } from '../types/or-null.type';
+
 
 const PasswordResetPageDataQueryName = 'PasswordResetPageDataQuery';
 const passwordResetPageDataQuery = gql`
@@ -54,45 +54,6 @@ query PasswordResetPageData(
 }
 `;
 
-const passwordResetPageConsumeResetMutation = gql`
-mutation PasswordResetPageConsumeReset(
-  $token:String!
-  $password:String!
-){
-  consumeForgottenUserPasswordReset(
-    dto:{
-      token:$token
-      password:$password
-    }
-  ){
-    access_token
-    refresh_token
-    access_token_object{
-      data{
-        user_id
-        permissions
-        iat
-        exp
-      }
-      relations{
-        user{
-          data{
-            id
-            name
-          }
-        }
-      }
-    }
-    refresh_token_object{
-      data{
-        user_id
-        iat
-        exp
-      }
-    }
-  }
-}
-`;
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -159,24 +120,16 @@ function WelcomePageContents(props: IPasswordResetPageContentsProps) {
     enqueueSnackbar(`Error: ${exception.message}`, { variant: 'error' });
   }, [enqueueSnackbar]);
 
-  const handleSuccess = useCallback((arg: PasswordResetPageConsumeResetMutation) => {
+  const handleSuccess = useCallback((arg: ResetPasswordMutation) => {
     // success & navigate home
-    const name = arg.consumeForgottenUserPasswordReset.access_token_object.relations?.user?.data.name;
+    const name = arg.consumeForgottenUserPasswordReset.user_name;
     enqueueSnackbar(`Welcome, ${name ?? formState.name}. Your password has been updated.`, { variant: 'success' });
     router.replace('/');
-    // TODO: set authentication...
   }, [enqueueSnackbar, router, formState]);
 
-  const [doSubmit, submitState] = useMutation<PasswordResetPageConsumeResetMutation, IApiException>(
-    async (): Promise<PasswordResetPageConsumeResetMutation> => {
-      const vars: PasswordResetPageConsumeResetMutationVariables = {
-        token,
-        password: formState.password,
-      }
-      const result = await api.gql<PasswordResetPageConsumeResetMutation, PasswordResetPageConsumeResetMutationVariables>(
-        passwordResetPageConsumeResetMutation,
-        vars,
-      );
+  const [doSubmit, submitState] = useMutation<ResetPasswordMutation, IApiException>(
+    async (): Promise<ResetPasswordMutation> => {
+      const result = await api.resetPassword({ token, password: formState.password, });
       return result;
     },
     {
@@ -187,6 +140,8 @@ function WelcomePageContents(props: IPasswordResetPageContentsProps) {
 
   const error = submitState.error;
   const isDisabled = submitState.isLoading;
+  const isLoading = submitState.isLoading;
+  const isSuccess = submitState.isSuccess;
 
   const handlePasswordChange = useCallback(change(setFormState, 'password'), [setFormState]);
   const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
@@ -223,16 +178,30 @@ function WelcomePageContents(props: IPasswordResetPageContentsProps) {
             Submit
           </Button>
         </Grid>
+        {(isLoading || isSuccess) && (
+          <Grid className="centered" item xs={12}>
+            <CircularProgress className="centered" />
+          </Grid>
+        )}
+        {isLoading && (
+          <Grid className="centered" item xs={12}>
+            <Typography>
+              Resetting...
+            </Typography>
+          </Grid>
+        )}
+        {isSuccess && (
+          <Grid className="centered" item xs={12}>
+            <Typography>
+              Success. Redirecting...
+            </Typography>
+          </Grid>
+        )}
         {error && (
-          <Grid className="centered col" item xs={12}>
+          <Grid className="centered" item xs={12}>
             <FormHelperText error>
               {error.message}
             </FormHelperText>
-          </Grid>
-        )}
-        {isDisabled && (
-          <Grid className="centered col" item xs={12}>
-            <FilledCircularProgress active={isDisabled} />
           </Grid>
         )}
       </Grid>

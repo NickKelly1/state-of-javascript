@@ -311,21 +311,21 @@ function UserDetailContent(props: IRoleDetailContentProps) {
               <Box ml={1}>
                 <Button startIcon={<MailOutlineIcon />} color="primary" onClick={handleSendWelcomeEmailClicked}>
                   {/* also verifies account... */}
-                  Send Welcome
+                  Send Welcome Email
                 </Button>
               </Box>
             )}
             {user.can.requestForgottenPasswordReset && (
               <Box ml={1}>
                 <Button startIcon={<LockOpenIcon />} color="primary" onClick={handleResetPasswordClicked}>
-                  Reset Password
+                  Send Reset Password Email
                 </Button>
               </Box>
             )}
             {user.can.requestVerificationEmail && (
               <Box ml={1}>
-                <Button color="primary">
-                  Password verification email
+                <Button startIcon={<MailOutlineIcon />} color="primary">
+                  Send verification email
                 </Button>
               </Box>
             )}

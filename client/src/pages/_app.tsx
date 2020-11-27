@@ -49,25 +49,25 @@ export default function MyApp(props: IMyAppProps) {
         <title>The State of JavaScript</title>
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
-      <SnackbarProvider maxSnack={3}>
-        <DebugModeProvider>
-          <ReactQueryCacheProvider queryCache={queryCache}>
-            <PublicEnvProvider>
-              <ApiProvider initialMe={_me}>
-                <CmsProvider>
-                  <NpmsApiProvider>
-                    <ThemeProvider theme={theme}>
-                      {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-                      <CssBaseline />
-                      <Layout appProps={props} />
-                    </ThemeProvider>
-                  </NpmsApiProvider>
-                </CmsProvider>
-              </ApiProvider>
-            </PublicEnvProvider>
-          </ReactQueryCacheProvider>
-        </DebugModeProvider>
-      </SnackbarProvider>
+      <ThemeProvider theme={theme}>
+        <SnackbarProvider maxSnack={3}>
+          <DebugModeProvider>
+            <ReactQueryCacheProvider queryCache={queryCache}>
+              <PublicEnvProvider>
+                <ApiProvider initialMe={_me}>
+                  <CmsProvider>
+                    <NpmsApiProvider>
+                        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+                        <CssBaseline />
+                        <Layout appProps={props} />
+                    </NpmsApiProvider>
+                  </CmsProvider>
+                </ApiProvider>
+              </PublicEnvProvider>
+            </ReactQueryCacheProvider>
+          </DebugModeProvider>
+        </SnackbarProvider>
+      </ThemeProvider>
     </React.Fragment>
   );
 }

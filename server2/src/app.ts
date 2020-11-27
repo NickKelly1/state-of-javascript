@@ -33,7 +33,7 @@ import { jb } from './common/helpers/jb.helper';
 import { ist } from './common/helpers/ist.helper';
 import { InternalServerException } from './common/exceptions/types/internal-server.exception';
 import { BadRequestException } from './common/exceptions/types/bad-request.exception';
-import { IApiException } from './common/exceptions/exception';
+import { Exception, IApiException } from './common/exceptions/exception';
 import { IExceptionData } from './common/interfaces/exception-data.interface';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
@@ -96,28 +96,27 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
     const data: OptionsData = {
       customFormatErrorFn: (err) => {
         logger.error(`Error in GraphQL: ${prettyQ(err)}`);
+        let exception: Exception;
+
         if (ist.nullable(err.originalError)) {
           // probably a GraphQL error
-          const message: string = err.message;
+          const message: string = String(err.message);
           const error = 'GraphQLError';
           const data: IExceptionData = {
             locations: err.locations ? err.locations.map(loc => `line: ${loc.line}, column: ${loc.column}`) : undefined,
             positions: err.positions ? err.positions.map(String) : undefined,
             path: err.path ? err.path.map(String) : undefined,
           };
-          const exception = ctx.except(BadRequestException({
+          exception = ctx.except(BadRequestException({
             error,
             message,
             data,
-            debug: prettyQ(err),
           }));
-          return exception;
+        } else {
+          exception = makeException(ctx, err.originalError);
+          if (exception.code === 500) { logger.error(exception.name, exception.toJsonDev()); }
+          else { logger.warn(exception.name, exception.toJsonDev()); }
         }
-
-        const exception = makeException(ctx, err.originalError);
-
-        if (exception.code === 500) { logger.error(exception.name, exception.toJsonDev()); }
-        else { logger.warn(exception.name, exception.toJsonDev()); }
 
         const modifiedError = new GraphQLError(
           err.message,

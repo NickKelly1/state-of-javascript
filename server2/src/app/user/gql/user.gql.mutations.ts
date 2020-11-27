@@ -26,6 +26,7 @@ import { IUpdateUserPasswordDto } from "../../user-password/dtos/update-user-pas
 import { UserRoleModel } from "../../user-role/user-role.model";
 import { UserTokenAssociation } from "../../user-token/user-token.associations";
 import { ConsumeResetForgottenUserPasswordGqlInput, ConsumeResetForgottenUserPasswordGqlInputValidator } from "../gql-input/consume-reset-forgotten-user-password.gql";
+import { ConsumeVerifyEmailGqlInput, ConsumeVerifyEmailGqlInputValidator } from "../gql-input/consume-verify-email.gql.input";
 import { CreateUserGqlInput, CreateUserValidator } from "../gql-input/create-user.gql";
 import { DeleteUserGqlInput, DeleteUserValidator } from "../gql-input/delete-user.gql";
 import { RequestResetForgottenUserPasswordGqlInput, RequestResetForgottenUserPasswordGqlInputValidator } from "../gql-input/request-reset-forgotten-user-password.gql";
@@ -386,6 +387,80 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
       return final;
     },
   },
+
+  /**
+   * Consume an EmailVerification Token & thereby Verify the Users email
+   */
+  consumeEmailVerification: {
+    type: GraphQLNonNull(AuthenticationGqlNode),
+    args: { dto: { type: GraphQLNonNull(ConsumeVerifyEmailGqlInput) }, },
+    resolve: async (parent, args, ctx): Promise<IAuthenticationGqlNodeSource> => {
+      const dto = ctx.validate(ConsumeVerifyEmailGqlInputValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }): Promise<IAuthenticationGqlNodeSource> => {
+        const token = await ctx.services.userTokenRepository.findOneBySlugOrFail(dto.token, {
+          runner,
+          options: {
+            include: [{
+              association: UserTokenAssociation.user,
+              include: [
+                { association: UserAssociation.password, },
+                {
+                  association: UserAssociation.roles,
+                  include: [
+                    { association: RoleAssociation.permissions, },
+                  ],
+                },
+              ],
+            }],
+          },
+        });
+        const user = assertDefined(token.user);
+
+        // correct token type?
+        if (!token.isVerifyEmail()) {
+          const message = ctx.lang(ExceptionLang.BadTokenType);
+          throw ctx.except(BadRequestException({ message }));
+        }
+
+        // expired?
+        if (token.isExpired()) {
+          const message = ctx.lang(UserTokenLang.TokenExpired);
+          throw ctx.except(BadRequestException({ message }));
+        }
+
+        // authorize
+        ctx.authorize(ctx.services.userPolicy.canConsumeVerificationEmail({ model: user }));
+
+        // update user
+        const userServiceDto: IUserServiceUpdateUserDto = {
+          // mark as verified
+          verified: true,
+        };
+
+        await ctx.services.userService.update({ runner, dto: userServiceDto, model: user, });
+
+        const userPermissions = assertDefined(user.roles).flatMap(role => assertDefined(role.permissions));
+        const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions()
+
+        const auth = await ctx.services.authService.authenticate({
+          res: ctx.http?.res,
+          user,
+          permissions: userPermissions.map(toId)
+            .concat(...systemPermissions.authenticated.map(toId))
+            .concat(...systemPermissions.pub.map(toId)),
+        })
+
+        // delete the token so it can't be re-used
+        await ctx.services.userTokenService.softDelete({ model: token, runner });
+
+        return ctx.services.authService.toAuthenticationGqlNodeSource({ user, auth });
+      });
+
+      return final;
+    }
+  },
+
+
 
 
   // TODO:

@@ -65,6 +65,9 @@ export const AuthGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
           user,
         });
 
+        // send registration email
+        await ctx.services.userService.sendRegistrationEmail({ model: user, runner });
+
         return ctx.services.authService.toAuthenticationGqlNodeSource({ auth, user });
       });
 
@@ -74,7 +77,7 @@ export const AuthGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
 
 
   /**
-   * Log in
+   * Login
    */
   login: {
     type: GraphQLNonNull(AuthenticationGqlNode),

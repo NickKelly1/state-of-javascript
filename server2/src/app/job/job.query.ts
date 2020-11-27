@@ -15,6 +15,7 @@ import { OrUndefined } from "../../common/types/or-undefined.type";
 import { Printable } from "../../common/types/printable.type";
 
 
+// TODO: separate files...
 
 type IJobGqlNodeOptionsSource = JobOptions;
 const JobGqlNodeOptions = new GraphQLObjectType<IJobGqlNodeOptionsSource, GqlContext>({
@@ -37,6 +38,7 @@ const JobGqlNode = new GraphQLObjectType<IJobGqlNodeSource, GqlContext>({
     progress: { type: GraphQLNonNull(GraphQLFloat), resolve: (parent) => parent.progress, },
     delay: { type: GraphQLNonNull(GraphQLFloat), resolve: (parent) => parent.delay, },
     timestamp: { type: GraphQLNonNull(GraphQLFloat), resolve: (parent): number => parent.timestamp, },
+    timestamp_iso: { type: GraphQLNonNull(GraphQLString), resolve: (parent): string => new Date(parent.timestamp).toISOString(), },
     attemptsMade: { type: GraphQLNonNull(GraphQLFloat), resolve: (parent): number => parent.attemptsMade, },
     stacktrace: { type: GraphQLList(GraphQLNonNull(GraphQLString)), resolve: (parent): OrNull<string[]> => parent.stacktrace, },
     stacktrace2: { type: GraphQLList(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString)))), resolve: (parent): OrNull<string[][]> => parent.stacktrace?.map(stk => stk.split('\n')) ?? null, },

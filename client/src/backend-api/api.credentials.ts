@@ -13,13 +13,21 @@ import {
   RegisterMutation,
   ActionsQuery,
   ActionsQueryVariables,
+  VerifyEmailMutation,
+  VerifyEmailMutationVariables,
+  ResetPasswordMutation,
+  ResetPasswordMutationVariables,
+  AcceptWelcomeMutation,
+  AcceptWelcomeMutationVariables,
 } from '../generated/graphql';
 import { IApiEvents } from './api.events';
 import { ApiMe, ApiMeFactory, } from './api.me';
 
 
-// AuthorisedActionsFields Fragment
-const authorisedActionsFieldsFragment = gql`
+/**
+ * AuthorisedActionsFields Fragment
+ */
+export const authorisedActionsFieldsFragment = gql`
 fragment AuthorisedActionsFields on ActionsNode {
   users{
     show
@@ -73,8 +81,10 @@ fragment AuthorisedActionsFields on ActionsNode {
 }
 `;
 
-// AuthenticationFields Fragment
-const authenticationFieldsFragment = gql`
+/**
+ * AuthenticationFields Fragment
+ */
+export const authenticationFieldsFragment = gql`
 fragment AuthenticationFields on AuthenticationNode {
   user_id
   user_name
@@ -101,6 +111,9 @@ query Actions {
 ${authorisedActionsFieldsFragment}
 `;
 
+/**
+ * Logout
+ */
 const logoutMutation = gql`
 mutation Logout{
   logout{
@@ -112,6 +125,9 @@ mutation Logout{
 ${authorisedActionsFieldsFragment}
 `;
 
+/**
+ * Refresh
+ */
 const refreshMutation = gql`
 mutation Refresh(
   $refresh_token:String
@@ -145,6 +161,9 @@ ${authenticationFieldsFragment}
 `
 
 
+/**
+ * Register
+ */
 const registerMutation = gql`
 mutation Register(
   $name:String!
@@ -163,6 +182,67 @@ mutation Register(
 }
 ${authenticationFieldsFragment}
 `
+
+/**
+ * Consume Verify Email
+ */
+const verifyEmailMutation = gql`
+mutation VerifyEmail(
+  $token:String!
+){
+  consumeEmailVerification(
+    dto:{
+      token:$token
+    }
+  ){
+    ...AuthenticationFields
+  }
+}
+${authenticationFieldsFragment}
+`;
+
+/**
+ * Password Reset
+ */
+const resetPasswordMutation = gql`
+mutation ResetPassword(
+  $token:String!
+  $password:String!
+){
+  consumeForgottenUserPasswordReset(
+    dto:{
+      token:$token
+      password:$password
+    }
+  ){
+    ...AuthenticationFields
+  }
+}
+${authenticationFieldsFragment}
+`;
+
+/**
+ * Accept Welcome
+ */
+const acceptWelcomeMutation = gql`
+mutation AcceptWelcome(
+  $token:String!
+  $name:String!
+  $password:String!
+){
+  acceptUserWelcome(
+    dto:{
+      token:$token
+      name:$name
+      password:$password
+    }
+  ){
+    ...AuthenticationFields
+  }
+}
+${authenticationFieldsFragment}
+`;
+
 export enum ApiCredentialsFactoryArgType {
   WithMe,
   WithCredentials,
@@ -314,6 +394,21 @@ export interface IApiCredentialsRegisterArg {
   password: string;
 }
 
+export interface IApiCredentialsVerifyEmailArg {
+  token: string;
+}
+
+export interface IApiCredentialsResetPasswordArg {
+  token: string;
+  password: string;
+}
+
+export interface IApiCredentialsAcceptWelcomeArg {
+  token: string;
+  name: string;
+  password: string;
+}
+
 
 export class ApiCredentials {
   // protected readonly syncLock: Mutex = new Mutex();
@@ -340,9 +435,21 @@ export class ApiCredentials {
     this.event.register_success.on(() => { Debug.BackendApiCredentials('on::register_success'); });
     this.event.register_fail.on(() => { Debug.BackendApiCredentials('on::register_fail'); });
 
+    this.event.verify_email_start.on(() => { Debug.BackendApiCredentials('on::verify_email_start'); });
+    this.event.verify_email_success.on(() => { Debug.BackendApiCredentials('on::verify_email_success'); });
+    this.event.verify_email_fail.on(() => { Debug.BackendApiCredentials('on::verify_email_fail'); });
+
+    this.event.reset_password_start.on(() => { Debug.BackendApiCredentials('on::reset_password_start'); });
+    this.event.reset_password_success.on(() => { Debug.BackendApiCredentials('on::reset_password_success'); });
+    this.event.reset_password_fail.on(() => { Debug.BackendApiCredentials('on::reset_password_fail'); });
+
     this.event.refresh_start.on(() => { Debug.BackendApiCredentials('on::refresh_start'); });
     this.event.refresh_success.on(() => { Debug.BackendApiCredentials('on::refresh_success'); });
     this.event.refresh_fail.on(() => { Debug.BackendApiCredentials('on::refresh_fail'); });
+
+    this.event.accept_welcome_start.on(() => { Debug.BackendApiCredentials('on::accept_welcome_start'); });
+    this.event.accept_welcome_success.on(() => { Debug.BackendApiCredentials('on::accept_welcome_success'); });
+    this.event.accept_welcome_fail.on(() => { Debug.BackendApiCredentials('on::accept_welcome_fail'); });
   }
 
 
@@ -523,7 +630,7 @@ export class ApiCredentials {
       const result = await this
         .credentialedGqlClient
         .request<RegisterMutation, RegisterMutationVariables>(
-          loginMutation,
+          registerMutation,
           vars,
         );
       const me = ApiMeFactory({ authenticated: true, value: result.register });
@@ -582,382 +689,89 @@ export class ApiCredentials {
   }
 
 
-  // /**
-  //  * Sign out
-  //  */
-  // async signOut(opts?: { unlocked?: boolean }): Promise<null> {
-  //   const { unlocked } = opts ?? {};
-  //   const release = unlocked ? null : await this.authenticationLock.acquire();
-  //   if (this.autoRefreshTimeout) clearTimeout(this.autoRefreshTimeout);
-
-  //   try {
-  //     this.event.sign_out_start.fire(undefined);
-  //     const response = await isoFetch(
-  //       `${this.publicEnv.API_URL}/v1/auth/signout`,
-  //       {
-  //         credentials: 'include',
-  //         mode: 'cors',
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Accepts': 'application/json',
-  //         },
-  //       },
-  //     );
-  //     const result: null = await response.json();
-  //     if (!response.ok) { throw result; }
-  //     this.saveAuthentication(undefined);
-  //     this.event.sign_out_success.fire(undefined);
-  //     this.event.unauthenticated.fire(undefined);
-  //     return result;
-  //   }
-
-  //   catch (error) {
-  //     console.warn('SignOut failed', error);
-  //     this.saveAuthentication(undefined);
-  //     this.event.sign_in_fail.fire(undefined);
-  //     this.event.unauthenticated.fire(undefined);
-  //     throw error;
-  //   }
-
-  //   finally {
-  //     release?.();
-  //   }
-  // }
+  /**
+   * Verify Email
+   */
+  async verifyEmail(arg: IApiCredentialsVerifyEmailArg): Promise<VerifyEmailMutation> {
+    const release = await this.authenticationLock.acquire();
+    try {
+      this.event.verify_email_start.fire(undefined);
+      const vars: VerifyEmailMutationVariables = {
+        token: arg.token,
+      };
+      const result = await this
+        .credentialedGqlClient
+        .request<VerifyEmailMutation, VerifyEmailMutationVariables>(verifyEmailMutation, vars);
+      const me = ApiMeFactory({ authenticated: true, value: result.consumeEmailVerification });
+      this._saveAuthentication(me);
+      this.event.verify_email_success.fire(me);
+      return result;
+    }
+    catch (error) {
+      this.event.verify_email_fail.fire(undefined);
+      throw error;
+    }
+    finally {
+      release();
+    }
+  }
 
 
-  // /**
-  //  * Do sign in
-  //  *
-  //  * @param arg
-  //  */
-  // async signIn(
-  //   props: { name_or_email: string; password: string },
-  //   opts?: { unlocked?: boolean; },
-  // ): Promise<IAuthenticationRo> {
-  //   const { name_or_email, password } = props
-  //   const { unlocked } = opts ?? {};
-  //   const release = unlocked ? null : await this.authenticationLock.acquire();
-
-  //   try {
-  //     this.event.sign_in_start.fire(undefined);
-  //     const response = await isoFetch(
-  //       `${this.publicEnv.API_URL}/v1/auth/signin`,
-  //       {
-  //         credentials: 'include',
-  //         mode: 'cors',
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Accepts': 'application/json',
-  //         },
-  //         body: JSON.stringify({ name_or_email, password }),
-  //       },
-  //     );
-  //     const result: IAuthenticationRo = await response.json();
-  //     if (!response.ok) { throw result; }
-  //     const me: ApiMe = authToMe(result);
-  //     this.saveAuthentication(me);
-  //     this.event.sign_in_success.fire(me);
-  //     this.event.authenticated.fire(me);
-  //     return result;
-  //   }
-
-  //   catch (error) {
-  //     // don't clear authentication...
-  //     console.warn('SignIn failed', error);
-  //     this.event.sign_in_fail.fire(undefined);
-  //     throw error;
-  //   }
-
-  //   finally {
-  //     release?.();
-  //   }
-  // }
+  /**
+   * Reset Password
+   */
+  async resetPassword(arg: IApiCredentialsResetPasswordArg): Promise<ResetPasswordMutation> {
+    const release = await this.authenticationLock.acquire();
+    try {
+      this.event.reset_password_start.fire(undefined);
+      const vars: ResetPasswordMutationVariables = {
+        token: arg.token,
+        password: arg.password,
+      };
+      const result = await this
+        .credentialedGqlClient
+        .request<ResetPasswordMutation, ResetPasswordMutationVariables>(resetPasswordMutation, vars);
+      const me = ApiMeFactory({ authenticated: true, value: result.consumeForgottenUserPasswordReset });
+      this._saveAuthentication(me);
+      this.event.reset_password_success.fire(me);
+      return result;
+    }
+    catch (error) {
+      this.event.reset_password_fail.fire(undefined);
+      throw error;
+    }
+    finally {
+      release();
+    }
+  }
 
 
-  // /**
-  //  * Do sign up
-  //  * 
-  //  * Server will save access_token and refresh_token in cookies
-  //  *
-  //  * @param arg
-  //  */
-  // async signUp(
-  //   props: { name: string; email: string; password: string; },
-  //   opts?: { unlocked?: boolean; },
-  // ): Promise<IAuthenticationRo> {
-  //   const { name, email, password } = props;
-  //   const { unlocked } = opts ?? {};
-  //   const release = unlocked ? null : await this.authenticationLock.acquire();
-  //   try {
-  //     this.event.sign_up_start.fire(undefined);
-  //     const response = await isoFetch(
-  //       `${this.publicEnv.API_URL}/v1/auth/signup`,
-  //       {
-  //         credentials: 'include',
-  //         mode: 'cors',
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Accepts': 'application/json',
-  //         },
-  //         body: JSON.stringify({ name, email, password }),
-  //       },
-  //     );
-  //     const result: IAuthenticationRo = await response.json();
-  //     if (!response.ok) { throw result; }
-  //     const me: ApiMe = authToMe(result);
-  //     this.saveAuthentication(me);
-  //     this.event.sign_up_success.fire(me);
-  //     this.event.authenticated.fire(me);
-  //     return result;
-  //   }
-
-  //   catch (error) {
-  //     // don't clear authentication...
-  //     console.warn('SignUp failed', error);
-  //     this.event.sign_up_fail.fire(undefined);
-  //     throw error;
-  //   }
-
-  //   finally {
-  //     release?.();
-  //   }
-  // }
-
-
-  // /**
-  //  * Do refresh
-  //  *
-  //  * Refresh credentials (requires refresh_token in cookies)
-  //  */
-  // public async refresh(opts?: { unlocked?: boolean; keepOnFail: boolean }): Promise<IAuthenticationRo> {
-  //   const { unlocked, keepOnFail } = opts ?? {};
-  //   const release = unlocked ? null : await this.authenticationLock.acquire();
-  //   try {
-  //     this.event.refresh_start.fire(undefined);
-  //     const response = await isoFetch(
-  //       `${this.publicEnv.API_URL}/v1/auth/refresh`,
-  //       {
-  //         credentials: 'include',
-  //         mode: 'cors',
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Accepts': 'application/json',
-  //         },
-  //       },
-  //     );
-  //     const result: IAuthenticationRo = await response.json();
-  //     if (!response.ok) { throw result; }
-  //     const me: ApiMe = authToMe(result);
-  //     this.saveAuthentication(me);
-  //     this.event.refresh_success.fire(me);
-  //     this.event.authenticated.fire(me);
-  //     return result;
-  //   }
-
-  //   catch (error) {
-  //     console.warn('Refresh failed', error);
-  //     if (!keepOnFail) {
-  //       this.event.refresh_fail.fire(undefined);
-  //       await this.signOut({ unlocked: true });
-  //     } else {
-  //       this.event.refresh_fail.fire(undefined);
-  //     }
-  //     throw error;
-  //   }
-
-  //   finally {
-  //     release?.();
-  //   }
-  // }
-
-
-
-  // /**
-  //  * If able, force refreshing
-  //  */
-  // async forceSync(): Promise<{ authenticated: boolean }> {
-  //   const unlock = await this.syncLock.acquire();
-  //   Debug.BackendApiCredentials('[forceSync] Force syncing...');
-  //   const cred = this._me;
-
-  //   try {
-  //     if (!cred) {
-  //       return { authenticated: false };
-  //     }
-
-  //     // refresh will handle the changing of state
-  //     const result = await this.refresh()
-  //       .then(() => ({ authenticated: true }))
-  //       .catch(() => ({ authenticated: false }));
-
-  //     return result;
-  //   }
-
-  //   finally {
-  //     unlock();
-  //   }
-  // }
-
-
-
-  // /**
-  //  * Make a request, handling credentialing
-  //  *
-  //  * @param fn
-  //  */
-  // async graphql<T = any, V = Variables>(doc: RequestDocument, vars: V): Promise<Attempt<T, IApiException>> {
-  //   // try
-  //   const result = await fn();
-  //   if (isSuccess(result)) {
-  //     return result;
-  //   }
-
-  //   // expect we're unauthenticated? nothing to do
-  //   if (!this.isAuthenticated()) {
-  //     return result;
-  //   }
-
-  //   // expected we're authenticated but result failed...
-
-  //   // 440 - Authentication expired - throw out auth
-  //   if (result.value.code === 440) {
-  //     this.saveAuthentication(undefined);
-  //     this.event.unauthenticated.fire(undefined);
-  //   }
-
-  //   // 401 - Unauthenticated - try to refresh & redo
-  //   if (result.value.code === 401) {
-  //     const unlock = await this.syncLock.acquire();
-  //     // TODO: check if we just refreshed credentials already & simply re-send request...
-  //     // TODO: have waiters in line....
-  //     try {
-  //       this.refresh();
-  //       const vars: RefreshMutationVariables = { refresh_token: undefined };
-  //       const refreshResult = await attemptAsync(
-  //         this
-  //           .authenticatedGqlClient
-  //           .request<RefreshMutation, RefreshMutationVariables>(refreshMutation, vars),
-  //         fail,
-  //       );
-  //       if (isFail(refreshResult)) {
-  //         // failed to refresh...
-  //         this.saveAuthentication(undefined);
-  //         this.event.unauthenticated.fire(undefined);
-  //         // return //
-  //       }
-  //       // TODO: handle success.. re-send request
-          
-
-  //     } catch (error) {
-  //       this.saveAuthentication(undefined);
-  //       this.event.unauthenticated.fire(undefined);
-  //     } finally {
-  //       unlock();
-  //     }
-  //   }
-
-  //   // neither 440 or 401, just return failure
-  //   return result;
-  // }
-
-
-  // /**
-  //  * Refresh credentials if necessary
-  //  */
-  // async sync(): Promise<{ authenticated: boolean }> {
-  //   const unlock = await this.syncLock.acquire();
-  //   Debug.BackendApiCredentials('[sync] Syncing...');
-  //   const cred = this._me;
-
-  //   try {
-  //     // no credentials
-  //     if (!cred) {
-  //       Debug.BackendApiCredentials('[sync] No credentials');
-  //       return { authenticated: false };
-  //     }
-
-  //     // fresh access
-  //     if (!this._isExpired(cred.access_exp)) {
-  //       Debug.BackendApiCredentials('[sync] Credentials are fresh');
-  //       return { authenticated: true };
-  //     }
-
-  //     // stale access
-  //     // attempt to refresh
-  //     if (!this._isExpired(cred.refresh_exp)) {
-  //       Debug.BackendApiCredentials('[sync] Credentials are expired');
-  //       // TODO: refresh with retries...
-  //       await this.refresh();
-  //       return { authenticated: true };
-  //     }
-
-  //     // stale access & stale refresh
-  //     // unauthenticate
-  //     Debug.BackendApiCredentials('[sync] Credentials are stale... Removing');
-  //     this.saveAuthentication(undefined);
-  //     this.event.unauthenticated.fire(undefined);
-  //     return { authenticated: false };
-  //   }
-
-  //   finally {
-  //     unlock();
-  //   }
-  // }
-
-
-  // /**
-  //  * Auto refresh authentication details
-  //  *
-  //  * @param me
-  //  */
-  // protected async autoRefresh() {
-  //   if (this._me) {
-  //     Debug.BackendApiCredentials('auto refreshing credentials...');
-  //     // try a few times...
-  //     for (let i = 0; i < this.publicEnv.API_AUTH_REFRESH_ATTEMPT_COUNT; i += 1) {
-  //       if (i > 0){ 
-  //         console.warn(`attempting to refresh again in ${((this.publicEnv.API_AUTH_REFRESH_ATTEMPT_PAUSE_MS / 1000) + 0.5).toFixed(0)}s`)
-  //         await wait(this.publicEnv.API_AUTH_REFRESH_ATTEMPT_PAUSE_MS);
-  //       }
-  //       try {
-  //         await this.refresh({ keepOnFail: true });
-  //         // success
-  //         return;
-  //       } catch (error) {
-  //         console.warn(`errored refreshing credentials (${i + 1} / ${this.publicEnv.API_AUTH_REFRESH_ATTEMPT_COUNT})`, error);
-  //       }
-  //     }
-  //     // clear auth details
-  //     console.warn(`failed to refresh credentials: exceeded retry count..`);
-  //     await this.signOut();
-  //     this.saveAuthentication(undefined);
-  //     this.event.unauthenticated.fire(undefined);
-  //   }
-  // }
-
-
-  // /**
-  //  * has the expired passed
-  //  *
-  //  * @param exp
-  //  */
-  // protected _isExpired(exp: number) {
-  //   const now = Date.now();
-  //   return now >= exp;
-  // }
-
-
-  // /**
-  //  * Save authentication
-  //  *
-  //  * @param arg
-  //  */
-  // protected async saveAuthentication(arg?: ApiMe) {
-  //   if (arg) { this._me = arg; }
-  //   else { this._me = null; }
-  // }
+  /**
+   * Accept Welcome
+   */
+  async acceptWelcome(arg: IApiCredentialsAcceptWelcomeArg): Promise<AcceptWelcomeMutation> {
+    const release = await this.authenticationLock.acquire();
+    try {
+      this.event.accept_welcome_start.fire(undefined);
+      const vars: AcceptWelcomeMutationVariables = {
+        token: arg.token,
+        name: arg.name,
+        password: arg.password,
+      };
+      const result = await this
+        .credentialedGqlClient
+        .request<AcceptWelcomeMutation, AcceptWelcomeMutationVariables>(acceptWelcomeMutation, vars);
+      const me = ApiMeFactory({ authenticated: true, value: result.acceptUserWelcome });
+      this._saveAuthentication(me);
+      this.event.accept_welcome_success.fire(me);
+      return result;
+    }
+    catch (error) {
+      this.event.accept_welcome_fail.fire(undefined);
+      throw error;
+    }
+    finally {
+      release();
+    }
+  }
 }

@@ -467,7 +467,7 @@ export class UserPolicy {
     if (ist.nullable(model.email)) return false;
 
     // is not already Verified
-    if (!model.isVerified()) return false;
+    if (model.isVerified()) return false;
 
     // is not Deactivated
     if (model.isDeactivated()) return false;
@@ -484,6 +484,7 @@ export class UserPolicy {
     // is Me
     if (this.ctx.auth.isMe(model)) return true;
 
+    // no other requirements
     return true;
   }
 
@@ -498,13 +499,11 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
+    // model can accept password reset
     if (!this.canAcceptForgottenPasswordReset({ model })) return false;
 
-    // is Manager or Admin
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-    ]);
+    // no other requirements
+    return true;
   }
 
 

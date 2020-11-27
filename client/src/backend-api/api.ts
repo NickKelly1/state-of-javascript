@@ -1,8 +1,8 @@
 import { RequestDocument, Variables } from "graphql-request/dist/types";
 import { PublicEnv } from "../env/public-env.helper";
-import { LoginMutation, LogoutMutation, RefreshMutation } from "../generated/graphql";
+import { AcceptWelcomeMutation, LoginMutation, LogoutMutation, RefreshMutation, RegisterMutation, ResetPasswordMutation, VerifyEmailMutation } from "../generated/graphql";
 import { ApiConnector } from "./api.connector";
-import { ApiCredentials, IApiCredentialsLoginArg, IApiCredentialsRegisterArg } from "./api.credentials";
+import { ApiCredentials, IApiCredentialsAcceptWelcomeArg, IApiCredentialsLoginArg, IApiCredentialsRegisterArg, IApiCredentialsResetPasswordArg, IApiCredentialsVerifyEmailArg } from "./api.credentials";
 import { IApiEvents } from "./api.events";
 import { ApiMe } from "./api.me";
 import { normaliseApiException, rethrow } from "./normalise-api-exception.helper";
@@ -42,9 +42,7 @@ export class Api {
 
 
   /**
-   * Do logout
-   *
-   * Guarnteed to throw ApiException
+   * Do Logout
    *
    * @throws ApiException
    */
@@ -53,14 +51,42 @@ export class Api {
   }
 
   /**
-   * Do register
-   *
-   * Guarnteed to throw ApiException
+   * Do Register
    *
    * @throws ApiException
    */
-  register(arg: IApiCredentialsRegisterArg) {
+  register(arg: IApiCredentialsRegisterArg): Promise<RegisterMutation> {
     return this.credentials.register(arg).catch(rethrow(normaliseApiException));
+  }
+
+
+  /**
+   * Do Verify Email
+   *
+   * @throws ApiException
+   */
+  verifyEmail(arg: IApiCredentialsVerifyEmailArg): Promise<VerifyEmailMutation> {
+    return this.credentials.verifyEmail(arg).catch(rethrow(normaliseApiException));
+  }
+
+
+  /**
+   * Do Reset Password
+   *
+   * @throws ApiException
+   */
+  resetPassword(arg: IApiCredentialsResetPasswordArg): Promise<ResetPasswordMutation> {
+    return this.credentials.resetPassword(arg).catch(rethrow(normaliseApiException));
+  }
+
+
+  /**
+   * Accept Welcome
+   *
+   * @throws ApiException
+   */
+  acceptWelcome(arg: IApiCredentialsAcceptWelcomeArg): Promise<AcceptWelcomeMutation> {
+    return this.credentials.acceptWelcome(arg).catch(rethrow(normaliseApiException));
   }
 
 

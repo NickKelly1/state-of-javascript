@@ -125,9 +125,6 @@ export function TopBar(props: ITopBarProps) {
             </NextLink>
           </ListItem>
           <ListItem><NextLink href="/hire-me" passHref><MUILink color="inherit">Hire me</MUILink></NextLink></ListItem>
-          {/* {me.can.blogs.show && (
-
-          )} */}
           <ListItem><NextLink href="/blog" passHref><MUILink color="inherit">Blog</MUILink></NextLink></ListItem>
           {me.can.newsArticles.show && (
             <ListItem><NextLink href="/news" passHref><MUILink color="inherit">News</MUILink></NextLink></ListItem>

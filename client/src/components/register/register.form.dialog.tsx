@@ -26,6 +26,7 @@ import { FilledCircularProgress } from "../filled-circular-progress/filled-circu
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 import { RegisterMutation } from "../../generated/graphql";
+import { useSnackbar } from "notistack";
 
 
 export interface IRegisterFormDialogProps extends IWithDialogueProps {
@@ -35,16 +36,20 @@ export interface IRegisterFormDialogProps extends IWithDialogueProps {
 export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullWidth: true })((props) => {
   const { dialog, onSuccess, } = props;
   const { api } = useContext(ApiContext);
-
+  const { enqueueSnackbar } = useSnackbar();
   interface IFormState { name: string; email: string; password: string; };
   const [ formState, setFormState ] = useState<IFormState>({ name: '', email: '', password: '', });
+  const handleSuccess = useCallback((arg: RegisterMutation) => {
+    enqueueSnackbar('A verification request has been sent to your email address.', { variant: 'success' });
+    onSuccess?.(arg);
+  }, [onSuccess]);
   const [ doSubmit, submitState ] = useMutation<RegisterMutation, ApiException>(
     async (): Promise<RegisterMutation> => {
       const { name, email, password } = formState;
       const result = await api.register({ name, email, password })
       return result;
     },
-    { onSuccess, },
+    { onSuccess: handleSuccess, },
   );
   const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
   const handleNameChange = useCallback(change(setFormState, 'name'), [setFormState]);

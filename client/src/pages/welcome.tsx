@@ -1,4 +1,4 @@
-import { Button, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
+import { Button, CircularProgress, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
 import MailOutlineIcon from '@material-ui/icons/MailOutline';
 import { fail } from 'assert';
 import { gql } from 'graphql-request';
@@ -7,6 +7,7 @@ import { useSnackbar } from 'notistack';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { Api } from '../backend-api/api';
+import { IApiCredentialsAcceptWelcomeArg } from '../backend-api/api.credentials';
 import { ApiException } from '../backend-api/api.exception';
 import { normaliseApiException, rethrow } from '../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../backend-api/types/api.exception.interface';
@@ -16,8 +17,7 @@ import { FilledCircularProgress } from '../components/filled-circular-progress/f
 import {
   WelcomePageDataQueryVariables,
   WelcomePageDataQuery,
-  WelcomePageAcceptWelcomeMutation,
-  WelcomePageAcceptWelcomeMutationVariables,
+  AcceptWelcomeMutation,
 } from '../generated/graphql';
 import { Attempt, attemptAsync, isFail, isSuccess } from '../helpers/attempted.helper';
 import { change } from '../helpers/change.helper';
@@ -50,48 +50,6 @@ query WelcomePageData(
       created_at
       updated_at
       deleted_at
-    }
-  }
-}
-`;
-
-const welcomePageAcceptWelcomeMutation = gql`
-mutation WelcomePageAcceptWelcome(
-  $token:String!
-  $name:String!
-  $password:String!
-){
-  acceptUserWelcome(
-    dto:{
-      token:$token
-      name:$name
-      password:$password
-    }
-  ){
-    access_token
-    refresh_token
-    access_token_object{
-      data{
-        user_id
-        permissions
-        iat
-        exp
-      }
-      relations{
-        user{
-          data{
-            id
-            name
-          }
-        }
-      }
-    }
-    refresh_token_object{
-      data{
-        user_id
-        iat
-        exp
-      }
     }
   }
 }
@@ -162,25 +120,21 @@ function WelcomePageContents(props: IWelcomePageContentsProps) {
     enqueueSnackbar(`Error: ${exception.message}`, { variant: 'error' });
   }, [enqueueSnackbar]);
 
-  const handleSuccess = useCallback((arg: WelcomePageAcceptWelcomeMutation) => {
+  const handleSuccess = useCallback((arg: AcceptWelcomeMutation) => {
     // success & navigate home
-    const name = arg.acceptUserWelcome.access_token_object.relations?.user?.data.name;
+    const name = arg.acceptUserWelcome.user_name;
     enqueueSnackbar(`Welcome, ${name ?? formState.name}. Your account has been verified.`, { variant: 'success' });
     router.replace('/');
     // TODO: set authentication...
   }, [enqueueSnackbar, router, formState]);
 
-  const [doSubmit, submitState] = useMutation<WelcomePageAcceptWelcomeMutation, IApiException>(
-    async (): Promise<WelcomePageAcceptWelcomeMutation> => {
-      const vars: WelcomePageAcceptWelcomeMutationVariables = {
+  const [doSubmit, submitState] = useMutation<AcceptWelcomeMutation, IApiException>(
+    async (): Promise<AcceptWelcomeMutation> => {
+      const result = await api.acceptWelcome({
         token,
         name: formState.name,
         password: formState.password,
-      }
-      const result = await api.gql<WelcomePageAcceptWelcomeMutation, WelcomePageAcceptWelcomeMutationVariables>(
-        welcomePageAcceptWelcomeMutation,
-        vars,
-      );
+      });
       return result;
     },
     {
@@ -191,6 +145,8 @@ function WelcomePageContents(props: IWelcomePageContentsProps) {
 
   const error = submitState.error;
   const isDisabled = submitState.isLoading;
+  const isLoading = submitState.isLoading;
+  const isSuccess = submitState.isSuccess;
 
   const handleNameChange = useCallback(change(setFormState, 'name'), [setFormState]);
   const handlePasswordChange = useCallback(change(setFormState, 'password'), [setFormState]);
@@ -241,16 +197,30 @@ function WelcomePageContents(props: IWelcomePageContentsProps) {
             Submit
           </Button>
         </Grid>
+        {(isLoading || isSuccess) && (
+          <Grid className="centered" item xs={12}>
+            <CircularProgress className="centered" />
+          </Grid>
+        )}
+        {isLoading && (
+          <Grid className="centered" item xs={12}>
+            <Typography>
+              Setting up your account...
+            </Typography>
+          </Grid>
+        )}
+        {isSuccess && (
+          <Grid className="centered" item xs={12}>
+            <Typography>
+              Success. Redirecting...
+            </Typography>
+          </Grid>
+        )}
         {error && (
           <Grid className="centered col" item xs={12}>
             <FormHelperText error>
               {error.message}
             </FormHelperText>
-          </Grid>
-        )}
-        {isDisabled && (
-          <Grid className="centered col" item xs={12}>
-            <FilledCircularProgress active={isDisabled} />
           </Grid>
         )}
       </Grid>

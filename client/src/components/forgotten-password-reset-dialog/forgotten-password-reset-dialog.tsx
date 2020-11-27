@@ -56,7 +56,7 @@ export const ForgottenPasswordDialog = WithDialogue<IForgottenPasswordDialogProp
 
   // Send PasswordReset Email: (maybe) success
   const handleResetPasswordSuccess = useCallback((arg: RequestForgottenUserPasswordResetMutation) => {
-    enqueueSnackbar(`A Password Reset Email has been sent to "${formState.email}"`, { variant: 'success' });
+    enqueueSnackbar(`A Password Reset has been sent to your email address`, { variant: 'success' });
     onSuccess?.(arg);
   }, [onSuccess, formState]);
 
