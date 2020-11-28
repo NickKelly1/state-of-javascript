@@ -47,9 +47,13 @@ export const AuthRefreshGqlMutation: Thunk<GraphQLFieldConfigMap<unknown, GqlCon
 
       // from body
       const dto = ctx.validate(RefreshGqlInputValidator, args.dto);
-
       if (ist.notNullable(dto.refresh_token)) {
         maybeIncomingRefresh = dto.refresh_token;
+      }
+
+      // from header
+      else if (!!ctx.http?.req.header('refresh_token')) {
+        maybeIncomingRefresh = ctx.http.req.header('refresh_token');
       }
 
       // from cookies

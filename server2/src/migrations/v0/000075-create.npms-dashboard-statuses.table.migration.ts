@@ -5,12 +5,12 @@ import { AutoIncrementingId } from "../../common/schemas/auto-incrementing-id.sc
 function getData() {
   const now = new Date();
   const statuses = [
-    { id: 10, name: 'draft', created_at: now, updated_at: now },
-    { id: 20, name: 'rejected', created_at: now, updated_at: now },
-    { id: 30, name: 'submitted', created_at: now, updated_at: now },
-    { id: 40, name: 'approved', created_at: now, updated_at: now },
-    { id: 50, name: 'unpublished', created_at: now, updated_at: now },
-    { id: 60, name: 'published', created_at: now, updated_at: now },
+    { id: 10, name: 'draft', colour: '#F7DCB7', created_at: now, updated_at: now },
+    { id: 20, name: 'rejected', colour: '#F7AFD6', created_at: now, updated_at: now },
+    { id: 30, name: 'submitted', colour: '#BBEDDE', created_at: now, updated_at: now },
+    { id: 40, name: 'approved', colour: '#CAD69F', created_at: now, updated_at: now },
+    { id: 50, name: 'unpublished', colour: '#BFBFD6', created_at: now, updated_at: now },
+    { id: 60, name: 'published', colour: '#B8D9C5', created_at: now, updated_at: now },
   ];
   return { statuses };
 }
@@ -25,6 +25,7 @@ export default class implements IMigration {
     await queryInterface.createTable('npms_dashboard_statuses', {
       id: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
       name: { type: DataTypes.STRING(100), allowNull: false },
+      colour: { type: DataTypes.STRING(30), allowNull: false },
       created_at: { type: DataTypes.DATE, allowNull: false },
       updated_at: { type: DataTypes.DATE, allowNull: false },
     }, { transaction });

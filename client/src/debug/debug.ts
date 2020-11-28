@@ -11,7 +11,7 @@ export const Debug = {
   CmsConnector: npmDebug('cms-connector'),
   StaticGeneration: npmDebug('static-generation'),
   ServerSideProps: npmDebug('server-side-props'),
-  BackendApi: npmDebug('backend-api'),
-  BackendApiConnector: npmDebug('backend-api-connector'),
-  BackendApiCredentials: npmDebug('backend-api-credentials'),
+  Api: npmDebug('api'),
+  ApiConnector: npmDebug('api-connector'),
+  ApiCredentials: npmDebug('api-credentials'),
 } as const;

@@ -42,6 +42,7 @@ export class UserTokenModel extends Model<IUserTokenAttributes, IUserTokenCreati
   isWelcome() { return this[UserTokenField.type_id] === UserTokenType.AcceptWelcome; }
   isForgottenPasswordReset() { return this[UserTokenField.type_id] === UserTokenType.ForgottenPasswordReset; }
   isVerifyEmail() { return this[UserTokenField.type_id] === UserTokenType.VerifyEmail; }
+  isVerifyEmailChange() { return this[UserTokenField.type_id] === UserTokenType.VerifyEmailChange; }
 
   /**
    * Is the token expired?

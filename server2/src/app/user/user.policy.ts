@@ -124,7 +124,7 @@ export class UserPolicy {
    */
   canLogout() {
     // Can LogOut if LoggedIn
-    return this.ctx.auth.isAuthenticated();
+    return this.ctx.auth.isAuthenticatedAsUser();
   }
 
 
@@ -141,7 +141,7 @@ export class UserPolicy {
     // must be able to log in as anyone
     if (!this.canLogin()) return false;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is not Deactivated
@@ -188,7 +188,7 @@ export class UserPolicy {
       return true;
     }
 
-    // other
+    // is SuperAdmin, Manager, Updater
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin.SuperAdmin,
       Permission.Users.Manage,
@@ -258,7 +258,7 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is not Protected
@@ -312,7 +312,7 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (!model.isSoftDeleted()) return false;
 
     // is not Protected
@@ -358,7 +358,7 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is not deactivated
@@ -387,14 +387,25 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // can ConsumeEmailChange
-    if (!this.canConsumeEmailChange({ model })) return false;
+    // must allow ConsumeEmailChange
+    if (!this.canConsumeEmailChangeVerificationEmail({ model })) return false;
 
-    // is Admin or Manager
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-    ]);
+    // This is a dangerous action. If used on another account, you could switch
+    // their email to yours. Therefore this is -only- allowed by Admin on arbitrary
+    // accounts
+
+    // can if is Admin
+    if (this.ctx.auth.hasAnyPermissions([Permission.SuperAdmin.SuperAdmin])) {
+      return true;
+    };
+
+    // can if is the Requester
+    if (this.ctx.auth.isMe(model)) {
+      return true;
+    }
+
+    // fail
+    return false;
   }
 
 
@@ -403,12 +414,12 @@ export class UserPolicy {
    *
    * @param arg
    */
-  canConsumeEmailChange(arg: {
+  canConsumeEmailChangeVerificationEmail(arg: {
     model: UserModel;
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is not deactivated
@@ -460,7 +471,7 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // has an Email
@@ -517,7 +528,7 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // has an Email

@@ -12,11 +12,13 @@ import { NewsArticleStatusId } from "./news-article-status.id.type";
 export interface INewsArticleStatusAttributes extends IAuditable {
   id: NewsArticleStatusId;
   name: string;
+  colour: string;
 }
 
 export const NewsArticleStatusField: K2K<INewsArticleStatusAttributes> = {
   id: 'id',
   name: 'name',
+  colour: 'colour',
   [created_at]: created_at,
   [updated_at]: updated_at,
 }

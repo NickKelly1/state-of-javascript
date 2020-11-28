@@ -1,7 +1,9 @@
 import { Handler, Request } from "express";
+import * as E from 'fp-ts/Either';
 import { isLeft } from "fp-ts/lib/Either";
 import { ExtractJwt } from "passport-jwt";
 import { LoginExpiredException } from "../exceptions/types/login-expired.exception";
+import { UnauthenticatedException } from "../exceptions/types/unauthenticated.exception";
 import { ist } from "../helpers/ist.helper";
 import { mw } from "../helpers/mw.helper";
 import { prettyQ } from "../helpers/pretty.helper";
@@ -21,8 +23,22 @@ function authTokenCookieExtractor(req: Request): OrNull<string> {
 export const passportMw = (): Handler => mw(async (ctx, next) => {
   const { req } = ctx;
 
-  const access = ctx.services.authService.getAccessToken({ req });
+  // if a refresh_token header was given but the value is empty string, just remove the header altogether...
+  // need this hack for client that can't remove headers...
 
+  const eAccess = ctx.services.authService.getAccessToken({ req });
+
+  // token provided but is expired or badly formatted
+  if (E.isLeft(eAccess)) {
+    // unset the access token so they don't get stuck trying to log-out if they're sending it on log-out route...
+    ctx.services.authService.unsetAccess({ res: ctx.res, });
+    throw ctx.except(UnauthenticatedException({ message: eAccess.left }));
+  }
+
+  // token is valid or doesn't exist
+  const access = eAccess.right;
+
+  // token doesn't exist - pass through without auth
   if (ist.nullable(access)) {
     return void next();
   }
@@ -30,7 +46,7 @@ export const passportMw = (): Handler => mw(async (ctx, next) => {
   // use the valid access token
   ctx.auth.addAccess({ access });
 
-  // is authenticated - add the authenticated permissions
+  // add the "authenticated" permissions to the request
   const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions();
   ctx.auth.addPermissions({ permissions: systemPermissions.authenticated.map(toId) });
 

@@ -1425,7 +1425,7 @@
             "deprecationReason": null
           },
           {
-            "name": "consumeEmailChange",
+            "name": "consumeEmailChangeVerificationEmail",
             "description": null,
             "args": [],
             "type": {
@@ -11634,7 +11634,7 @@
             "deprecationReason": null
           },
           {
-            "name": "acceptUserWelcome",
+            "name": "consumeUserWelcome",
             "description": null,
             "args": [
               {
@@ -11645,7 +11645,7 @@
                   "name": null,
                   "ofType": {
                     "kind": "INPUT_OBJECT",
-                    "name": "AcceptUserWelcome",
+                    "name": "ConsumeUserWelcome",
                     "ofType": null
                   }
                 },
@@ -11676,7 +11676,69 @@
                   "name": null,
                   "ofType": {
                     "kind": "INPUT_OBJECT",
-                    "name": "ConsumeVerifyEmail",
+                    "name": "ConsumeEmailVerification",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "AuthenticationNode",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "requestEmailChange",
+            "description": null,
+            "args": [
+              {
+                "name": "dto",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "RequestEmailChange",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "consumeEmailChangeVerification",
+            "description": null,
+            "args": [
+              {
+                "name": "dto",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "ConsumeVerifyEmailChange",
                     "ofType": null
                   }
                 },
@@ -12119,6 +12181,24 @@
               }
             },
             "defaultValue": null
+          },
+          {
+            "name": "npms_package_names",
+            "description": null,
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              }
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -12167,6 +12247,24 @@
                 "ofType": {
                   "kind": "SCALAR",
                   "name": "Int",
+                  "ofType": null
+                }
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "npms_package_names",
+            "description": null,
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 }
               }
@@ -13282,7 +13380,7 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "AcceptUserWelcome",
+        "name": "ConsumeUserWelcome",
         "description": null,
         "fields": null,
         "inputFields": [
@@ -13335,7 +13433,71 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "ConsumeVerifyEmail",
+        "name": "ConsumeEmailVerification",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "token",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "RequestEmailChange",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "user_id",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "email",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "ConsumeVerifyEmailChange",
         "description": null,
         "fields": null,
         "inputFields": [

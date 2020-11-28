@@ -52,12 +52,12 @@ export class ApiConnector {
    */
   async graphql<T = any, V = Variables>(doc: RequestDocument, vars?: V): Promise<T> {
     const ident = counter += 1;
-    Debug.BackendApiConnector(`[${ident}] graphql request...`);
+    Debug.ApiConnector(`[${ident}] graphql request...`);
 
     // get requester when credentials are settled
     const requester1 = await this.credentials.getSafeRequester();
 
-    Debug.BackendApiConnector(`[${ident}] 1: credentialed: ${String(requester1.credentialed)}`);
+    Debug.ApiConnector(`[${ident}] 1: credentialed: ${String(requester1.credentialed)}`);
 
     // requester isn't credentialed - just send raw request
     if (!requester1.credentialed) return requester1.client.request<T, V>(doc, vars);
@@ -67,19 +67,19 @@ export class ApiConnector {
     // 1: case 200 - success
     try {
       // 1: try
-      Debug.BackendApiConnector(`[${ident}] 1: try...`);
+      Debug.ApiConnector(`[${ident}] 1: try...`);
       const result1 = await requester1.client.request<T, V>(doc, vars);
       // 1: success
-      Debug.BackendApiConnector(`[${ident}] 1: success...`);
+      Debug.ApiConnector(`[${ident}] 1: success...`);
       return result1;
     } catch (error1) {
       // 1: fail
       const exception1 = normaliseApiException(error1);
-      Debug.BackendApiConnector(`[${ident}] 1: fail...`, { error1, exception1 });
+      Debug.ApiConnector(`[${ident}] 1: fail...`, { error1, exception1 });
 
       // 2: case 440 - login hard expired - logout
       if (exception1.code === 440) {
-        Debug.BackendApiConnector(`[${ident}] 2: handling 440`);
+        Debug.ApiConnector(`[${ident}] 2: handling 440`);
         // 2: logout
         await this.credentials.logout();
         // 2: rethrow
@@ -88,26 +88,26 @@ export class ApiConnector {
 
       // 3: case 401 - unauthenticated - logout
       if (exception1.code === 401) {
-        Debug.BackendApiConnector(`[${ident}] 3: handling 401`);
+        Debug.ApiConnector(`[${ident}] 3: handling 401`);
         // access expired - refresh & retry
 
         // 3: if not authenticating already, refresh
         if (!this.credentials.isRunning()) {
-          Debug.BackendApiConnector(`[${ident}] 3: refreshing credentials`);
+          Debug.ApiConnector(`[${ident}] 3: refreshing credentials`);
           await this.credentials.refresh();
         } else {
-          Debug.BackendApiConnector(`[${ident}] 3: not refreshing`);
+          Debug.ApiConnector(`[${ident}] 3: not refreshing`);
         }
 
         // 3: get new requester
         const requester3 = await this.credentials.getSafeRequester();//.client.request<T, V>(doc, vars);
 
-        Debug.BackendApiConnector(`[${ident}] 3: credentialed: ${String(requester3.credentialed)}`);
+        Debug.ApiConnector(`[${ident}] 3: credentialed: ${String(requester3.credentialed)}`);
 
         // 3: no longer credentialed? just throw
         if (!requester3.credentialed) throw exception1;
 
-        Debug.BackendApiConnector(`[${ident}] 3: Re-requesting...`);
+        Debug.ApiConnector(`[${ident}] 3: Re-requesting...`);
 
         // 4: redo the initial request with new credentials
         const result3 = await requester3.client.request<T, V>(doc, vars);
@@ -118,7 +118,7 @@ export class ApiConnector {
 
       // 4: case 4|5xx
       // just re-throw
-      Debug.BackendApiConnector(`[${ident}] 4: Re-throwing...`);
+      Debug.ApiConnector(`[${ident}] 4: Re-throwing...`);
       throw exception1;
     }
   }

@@ -1,0 +1,2 @@
+export function toMapById<T extends { id: any }>(arr: T[]): Map<T['id'], T> { return new Map(arr.map(elem => [elem.id, elem])); }
+export function toMapBy<T, K extends keyof T>(arr: T[], key: K): Map<T[K], T> { return new Map(arr.map(elem => [elem[key], elem])); }

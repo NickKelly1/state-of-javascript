@@ -114,7 +114,7 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is Admin or Manager or SoftDeleter
@@ -154,7 +154,7 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (!model.isSoftDeleted()) return false;
 
     // is Admin, Manager, or Restorer
@@ -176,7 +176,7 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is a Draft
@@ -197,7 +197,7 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // Is Submitted
@@ -221,7 +221,7 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
 
@@ -246,7 +246,7 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is Approved
@@ -270,7 +270,7 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is Published
@@ -294,7 +294,7 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is Approved

@@ -7,7 +7,7 @@ import { useSnackbar } from 'notistack';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { Api } from '../backend-api/api';
-import { IApiCredentialsAcceptWelcomeArg } from '../backend-api/api.credentials';
+import { IApiCredentialsConsumeUserWelcomeArg } from '../backend-api/api.credentials';
 import { ApiException } from '../backend-api/api.exception';
 import { normaliseApiException, rethrow } from '../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../backend-api/types/api.exception.interface';
@@ -17,7 +17,7 @@ import { FilledCircularProgress } from '../components/filled-circular-progress/f
 import {
   WelcomePageDataQueryVariables,
   WelcomePageDataQuery,
-  AcceptWelcomeMutation,
+  ConsumeUserWelcomeMutation,
 } from '../generated/graphql';
 import { Attempt, attemptAsync, isFail, isSuccess } from '../helpers/attempted.helper';
 import { change } from '../helpers/change.helper';
@@ -120,17 +120,17 @@ function WelcomePageContents(props: IWelcomePageContentsProps) {
     enqueueSnackbar(`Error: ${exception.message}`, { variant: 'error' });
   }, [enqueueSnackbar]);
 
-  const handleSuccess = useCallback((arg: AcceptWelcomeMutation) => {
+  const handleSuccess = useCallback((arg: ConsumeUserWelcomeMutation) => {
     // success & navigate home
-    const name = arg.acceptUserWelcome.user_name;
+    const name = arg.consumeUserWelcome.user_name;
     enqueueSnackbar(`Welcome, ${name ?? formState.name}. Your account has been verified.`, { variant: 'success' });
     router.replace('/');
     // TODO: set authentication...
   }, [enqueueSnackbar, router, formState]);
 
-  const [doSubmit, submitState] = useMutation<AcceptWelcomeMutation, IApiException>(
-    async (): Promise<AcceptWelcomeMutation> => {
-      const result = await api.acceptWelcome({
+  const [doSubmit, submitState] = useMutation<ConsumeUserWelcomeMutation, IApiException>(
+    async (): Promise<ConsumeUserWelcomeMutation> => {
+      const result = await api.consumeUserWelcome({
         token,
         name: formState.name,
         password: formState.password,

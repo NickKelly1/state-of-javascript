@@ -17,6 +17,7 @@ import { NewsArticleModel } from '../news-article/news-article.model';
 import { User } from './user.const';
 import { NpmsDashboardModel } from '../npms-dashboard/npms-dashboard.model';
 import { UserTokenModel } from '../user-token/user-token.model';
+import { RequestAuth } from '../../common/classes/request-auth';
 
 
 export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> implements IUserAttributes {

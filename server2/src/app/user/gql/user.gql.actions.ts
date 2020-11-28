@@ -101,10 +101,10 @@ export const UserGqlActions = new GraphQLObjectType<IUserGqlActionsSource, GqlCo
         return ctx.services.userPolicy.canRequestEmailChange({ model: parent });
       },
     },
-    consumeEmailChange: {
+    consumeEmailChangeVerificationEmail: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canConsumeEmailChange({ model: parent });
+        return ctx.services.userPolicy.canConsumeEmailChangeVerificationEmail({ model: parent });
       },
     },
     requestForgottenPasswordReset: {

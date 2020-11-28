@@ -10,6 +10,7 @@ export const NewsArticleStatusGqlData: GraphQLObjectType<NewsArticleStatusModel,
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), },
     name: { type: GraphQLNonNull(GraphQLString), },
+    colour: { type: GraphQLNonNull(GraphQLString), },
     ...AuditableGql,
   }),
 });

@@ -1,4 +1,5 @@
 import { GraphQLClient } from "graphql-request";
+import { shad_id } from "../constants/shad-id.const";
 import { PublicEnv } from "../env/public-env.helper";
 import { isoFetch } from "../iso-fetch";
 import { Api } from "./api";
@@ -49,6 +50,7 @@ export function ApiFactory(arg: IApiFactoryArg): Api | Promise<Api> {
     fetch: isoFetch,
     credentials: 'include',
     mode: 'cors',
+    // headers
   });
 
   switch (arg.type) {

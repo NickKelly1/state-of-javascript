@@ -6,17 +6,17 @@ import {
 } from 'graphql';
 import Joi from 'joi';
 
-export interface IConsumeVerifyEmailGqlInput {
+export interface IConsumeEmailVerificationGqlInput {
   token: string;
 }
 
-export const ConsumeVerifyEmailGqlInput = new GraphQLInputObjectType({
-  name: 'ConsumeVerifyEmail',
+export const ConsumeEmailVerificationGqlInput = new GraphQLInputObjectType({
+  name: 'ConsumeEmailVerification',
   fields: () => ({
     token: { type: GraphQLNonNull(GraphQLString), },
   }),
 });
 
-export const ConsumeVerifyEmailGqlInputValidator = Joi.object<IConsumeVerifyEmailGqlInput>({
+export const ConsumeEmaiLVerificationGqlInputValidator = Joi.object<IConsumeEmailVerificationGqlInput>({
   token: Joi.string().required(),
 });

@@ -42,6 +42,7 @@ import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { useSnackbar } from "notistack";
 import { LoadingDialog } from "../loading-dialog/loading-dialog";
 import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
+import { RequestUserEmailChangeFormDialog } from "./request-user-email-change.form.dialog";
 
 const UserDetailDataQueryName = (id: Id) => `UserDetailDataQuery_${id}`;
 const userDetailDataQuery = gql`
@@ -123,6 +124,7 @@ mutation UserDetailRequestForgottenUserPasswordReset(
   )
 }
 `;
+
 
 interface IUserDetailProps {
   user_id: Id;
@@ -277,10 +279,22 @@ function UserDetailContent(props: IRoleDetailContentProps) {
   );
   const handleSendWelcomeEmailClicked = useCallback(() => sendWelcomeEmail(), [sendWelcomeEmail]);
 
+  // ------------
+  // email change
+  // ------------
+
+  const requestEmailChangeDialog = useDialog();
+
   const debugDialog = useDialog();
 
   return (
     <>
+      <RequestUserEmailChangeFormDialog
+        dialog={requestEmailChangeDialog}
+        initialEmail={user.data.email ?? ''}
+        onSuccess={requestEmailChangeDialog.doClose}
+        user_id={user.data.id}
+      />
       <UserMutateFormDialog dialog={editDialog} user={userFormData} onSuccess={handleRoleUpdated} />
       <DebugJsonDialog title={userFormData.name} data={user} dialog={debugDialog} />
       <LoadingDialog title="Sending Welcome Email..." dialog={welcomeEmailSendingDialog} />
@@ -315,7 +329,7 @@ function UserDetailContent(props: IRoleDetailContentProps) {
                 </Button>
               </Box>
             )}
-            {user.can.requestForgottenPasswordReset && (
+            {user.can.requestForgottenPasswordReset && ist.defined(user.data.email) && (
               <Box ml={1}>
                 <Button startIcon={<LockOpenIcon />} color="primary" onClick={handleResetPasswordClicked}>
                   Send Reset Password Email
@@ -329,14 +343,13 @@ function UserDetailContent(props: IRoleDetailContentProps) {
                 </Button>
               </Box>
             )}
-            {/* // TODO: */}
-            {/* {user.can.requestEmailChange && (
+            {user.can.requestEmailChange && (
               <Box ml={1}>
-                <Button color="primary">
-                  Password verification email
+                <Button color="primary" onClick={requestEmailChangeDialog.doToggle}>
+                  Request Email change
                 </Button>
               </Box>
-            )} */}
+            )}
           </Box>
         </Grid>
         <Grid item xs={12}>

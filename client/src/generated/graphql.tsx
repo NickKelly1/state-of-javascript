@@ -185,7 +185,7 @@ export type UserActions = {
   requestVerificationEmail: Scalars['Boolean'];
   consumeVerificationEmail: Scalars['Boolean'];
   requestEmailChange: Scalars['Boolean'];
-  consumeEmailChange: Scalars['Boolean'];
+  consumeEmailChangeVerificationEmail: Scalars['Boolean'];
   requestForgottenPasswordReset: Scalars['Boolean'];
   consumeForgottenPasswordReset: Scalars['Boolean'];
 };
@@ -1343,8 +1343,10 @@ export type RootMutationType = {
   requestForgottenUserPasswordReset: Scalars['Boolean'];
   consumeForgottenUserPasswordReset: AuthenticationNode;
   requestUserWelcome: Scalars['Boolean'];
-  acceptUserWelcome: AuthenticationNode;
+  consumeUserWelcome: AuthenticationNode;
   consumeEmailVerification: AuthenticationNode;
+  requestEmailChange: Scalars['Boolean'];
+  consumeEmailChangeVerification: AuthenticationNode;
   initialiseIntegration: IntegrationNode;
   googleOAuth2HandleCode: GoogleNode;
   googleSendEmail: Scalars['JsonObject'];
@@ -1505,13 +1507,23 @@ export type RootMutationTypeRequestUserWelcomeArgs = {
 };
 
 
-export type RootMutationTypeAcceptUserWelcomeArgs = {
-  dto: AcceptUserWelcome;
+export type RootMutationTypeConsumeUserWelcomeArgs = {
+  dto: ConsumeUserWelcome;
 };
 
 
 export type RootMutationTypeConsumeEmailVerificationArgs = {
-  dto: ConsumeVerifyEmail;
+  dto: ConsumeEmailVerification;
+};
+
+
+export type RootMutationTypeRequestEmailChangeArgs = {
+  dto: RequestEmailChange;
+};
+
+
+export type RootMutationTypeConsumeEmailChangeVerificationArgs = {
+  dto: ConsumeVerifyEmailChange;
 };
 
 
@@ -1572,12 +1584,14 @@ export type SortNpmsDashboard = {
 export type CreateNpmsDashboard = {
   name: Scalars['String'];
   npms_package_ids?: Maybe<Array<Scalars['Int']>>;
+  npms_package_names?: Maybe<Array<Scalars['String']>>;
 };
 
 export type UpdateNpmsDashboard = {
   id: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
   npms_package_ids?: Maybe<Array<Scalars['Int']>>;
+  npms_package_names?: Maybe<Array<Scalars['String']>>;
 };
 
 export type SoftDeleteNpmsDashboard = {
@@ -1726,13 +1740,22 @@ export type RequestUserWelcome = {
   user_id: Scalars['Int'];
 };
 
-export type AcceptUserWelcome = {
+export type ConsumeUserWelcome = {
   token: Scalars['String'];
   name: Scalars['String'];
   password: Scalars['String'];
 };
 
-export type ConsumeVerifyEmail = {
+export type ConsumeEmailVerification = {
+  token: Scalars['String'];
+};
+
+export type RequestEmailChange = {
+  user_id: Scalars['Int'];
+  email: Scalars['String'];
+};
+
+export type ConsumeVerifyEmailChange = {
   token: Scalars['String'];
 };
 
@@ -1894,12 +1917,12 @@ export type RegisterMutation = (
   ) }
 );
 
-export type VerifyEmailMutationVariables = Exact<{
+export type ConsumeEmailVerificationMutationVariables = Exact<{
   token: Scalars['String'];
 }>;
 
 
-export type VerifyEmailMutation = (
+export type ConsumeEmailVerificationMutation = (
   { __typename?: 'RootMutationType' }
   & { consumeEmailVerification: (
     { __typename?: 'AuthenticationNode' }
@@ -1907,13 +1930,13 @@ export type VerifyEmailMutation = (
   ) }
 );
 
-export type ResetPasswordMutationVariables = Exact<{
+export type ConsumeResetPasswordMutationVariables = Exact<{
   token: Scalars['String'];
   password: Scalars['String'];
 }>;
 
 
-export type ResetPasswordMutation = (
+export type ConsumeResetPasswordMutation = (
   { __typename?: 'RootMutationType' }
   & { consumeForgottenUserPasswordReset: (
     { __typename?: 'AuthenticationNode' }
@@ -1921,16 +1944,29 @@ export type ResetPasswordMutation = (
   ) }
 );
 
-export type AcceptWelcomeMutationVariables = Exact<{
+export type ConsumeUserWelcomeMutationVariables = Exact<{
   token: Scalars['String'];
   name: Scalars['String'];
   password: Scalars['String'];
 }>;
 
 
-export type AcceptWelcomeMutation = (
+export type ConsumeUserWelcomeMutation = (
   { __typename?: 'RootMutationType' }
-  & { acceptUserWelcome: (
+  & { consumeUserWelcome: (
+    { __typename?: 'AuthenticationNode' }
+    & AuthenticationFieldsFragment
+  ) }
+);
+
+export type ConsumeEmailChangeVerificationMutationVariables = Exact<{
+  token: Scalars['String'];
+}>;
+
+
+export type ConsumeEmailChangeVerificationMutation = (
+  { __typename?: 'RootMutationType' }
+  & { consumeEmailChangeVerification: (
     { __typename?: 'AuthenticationNode' }
     & AuthenticationFieldsFragment
   ) }
@@ -2344,6 +2380,17 @@ export type RoleTableDeleteMutationVariables = Exact<{
 export type RoleTableDeleteMutation = (
   { __typename?: 'RootMutationType' }
   & Pick<RootMutationType, 'softDeleteRole'>
+);
+
+export type RequestUserEmailChangeFormMutationVariables = Exact<{
+  user_id: Scalars['Int'];
+  email: Scalars['String'];
+}>;
+
+
+export type RequestUserEmailChangeFormMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'requestEmailChange'>
 );
 
 export type UserMutateFormCreateMutationVariables = Exact<{

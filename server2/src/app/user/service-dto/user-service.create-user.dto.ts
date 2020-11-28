@@ -4,7 +4,7 @@ import { OrNull } from '../../../common/types/or-null.type';
 import { UserDefinition } from '../user.definition';
 
 export interface IUserServiceCreateUserDto {
-  name: string;
+  name: string
   email: OrNull<string>;
   verified: boolean;
   deactivated: boolean;

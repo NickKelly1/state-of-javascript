@@ -63,19 +63,20 @@ export class NpmsDashboardItemService {
 
 
   /**
-   * Delete the model
+   * HardDelete the model
    * 
    * @param arg
    */
-  async delete(arg: {
-    model: NpmsDashboardItemModel;
-    npmsPackage: NpmsPackageModel;
-    dashboard: NpmsDashboardModel;
+  async hardDelete(arg: {
+    groups: {
+      dashboard: NpmsDashboardModel;
+      model: NpmsDashboardItemModel;
+    }[]
     runner: QueryRunner;
-  }): Promise<NpmsDashboardItemModel> {
-    const { model, runner } = arg;
+  }): Promise<void> {
+    const { runner, groups } = arg;
     const { transaction } = runner;
-    await model.destroy({ transaction });
-    return model;
+    await Promise.all(groups.map(group => group.model.destroy({ transaction })));
+    return;
   }
 }

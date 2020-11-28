@@ -75,7 +75,7 @@ export class NpmsPackagePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
     // is Admin, Manager or SoftDeleter
@@ -117,7 +117,7 @@ export class NpmsPackagePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not SoftDeleted
+    // must not be SoftDeleted
     if (!model.isSoftDeleted()) return false;
 
     // is Admin, Manager or Restorer

@@ -3,4 +3,8 @@ export const NewsArticleStatusDefinition = {
     min: 0,
     max: 100,
   },
+  colour: {
+    min: 0,
+    max: 30,
+  },
 };

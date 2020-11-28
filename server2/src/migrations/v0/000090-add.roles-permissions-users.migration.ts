@@ -116,7 +116,7 @@ function getData() {
 
     // Users
     { id: 800, category_id: 800, name: 'show', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 801, category_id: 800, name: 'show-dentities', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 801, category_id: 800, name: 'show-identities', created_at: now, updated_at: now, deleted_at: null, },
     { id: 810, category_id: 800, name: 'create', created_at: now, updated_at: now, deleted_at: null, },
     { id: 811, category_id: 800, name: 'register', created_at: now, updated_at: now, deleted_at: null, },
     { id: 820, category_id: 800, name: 'update', created_at: now, updated_at: now, deleted_at: null, },
@@ -137,13 +137,13 @@ function getData() {
     { id: 940, category_id: 900, name: 'manage', created_at: now, updated_at: now, deleted_at: null, },
 
     // UserTokenTypes
-    { id: 1000, category_id: 1000, name: 'Show', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1000, category_id: 1000, name: 'show', created_at: now, updated_at: now, deleted_at: null, },
 
     // UserTokens
-    { id: 1100, category_id: 1100, name: 'Show', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1100, category_id: 1100, name: 'show', created_at: now, updated_at: now, deleted_at: null, },
 
     // NewsArticleStatuses
-    { id: 1200, category_id: 1200, name: 'Show', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1200, category_id: 1200, name: 'show', created_at: now, updated_at: now, deleted_at: null, },
 
     // NewsArticles
     { id: 1300, category_id: 1300, name: 'show', created_at: now, updated_at: now, deleted_at: null, },
@@ -168,22 +168,28 @@ function getData() {
     { id: 1500, category_id: 1500, name: 'show', created_at: now, updated_at: now, deleted_at: null, },
 
     // NpmsDashboards
-    { id: 1600, category_id: 1600, name: 'show', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1600, category_id: 1600, name: 'show-all', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1601, category_id: 1600, name: 'show-some', created_at: now, updated_at: now, deleted_at: null, },
     { id: 1610, category_id: 1600, name: 'create', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1620, category_id: 1600, name: 'update', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1620, category_id: 1600, name: 'update-all', created_at: now, updated_at: now, deleted_at: null, },
     { id: 1621, category_id: 1600, name: 'update-own', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1630, category_id: 1600, name: 'soft-delete', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1631, category_id: 1600, name: 'hard-delete', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1632, category_id: 1600, name: 'restore', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1630, category_id: 1600, name: 'soft-delete-all', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1631, category_id: 1600, name: 'soft-delete-own', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1632, category_id: 1600, name: 'hard-delete-all', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1633, category_id: 1600, name: 'hard-delete-own', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1634, category_id: 1600, name: 'restore-all', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1635, category_id: 1600, name: 'restore-own', created_at: now, updated_at: now, deleted_at: null, },
     { id: 1640, category_id: 1600, name: 'manage', created_at: now, updated_at: now, deleted_at: null, },
 
     // NpmsDashboardItems
-    { id: 1700, category_id: 1700, name: 'Show', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1710, category_id: 1700, name: 'Create', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1720, category_id: 1700, name: 'Update', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1721, category_id: 1700, name: 'Update-own', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1730, category_id: 1700, name: 'hard-delete', created_at: now, updated_at: now, deleted_at: null, },
-    { id: 1731, category_id: 1700, name: 'hard-delete-own', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1700, category_id: 1700, name: 'show-all', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1701, category_id: 1700, name: 'show-on-visible-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1710, category_id: 1700, name: 'create-on-visible-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1711, category_id: 1700, name: 'create-on-own-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1720, category_id: 1700, name: 'update-on-visible-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1721, category_id: 1700, name: 'update-on-own-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1730, category_id: 1700, name: 'hard-delete-on-visible-dashboards', created_at: now, updated_at: now, deleted_at: null, },
+    { id: 1731, category_id: 1700, name: 'hard-delete-on-own-dashboards', created_at: now, updated_at: now, deleted_at: null, },
     { id: 1740, category_id: 1700, name: 'manage', created_at: now, updated_at: now, deleted_at: null, },
 
     // Integrations

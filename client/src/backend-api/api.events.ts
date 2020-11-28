@@ -32,6 +32,10 @@ export interface IApiEvents {
   accept_welcome_start: TsEvent<undefined>;
   accept_welcome_success: TsEvent<ApiMe>;
   accept_welcome_fail: TsEvent<undefined>;
+
+  verify_email_change_start: TsEvent<undefined>;
+  verify_email_change_success: TsEvent<ApiMe>;
+  verify_email_change_fail: TsEvent<undefined>;
 }
 
 export const ApiEventsFactory = (): IApiEvents => ({
@@ -65,4 +69,8 @@ export const ApiEventsFactory = (): IApiEvents => ({
   accept_welcome_start: new TsEvent<undefined>(),
   accept_welcome_success: new TsEvent<ApiMe>(),
   accept_welcome_fail: new TsEvent<undefined>(),
+
+  verify_email_change_start: new TsEvent<undefined>(),
+  verify_email_change_success: new TsEvent<ApiMe>(),
+  verify_email_change_fail: new TsEvent<undefined>(),
 });

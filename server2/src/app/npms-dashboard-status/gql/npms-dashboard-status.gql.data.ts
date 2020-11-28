@@ -11,6 +11,7 @@ export const NpmsDashboardStatusGqlData: GraphQLObjectType<NpmsDashboardStatusMo
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), },
     name: { type: GraphQLNonNull(GraphQLString), },
+    colour: { type: GraphQLNonNull(GraphQLString), },
     ...AuditableGql,
   }),
 });

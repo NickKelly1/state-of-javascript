@@ -1,5 +1,6 @@
 import { Mutex, } from 'async-mutex';
 import { gql, GraphQLClient, } from 'graphql-request';
+import { shad_id } from '../constants/shad-id.const';
 import { Debug } from '../debug/debug';
 import { PublicEnv } from '../env/public-env.helper';
 import {
@@ -13,13 +14,16 @@ import {
   RegisterMutation,
   ActionsQuery,
   ActionsQueryVariables,
-  VerifyEmailMutation,
-  VerifyEmailMutationVariables,
-  ResetPasswordMutation,
-  ResetPasswordMutationVariables,
-  AcceptWelcomeMutation,
-  AcceptWelcomeMutationVariables,
+  ConsumeEmailVerificationMutation,
+  ConsumeEmailVerificationMutationVariables,
+  ConsumeResetPasswordMutation,
+  ConsumeResetPasswordMutationVariables,
+  ConsumeUserWelcomeMutation,
+  ConsumeUserWelcomeMutationVariables,
+  ConsumeEmailChangeVerificationMutation,
+  ConsumeEmailChangeVerificationMutationVariables,
 } from '../generated/graphql';
+import { ist } from '../helpers/ist.helper';
 import { IApiEvents } from './api.events';
 import { ApiMe, ApiMeFactory, } from './api.me';
 
@@ -186,8 +190,8 @@ ${authenticationFieldsFragment}
 /**
  * Consume Verify Email
  */
-const verifyEmailMutation = gql`
-mutation VerifyEmail(
+const consumeEmailVerificationMutation = gql`
+mutation ConsumeEmailVerification(
   $token:String!
 ){
   consumeEmailVerification(
@@ -204,8 +208,8 @@ ${authenticationFieldsFragment}
 /**
  * Password Reset
  */
-const resetPasswordMutation = gql`
-mutation ResetPassword(
+const consumeResetPasswordMutation = gql`
+mutation ConsumeResetPassword(
   $token:String!
   $password:String!
 ){
@@ -224,17 +228,35 @@ ${authenticationFieldsFragment}
 /**
  * Accept Welcome
  */
-const acceptWelcomeMutation = gql`
-mutation AcceptWelcome(
+const consumeUserWelcomeMutation = gql`
+mutation ConsumeUserWelcome(
   $token:String!
   $name:String!
   $password:String!
 ){
-  acceptUserWelcome(
+  consumeUserWelcome(
     dto:{
       token:$token
       name:$name
       password:$password
+    }
+  ){
+    ...AuthenticationFields
+  }
+}
+${authenticationFieldsFragment}
+`;
+
+/**
+ * VerifyEmailChange
+ */
+const consumeEmailChangeVerification = gql`
+mutation ConsumeEmailChangeVerification(
+  $token:String!
+){
+  consumeEmailChangeVerification(
+    dto:{
+      token:$token
     }
   ){
     ...AuthenticationFields
@@ -403,10 +425,14 @@ export interface IApiCredentialsResetPasswordArg {
   password: string;
 }
 
-export interface IApiCredentialsAcceptWelcomeArg {
+export interface IApiCredentialsConsumeUserWelcomeArg {
   token: string;
   name: string;
   password: string;
+}
+
+export interface IApiCredentialsConsumeChangeVerificationArg {
+  token: string;
 }
 
 
@@ -424,32 +450,50 @@ export class ApiCredentials {
     protected readonly event: IApiEvents,
     protected _me: ApiMe,
   ) {
-    this.event.authenticated.on(() => { Debug.BackendApiCredentials('on::authenticated'); });
-    this.event.unauthenticated.on(() => { Debug.BackendApiCredentials('on::unauthenticated'); });
+    this.event.authenticated.on(() => { Debug.ApiCredentials('on::authenticated'); });
+    this.event.unauthenticated.on(() => { Debug.ApiCredentials('on::unauthenticated'); });
 
-    this.event.log_in_start.on(() => { Debug.BackendApiCredentials('on::log_in_start'); });
-    this.event.log_in_success.on(() => { Debug.BackendApiCredentials('on::log_in_success'); });
-    this.event.log_in_fail.on(() => { Debug.BackendApiCredentials('on::log_in_fail'); });
+    this.event.log_in_start.on(() => { Debug.ApiCredentials('on::log_in_start'); });
+    this.event.log_in_success.on(() => { Debug.ApiCredentials('on::log_in_success'); });
+    this.event.log_in_fail.on(() => { Debug.ApiCredentials('on::log_in_fail'); });
 
-    this.event.register_start.on(() => { Debug.BackendApiCredentials('on::register_start'); });
-    this.event.register_success.on(() => { Debug.BackendApiCredentials('on::register_success'); });
-    this.event.register_fail.on(() => { Debug.BackendApiCredentials('on::register_fail'); });
+    this.event.register_start.on(() => { Debug.ApiCredentials('on::register_start'); });
+    this.event.register_success.on(() => { Debug.ApiCredentials('on::register_success'); });
+    this.event.register_fail.on(() => { Debug.ApiCredentials('on::register_fail'); });
 
-    this.event.verify_email_start.on(() => { Debug.BackendApiCredentials('on::verify_email_start'); });
-    this.event.verify_email_success.on(() => { Debug.BackendApiCredentials('on::verify_email_success'); });
-    this.event.verify_email_fail.on(() => { Debug.BackendApiCredentials('on::verify_email_fail'); });
+    this.event.verify_email_start.on(() => { Debug.ApiCredentials('on::verify_email_start'); });
+    this.event.verify_email_success.on(() => { Debug.ApiCredentials('on::verify_email_success'); });
+    this.event.verify_email_fail.on(() => { Debug.ApiCredentials('on::verify_email_fail'); });
 
-    this.event.reset_password_start.on(() => { Debug.BackendApiCredentials('on::reset_password_start'); });
-    this.event.reset_password_success.on(() => { Debug.BackendApiCredentials('on::reset_password_success'); });
-    this.event.reset_password_fail.on(() => { Debug.BackendApiCredentials('on::reset_password_fail'); });
+    this.event.reset_password_start.on(() => { Debug.ApiCredentials('on::reset_password_start'); });
+    this.event.reset_password_success.on(() => { Debug.ApiCredentials('on::reset_password_success'); });
+    this.event.reset_password_fail.on(() => { Debug.ApiCredentials('on::reset_password_fail'); });
 
-    this.event.refresh_start.on(() => { Debug.BackendApiCredentials('on::refresh_start'); });
-    this.event.refresh_success.on(() => { Debug.BackendApiCredentials('on::refresh_success'); });
-    this.event.refresh_fail.on(() => { Debug.BackendApiCredentials('on::refresh_fail'); });
+    this.event.refresh_start.on(() => { Debug.ApiCredentials('on::refresh_start'); });
+    this.event.refresh_success.on(() => { Debug.ApiCredentials('on::refresh_success'); });
+    this.event.refresh_fail.on(() => { Debug.ApiCredentials('on::refresh_fail'); });
 
-    this.event.accept_welcome_start.on(() => { Debug.BackendApiCredentials('on::accept_welcome_start'); });
-    this.event.accept_welcome_success.on(() => { Debug.BackendApiCredentials('on::accept_welcome_success'); });
-    this.event.accept_welcome_fail.on(() => { Debug.BackendApiCredentials('on::accept_welcome_fail'); });
+    this.event.accept_welcome_start.on(() => { Debug.ApiCredentials('on::accept_welcome_start'); });
+    this.event.accept_welcome_success.on(() => { Debug.ApiCredentials('on::accept_welcome_success'); });
+    this.event.accept_welcome_fail.on(() => { Debug.ApiCredentials('on::accept_welcome_fail'); });
+
+    this.event.verify_email_change_start.on(() => { Debug.ApiCredentials('on::verify_email_change_start'); });
+    this.event.verify_email_change_success.on(() => { Debug.ApiCredentials('on::verify_email_change_success'); });
+    this.event.verify_email_change_fail.on(() => { Debug.ApiCredentials('on::verify_email_change_fail'); });
+
+    // set shadow user...
+    if (!!this._me.shad_id) {
+      this.uncredentialedGqlClient.setHeader(shad_id, this._me.shad_id);
+    }
+    else {
+      this.uncredentialedGqlClient.setHeader(shad_id, '');
+    }
+
+    // set authenticated user
+    if (ist.defined(this._me.user)) {
+      this.credentialedGqlClient.setHeader('Authorization', `Bearer ${this._me.user.access_token}`);
+      this.refreshGqlClient.setHeader('refresh_token', this._me.user.refresh_token);
+    }
   }
 
 
@@ -488,6 +532,11 @@ export class ApiCredentials {
    */
   protected _saveAuthentication(me: ApiMe): void {
     this._me = me;
+    // set authentication for requests
+    if (ist.defined(this._me.user)) {
+      this.credentialedGqlClient.setHeader('Authorization', `Bearer ${this._me.user.access_token}`);
+      this.refreshGqlClient.setHeader('refresh_token', this._me.user.refresh_token);
+    }
     this.event.authenticated.fire(me);
   }
 
@@ -497,6 +546,16 @@ export class ApiCredentials {
    */
   protected _removeAuthentication(me: ApiMe): void {
     this._me = me;
+    if (!!this._me.shad_id) {
+      this.uncredentialedGqlClient.setHeader(shad_id, this._me.shad_id);
+    }
+    else {
+      this.uncredentialedGqlClient.setHeader(shad_id, '');
+    }
+    // clear other authorisation
+    // we will remove the refresh_token too so that when refreshing the cookies refresh_token, not the headers
+    this.credentialedGqlClient.setHeader('Authorization', 'Bearer ');
+    this.refreshGqlClient.setHeader('refresh_token', '');
     this.event.unauthenticated.fire(me);
   }
 
@@ -690,18 +749,21 @@ export class ApiCredentials {
 
 
   /**
-   * Verify Email
+   * Consume EmailVerification
    */
-  async verifyEmail(arg: IApiCredentialsVerifyEmailArg): Promise<VerifyEmailMutation> {
+  async consumeEmailVerification(arg: IApiCredentialsVerifyEmailArg): Promise<ConsumeEmailVerificationMutation> {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.verify_email_start.fire(undefined);
-      const vars: VerifyEmailMutationVariables = {
+      const vars: ConsumeEmailVerificationMutationVariables = {
         token: arg.token,
       };
       const result = await this
         .credentialedGqlClient
-        .request<VerifyEmailMutation, VerifyEmailMutationVariables>(verifyEmailMutation, vars);
+        .request<ConsumeEmailVerificationMutation, ConsumeEmailVerificationMutationVariables>(
+          consumeEmailVerificationMutation,
+          vars,
+        );
       const me = ApiMeFactory({ authenticated: true, value: result.consumeEmailVerification });
       this._saveAuthentication(me);
       this.event.verify_email_success.fire(me);
@@ -718,19 +780,22 @@ export class ApiCredentials {
 
 
   /**
-   * Reset Password
+   * Consume ResetPassword
    */
-  async resetPassword(arg: IApiCredentialsResetPasswordArg): Promise<ResetPasswordMutation> {
+  async consumeResetPassword(arg: IApiCredentialsResetPasswordArg): Promise<ConsumeResetPasswordMutation> {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.reset_password_start.fire(undefined);
-      const vars: ResetPasswordMutationVariables = {
+      const vars: ConsumeResetPasswordMutationVariables = {
         token: arg.token,
         password: arg.password,
       };
       const result = await this
         .credentialedGqlClient
-        .request<ResetPasswordMutation, ResetPasswordMutationVariables>(resetPasswordMutation, vars);
+        .request<ConsumeResetPasswordMutation, ConsumeResetPasswordMutationVariables>(
+          consumeResetPasswordMutation,
+          vars,
+        );
       const me = ApiMeFactory({ authenticated: true, value: result.consumeForgottenUserPasswordReset });
       this._saveAuthentication(me);
       this.event.reset_password_success.fire(me);
@@ -747,27 +812,58 @@ export class ApiCredentials {
 
 
   /**
-   * Accept Welcome
+   * Consume UserWelcome
    */
-  async acceptWelcome(arg: IApiCredentialsAcceptWelcomeArg): Promise<AcceptWelcomeMutation> {
+  async consumeUserWelcome(arg: IApiCredentialsConsumeUserWelcomeArg): Promise<ConsumeUserWelcomeMutation> {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.accept_welcome_start.fire(undefined);
-      const vars: AcceptWelcomeMutationVariables = {
+      const vars: ConsumeUserWelcomeMutationVariables = {
         token: arg.token,
         name: arg.name,
         password: arg.password,
       };
       const result = await this
         .credentialedGqlClient
-        .request<AcceptWelcomeMutation, AcceptWelcomeMutationVariables>(acceptWelcomeMutation, vars);
-      const me = ApiMeFactory({ authenticated: true, value: result.acceptUserWelcome });
+        .request<ConsumeUserWelcomeMutation, ConsumeUserWelcomeMutationVariables>(consumeUserWelcomeMutation, vars);
+      const me = ApiMeFactory({ authenticated: true, value: result.consumeUserWelcome });
       this._saveAuthentication(me);
       this.event.accept_welcome_success.fire(me);
       return result;
     }
     catch (error) {
       this.event.accept_welcome_fail.fire(undefined);
+      throw error;
+    }
+    finally {
+      release();
+    }
+  }
+
+
+  /**
+   * Consume EmailChangeVerification
+   */
+  async consumeEmailChangeVerification(arg: IApiCredentialsConsumeChangeVerificationArg): Promise<ConsumeEmailChangeVerificationMutation> {
+    const release = await this.authenticationLock.acquire();
+    try {
+      this.event.verify_email_change_start.fire(undefined);
+      const vars: ConsumeEmailChangeVerificationMutationVariables = {
+        token: arg.token,
+      };
+      const result = await this
+        .credentialedGqlClient
+        .request<ConsumeEmailChangeVerificationMutation, ConsumeEmailChangeVerificationMutationVariables>(
+          consumeEmailChangeVerification,
+          vars,
+        );
+      const me = ApiMeFactory({ authenticated: true, value: result.consumeEmailChangeVerification });
+      this._saveAuthentication(me);
+      this.event.verify_email_change_success.fire(me);
+      return result;
+    }
+    catch (error) {
+      this.event.verify_email_change_fail.fire(undefined);
       throw error;
     }
     finally {

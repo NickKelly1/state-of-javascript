@@ -1,5 +1,6 @@
 import { IRequestContext } from "../../common/interfaces/request-context.interface";
 import { NpmsDashboardModel } from "../npms-dashboard/npms-dashboard.model";
+import { NpmsPackageModel } from "../npms-package/npms-package.model";
 import { Permission } from "../permission/permission.const";
 import { NpmsDashboardItemModel } from "./npms-dashboard-item.model";
 
@@ -24,7 +25,8 @@ export class NpmsDashboardItemPolicy {
     return this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin.SuperAdmin,
       Permission.NpmsDashboardItems.Manage,
-      Permission.NpmsDashboardItems.Show,
+      Permission.NpmsDashboardItems.ShowAll,
+      Permission.NpmsDashboardItems.ShowOnVisibleDashboards,
     ]);
   }
 
@@ -39,18 +41,24 @@ export class NpmsDashboardItemPolicy {
   }): boolean {
     const { dashboard } = arg;
 
-    if (
-      !dashboard.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.Show])
+    // is Admin, Manager or ShowAller
+    if (this.ctx.auth.hasAnyPermissions([
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NpmsDashboardItems.Manage,
+      Permission.NpmsDashboardItems.ShowAll,
+    ])) {
+      return true;
+    };
+
+    // Dashboard must be Findable & Requester can ShowOnVisibleDashboards
+    if (this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })
+      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.ShowOnVisibleDashboards])
     ) {
       return true;
     }
 
-    // is Admin or Manager
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboardItems.Manage,
-    ]);
+    // failed
+    return false;
   }
 
 
@@ -79,14 +87,25 @@ export class NpmsDashboardItemPolicy {
     dashboard: NpmsDashboardModel;
   }) {
     const { dashboard } = arg;
-    if (dashboard.isSoftDeleted()) return false;
 
-    // is Admon or Manager or Creator
-    return this.ctx.auth.hasAnyPermissions([
+    // Dashboard must be Findable
+    if (!this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })) return false;
+
+    // can if Admin or Manager
+    if (this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin.SuperAdmin,
       Permission.NpmsDashboardItems.Manage,
-      Permission.NpmsDashboardItems.Create,
-    ]);
+      Permission.NpmsDashboardItems.CreateOnVisibleDashboards,
+    ])) {
+      return true;
+    }
+
+    // Dashboard must not be SoftDeleted
+    if (dashboard.isSoftDeleted()) return false;
+
+    // can if Owner & can Create on own Dashboards
+    return this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.CreateOnOwnDashboards])
+      && dashboard.isOwnedBy(this.ctx.auth);
   }
 
 
@@ -97,6 +116,7 @@ export class NpmsDashboardItemPolicy {
    */
   canCreate(arg: {
     dashboard: NpmsDashboardModel;
+    npmsPackage: NpmsPackageModel;
   }): boolean {
     const { dashboard } = arg;
 
@@ -115,26 +135,24 @@ export class NpmsDashboardItemPolicy {
   }) {
     const { dashboard } = arg;
 
-    if (
-      !dashboard.isSoftDeleted()
-      && this.ctx.auth.isMeByUserId(dashboard.owner_id)
-      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.UpdateOwn])
-    ) {
-      return true;
-    }
-
-    if (
-      !dashboard.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboards.Update])
-    ) {
-      return true;
-    }
+    // Dashboard must be Findable
+    if (!this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })) return false;
 
     // is Admin or Manager
-    return this.ctx.auth.hasAnyPermissions([
+    if (this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin.SuperAdmin,
       Permission.NpmsDashboardItems.Manage,
-    ]);
+      Permission.NpmsDashboardItems.UpdateOnVisibleDashboards,
+    ])) {
+      return true;
+    };
+
+    // Dashboard must not be SoftDeleted
+    if (dashboard.isSoftDeleted()) return false;
+
+    // can if Owner & can Update on own Dashboards
+    return this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.UpdateOnOwnDashboards])
+      && dashboard.isOwnedBy(this.ctx.auth);
   }
 
 
@@ -162,25 +180,21 @@ export class NpmsDashboardItemPolicy {
   }) {
     const { dashboard } = arg;
 
-    if (
-      !dashboard.isSoftDeleted()
-      && this.ctx.auth.isMeByUserId(dashboard.owner_id)
-      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.HardDeleteOwn])
-    ) {
-      return true;
-    }
+    // Dashboard must be Findable
+    if (!this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })) return false;
 
-    if (
-      !dashboard.isSoftDeleted()
-      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.HardDelete])
-    ) {
-      return true;
-    }
-
-    return this.ctx.auth.hasAnyPermissions([
+    // is Admin or Manager
+    if (this.ctx.auth.hasAnyPermissions([
       Permission.SuperAdmin.SuperAdmin,
       Permission.NpmsDashboardItems.Manage,
-    ]);
+      Permission.NpmsDashboardItems.HardDeleteOnVisibleDashboards,
+    ])) {
+      return true;
+    };
+
+    // can if Owner & can HardDelete on own Dashboards
+    return this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.HardDeleteOnOwnDashboards])
+      && dashboard.isOwnedBy(this.ctx.auth);
   }
 
 

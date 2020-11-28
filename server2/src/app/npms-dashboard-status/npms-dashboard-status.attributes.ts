@@ -12,11 +12,13 @@ import { NpmsDashboardStatusId } from "./npms-dashboard-status.id.type";
 export interface INpmsDashboardStatusAttributes extends IAuditable {
   id: NpmsDashboardStatusId;
   name: string;
+  colour: string;
 }
 
 export const NpmsDashboardStatusField: K2K<INpmsDashboardStatusAttributes> = {
   id: 'id',
   name: 'name',
+  colour: 'colour',
   [created_at]: created_at,
   [updated_at]: updated_at,
 }

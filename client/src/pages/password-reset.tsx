@@ -15,7 +15,7 @@ import { FilledCircularProgress } from '../components/filled-circular-progress/f
 import {
   PasswordResetPageDataQueryVariables,
   PasswordResetPageDataQuery,
-  ResetPasswordMutation,
+  ConsumeResetPasswordMutation,
 } from '../generated/graphql';
 import { Attempt, attemptAsync, isFail, isSuccess } from '../helpers/attempted.helper';
 import { change } from '../helpers/change.helper';
@@ -120,16 +120,16 @@ function WelcomePageContents(props: IPasswordResetPageContentsProps) {
     enqueueSnackbar(`Error: ${exception.message}`, { variant: 'error' });
   }, [enqueueSnackbar]);
 
-  const handleSuccess = useCallback((arg: ResetPasswordMutation) => {
+  const handleSuccess = useCallback((arg: ConsumeResetPasswordMutation) => {
     // success & navigate home
     const name = arg.consumeForgottenUserPasswordReset.user_name;
     enqueueSnackbar(`Welcome, ${name ?? formState.name}. Your password has been updated.`, { variant: 'success' });
     router.replace('/');
   }, [enqueueSnackbar, router, formState]);
 
-  const [doSubmit, submitState] = useMutation<ResetPasswordMutation, IApiException>(
-    async (): Promise<ResetPasswordMutation> => {
-      const result = await api.resetPassword({ token, password: formState.password, });
+  const [doSubmit, submitState] = useMutation<ConsumeResetPasswordMutation, IApiException>(
+    async (): Promise<ConsumeResetPasswordMutation> => {
+      const result = await api.consumeResetPassword({ token, password: formState.password, });
       return result;
     },
     {

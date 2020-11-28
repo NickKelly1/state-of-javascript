@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
+import * as E from 'fp-ts/Either';
 import { isLeft } from "fp-ts/lib/Either";
+import { PathReporter, failure } from "io-ts/lib/PathReporter";
 import { ExtractJwt } from "passport-jwt";
+import { Exception } from "../../common/exceptions/exception";
 import { ist } from "../../common/helpers/ist.helper";
 import { prettyQ } from "../../common/helpers/pretty.helper";
+import { AuthLang } from "../../common/i18n/packs/auth.lang";
 import { IRequestContext } from "../../common/interfaces/request-context.interface";
 import { logger } from "../../common/logger/logger";
 import { OrNull } from "../../common/types/or-null.type";
@@ -24,16 +28,16 @@ export class AuthSerivce {
    *
    * @param arg
    */
-  getAccessToken(arg: { req: Request, }): OrNull<IAccessToken> {
+  getAccessToken(arg: { req: Request, }): E.Either<string, OrNull<IAccessToken>> {
     const { req } = arg;
     // try header
     let token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 
     // try cookie
-    if (ist.nullable(token)) { token = req.cookies.access_token ?? null; }
+    if (!token) { token = req.cookies.access_token ?? null; }
 
     // no token...
-    if (ist.nullable(token)) return null;
+    if (!token) return E.right(null);
 
     const mbAccess = this.ctx.services.jwtService.decodeAccessToken({ token });
 
@@ -42,7 +46,7 @@ export class AuthSerivce {
       // throw mbAccess.left;
       // don't throw - let route handler throw if required...
       logger.warn(`Failed to validate access token: "${token}: ${prettyQ(mbAccess.left.toJsonDev())}"`);
-      return null;
+      return E.left(mbAccess.left.message);
     }
 
     const access = mbAccess.right;
@@ -51,24 +55,23 @@ export class AuthSerivce {
       logger.warn(`Expired access_token for user "${access.user_id}"`);
       // throw ctx.except(LoginExpiredException());
       // don't throw - let route handler throw if required...
-      return null;
+      return E.left(this.ctx.lang(AuthLang.AccessExpired({ key: 'access_token' })));
     }
 
-    return mbAccess.right;
+    return mbAccess;
   }
 
 
   /**
-   * Unauthenticate the requester
+   * Unauthenticate accses_token (remove from cookies...)
    *
    * @param arg
    */
-  unauthenticate(arg: {
+  unsetAccess(arg: {
     res?: Response;
   }): void {
     const { res } = arg;
-    // unset the access_token
-    if (ist.notNullable(res)) {
+    if (ist.defined(res)) {
       res.cookie(
         'access_token',
         '',
@@ -81,9 +84,21 @@ export class AuthSerivce {
           expires: new Date(0), // @ the beginning of UTC time... 1970
         },
       );
+    }
+    //
+  }
 
-      // unset the refresh_token
-      // @note: path must be the same as was set, otherwise won't be cleared...
+
+  /**
+   * Unauthenticate refresh_token (remove from cookies...)
+   *
+   * @param arg
+   */
+  unsetRefresh(arg: {
+    res?: Response;
+  }): void {
+    const { res } = arg;
+    if (ist.defined(res)) {
       res.cookie(
         'refresh_token',
         '',
@@ -100,6 +115,24 @@ export class AuthSerivce {
           expires: new Date(0), // @ the beginning of UTC time... 1970
         },
       );
+    }
+  }
+
+
+  /**
+   * Unauthenticate the requester
+   *
+   * @param arg
+   */
+  unauthenticate(arg: {
+    res?: Response;
+  }): void {
+    const { res } = arg;
+    // unset the access_token
+    if (ist.notNullable(res)) {
+      // @note: path must be the same as was set, otherwise won't be cleared...
+      this.unsetAccess({ res });
+      this.unsetRefresh({ res });
     }
   }
 
@@ -138,6 +171,9 @@ export class AuthSerivce {
           httpOnly: true,
           // expires: new Date(Date.now() + this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS),
           maxAge: this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS,
+          // 1 year... make the token stick past jwt expiry
+          // that way jwt will throw 401 instead of being silently revoked...
+          // maxAge: 1_000 * 60 * 60 * 24 * 356, // this.ctx.services.universal.env.ACCESS_TOKEN_EXPIRES_IN_MS,
         },
       );
 
@@ -157,7 +193,10 @@ export class AuthSerivce {
           path: '/refresh/',
           httpOnly: true,
           // expires: new Date(Date.now() + this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS),
+          // 1 year... make the token stick past jwt expiry
+          // that way jwt will throw 401 instead of being silently revoked...
           maxAge: this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS,
+          // maxAge: 1_000 * 60 * 60 * 24 * 356, // this.ctx.services.universal.env.REFRESH_TOKEN_EXPIRES_IN_MS,
         },
       );
     }

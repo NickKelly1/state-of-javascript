@@ -33,8 +33,9 @@ export abstract class BaseContext implements IRequestContext {
 
   authorize(can: boolean): void | never {
     if (!can) {
-      // 401 if not authenticated (allows front-end to logout the user)
-      if (!this.auth.isAuthenticated()) { throw this.except(UnauthenticatedException()) }
+      // TODO: not required any more? remove...
+      // // 401 if not authenticated (allows front-end to logout the user)
+      // if (!this.auth.isAuthenticatedAsUser()) { throw this.except(UnauthenticatedException()) }
       // 403 if authenticated
       throw this.except(ForbiddenException())
     };
@@ -49,7 +50,7 @@ export abstract class BaseContext implements IRequestContext {
     const exception = throwable(this);
     exception.shiftTrace(2);
     // if 403 but unauthenticated, switch to 401... (naughty but lets us notify frontend of expired creds)
-    if (!this.auth.isAuthenticated() && exception.code === 403) {
+    if (!this.auth.isAuthenticatedAsUser() && exception.code === 403) {
       exception.switchCodeTo(401);
     }
     return exception;

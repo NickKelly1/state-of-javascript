@@ -1,6 +1,11 @@
 import { Language } from "../consts/language.enum";
 
 export const UserLang = {
+  EmailTaken: (arg: { email: string }) => ({
+    [Language.En]: `"${arg.email}" is in use`,
+    [Language.Ger]: '__TODO__',
+  }),
+
   AlreadyExists: (arg: { name: string }) => ({
     [Language.En]: `user "${arg.name}" already exists`,
     [Language.Ger]: '__TODO__',
@@ -33,6 +38,27 @@ export const UserLang = {
   },
 
   // ------------
+  // VerifyEmailChange
+  // ------------
+
+  // Welcome: subject
+  VerifyEmailChangeSubject: (arg: { welcomeTo: string; name: string; }) => ({
+    [Language.En]: `Verify Email address change`,
+    [Language.Ger]: '__TODO__',
+  }),
+
+  // Welcome: body
+  VerifyEmailChangeBody: (arg: { welcomeTo: string; verifyUrl: string, name: string }) => ({
+    [Language.En]: [
+      `Hi ${arg.name},`,
+      '',
+      `Visit this link ${arg.verifyUrl} to your new email address.`,
+    ].join('\n'),
+    [Language.Ger]: '__TODO__',
+  }),
+
+
+  // ------------
   // Welcome
   // ------------
 
@@ -50,8 +76,6 @@ export const UserLang = {
       `Welcome to ${arg.welcomeTo}!`,
       '',
       `Visit this link ${arg.verifyUrl} to verify your account.`,
-      '',
-      `Enjoy your stay.`,
     ].join('\n'),
     [Language.Ger]: '__TODO__',
   }),

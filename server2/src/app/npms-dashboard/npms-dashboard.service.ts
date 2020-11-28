@@ -74,62 +74,62 @@ export class NpmsDashboardService {
   }
 
 
-  /**
-   * Synchronise NpmsDashboardItems for an NpmsDashboard
-   *
-   * @param arg
-   */
-  async syncItems(arg: {
-    runner: QueryRunner;
-    dashboard: NpmsDashboardModel;
-    prevDashboardItems: NpmsDashboardItemModel[];
-    nextPackages: NpmsPackageModel[];
-  }): Promise<NpmsDashboardItemModel[]> {
-    const { runner, dashboard, prevDashboardItems, nextPackages } = arg;
-    const { transaction } = runner;
+  // /**
+  //  * Synchronise NpmsDashboardItems for an NpmsDashboard
+  //  *
+  //  * @param arg
+  //  */
+  // async syncItems(arg: {
+  //   runner: QueryRunner;
+  //   dashboard: NpmsDashboardModel;
+  //   prevDashboardItems: NpmsDashboardItemModel[];
+  //   nextPackages: NpmsPackageModel[];
+  // }): Promise<NpmsDashboardItemModel[]> {
+  //   const { runner, dashboard, prevDashboardItems, nextPackages } = arg;
+  //   const { transaction } = runner;
 
-    const combinator = new Combinator({
-      // a => previous items
-      a: new Map(prevDashboardItems.map(itm => [itm.npms_package_id, itm])),
-      // b => next items
-      b: new Map(nextPackages.map(pkg => [pkg.id, pkg])),
-    });
-    // in previous but not next
-    const unexpected = Array.from(combinator.diff.aNotB.values());
-    // in next but not previous
-    const missing = Array.from(combinator.diff.bNotA.values());
-    // already exist
-    const normal = Array.from(combinator.bJoinA.a.values());
+  //   const combinator = new Combinator({
+  //     // a => previous items
+  //     a: new Map(prevDashboardItems.map(itm => [itm.npms_package_id, itm])),
+  //     // b => next items
+  //     b: new Map(nextPackages.map(pkg => [pkg.id, pkg])),
+  //   });
+  //   // in previous but not next
+  //   const unexpected = Array.from(combinator.diff.aNotB.values());
+  //   // in next but not previous
+  //   const missing = Array.from(combinator.diff.bNotA.values());
+  //   // already exist
+  //   const normal = Array.from(combinator.bJoinA.a.values());
 
-    // synchronise items
-    const [_, createdLinkages] = await Promise.all([
-      // destroy unexpected
-      Promise.all(unexpected.map(itemToDestroy => itemToDestroy.destroy({ transaction }))),
-      // add missing
-      Promise.all(missing.map(async (missingPackage, i) => {
-        const nextLinkage = await this
-          .ctx
-          .services
-          .npmsDashboardItemService
-          .create({
-            runner,
-            order: i,
-            dashboard,
-            npmsPackage: missingPackage,
-          });
-        return nextLinkage;
-      })),
-    ]);
+  //   // synchronise items
+  //   const [_, createdLinkages] = await Promise.all([
+  //     // destroy unexpected
+  //     Promise.all(unexpected.map(itemToDestroy => itemToDestroy.destroy({ transaction }))),
+  //     // add missing
+  //     Promise.all(missing.map(async (missingPackage, i) => {
+  //       const nextLinkage = await this
+  //         .ctx
+  //         .services
+  //         .npmsDashboardItemService
+  //         .create({
+  //           runner,
+  //           order: i,
+  //           dashboard,
+  //           npmsPackage: missingPackage,
+  //         });
+  //       return nextLinkage;
+  //     })),
+  //   ]);
 
-    // synchronise order of the linkages
-    const orderedLinkages = await this.ctx.services.npmsDashboardItemService.syncOrder({
-      runner,
-      dashboard,
-      items: [...createdLinkages, ...normal,],
-    });
+  //   // synchronise order of the linkages
+  //   const orderedLinkages = await this.ctx.services.npmsDashboardItemService.syncOrder({
+  //     runner,
+  //     dashboard,
+  //     items: [...createdLinkages, ...normal,],
+  //   });
 
-    return orderedLinkages;
-  }
+  //   return orderedLinkages;
+  // }
 
 
   /**
@@ -139,7 +139,7 @@ export class NpmsDashboardService {
    */
   async create(arg: {
     runner: QueryRunner;
-    owner: UserModel;
+    owner: OrNull<UserModel>;
     dto: INpmsDashboardServiceCreateNpmsDashboardDto,
   }): Promise<NpmsDashboardModel> {
     const { runner, owner, dto } = arg;
@@ -150,7 +150,8 @@ export class NpmsDashboardService {
     const NpmsDashboard = NpmsDashboardModel.build({
       name: dto.name,
       order: count - 1,
-      owner_id: owner.id,
+      shadow_id: dto.shadow_id ?? null,
+      owner_id: owner?.id ?? null,
       status_id: dto.status_id,
     });
     await NpmsDashboard.save({ transaction });

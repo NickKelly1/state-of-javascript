@@ -22,6 +22,7 @@ export class EnvService {
   public readonly PASSWORD_RESET_URI = to.string('PASSWORD_RESET_URI');
   public readonly WELCOME_URI = to.string('WELCOME_URI');
   public readonly VERIFY_EMAIL_URI = to.string('VERIFY_EMAIL_URI');
+  public readonly VERIFY_EMAIL_CHANGE_URI = to.string('VERIFY_EMAIL_CHANGE_URI');
 
 
   public readonly HOST = to.string('HOST');

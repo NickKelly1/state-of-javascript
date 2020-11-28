@@ -44,7 +44,7 @@ export const NpmsDashboardGqlActions = new GraphQLObjectType<INpmsDashboardGqlAc
     createNpmsDashboardItem: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: async (parent, args, ctx): Promise<boolean> => {
-        return ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard: parent });
+        return ctx.services.npmsDashboardItemPolicy.canCreateForDashboard({ dashboard: parent });
       },
     },
     hardDeleteNpmsDashboardItem: {

@@ -1,8 +1,8 @@
 import { RequestDocument, Variables } from "graphql-request/dist/types";
 import { PublicEnv } from "../env/public-env.helper";
-import { AcceptWelcomeMutation, LoginMutation, LogoutMutation, RefreshMutation, RegisterMutation, ResetPasswordMutation, VerifyEmailMutation } from "../generated/graphql";
+import { ConsumeEmailChangeVerificationMutation, ConsumeUserWelcomeMutation, LoginMutation, LogoutMutation, RefreshMutation, RegisterMutation, ConsumeResetPasswordMutation, ConsumeEmailVerificationMutation } from "../generated/graphql";
 import { ApiConnector } from "./api.connector";
-import { ApiCredentials, IApiCredentialsAcceptWelcomeArg, IApiCredentialsLoginArg, IApiCredentialsRegisterArg, IApiCredentialsResetPasswordArg, IApiCredentialsVerifyEmailArg } from "./api.credentials";
+import { ApiCredentials, IApiCredentialsConsumeChangeVerificationArg, IApiCredentialsConsumeUserWelcomeArg, IApiCredentialsLoginArg, IApiCredentialsRegisterArg, IApiCredentialsResetPasswordArg, IApiCredentialsVerifyEmailArg } from "./api.credentials";
 import { IApiEvents } from "./api.events";
 import { ApiMe } from "./api.me";
 import { normaliseApiException, rethrow } from "./normalise-api-exception.helper";
@@ -61,32 +61,42 @@ export class Api {
 
 
   /**
-   * Do Verify Email
+   * Consume an EmailVerification Token
    *
    * @throws ApiException
    */
-  verifyEmail(arg: IApiCredentialsVerifyEmailArg): Promise<VerifyEmailMutation> {
-    return this.credentials.verifyEmail(arg).catch(rethrow(normaliseApiException));
+  consumeEmailVerification(arg: IApiCredentialsVerifyEmailArg): Promise<ConsumeEmailVerificationMutation> {
+    return this.credentials.consumeEmailVerification(arg).catch(rethrow(normaliseApiException));
   }
 
 
   /**
-   * Do Reset Password
+   * Consume a ResetPassword Token
    *
    * @throws ApiException
    */
-  resetPassword(arg: IApiCredentialsResetPasswordArg): Promise<ResetPasswordMutation> {
-    return this.credentials.resetPassword(arg).catch(rethrow(normaliseApiException));
+  consumeResetPassword(arg: IApiCredentialsResetPasswordArg): Promise<ConsumeResetPasswordMutation> {
+    return this.credentials.consumeResetPassword(arg).catch(rethrow(normaliseApiException));
   }
 
 
   /**
-   * Accept Welcome
+   * Consume a UserWelcome Token
    *
    * @throws ApiException
    */
-  acceptWelcome(arg: IApiCredentialsAcceptWelcomeArg): Promise<AcceptWelcomeMutation> {
-    return this.credentials.acceptWelcome(arg).catch(rethrow(normaliseApiException));
+  consumeUserWelcome(arg: IApiCredentialsConsumeUserWelcomeArg): Promise<ConsumeUserWelcomeMutation> {
+    return this.credentials.consumeUserWelcome(arg).catch(rethrow(normaliseApiException));
+  }
+
+
+  /**
+   * Consume an EmailChangeVerification Token
+   *
+   * @throws ApiException
+   */
+  consumeEmailChangeVerification(arg: IApiCredentialsConsumeChangeVerificationArg): Promise<ConsumeEmailChangeVerificationMutation> {
+    return this.credentials.consumeEmailChangeVerification(arg).catch(rethrow(normaliseApiException));
   }
 
 
@@ -113,8 +123,10 @@ export class Api {
 
   /**
    * Get Safe me (once credentials are settled)
+   *
+   * @throws ApiException
    */
   safeMe(): Promise<ApiMe> {
-    return this.credentials.getSafeMe();
+    return this.credentials.getSafeMe().catch(rethrow(normaliseApiException));
   }
 }

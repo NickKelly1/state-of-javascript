@@ -7,6 +7,7 @@ import {
   DialogTitle,
   FormHelperText,
   Grid,
+  IconButton,
   InputLabel,
   Switch,
   TextField,
@@ -43,6 +44,10 @@ import { useUpdate } from "../../hooks/use-update.hook";
 import { Id } from "../../types/id.type";
 import { OrNullable } from "../../types/or-nullable.type";
 import { OrNull } from "../../types/or-null.type";
+import { useDialog } from "../../hooks/use-dialog.hook";
+import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { BugReport } from "@material-ui/icons";
+import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 
 
 const userMutateFormCreateMutation = gql`
@@ -199,8 +204,11 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
   const isDisabled = submitState.isLoading;
   const error = submitState.error;
 
+  const debugDialog = useDialog();
+
   return (
     <>
+      <DebugJsonDialog title="User Mutate Form" dialog={debugDialog} data={formState} />
       <DialogTitle>
         {ist.defined(user) ? 'Edit user' : 'Create user'}
       </DialogTitle>
@@ -279,6 +287,11 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
           </Grid>
         </DialogContent>
         <DialogActions>
+          <WhenDebugMode>
+            <IconButton onClick={debugDialog.doToggle} color="primary">
+              <BugReport />
+            </IconButton>
+          </WhenDebugMode>
           <Button color="primary" disabled={isDisabled} onClick={dialog.doClose}>
             Close
           </Button>

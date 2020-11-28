@@ -19,6 +19,10 @@ import { UserId } from '../user/user.id.type';
 import { NpmsDashboardStatus } from '../npms-dashboard-status/npms-dashboard-status.const';
 import { NpmsDashboardStatusField } from '../npms-dashboard-status/npms-dashboard-status.attributes';
 import { NpmsDashboardStatusModel } from '../npms-dashboard-status/npms-dashboard-status.model';
+import { OrNull } from '../../common/types/or-null.type';
+import { IRequestContext } from '../../common/interfaces/request-context.interface';
+import { Auth } from 'googleapis';
+import { RequestAuth } from '../../common/classes/request-auth';
 
 
 export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDashboardCreationAttributes> implements INpmsDashboardAttributes {
@@ -26,7 +30,8 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   [NpmsDashboardField.id]!: NpmsDashboardId;
   [NpmsDashboardField.name]!: string;
   [NpmsDashboardField.order]!: number;
-  [NpmsDashboardField.owner_id]!: UserId;
+  [NpmsDashboardField.shadow_id]!: OrNull<string>;
+  [NpmsDashboardField.owner_id]!: OrNull<UserId>;
   [NpmsDashboardField.status_id]!: UserId;
 
   [NpmsDashboardField.created_at]!: Date;
@@ -37,7 +42,7 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   static associations: NpmsDashboardAssociations;
 
   // eager loaded associations
-  [NpmsDashboardAssociation.owner]?: UserModel;
+  [NpmsDashboardAssociation.owner]?: OrNull<UserModel>;
   [NpmsDashboardAssociation.items]?: NpmsDashboardItemModel[];
   [NpmsDashboardAssociation.npmsPackages]?: NpmsDashboardModel[];
   [NpmsDashboardAssociation.status]?: NpmsDashboardStatus;
@@ -51,6 +56,16 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   isSubmitted() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Submitted; }
   isApproved() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Approved; }
   isPublished() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Published; }
+
+
+  /**
+   * Is the model owned by the authentication?
+   *
+   * @param auth
+   */
+  isOwnedBy(auth: RequestAuth): boolean {
+    return auth.isMeByUserId(this.owner_id) || auth.isMeByShadowId(this.shadow_id);
+  }
 }
 
 
@@ -60,7 +75,8 @@ export const initNpmsDashboardModel: ModelInitFn = (arg) => {
     id: AutoIncrementingId,
     name: { type: DataTypes.STRING(NpmsDashboardDefinition.name.max), allowNull: false, },
     order: { type: DataTypes.INTEGER, allowNull: false, },
-    owner_id: { type: DataTypes.INTEGER, references: { model: UserModel as typeof Model, key: NpmsDashboardField.id }, allowNull: false, },
+    owner_id: { type: DataTypes.INTEGER, references: { model: UserModel as typeof Model, key: NpmsDashboardField.id }, allowNull: true, },
+    shadow_id: { type: DataTypes.STRING(255), allowNull: true },
     status_id: { type: DataTypes.INTEGER, references: { model: NpmsDashboardStatusModel as typeof Model, key: NpmsDashboardStatusField.id }, allowNull: false, },
     ...pretendAuditable,
     ...pretendSoftDeleteable,

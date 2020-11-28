@@ -1,11 +1,17 @@
 import { ist } from "../helpers/ist.helper";
+import { nanoid } from 'nanoid';
 import { Id } from "../types/id.type";
 import { AuthenticationFieldsFragment, AuthorisedActionsFieldsFragment } from '../generated/graphql';
 import objectHash from 'object-hash';
 import { OrNull } from "../types/or-null.type";
 import { IApiMeSerialized } from "../types/api-me-serialized.hinterface";
 import { IJson } from "../types/json.interface";
+import { _ls } from "../helpers/_ls.helper";
+import { shad_id } from "../constants/shad-id.const";
+import { $FIXME } from "../types/$fix-me.type";
 
+
+export interface IMeUserData { id: number; name: string; access_token: string; refresh_token: string; };
 
 type IAuthenticatedMeFactoryArg =
   { authenticated: true, value: AuthenticationFieldsFragment }
@@ -26,6 +32,8 @@ export function ApiMeFactory(arg: IAuthenticatedMeFactoryArg): ApiMe {
       user: {
         id: arg.value.user_id,
         name: arg.value.user_name,
+        access_token: arg.value.access_token,
+        refresh_token: arg.value.refresh_token,
       },
     });
     return me;
@@ -46,9 +54,11 @@ export interface IMeHash { id?: Id; permissions: number[]; }
 let instanceCounter = 0;
 
 export class ApiMe {
+  public readonly [shad_id]: OrNull<string> = null;
+
   protected readonly instance: number;
   public readonly createdAt: Date;
-  public readonly user: null | { id: number; name: string; }
+  public readonly user: null | IMeUserData;
   public readonly permissions: number[];
   public readonly permission_set: Set<number>;
   public readonly hash: string;
@@ -62,6 +72,7 @@ export class ApiMe {
    */
   static deserialize(arg: IApiMeSerialized): ApiMe {
     const api = new ApiMe({
+      // do not serialize shadow_id
       can: arg.can,
       createdAt: new Date(arg.createdAt),
       permissions: arg.permissions,
@@ -76,6 +87,7 @@ export class ApiMe {
    */
   serialize(): IApiMeSerialized {
     const ser = {
+      // do not serialize shadow_id
       createdAt: this.createdAt.valueOf(),
       can: this.can,
       permissions: this.permissions,
@@ -89,7 +101,7 @@ export class ApiMe {
   constructor(arg: {
     instance?: number;
     createdAt: Date;
-    user: null | { id: number; name: string; };
+    user: null | IMeUserData;
     permissions: number[];
     can: AuthorisedActionsFieldsFragment;
   }) {
@@ -101,10 +113,26 @@ export class ApiMe {
     this.permission_set = new Set(permissions);
     this.permissions = Array.from(this.permission_set).sort((a, b) => a - b);
     this.can = can;
+
+    if (ist.nullable(this.user)) {
+      // use a shadow id
+      if (ist.defined(_ls)) {
+        // exists?
+        let shadow_id = _ls.getItem(shad_id);
+        if (!shadow_id) {
+          // create
+          shadow_id = nanoid();
+          _ls.setItem(shad_id, shadow_id);
+        }
+        this[shad_id] = shadow_id;
+      }
+    }
+
     this.hash = objectHash({
       user_id: this.user?.id ?? null,
       permissions: this.permissions,
       can: this.can,
+      [shad_id]: this[shad_id],
     });
   }
 
@@ -166,7 +194,7 @@ export class ApiMe {
    */
   toJSON(): IJson {
     return {
-      user: this.user,
+      user: this.user as $FIXME<unknown> as IJson,
       isAuthenticated: this.isAuthenticated,
       instance: this.instance,
       createdAt: this.createdAt.valueOf(),

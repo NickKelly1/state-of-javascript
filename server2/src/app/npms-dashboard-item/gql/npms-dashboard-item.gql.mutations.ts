@@ -33,7 +33,7 @@ export const NpmsDashboardItemGqlMutations: Thunk<GraphQLFieldConfigMap<undefine
             .npmsPackageRepository
             .findByPkOrfail(dto.npms_package_id, { runner }),
         ]);
-        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard }));
+        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard, npmsPackage, }));
 
         const items = assertDefined(dashboard.items);
         const newItem = await ctx.services.npmsDashboardItemService.create({
@@ -60,7 +60,7 @@ export const NpmsDashboardItemGqlMutations: Thunk<GraphQLFieldConfigMap<undefine
     resolve: async (parent, args, ctx): Promise<INpmsDashboardItemGqlNodeSource> => {
       const dto = ctx.validate(SoftDeleteNpmsDashboardItemValidator, args.dto);
       const model = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const NpmsDashboardItem: NpmsDashboardItemModel = await ctx.services.npmsDashboardItemRepository.findByPkOrfail(dto.id, {
+        const npmsDashboardItem: NpmsDashboardItemModel = await ctx.services.npmsDashboardItemRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
             include: [
@@ -69,11 +69,14 @@ export const NpmsDashboardItemGqlMutations: Thunk<GraphQLFieldConfigMap<undefine
             ],
           }
         });
-        const dashboard = assertDefined(NpmsDashboardItem.dashboard);
-        const npmsPackage = assertDefined(NpmsDashboardItem.npmsPackage);
-        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canHardDelete({ model: NpmsDashboardItem, dashboard }));
-        await ctx.services.npmsDashboardItemService.delete({ runner, dashboard, npmsPackage, model: NpmsDashboardItem });
-        return NpmsDashboardItem;
+        const dashboard = assertDefined(npmsDashboardItem.dashboard);
+        const npmsPackage = assertDefined(npmsDashboardItem.npmsPackage);
+        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canHardDelete({ model: npmsDashboardItem, dashboard }));
+        await ctx.services.npmsDashboardItemService.hardDelete({
+          runner,
+          groups: [{ dashboard, model: npmsDashboardItem, }]
+        });
+        return npmsDashboardItem;
       });
       return model;
     },

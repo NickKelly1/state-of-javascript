@@ -22,6 +22,7 @@ export class NewsArticleStatusModel extends Model<INewsArticleStatusAttributes, 
   // fields
   [NewsArticleStatusField.id]!: NewsArticleStatusId;
   [NewsArticleStatusField.name]!: string;
+  [NewsArticleStatusField.colour]!: string;
 
   [NewsArticleStatusField.created_at]!: Date;
   [NewsArticleStatusField.updated_at]!: Date;
@@ -40,6 +41,7 @@ export const initNewsArticleStatusModel: ModelInitFn = (arg) => {
   NewsArticleStatusModel.init({
     id: { type: DataTypes.INTEGER, primaryKey: true, },
     name: { type: DataTypes.STRING(NewsArticleStatusDefinition.name.max), allowNull: false, },
+    colour: { type: DataTypes.STRING(NewsArticleStatusDefinition.colour.max), allowNull: false, },
     ...pretendAuditable,
   }, {
     sequelize,

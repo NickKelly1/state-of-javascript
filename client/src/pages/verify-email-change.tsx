@@ -1,23 +1,13 @@
-import { Button, CircularProgress, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
-import MailOutlineIcon from '@material-ui/icons/MailOutline';
-import { fail } from 'assert';
-import { gql } from 'graphql-request';
+import { CircularProgress, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
 import { useRouter } from 'next/router';
 import { useSnackbar } from 'notistack';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
-import { Api } from '../backend-api/api';
-import { authenticationFieldsFragment } from '../backend-api/api.credentials';
 import { ApiException } from '../backend-api/api.exception';
-import { normaliseApiException, rethrow } from '../backend-api/normalise-api-exception.helper';
-import { IApiException } from '../backend-api/types/api.exception.interface';
 import { ApiContext } from '../components-contexts/api.context';
-import { WithLoadable } from '../components-hoc/with-loadable/with-loadable';
 import { DebugException } from '../components/debug-exception/debug-exception';
-import { FilledCircularProgress } from '../components/filled-circular-progress/filled-circular-progress';
-import { ConsumeEmailVerificationMutation } from '../generated/graphql';
+import { ConsumeEmailChangeVerificationMutation, } from '../generated/graphql';
 import { $DANGER } from '../types/$danger.type';
-import { OrNull } from '../types/or-null.type';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -26,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface IVerifyEmailPageProps {
+interface IVerifyEmailChangePageProps {
   //
 }
 
@@ -35,7 +25,7 @@ interface IVerifyEmailPageProps {
  *
  * @param props
  */
-function VerifyEmailPage(props: IVerifyEmailPageProps) {
+function VerifyEmailChangePage(props: IVerifyEmailChangePageProps) {
   const classes = useStyles();
   const { api, me } = useContext(ApiContext);
   const router = useRouter();
@@ -44,17 +34,17 @@ function VerifyEmailPage(props: IVerifyEmailPageProps) {
   interface IState {};
   const [state, setState] = useState<IState>({});
 
-  const handleSuccess = useCallback((result: ConsumeEmailVerificationMutation) => {
-    enqueueSnackbar(`Your account has been verified`, { variant: 'success' });
+  const handleSuccess = useCallback((result: ConsumeEmailChangeVerificationMutation) => {
+    enqueueSnackbar(`Your email has been updated`, { variant: 'success' });
     router.replace('/');
   }, []);
   const handleError = useCallback((exception: ApiException) => {
     enqueueSnackbar(`Errored: ${exception.message}`, { variant: 'error' });
   }, []);
 
-  const [doSubmit, submitState] = useMutation<ConsumeEmailVerificationMutation, ApiException>(
+  const [doSubmit, submitState] = useMutation<ConsumeEmailChangeVerificationMutation, ApiException>(
     async () => {
-      const result = await api.consumeEmailVerification({ token: router.query['token'] as $DANGER<string> });
+      const result = await api.consumeEmailChangeVerification({ token: router.query['token'] as $DANGER<string> });
       return result;
     }, {
       onSuccess: handleSuccess,
@@ -77,12 +67,10 @@ function VerifyEmailPage(props: IVerifyEmailPageProps) {
     <Grid container spacing={2}>
       <Grid item xs={12}>
         <Paper className={classes.paper}>
+          <Grid item xs={12}>
+            {/*  */}
+          </Grid>
           <Grid container spacing={2}>
-            <Grid className="centered" item xs={12}>
-              <Typography variant="h1" component="h1">
-                Verifying Email address...
-              </Typography>
-            </Grid>
             {(isLoading || isSuccess) && (
               <Grid className="centered" item xs={12}>
                 <CircularProgress className="centered" />
@@ -91,7 +79,7 @@ function VerifyEmailPage(props: IVerifyEmailPageProps) {
             {isLoading && (
               <Grid className="centered" item xs={12}>
                 <Typography>
-                  Verifying...
+                  Updating email address...
                 </Typography>
               </Grid>
             )}
@@ -114,4 +102,4 @@ function VerifyEmailPage(props: IVerifyEmailPageProps) {
   );
 }
 
-export default VerifyEmailPage;
+export default VerifyEmailChangePage;

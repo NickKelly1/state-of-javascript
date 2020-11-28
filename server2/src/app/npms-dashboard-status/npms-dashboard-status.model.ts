@@ -14,6 +14,7 @@ export class NpmsDashboardStatusModel extends Model<INpmsDashboardStatusAttribut
   // fields
   [NpmsDashboardStatusField.id]!: NpmsDashboardStatusId;
   [NpmsDashboardStatusField.name]!: string;
+  [NpmsDashboardStatusField.colour]!: string;
 
   [NpmsDashboardStatusField.created_at]!: Date;
   [NpmsDashboardStatusField.updated_at]!: Date;
@@ -32,6 +33,7 @@ export const initNpmsDashboardStatusModel: ModelInitFn = (arg) => {
   NpmsDashboardStatusModel.init({
     id: { type: DataTypes.INTEGER, primaryKey: true, },
     name: { type: DataTypes.STRING(NpmsDashboardStatusDefinition.name.max), allowNull: false, },
+    colour: { type: DataTypes.STRING(NpmsDashboardStatusDefinition.colour.max), allowNull: false, },
     ...pretendAuditable,
   }, {
     sequelize,

@@ -7,6 +7,7 @@ import { handler } from "../helpers/handler.helper";
 import { RequestSerivceContainer } from "../containers/request.service.container";
 import { IUniversalServices } from "../interfaces/universal.services.interface";
 import { toId } from "../helpers/to-id.helper";
+import { shad_id } from "../constants/shad.const";
 
 export const servicesMw = (arg: {
   universal: IUniversalServices,
@@ -16,7 +17,7 @@ export const servicesMw = (arg: {
   const ctx = HttpContext.ensure({ req, res });
   const services = new RequestSerivceContainer(ctx, universal);
   const systemPermissions = await universal.systemPermissions.getPermissions();
-  const auth = new RequestAuth(systemPermissions.pub.map(toId));
+  const auth = new RequestAuth(systemPermissions.pub.map(toId), undefined, req.header(shad_id) ?? null);
   req.__locals__ = { auth, httpCtx: ctx, services, };
   next();
 });

@@ -15,6 +15,9 @@ import { UserRoleModel } from '../user-role/user-role.model';
 import { IUserServiceCreateUserDto } from './service-dto/user-service.create-user.dto';
 import { IUserServiceUpdateUserDto } from './service-dto/user-service.update-user.dto';
 import { UserField } from './user.attributes';
+import { IUserServiceSendVerifyEmailChangeEmailDto } from './service-dto/user-service.send-verify-email-change-email.dto';
+import { TUserTokenVerifyEmailChangeData } from '../user-token/types/user-token.verify-email-change-data.type';
+import { unwrap } from '../../common/helpers/unwrap.helper';
 
 export class UserService {
   constructor(
@@ -363,6 +366,89 @@ export class UserService {
           body: this.ctx.lang(UserLang.PasswordResetEmailBody({
             welcomeTo: 'nickkelly.dev',
             resetUrl: link,
+            name: user.name,
+          })),
+        });
+    });
+  }
+
+
+  /**
+   * Send a VerifyEmailChangeEmail
+   *
+   * @param arg
+   */
+  async sendVerifyEmailChangeEmail(arg: {
+    model: UserModel;
+    runner: QueryRunner;
+    dto: IUserServiceSendVerifyEmailChangeEmailDto,
+  }): Promise<boolean> {
+    const { model, runner, dto } = arg;
+
+    // redirect to the front-end...
+    const redirect_uri = this.ctx.services.universal.env.VERIFY_EMAIL_CHANGE_URI;
+
+    const data: TUserTokenVerifyEmailChangeData = {
+      email: dto.email,
+    }
+
+    // Create a new UserToken...
+    const token = await this
+      .ctx
+      .services
+      .userTokenService
+      .create({
+        runner,
+        user: model,
+        dto: {
+          redirect_uri,
+          data,
+          // 30 days...
+          expires_at: new Date(Date.now() + 1_000 * 60 * 60 * 24 * 30),
+          type_id: UserTokenType.VerifyEmailChange,
+        },
+      })
+
+    runner.afterCommit(() => this._queueWelcomeEmail({ token_id: token.id }));
+
+    return true;
+  }
+
+
+  /**
+   * Fired after VerifyEmailChangeEmail is committed
+   *
+   * @param arg
+   */
+  protected async _queueSendVerifyEmailChangeEmail(arg: { token_id: UserTokenId }): Promise<void> {
+    const { token_id } = arg;
+
+    await this.ctx.services.universal.db.transact(async ({ runner }) => {
+      const token = await this.ctx.services.userTokenRepository.findByPkOrfail(token_id, {
+        unscoped: true,
+        runner,
+        options: { include: [{ association: UserTokenAssociation.user, }], },
+      });
+      const user = assertDefined(token.user);
+      const link = assertDefined(token.redirectUriWithSlug());
+      const data = unwrap.right(TUserTokenVerifyEmailChangeData.decode(token.data));
+
+      // Queue the Gmail to Send
+      await this
+        .ctx
+        .services
+        .universal
+        .gmailQueue
+        .add({
+          to: [data.email],
+          cc: null,
+          subject: this.ctx.lang(UserLang.WelcomeEmailSubject({
+            welcomeTo: 'nickkelly.dev',
+            name: user.name,
+          })),
+          body: this.ctx.lang(UserLang.WelcomeEmailBody({
+            welcomeTo: 'nickkelly.dev',
+            verifyUrl: link,
             name: user.name,
           })),
         });

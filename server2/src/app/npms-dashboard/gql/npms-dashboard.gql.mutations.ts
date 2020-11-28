@@ -1,6 +1,6 @@
 import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
-import { Op } from "sequelize";
-import { NpmsDashboardModel } from "../../../circle";
+import { Op, or } from "sequelize";
+import { NpmsDashboardItemModel, NpmsDashboardModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { NpmsPackageField } from "../../npms-package/npms-package.attributes";
@@ -20,8 +20,27 @@ import { RejectNpmsDashboardGqlInput, RejectNpmsDashboardGqlInputValidator } fro
 import { ApproveNpmsDashboardGqlInput, ApproveNpmsDashboardGqlInputValidator } from "../gql-input/approve-npms-dashboard.gql";
 import { UnpublishNpmsDashboardGqlInput, UnpublishNpmsDashboardGqlInputValidator } from "../gql-input/unpublish-npms-dashboard.gql";
 import { PublishNpmsDashboardGqlInput, PublishNpmsDashboardGqlInputValidator } from "../gql-input/publish-npms-dashboard.gql";
+import { UnauthenticatedException } from "../../../common/exceptions/types/unauthenticated.exception";
+import { ist } from "../../../common/helpers/ist.helper";
+import { orWhere } from "../../../common/helpers/or-where.helper.ts";
+import { NpmsPackageModel } from "../../npms-package/npms-package.model";
+import { NpmsLang } from "../../../common/i18n/packs/npms.lang";
+import { BadRequestException } from "../../../common/exceptions/types/bad-request.exception";
+import { toMapBy, toMapById } from "../../../common/helpers/to-id-map.helper";
+import { NpmsPackageId } from "../../npms-package/npms-package.id.type";
+import { IRequestContext } from "../../../common/interfaces/request-context.interface";
+import { OrNullable } from "../../../common/types/or-nullable.type";
+import { QueryRunner } from "../../db/query-runner";
+import { OrUndefined } from "../../../common/types/or-undefined.type";
+import { Combinator } from "../../../common/helpers/combinator.helper";
 
+/**
+ * NpmsDashboard Mutations
+ */
 export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext>> = () => ({
+  /**
+   * Sort all NpmsDashboards, given a subset
+   */
   sortNpmsDashboards: {
     type: GraphQLNonNull(GraphQLBoolean),
     args: { dto: { type: GraphQLNonNull(SortNpmsDashboardGqlInput) } },
@@ -35,56 +54,70 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     },
   },
 
+
+  /**
+   * Create an NpmsDashboard
+   */
   createNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(CreateNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
       ctx.authorize(ctx.services.npmsDashboardPolicy.canCreate());
       const dto = ctx.validate(CreateNpmsDashboardValidator, args.dto);
-      const owner_id = ctx.assertAuthentication();
+
+      // require authentication...
+      const owner_id = ctx.auth.user_id;
+      // convert empty string to null...
+      const shadow_id = ctx.auth.shadow_id || null;
+
+      if (ist.nullable(owner_id) && ist.nullable(shadow_id)) {
+        throw ctx.except(UnauthenticatedException());
+      }
+
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const owner = await ctx.services.userRepository.findByPkOrfail(owner_id, { runner, unscoped: true });
+        const owner = ist.defined(owner_id)
+          ? await ctx.services.userRepository.findByPkOrfail(owner_id, { runner, unscoped: true })
+          : null;
         const serviceDto: INpmsDashboardServiceCreateNpmsDashboardDto = {
           name: dto.name,
-          npms_package_ids: dto.npms_package_ids,
           status_id: NpmsDashboardStatus.Draft,
+          shadow_id,
         };
         const dashboard = await ctx.services.npmsDashboardService.create({ runner, dto: serviceDto, owner });
-
-        // link to packages
-        if (dto.npms_package_ids && dto.npms_package_ids.length) {
-          ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard }));
-          // TODO: verify each individually can be linked...
-          const nextPackagesUnsorted = await ctx
-            .services
-            .npmsPackageRepository
-            .findAll({
-              runner,
-              options: {
-                where: { [NpmsPackageField.id]: { [Op.in]: dto.npms_package_ids, }, },
-              },
-            })
-          .then(pkgs => new Map(pkgs.map(pkg => [pkg.id, pkg])));
-          const nextPackages = dto.npms_package_ids.map(id => ctx.assertFound(nextPackagesUnsorted.get(id)));
-          await ctx.services.npmsDashboardService.syncItems({
-            runner,
+        const nextPackages = await findOrCreateNpmsPackages({
+          ctx,
+          dashboard,
+          runner,
+          findIds: { values: dto.npms_package_ids, key: 'npms_package_ids', },
+          findNames: { values: dto.npms_package_names, key: 'npms_package_names', },
+        });
+        if (Array.isArray(nextPackages)) {
+          await syncItems({
+            ctx,
             dashboard,
             nextPackages,
             prevDashboardItems: [],
-          });
-          // move this dashboard to the front...
-          await ctx.services.npmsDashboardService.sortDashboards({
             runner,
-            dto: { dashboard_ids: [dashboard.id], },
           });
         }
 
+        // move this dashboard to the front...
+        await ctx.services.npmsDashboardService.sortDashboards({
+          runner,
+          dto: { dashboard_ids: [dashboard.id], },
+        });
+
         return dashboard;
       });
+
       return final;
     },
   },
 
+
+  /**
+   * Update an NpmsDashboard
+   */
   updateNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(UpdateNpmsDashboardGqlInput) } },
@@ -100,30 +133,22 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
         const serviceDto: INpmsDashboardServiceUpdateNpmsDashboardDto = {
           name: dto.name,
         };
-        await ctx.services.npmsDashboardService.update({ runner, dto, model: dashboard });
-
         ctx.authorize(ctx.services.npmsDashboardPolicy.canUpdate({ model: dashboard }));
-        // link to packages
-        if (dto.npms_package_ids && dto.npms_package_ids.length) {
-          const prevDashboardItems = assertDefined(dashboard.items);
-          ctx.authorize(ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard }));
-          // TODO: verify each individually can be linked...
-          const nextPackagesUnsorted = await ctx
-            .services
-            .npmsPackageRepository
-            .findAll({
-              runner,
-              options: {
-                where: { [NpmsPackageField.id]: { [Op.in]: dto.npms_package_ids, }, },
-              },
-            })
-          .then(pkgs => new Map(pkgs.map(pkg => [pkg.id, pkg])));
-          const nextPackages = dto.npms_package_ids.map(id => ctx.assertFound(nextPackagesUnsorted.get(id)));
-          await ctx.services.npmsDashboardService.syncItems({
-            runner,
+        await ctx.services.npmsDashboardService.update({ runner, dto: serviceDto, model: dashboard });
+        const nextPackages = await findOrCreateNpmsPackages({
+          ctx,
+          dashboard,
+          runner,
+          findIds: { values: dto.npms_package_ids, key: 'npms_package_ids', },
+          findNames: { values: dto.npms_package_names, key: 'npms_package_names', },
+        });
+        if (Array.isArray(nextPackages)) {
+          await syncItems({
+            ctx,
             dashboard,
             nextPackages,
-            prevDashboardItems,
+            prevDashboardItems: [],
+            runner,
           });
         }
 
@@ -134,6 +159,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
   },
 
 
+  /**
+   * SoftDelete an NpmsDashboard
+   */
   softDeleteNpmsDashboard: {
     args: { dto: { type: GraphQLNonNull(SoftDeleteNpmsDashboardGqlInput) } },
     type: GraphQLNonNull(GraphQLBoolean),
@@ -152,6 +180,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
   },
 
 
+  /**
+   * HardDelete an NpmsDashboard
+   */
   hardDeleteNpmsDashboard: {
     args: { dto: { type: GraphQLNonNull(HardDeleteNpmsDashboardGqlInput) } },
     type: GraphQLNonNull(GraphQLBoolean),
@@ -174,6 +205,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
   },
 
 
+  /**
+   * Restore an NpmsDashboard
+   */
   restoreNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(RestoreNpmsDashboardGqlInput) } },
@@ -192,6 +226,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
   },
 
 
+  /**
+   * Submit an NpmsDashboard
+   */
   submitNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(SubmitNpmsDashboardGqlInput) } },
@@ -210,6 +247,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
   },
 
 
+  /**
+   * Reject an NpmsDashboard
+   */
   rejectNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(RejectNpmsDashboardGqlInput) } },
@@ -228,6 +268,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
   },
 
 
+  /**
+   * Approve an NpmsDashboard
+   */
   approveNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(ApproveNpmsDashboardGqlInput) } },
@@ -246,6 +289,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
   },
 
 
+  /**
+   * Publish an NpmsDashboard
+   */
   publishNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(PublishNpmsDashboardGqlInput) } },
@@ -264,6 +310,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
   },
 
 
+  /**
+   * Unpublish an NpmsDashboard
+   */
   unpublishNpmsDashboard: {
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(UnpublishNpmsDashboardGqlInput) } },
@@ -281,3 +330,176 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     },
   }
 });
+
+
+
+
+/**
+ * Attempt to Find or Create a set of Npms Packages, using the Requesters Authentication
+ *
+ * @param arg
+ */
+async function findOrCreateNpmsPackages(arg: {
+  ctx: IRequestContext;
+  dashboard: NpmsDashboardModel;
+  findNames?: OrNullable<{ key: string; values: OrNullable<string[]>; }>;
+  findIds?: OrNullable<{ key: string; values: OrNullable<NpmsPackageId[]> }>;
+  runner: QueryRunner;
+}): Promise<OrUndefined<NpmsPackageModel[]>> {
+  const { ctx, findNames, findIds, runner, dashboard, } = arg;
+
+  const _findNames = findNames?.values || [];
+  const _findIds = findIds?.values || [];
+
+  // link to packages
+
+  if (!_findNames.length && !_findIds.length) {
+    // nothing to find....
+    return undefined;
+  }
+
+  const _where = orWhere([
+    _findIds.length ? { [NpmsPackageField.id]: { [Op.in]: _findIds, }, } : null,
+    _findNames.length ? { [NpmsPackageField.name]: { [Op.in]: _findNames, }, } : null,
+  ]);
+
+  const nextPackagesUnsorted = await ctx
+    .services
+    .npmsPackageRepository
+    .findAll({ runner, options: { where: _where, }, })
+    .then(pkgs => ({ byId: toMapBy(pkgs, 'id'), byName: toMapBy(pkgs, 'name'), }));
+
+  const nextPackages: Map<NpmsPackageId, NpmsPackageModel> = new Map();
+  const missedNames: string[] = [];
+  const missedIds: number[] = [];
+
+  // extract desired packages by id
+  _findIds.forEach(id => {
+    const match = nextPackagesUnsorted.byId.get(id);
+    if (match) nextPackages.set(match.id, match);
+    else missedIds.push(id);
+  });
+
+  // extract desired packages by name
+  _findNames.forEach(name => {
+    const match = nextPackagesUnsorted.byName.get(name);
+    if (match) nextPackages.set(match.id, match);
+    else missedNames.push(name);
+  });
+
+  // validate all ids matched
+  if (missedIds.length) {
+    const message = ctx.lang(NpmsLang.NpmsIdsNotFound({ ids: missedIds }));
+    throw ctx.except(BadRequestException({
+      message,
+      ...(findIds?.key ? { data: { [findIds?.key]: [message], } } : {}),
+    }))
+  }
+
+  // query npms for missing names
+  if (missedNames.length) {
+    ctx.authorize(ctx.services.npmsPackagePolicy.canCreate());
+    const newPackages = await ctx
+      .services
+      .npmsPackageService
+      .create({ runner, dto: { names: missedNames }})
+      .then(pkgs => toMapBy(pkgs, 'name'));
+
+    // find names that are still missing
+    const doubleMissedNames: string[] = [];
+    missedNames.forEach(name => {
+      const match = newPackages.get(name);
+      if (!match) doubleMissedNames.push(name);
+      else nextPackages.set(match.id, match);
+    });
+
+    // validate all names were eventually found
+    if (doubleMissedNames.length) {
+      const message = ctx.lang(NpmsLang.NpmsNamesNotFound({ names: doubleMissedNames }));
+      throw ctx.except(BadRequestException({
+        message,
+      ...(findNames?.key ? { data: { [findNames.key]: [message], } } : {}),
+      }))
+    }
+  }
+
+  return Array.from(nextPackages.values());
+}
+
+
+
+
+/**
+ * Synchronise NpmsDashboardItems for an NpmsDashboard
+ *
+ * @param arg
+ */
+async function syncItems(arg: {
+  ctx: IRequestContext,
+  runner: QueryRunner;
+  dashboard: NpmsDashboardModel;
+  prevDashboardItems: NpmsDashboardItemModel[];
+  nextPackages: NpmsPackageModel[];
+}): Promise<NpmsDashboardItemModel[]> {
+  const { runner, ctx, dashboard, prevDashboardItems, nextPackages } = arg;
+  const { transaction } = runner;
+
+  const combinator = new Combinator({
+    // a => previous items
+    a: new Map(prevDashboardItems.map(itm => [itm.npms_package_id, itm])),
+    // b => next items
+    b: new Map(nextPackages.map(pkg => [pkg.id, pkg])),
+  });
+  // in previous but not next
+  const unexpected = Array.from(combinator.diff.aNotB.values());
+  // in next but not previous
+  const missing = Array.from(combinator.diff.bNotA.values());
+  // already exist
+  const normal = Array.from(combinator.bJoinA.a.values());
+
+  // authorise creation
+  missing.forEach(npmsPackage => ctx.authorize(ctx
+    .services
+    .npmsDashboardItemPolicy
+    .canCreate({ dashboard, npmsPackage: npmsPackage })));
+
+  // authorise deletion
+  unexpected.forEach(model => ctx.authorize(ctx
+    .services
+    .npmsDashboardItemPolicy
+    .canHardDelete({ dashboard, model })));
+
+  // synchronise items
+  const [_, createdLinkages] = await Promise.all([
+    // destroy unexpected
+    ctx.services.npmsDashboardItemService.hardDelete({
+      runner,
+      groups: unexpected.map(model => ({ dashboard, model })),
+    }),
+    // add missing
+    Promise.all(missing.map(async (missingPackage, i) => {
+      const nextLinkage = await ctx
+        .services
+        .npmsDashboardItemService
+        .create({
+          runner,
+          order: i,
+          dashboard,
+          npmsPackage: missingPackage,
+        });
+      return nextLinkage;
+    })),
+  ]);
+
+  // synchronise order of the linkages
+  const orderedLinkages = await ctx
+    .services
+    .npmsDashboardItemService
+    .syncOrder({
+      runner,
+      dashboard,
+      items: [...createdLinkages, ...normal,],
+    });
+
+  return orderedLinkages;
+}

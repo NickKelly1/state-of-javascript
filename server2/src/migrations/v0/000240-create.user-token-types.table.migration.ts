@@ -6,8 +6,9 @@ function getData() {
   const now = new Date();
   const types = [
     { id: 10, name: 'forgotten-password-reset', created_at: now, updated_at: now },
-    { id: 20, name: 'verify-email', created_at: now, updated_at: now },
-    { id: 30, name: 'accept-welcome', created_at: now, updated_at: now },
+    { id: 20, name: 'accept-welcome', created_at: now, updated_at: now },
+    { id: 30, name: 'verify-email', created_at: now, updated_at: now },
+    { id: 40, name: 'verify-email-change', created_at: now, updated_at: now },
   ];
   return { types };
 }

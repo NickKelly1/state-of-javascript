@@ -1,9 +1,10 @@
+import { IMeUserData } from '../backend-api/api.me';
 import { AuthorisedActionsFieldsFragment } from '../generated/graphql';
 
 export interface IApiMeSerialized {
   instance: number;
   createdAt: number;
-  user: null | { id: number; name: string; };
+  user: null | IMeUserData;
   permissions: number[];
   can: AuthorisedActionsFieldsFragment;
 }
