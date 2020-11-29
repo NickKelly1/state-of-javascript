@@ -14,7 +14,10 @@ import {
   Paper,
   TextField,
   Typography, 
-  IconButton} from '@material-ui/core';
+  IconButton
+} from '@material-ui/core';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
+import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import clsx from 'clsx';
 import { gql } from 'graphql-request';
@@ -63,17 +66,19 @@ import { change } from '../../helpers/change.helper';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 import { BugReport } from '@material-ui/icons';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
+import { OrNullable } from '../../types/or-nullable.type';
+import { not } from '../../helpers/not.helper';
 
 // TODO: updating vs creating...
 const createNpmsDashboardQuery = gql`
 mutation CreateNpmsDashboardForm(
   $name:String!,
-  $npms_package_ids:[Int!]
+  $npms_package_names:[String!]!
 ){
   createNpmsDashboard(
     dto:{
       name:$name
-      npms_package_ids:$npms_package_ids
+      npms_package_names:$npms_package_names
     }
   ){
     cursor
@@ -95,13 +100,13 @@ const updateNpmsDashboardQuery = gql`
 mutation UpdateNpmsDashboardForm(
   $id:Int!,
   $name:String!
-  $npms_package_ids:[Int!]
+  $npms_package_names:[String!]!
 ){
   updateNpmsDashboard(
     dto:{
       id:$id,
       name:$name,
-      npms_package_ids:$npms_package_ids
+      npms_package_names:$npms_package_names
     }
   ){
     cursor
@@ -134,7 +139,8 @@ export interface INpmsDashboardMutateFormProps extends IWithDialogueProps {
   },
 }
 
-interface IDashboardPackageOption { key: string; option: OrNull<INpmsPackageSearchOption>; };
+// interface IDashboardPackageOption { key: string; option: OrNull<INpmsPackageSearchOption>; };
+type IDashboardPackageOption = { key: string; option: string; };
 export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProps>({ fullWidth: true })((props) => {
   const { onSuccess, initial, title, dialog } = props;
   const { api, me } = useContext(ApiContext);
@@ -145,62 +151,57 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
   const [formState, setFormState] = useState<IFormState>(() => ({
     name: _initial?.name ?? '',
     npmsPackages: [
-      ...(_initial?.packages ?? []).map((option): IDashboardPackageOption => ({ key: seq.next().toString(), option, })),
-      { key: seq.next().toString(), option: null, },
+      ...(_initial?.packages ?? []).map((pkg): IDashboardPackageOption => ({ key: seq.next().toString(), option: pkg.name, })),
+      { key: seq.next().toString(), option: '', },
     ]
   }));
 
-  const addPackage = useCallback((option: OrNull<INpmsPackageSearchOption>) => setFormState((prev) => {
+  const addPackage = useCallback((option?: OrNullable<string>) => setFormState((prev): IFormState => {
     const npmsPackages = [
       ...prev.npmsPackages,
-      { key: seq.next().toString(), option, },
+      { key: seq.next().toString(), option: option ?? '', },
     ];
-    // make sure theres an empty entry at the end...
-    if (ist.notNullable(npmsPackages[npmsPackages.length - 1]?.option)) {
-      npmsPackages.push({ key: seq.next().toString(), option: null });
-    }
     return { ...prev, npmsPackages };
   }), [setFormState]);
 
-  const changePackage = useCallback((index: number, option: OrNull<INpmsPackageSearchOption>) => setFormState((prev) => {
+  const changePackage = useCallback((index: number, option: string) => setFormState((prev) => {
     const before = prev.npmsPackages.slice(0, index);
     const after = prev.npmsPackages.slice(index + 1, prev.npmsPackages.length);
     const target = prev.npmsPackages[index];
-    const npmsPackages: IDashboardPackageOption[] = [ ...before, { key: target.key, option }, ...after, ];
-    // make sure theres an empty entry at the end...
-    if (ist.notNullable(npmsPackages[npmsPackages.length - 1]?.option)) {
-      npmsPackages.push({ key: seq.next().toString(), option: null });
-    }
-    return { ...prev, npmsPackages };
+    const nextNpmsPackages: IDashboardPackageOption[] = [ ...before, { key: target.key, option }, ...after, ];
+    // add to the end if there are no free spots left
+    // const doAppend = !nextNpmsPackages.map(pkg => pkg.option).some(ist.falsy);
+    // console.log('checking...', { doAppend, nextNpmsPackages });
+    // if (doAppend) { nextNpmsPackages.push({ key: seq.next().toString(), option: '' }); }
+    return { ...prev, npmsPackages: nextNpmsPackages };
   }), [setFormState]);
 
   const removePackage = useCallback((index: number) => setFormState((prev) => {
     const before = prev.npmsPackages.slice(0, index);
     const after = prev.npmsPackages.slice(index + 1, prev.npmsPackages.length);
-    const npmsPackages = [ ...before, ...after, ];
-    // make sure theres an empty entry at the end...
-    if (ist.notNullable(npmsPackages[npmsPackages.length - 1]?.option)) {
-      npmsPackages.push({ key: seq.next().toString(), option: null });
-    }
-    return { ...prev, npmsPackages };
+    const nextNpmsPackages = [ ...before, ...after, ];
+    // add to the end if there are no free spots left
+    // const doAppend = !nextNpmsPackages.map(pkg => pkg.option).some(ist.falsy);
+    // console.log('checking...', { doAppend, nextNpmsPackages });
+    // if (doAppend) { nextNpmsPackages.push({ key: seq.next().toString(), option: '' }); }
+    return { ...prev, npmsPackages: nextNpmsPackages };
   }), [setFormState]);
 
   const [doSubmit, submitState] = useMutation<INpmsDashboardMutateFormOnSuccessFnArg, IApiException>(
     async () => {
       const _vars = {
         name: formState.name,
-        npms_package_ids: formState
+        npms_package_names: formState
           .npmsPackages
-          .map(pkg => pkg.option?.id)
-          .filter(ist.notNullable)
-          .map(Number),
+          .map(pkg => pkg.option)
+          .filter(ist.truthy),
       };
 
       if (ist.nullable(_initial)) {
         // create
         const vars: CreateNpmsDashboardFormMutationVariables = {
           name: _vars.name,
-          npms_package_ids: _vars.npms_package_ids,
+          npms_package_names: _vars.npms_package_names,
         };
         const result = await api.gql<CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables>(
           createNpmsDashboardQuery,
@@ -218,7 +219,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
         const vars: UpdateNpmsDashboardFormMutationVariables = {
           id: Number(_initial.id),
           name: _vars.name,
-          npms_package_ids: _vars.npms_package_ids,
+          npms_package_names: _vars.npms_package_names,
         };
         const result = await api.gql<UpdateNpmsDashboardFormMutation, UpdateNpmsDashboardFormMutationVariables>(
           updateNpmsDashboardQuery,
@@ -234,18 +235,21 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
     { onSuccess, },
   );
 
-  const createNpmsPackageDialog = useDialog();
+  // const createNpmsPackageDialog = useDialog();
 
-  const handleChangePackage = useCallback((index: number, option: OrNull<INpmsPackageSearchOption>) => {
-    if (ist.nullable(option)) return void removePackage(index);
-    return void changePackage(index, option);
-  }, [changePackage, removePackage]);
+  // const handleChangePackage = useCallback((index: number, option: OrNull<INpmsPackageSearchOption>) => {
+  //   if (ist.nullable(option)) return void removePackage(index);
+  //   return void changePackage(index, option);
+  // }, [changePackage, removePackage]);
 
-  const handleNpmsPackageCreated: INpmsPackageCreateFormOnSuccessFn = useCallback((result) => {
-    addPackage({ id: result.createNpmsPackage.data.id, name: result.createNpmsPackage.data.name, });
-    createNpmsPackageDialog.doClose();
-  }, [addPackage, createNpmsPackageDialog.doClose]);
+  // const handleNpmsPackageCreated: INpmsPackageCreateFormOnSuccessFn = useCallback((result) => {
+  //   addPackage({ id: result.createNpmsPackage.data.id, name: result.createNpmsPackage.data.name, });
+  //   createNpmsPackageDialog.doClose();
+  // }, [addPackage, createNpmsPackageDialog.doClose]);
 
+  const handleAddPackageClicked = useCallback(() => addPackage(), [addPackage]);
+  const handleRemovePackageClicked = removePackage;
+  const handleChangePackageName = changePackage;
   const handleChangeName = useCallback(change(setFormState, 'name'), [setFormState]);
   const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
 
@@ -277,7 +281,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
   return (
     <>
       <DebugJsonDialog title="form" data={debugData} dialog={debugDialog} />
-      <NpmsPackageCreateForm dialog={createNpmsPackageDialog} onSuccess={handleNpmsPackageCreated} />
+      {/* <NpmsPackageCreateForm dialog={createNpmsPackageDialog} onSuccess={handleNpmsPackageCreated} /> */}
       <DialogTitle>{`${initial?.id ? 'Edit' : 'Create'} Npms Dashbard`}</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
@@ -301,16 +305,6 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
               )}
             </Grid>
             <Grid item xs={12}>
-              <Button
-                onClick={createNpmsPackageDialog.doOpen}
-                className="centered text-center"
-                startIcon={<AddCircleOutlineIcon />}
-                color="primary"
-              >
-                Link a new package
-              </Button>
-            </Grid>
-            <Grid item xs={12}>
               <DragDropContext onDragEnd={handleDragEnd}>
                 <WithRandomId>
                   {(dragDropId) => (
@@ -321,13 +315,33 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
                             <Grid key={pkg.key} item xs={12}>
                               <Draggable draggableId={pkg.key} index={i} >
                                 {(provided, snapshot) => (
-                                  <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                    <NpmsPackageComboSearch
-                                      option={pkg.option}
-                                      error={!!error?.data?.npms_package_ids}
-                                      isDisabled={isDisabled}
-                                      onChange={(option) => handleChangePackage(i, option)}
-                                    />
+                                  <div ref={provided.innerRef} {...provided.draggableProps}>
+                                    <div className="centered">
+                                      <Box className="centered" pr={1} {...provided.dragHandleProps}>
+                                        <Box className="centered" border={0} borderColor={snapshot.isDragging ? 'primary' : 'grey.500'} borderRadius={4}>
+                                          <DragIndicatorIcon color={snapshot.isDragging ? 'primary' : 'inherit'} />
+                                        </Box>
+                                      </Box>
+                                      <TextField
+                                        label="name"
+                                        autoFocus
+                                        fullWidth
+                                        margin="dense"
+                                        variant="outlined"
+                                        disabled={isDisabled}
+                                        value={pkg.option}
+                                        onChange={(evt) => handleChangePackageName(i, evt.target.value)}
+                                      />
+                                      <Box
+                                        // Hide if the last option & is empty
+                                        visibility={i === (formState.npmsPackages.length - 1) && pkg.option.trim() === '' ? 'hidden' : 'inherit'}
+                                        pl={1}
+                                      >
+                                        <IconButton onClick={() => handleRemovePackageClicked(i)} color="primary" disabled={isDisabled} className="centered">
+                                          <HighlightOffIcon />
+                                        </IconButton>
+                                      </Box>
+                                    </div>
                                   </div>
                                 )}
                               </Draggable>
@@ -340,6 +354,17 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
                   )}
                 </WithRandomId>
               </DragDropContext>
+            </Grid>
+            <Grid className="centered" item xs={12}>
+              <Button
+                onClick={handleAddPackageClicked}
+                className="centered text-center"
+                startIcon={<AddCircleOutlineIcon />}
+                color="primary"
+                // variant="outlined"
+              >
+                Add
+              </Button>
             </Grid>
             {error && (
               <Grid item xs={12}>

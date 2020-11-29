@@ -26,13 +26,15 @@ import { orWhere } from "../../../common/helpers/or-where.helper.ts";
 import { NpmsPackageModel } from "../../npms-package/npms-package.model";
 import { NpmsLang } from "../../../common/i18n/packs/npms.lang";
 import { BadRequestException } from "../../../common/exceptions/types/bad-request.exception";
-import { toMapBy, toMapById } from "../../../common/helpers/to-id-map.helper";
+import { toMapArrBy, toMapBy, toMapById } from "../../../common/helpers/to-id-map.helper";
 import { NpmsPackageId } from "../../npms-package/npms-package.id.type";
 import { IRequestContext } from "../../../common/interfaces/request-context.interface";
 import { OrNullable } from "../../../common/types/or-nullable.type";
 import { QueryRunner } from "../../db/query-runner";
 import { OrUndefined } from "../../../common/types/or-undefined.type";
 import { Combinator } from "../../../common/helpers/combinator.helper";
+import { InternalServerError } from "http-errors";
+import { InternalServerException } from "../../../common/exceptions/types/internal-server.exception";
 
 /**
  * NpmsDashboard Mutations
@@ -74,16 +76,21 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
         throw ctx.except(UnauthenticatedException());
       }
 
+      console.log('--------- 1');
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        console.log('--------- 2');
         const owner = ist.defined(owner_id)
           ? await ctx.services.userRepository.findByPkOrfail(owner_id, { runner, unscoped: true })
           : null;
+        console.log('--------- 3');
         const serviceDto: INpmsDashboardServiceCreateNpmsDashboardDto = {
           name: dto.name,
           status_id: NpmsDashboardStatus.Draft,
           shadow_id,
         };
+        console.log('--------- 4');
         const dashboard = await ctx.services.npmsDashboardService.create({ runner, dto: serviceDto, owner });
+        console.log('--------- 5');
         const nextPackages = await findOrCreateNpmsPackages({
           ctx,
           dashboard,
@@ -91,7 +98,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
           findIds: { values: dto.npms_package_ids, key: 'npms_package_ids', },
           findNames: { values: dto.npms_package_names, key: 'npms_package_names', },
         });
+        console.log('--------- 6');
         if (Array.isArray(nextPackages)) {
+          console.log('--------- 7');
           await syncItems({
             ctx,
             dashboard,
@@ -130,6 +139,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
             include: [{ association: NpmsDashboardAssociation.items, }],
           }
         });
+        const prevDashboardItems = assertDefined(dashboard.items);
         const serviceDto: INpmsDashboardServiceUpdateNpmsDashboardDto = {
           name: dto.name,
         };
@@ -147,7 +157,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
             ctx,
             dashboard,
             nextPackages,
-            prevDashboardItems: [],
+            prevDashboardItems,
             runner,
           });
         }
@@ -348,31 +358,37 @@ async function findOrCreateNpmsPackages(arg: {
 }): Promise<OrUndefined<NpmsPackageModel[]>> {
   const { ctx, findNames, findIds, runner, dashboard, } = arg;
 
+  console.log('++++++++++ 1');
   const _findNames = findNames?.values || [];
   const _findIds = findIds?.values || [];
 
   // link to packages
 
+  console.log('++++++++++ 2');
   if (!_findNames.length && !_findIds.length) {
     // nothing to find....
     return undefined;
   }
 
+  console.log('++++++++++ 3');
   const _where = orWhere([
     _findIds.length ? { [NpmsPackageField.id]: { [Op.in]: _findIds, }, } : null,
     _findNames.length ? { [NpmsPackageField.name]: { [Op.in]: _findNames, }, } : null,
   ]);
 
+  console.log('++++++++++ 4');
   const nextPackagesUnsorted = await ctx
     .services
     .npmsPackageRepository
     .findAll({ runner, options: { where: _where, }, })
     .then(pkgs => ({ byId: toMapBy(pkgs, 'id'), byName: toMapBy(pkgs, 'name'), }));
 
+  console.log('++++++++++ 5');
   const nextPackages: Map<NpmsPackageId, NpmsPackageModel> = new Map();
   const missedNames: string[] = [];
   const missedIds: number[] = [];
 
+  console.log('++++++++++ 6');
   // extract desired packages by id
   _findIds.forEach(id => {
     const match = nextPackagesUnsorted.byId.get(id);
@@ -380,6 +396,7 @@ async function findOrCreateNpmsPackages(arg: {
     else missedIds.push(id);
   });
 
+  console.log('++++++++++ 7');
   // extract desired packages by name
   _findNames.forEach(name => {
     const match = nextPackagesUnsorted.byName.get(name);
@@ -388,7 +405,9 @@ async function findOrCreateNpmsPackages(arg: {
   });
 
   // validate all ids matched
+  console.log('++++++++++ 8');
   if (missedIds.length) {
+    console.log('++++++++++ 9');
     const message = ctx.lang(NpmsLang.NpmsIdsNotFound({ ids: missedIds }));
     throw ctx.except(BadRequestException({
       message,
@@ -397,7 +416,9 @@ async function findOrCreateNpmsPackages(arg: {
   }
 
   // query npms for missing names
+  console.log('++++++++++ 10');
   if (missedNames.length) {
+    console.log('++++++++++ 11');
     ctx.authorize(ctx.services.npmsPackagePolicy.canCreate());
     const newPackages = await ctx
       .services
@@ -406,6 +427,7 @@ async function findOrCreateNpmsPackages(arg: {
       .then(pkgs => toMapBy(pkgs, 'name'));
 
     // find names that are still missing
+    console.log('++++++++++ 11');
     const doubleMissedNames: string[] = [];
     missedNames.forEach(name => {
       const match = newPackages.get(name);
@@ -414,6 +436,7 @@ async function findOrCreateNpmsPackages(arg: {
     });
 
     // validate all names were eventually found
+    console.log('++++++++++ 12');
     if (doubleMissedNames.length) {
       const message = ctx.lang(NpmsLang.NpmsNamesNotFound({ names: doubleMissedNames }));
       throw ctx.except(BadRequestException({
@@ -421,8 +444,10 @@ async function findOrCreateNpmsPackages(arg: {
       ...(findNames?.key ? { data: { [findNames.key]: [message], } } : {}),
       }))
     }
+    console.log('++++++++++ 13');
   }
 
+  console.log('++++++++++ 14');
   return Array.from(nextPackages.values());
 }
 
@@ -444,6 +469,7 @@ async function syncItems(arg: {
   const { runner, ctx, dashboard, prevDashboardItems, nextPackages } = arg;
   const { transaction } = runner;
 
+  console.log('********** 1');
   const combinator = new Combinator({
     // a => previous items
     a: new Map(prevDashboardItems.map(itm => [itm.npms_package_id, itm])),
@@ -451,34 +477,42 @@ async function syncItems(arg: {
     b: new Map(nextPackages.map(pkg => [pkg.id, pkg])),
   });
   // in previous but not next
+  console.log('********** 2');
   const unexpected = Array.from(combinator.diff.aNotB.values());
   // in next but not previous
+  console.log('********** 3');
   const missing = Array.from(combinator.diff.bNotA.values());
   // already exist
-  const normal = Array.from(combinator.bJoinA.a.values());
+  console.log('********** 4');
+  const normal = combinator.bJoinA.a;
 
   // authorise creation
+  console.log('********** 5');
   missing.forEach(npmsPackage => ctx.authorize(ctx
     .services
     .npmsDashboardItemPolicy
     .canCreate({ dashboard, npmsPackage: npmsPackage })));
 
   // authorise deletion
+  console.log('********** 6');
   unexpected.forEach(model => ctx.authorize(ctx
     .services
     .npmsDashboardItemPolicy
     .canHardDelete({ dashboard, model })));
 
   // synchronise items
+  console.log('********** 7', { unexpected, missing });
   const [_, createdLinkages] = await Promise.all([
     // destroy unexpected
-    ctx.services.npmsDashboardItemService.hardDelete({
-      runner,
-      groups: unexpected.map(model => ({ dashboard, model })),
-    }),
+    unexpected.length ?
+      ctx.services.npmsDashboardItemService.hardDelete({
+        runner,
+        groups: unexpected.map(model => ({ dashboard, model })),
+      })
+      : Promise.resolve(null),
     // add missing
     Promise.all(missing.map(async (missingPackage, i) => {
-      const nextLinkage = await ctx
+      const nextLinkages = await ctx
         .services
         .npmsDashboardItemService
         .create({
@@ -487,18 +521,32 @@ async function syncItems(arg: {
           dashboard,
           npmsPackage: missingPackage,
         });
-      return nextLinkage;
-    })),
+      return nextLinkages;
+    })).then(linkages => toMapBy(linkages, 'npms_package_id')),
   ]);
 
-  // synchronise order of the linkages
+  // extract existing & created into the desired order
+  const newOrder: NpmsDashboardItemModel[] = [];
+  nextPackages.forEach(nextPackage => {
+    // item was was just created
+    let match = createdLinkages.get(nextPackage.id);
+    if (match) { return newOrder.push(match); }
+    // item already existed
+    match = normal.get(nextPackage.id);
+    if (match) { return newOrder.push(match); }
+    // something went wrong in our logic?
+    throw ctx.except(InternalServerException());
+  });
+
+  // synchronise the desired order
+  console.log('********** 8', newOrder);
   const orderedLinkages = await ctx
     .services
     .npmsDashboardItemService
     .syncOrder({
       runner,
       dashboard,
-      items: [...createdLinkages, ...normal,],
+      items: newOrder,
     });
 
   return orderedLinkages;

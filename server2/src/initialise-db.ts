@@ -205,7 +205,7 @@ async function initialiseWithTransaction(arg: {
   NpmsDashboardModel.belongsTo(NpmsDashboardStatusModel, { as: NpmsDashboardAssociation.status, targetKey: NpmsDashboardStatusField.id, foreignKey: NpmsDashboardField.status_id, })
 
   // npms dashboard item
-  NpmsDashboardItemModel.belongsTo(NpmsPackageModel, { as: NpmsDashboardItemAssociation.package, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })
+  NpmsDashboardItemModel.belongsTo(NpmsPackageModel, { as: NpmsDashboardItemAssociation.npmsPackage, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })
   NpmsDashboardItemModel.belongsTo(NpmsDashboardModel, { as: NpmsDashboardItemAssociation.dashboard, targetKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, })
 
   // user link

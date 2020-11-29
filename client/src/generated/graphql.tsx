@@ -2057,7 +2057,7 @@ export type InitialiseIntegrationFormMutation = (
 
 export type CreateNpmsDashboardFormMutationVariables = Exact<{
   name: Scalars['String'];
-  npms_package_ids?: Maybe<Array<Scalars['Int']>>;
+  npms_package_names: Array<Scalars['String']>;
 }>;
 
 
@@ -2079,7 +2079,7 @@ export type CreateNpmsDashboardFormMutation = (
 export type UpdateNpmsDashboardFormMutationVariables = Exact<{
   id: Scalars['Int'];
   name: Scalars['String'];
-  npms_package_ids?: Maybe<Array<Scalars['Int']>>;
+  npms_package_names: Array<Scalars['String']>;
 }>;
 
 
@@ -2627,68 +2627,68 @@ export type JsPageDashboardQuery = (
         & Pick<NpmsDashboardData, 'id' | 'name'>
       ), relations: (
         { __typename?: 'NpmsDashboardRelations' }
-        & { npmsPackages: (
-          { __typename?: 'NpmsPackageCollectionNode' }
-          & { can: (
-            { __typename?: 'NpmsPackageCollectionActions' }
-            & Pick<NpmsPackageCollectionActions, 'show' | 'create'>
-          ), pagination: (
+        & { items: (
+          { __typename?: 'NpmsDashboardItemCollectionNode' }
+          & { pagination: (
             { __typename?: 'meta' }
             & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
           ), nodes: Array<Maybe<(
-            { __typename?: 'NpmsPackageNode' }
-            & Pick<NpmsPackageNode, 'cursor'>
-            & { can: (
-              { __typename?: 'NpmsPackageActions' }
-              & Pick<NpmsPackageActions, 'show' | 'softDelete' | 'hardDelete'>
-            ), data: (
-              { __typename?: 'NpmsPackageData' }
-              & Pick<NpmsPackageData, 'id' | 'name' | 'last_ran_at' | 'created_at' | 'updated_at'>
-              & { data?: Maybe<(
-                { __typename?: 'NpmsPackageDataInfo' }
-                & { score?: Maybe<(
-                  { __typename?: 'NpmsPackageDataInfoScore' }
-                  & Pick<NpmsPackageDataInfoScore, 'final'>
-                  & { detail?: Maybe<(
-                    { __typename?: 'NpmsPackageDataInfoScoreDetail' }
-                    & Pick<NpmsPackageDataInfoScoreDetail, 'quality' | 'popularity' | 'maintenance'>
-                  )> }
-                )>, evaluation?: Maybe<(
-                  { __typename?: 'NpmsPackageDataInfoEvaluation' }
-                  & { quality?: Maybe<(
-                    { __typename?: 'NpmsPackageDataInfoEvaluationQuality' }
-                    & Pick<NpmsPackageDataInfoEvaluationQuality, 'carefulness' | 'tests' | 'health' | 'branding'>
-                  )>, popularity?: Maybe<(
-                    { __typename?: 'NpmsPackageDataInfoEvaluationPopularity' }
-                    & Pick<NpmsPackageDataInfoEvaluationPopularity, 'communityInterest' | 'downloadsCount' | 'downloadsAcceleration' | 'dependentsCount'>
-                  )>, maintenance?: Maybe<(
-                    { __typename?: 'NpmsPackageDataInfoEvaluationMaintenance' }
-                    & Pick<NpmsPackageDataInfoEvaluationMaintenance, 'releasesFrequency' | 'commitsFrequency' | 'openIssues' | 'issuesDistribution'>
-                  )> }
-                )>, collected?: Maybe<(
-                  { __typename?: 'NpmsPackageDataInfoCollected' }
-                  & { metadata?: Maybe<(
-                    { __typename?: 'NpmsPackageDataInfoCollectedMetadata' }
-                    & Pick<NpmsPackageDataInfoCollectedMetadata, 'hasTestScript' | 'hasSelectiveFiles' | 'name'>
-                  )>, github?: Maybe<(
-                    { __typename?: 'NpmsPackageDataInfoCollectedGithub' }
-                    & Pick<NpmsPackageDataInfoCollectedGithub, 'starsCount' | 'forksCount' | 'subscribersCount'>
-                    & { commits?: Maybe<Array<(
-                      { __typename?: 'NpmsPackageDataInfCollectedGitHubCommit' }
-                      & Pick<NpmsPackageDataInfCollectedGitHubCommit, 'from' | 'to' | 'count'>
-                    )>>, issues?: Maybe<(
-                      { __typename?: 'NpmsPackageDataInfoCollectedGithubIssues' }
-                      & Pick<NpmsPackageDataInfoCollectedGithubIssues, 'count' | 'openCount' | 'isDisabled'>
+            { __typename?: 'NpmsDashboardItemNode' }
+            & { relations: (
+              { __typename?: 'NpmsDashboardItemRelations' }
+              & { npmsPackage?: Maybe<(
+                { __typename?: 'NpmsPackageNode' }
+                & Pick<NpmsPackageNode, 'cursor'>
+                & { data: (
+                  { __typename?: 'NpmsPackageData' }
+                  & Pick<NpmsPackageData, 'id' | 'name' | 'last_ran_at' | 'created_at' | 'updated_at'>
+                  & { data?: Maybe<(
+                    { __typename?: 'NpmsPackageDataInfo' }
+                    & { score?: Maybe<(
+                      { __typename?: 'NpmsPackageDataInfoScore' }
+                      & Pick<NpmsPackageDataInfoScore, 'final'>
+                      & { detail?: Maybe<(
+                        { __typename?: 'NpmsPackageDataInfoScoreDetail' }
+                        & Pick<NpmsPackageDataInfoScoreDetail, 'quality' | 'popularity' | 'maintenance'>
+                      )> }
+                    )>, evaluation?: Maybe<(
+                      { __typename?: 'NpmsPackageDataInfoEvaluation' }
+                      & { quality?: Maybe<(
+                        { __typename?: 'NpmsPackageDataInfoEvaluationQuality' }
+                        & Pick<NpmsPackageDataInfoEvaluationQuality, 'carefulness' | 'tests' | 'health' | 'branding'>
+                      )>, popularity?: Maybe<(
+                        { __typename?: 'NpmsPackageDataInfoEvaluationPopularity' }
+                        & Pick<NpmsPackageDataInfoEvaluationPopularity, 'communityInterest' | 'downloadsCount' | 'downloadsAcceleration' | 'dependentsCount'>
+                      )>, maintenance?: Maybe<(
+                        { __typename?: 'NpmsPackageDataInfoEvaluationMaintenance' }
+                        & Pick<NpmsPackageDataInfoEvaluationMaintenance, 'releasesFrequency' | 'commitsFrequency' | 'openIssues' | 'issuesDistribution'>
+                      )> }
+                    )>, collected?: Maybe<(
+                      { __typename?: 'NpmsPackageDataInfoCollected' }
+                      & { metadata?: Maybe<(
+                        { __typename?: 'NpmsPackageDataInfoCollectedMetadata' }
+                        & Pick<NpmsPackageDataInfoCollectedMetadata, 'hasTestScript' | 'hasSelectiveFiles' | 'name'>
+                      )>, github?: Maybe<(
+                        { __typename?: 'NpmsPackageDataInfoCollectedGithub' }
+                        & Pick<NpmsPackageDataInfoCollectedGithub, 'starsCount' | 'forksCount' | 'subscribersCount'>
+                        & { commits?: Maybe<Array<(
+                          { __typename?: 'NpmsPackageDataInfCollectedGitHubCommit' }
+                          & Pick<NpmsPackageDataInfCollectedGitHubCommit, 'from' | 'to' | 'count'>
+                        )>>, issues?: Maybe<(
+                          { __typename?: 'NpmsPackageDataInfoCollectedGithubIssues' }
+                          & Pick<NpmsPackageDataInfoCollectedGithubIssues, 'count' | 'openCount' | 'isDisabled'>
+                        )> }
+                      )>, npm?: Maybe<(
+                        { __typename?: 'NpmsPackageDataInfoCollectedNpm' }
+                        & Pick<NpmsPackageDataInfoCollectedNpm, 'starsCount' | 'dependentsCount' | 'dependencies' | 'devDependencies'>
+                        & { downloads?: Maybe<(
+                          { __typename?: 'NpmsPackageDataInfoCollectedNpmDownloads' }
+                          & Pick<NpmsPackageDataInfoCollectedNpmDownloads, 'from' | 'to' | 'count'>
+                        )> }
+                      )> }
                     )> }
-                  )>, npm?: Maybe<(
-                    { __typename?: 'NpmsPackageDataInfoCollectedNpm' }
-                    & Pick<NpmsPackageDataInfoCollectedNpm, 'starsCount' | 'dependentsCount' | 'dependencies' | 'devDependencies'>
-                    & { downloads?: Maybe<(
-                      { __typename?: 'NpmsPackageDataInfoCollectedNpmDownloads' }
-                      & Pick<NpmsPackageDataInfoCollectedNpmDownloads, 'from' | 'to' | 'count'>
-                    )> }
                   )> }
-                )> }
+                ) }
               )> }
             ) }
           )>> }

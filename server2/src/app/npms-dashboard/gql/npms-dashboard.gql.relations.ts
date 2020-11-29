@@ -14,12 +14,32 @@ import { NpmsDashboardItemField } from "../../npms-dashboard-item/npms-dashboard
 import { INpmsPackageCollectionGqlNodeSource, NpmsPackageCollectionGqlNode } from "../../npms-package/gql/npms-package.collection.gql.node";
 import { NpmsPackageCollectionOptionsGqlInput } from "../../npms-package/gql/npms-package.collection.gql.options";
 import { NpmsPackageAssociation } from "../../npms-package/npms-package.associations";
+import { NpmsDashboardItemAssociation } from "../../npms-dashboard-item/npms-dashboard-item.associations";
+import { assertDefined } from "../../../common/helpers/assert-defined.helper";
+import { INpmsDashboardStatusGqlNodeSource, NpmsDashboardStatusGqlNode } from "../../npms-dashboard-status/gql/npms-dashboard-status.gql.node";
+import { NpmsDashboardStatusModel } from "../../npms-dashboard-status/npms-dashboard-status.model";
 
 
 export type INpmsDashboardGqlRelationsSource = NpmsDashboardModel;
 export const NpmsDashboardGqlRelations: GraphQLObjectType<INpmsDashboardGqlRelationsSource, GqlContext> = new GraphQLObjectType({
   name: 'NpmsDashboardRelations',
   fields: () => ({
+    /**
+     * Status
+     */
+    status: {
+      type: NpmsDashboardStatusGqlNode,
+      resolve: async (parent, args, ctx): Promise<OrNull<INpmsDashboardStatusGqlNodeSource>> => {
+        const model: OrNull<NpmsDashboardStatusModel> = await ctx.loader.npmsDashboardStatus.load(parent.status_id);
+        if (!model) return null;
+        if (!ctx.services.npmsDashboardStatusPolicy.canFindOne({ model })) return null;
+        return model;
+      },
+    },
+
+    /**
+     * Items
+     */
     items: {
       type: GraphQLNonNull(NpmsDashboardItemCollectionGqlNode),
       args: gqlQueryArg(NpmsDashboardItemCollectionOptionsGqlInput),
@@ -31,9 +51,16 @@ export const NpmsDashboardGqlRelations: GraphQLObjectType<INpmsDashboardGqlRelat
             ...options,
             where: andWhere([
               options.where,
-              { [NpmsDashboardItemField.dashboard_id]: { [Op.eq]: parent.id } }
+              { [NpmsDashboardItemField.dashboard_id]: { [Op.eq]: parent.id } },
             ]),
+            // eager load packages
+            include: { association: NpmsDashboardItemAssociation.npmsPackage, },
           },
+        });
+        // prime / eager load items
+        rows.forEach(row => {
+          const npmsPackage = assertDefined(row.npmsPackage);
+          ctx.loader.npmsPackage.prime(npmsPackage.id, npmsPackage);
         });
         const pagination = collectionMeta({ data: rows, total: count, page });
         const collection: INpmsDashboardItemCollectionGqlNodeSource = {
@@ -47,6 +74,10 @@ export const NpmsDashboardGqlRelations: GraphQLObjectType<INpmsDashboardGqlRelat
         return collection;
       },
     },
+
+    /**
+     * Packages
+     */
     npmsPackages: {
       type: GraphQLNonNull(NpmsPackageCollectionGqlNode),
       args: gqlQueryArg(NpmsPackageCollectionOptionsGqlInput),
@@ -64,7 +95,8 @@ export const NpmsDashboardGqlRelations: GraphQLObjectType<INpmsDashboardGqlRelat
                 where: { id: { [Op.eq]: parent.id }, },
               }, {
                 association: NpmsPackageAssociation.dashboard_items,
-                order: [[NpmsDashboardItemField.order, 'ASC']],
+                // TODO: this order doesn't seem to work?
+                // order: [[NpmsDashboardItemField.order, 'ASC']],
               }
             ],
           },

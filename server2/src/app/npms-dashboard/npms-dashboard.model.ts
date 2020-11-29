@@ -45,7 +45,7 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   [NpmsDashboardAssociation.owner]?: OrNull<UserModel>;
   [NpmsDashboardAssociation.items]?: NpmsDashboardItemModel[];
   [NpmsDashboardAssociation.npmsPackages]?: NpmsDashboardModel[];
-  [NpmsDashboardAssociation.status]?: NpmsDashboardStatus;
+  [NpmsDashboardAssociation.status]?: NpmsDashboardStatusModel;
 
   // associations
   //

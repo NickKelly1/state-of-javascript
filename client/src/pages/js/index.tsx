@@ -94,16 +94,12 @@ query JsPageDashboard(
         name
       }
       relations{
-        npmsPackages(
+        items(
           query:{
             limit:$packageLimit
             offset:$packageOffset
           }
         ){
-          can{
-            show
-            create
-          }
           pagination{
             limit
             offset
@@ -113,81 +109,85 @@ query JsPageDashboard(
             more
           }
           nodes{
-            cursor
-            can{
-              show
-              softDelete
-              hardDelete
-            }
-            data{
-              id
-              name
-              data{
-                score{
-                  final
-                  detail{
-                    quality
-                    popularity
-                    maintenance
-                  }
-                }
-                evaluation{
-                  quality{
-                    carefulness
-                    tests
-                    health
-                    branding
-                  }
-                  popularity{
-                    communityInterest
-                    downloadsCount
-                    downloadsAcceleration
-                    dependentsCount
-                  }
-                  maintenance{
-                    releasesFrequency
-                    commitsFrequency
-                    openIssues
-                    issuesDistribution
-                  }
-                }
-                collected{
-                  metadata{
-                    hasTestScript
-                    hasSelectiveFiles
-                    name
-									}
-                  github{
-                    starsCount
-                    forksCount
-                    subscribersCount
-                    commits{
-                      from
-                      to
-                      count
+            relations{
+              npmsPackage{
+                cursor
+                # can{
+                #   show
+                #   softDelete
+                #   hardDelete
+                # }
+                data{
+                  id
+                  name
+                  last_ran_at
+                  created_at
+                  updated_at
+                  data{
+                    score{
+                      final
+                      detail{
+                        quality
+                        popularity
+                        maintenance
+                      }
                     }
-                    issues{
-                      count
-                      openCount
-                      isDisabled
+                    evaluation{
+                      quality{
+                        carefulness
+                        tests
+                        health
+                        branding
+                      }
+                      popularity{
+                        communityInterest
+                        downloadsCount
+                        downloadsAcceleration
+                        dependentsCount
+                      }
+                      maintenance{
+                        releasesFrequency
+                        commitsFrequency
+                        openIssues
+                        issuesDistribution
+                      }
                     }
-                  }
-                  npm{
-                    starsCount
-                    dependentsCount
-                    dependencies
-                    devDependencies
-                    downloads{
-                      from
-                      to
-                      count
+                    collected{
+                      metadata{
+                        hasTestScript
+                        hasSelectiveFiles
+                        name
+                      }
+                      github{
+                        starsCount
+                        forksCount
+                        subscribersCount
+                        commits{
+                          from
+                          to
+                          count
+                        }
+                        issues{
+                          count
+                          openCount
+                          isDisabled
+                        }
+                      }
+                      npm{
+                        starsCount
+                        dependentsCount
+                        dependencies
+                        devDependencies
+                        downloads{
+                          from
+                          to
+                          count
+                        }
+                      }
                     }
                   }
                 }
               }
-              last_ran_at
-              created_at
-              updated_at
             }
           }
         }
@@ -233,7 +233,9 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
       const result = await runPageDataQuery(api, defaultQueryVars);
       return result;
     },
-    { initialData: isSuccess(dashboards) ? dashboards.value : undefined, }
+    {
+      // initialData: isSuccess(dashboards) ? dashboards.value : undefined,
+    },
   );
 
   return (
@@ -283,7 +285,12 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
 
         const dashName = dashNode.data.name ?? _unknown;
         const colours = shuffle(DashColours, { random: SeedRandom(dashName)  });
-        const npmsPackages = dashNode.relations.npmsPackages.nodes.filter(ist.notNullable);
+        const npmsPackages = dashNode
+          .relations
+          .items
+          .nodes
+          .map(itemNode => itemNode?.relations.npmsPackage)
+          .filter(ist.notNullable)
         const packageNames = npmsPackages.map(packageNode => packageNode.data?.name ?? _unknown);
 
         const result: INpmsDashboardDatasets = {

@@ -7,8 +7,8 @@ import { NpmsDashboardItemModel } from "./npms-dashboard-item.model";
 export class NpmsDashboardItemRepository extends BaseRepository<NpmsDashboardItemModel> {
   order(): OrUndefined<Order> {
     return [
-      [NpmsDashboardItemField.npms_package_id, 'ASC'],
       [NpmsDashboardItemField.order, 'ASC'],
+      [NpmsDashboardItemField.npms_package_id, 'ASC'],
       [NpmsDashboardItemField.id, 'ASC'],
     ];
   }

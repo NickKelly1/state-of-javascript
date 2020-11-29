@@ -44,7 +44,7 @@ export class NpmsDashboardRepository extends BaseRepository<NpmsDashboardModel> 
     }
 
     // must have NpmsDashboards.ShowSome
-    if (this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboards.ShowSome])) {
+    if (!this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboards.ShowSome])) {
       return { [NpmsDashboardField.id]: { [Op.eq]: null }, };
     }
 

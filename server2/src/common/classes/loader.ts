@@ -7,6 +7,7 @@ import { NewsArticleField } from '../../app/news-article/news-article.attributes
 import { NewsArticleId } from '../../app/news-article/news-article.id.type';
 import { NpmsDashboardItemField } from '../../app/npms-dashboard-item/npms-dashboard-item.attributes';
 import { NpmsDashboardItemId } from '../../app/npms-dashboard-item/npms-dashboard-item.id.type';
+import { NpmsDashboardStatusId } from '../../app/npms-dashboard-status/npms-dashboard-status.id.type';
 import { NpmsDashboardId } from '../../app/npms-dashboard/npms-dashboard.id.type';
 import { NpmsPackageField } from '../../app/npms-package/npms-package.attributes';
 import { NpmsPackageId } from '../../app/npms-package/npms-package.id.type';
@@ -28,6 +29,7 @@ import {
   NewsArticleStatusModel,
   NpmsDashboardItemModel,
   NpmsDashboardModel,
+  NpmsDashboardStatusModel,
   NpmsPackageModel,
   PermissionModel,
   RoleModel,
@@ -47,6 +49,7 @@ export type INewsArticleDataLoader = Dataloader<NewsArticleId, OrNull<NewsArticl
 export type INewsArticleStatusDataLoader = Dataloader<NewsArticleStatusId, OrNull<NewsArticleStatusModel>>;
 export type INpmsPackageDataLoader = Dataloader<NpmsPackageId, OrNull<NpmsPackageModel>>;
 export type INpmsDashboardDataLoader = Dataloader<NpmsDashboardId, OrNull<NpmsDashboardModel>>;
+export type INpmsDashboardStatusDataLoader = Dataloader<NpmsDashboardStatusId, OrNull<NpmsDashboardStatusModel>>;
 export type INpmsDashboardItemDataLoader = Dataloader<NpmsDashboardItemId, OrNull<NpmsDashboardItemModel>>;
 
 export class Loader {
@@ -251,6 +254,25 @@ export class Loader {
       return keys.map(key => map.get(key) ?? null)
     });
     return this._npmsDashboard;
+  }
+
+  // =================================
+  // ===== npm-dashboard-status ======
+  // =================================
+  protected _npmsDashboardStatus?: INpmsDashboardStatusDataLoader;
+  public get npmsDashboardStatus(): INpmsDashboardStatusDataLoader {
+    if (this._npmsDashboardStatus) return this._npmsDashboardStatus;
+    this._npmsDashboardStatus = new DataLoader(async (keys): Promise<(OrNull<NpmsDashboardStatusModel>)[]> => {
+      const { runner } = this;
+      const models = await this.ctx.services.npmsDashboardStatusRepository.findAll({
+        runner,
+        unscoped: true,
+        options: { where: { id: { [Op.in]: keys as NpmsDashboardStatusId[] } } },
+      });
+      const map = new Map(models.map(model => [model.id, model]));
+      return keys.map(key => map.get(key) ?? null)
+    });
+    return this._npmsDashboardStatus;
   }
 
   // ===============================

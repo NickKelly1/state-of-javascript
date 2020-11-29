@@ -10,6 +10,9 @@ export type INpmsDashboardItemGqlRelationsSource = NpmsDashboardItemModel;
 export const NpmsDashboardItemGqlRelations: GraphQLObjectType<INpmsDashboardItemGqlRelationsSource, GqlContext> = new GraphQLObjectType({
   name: 'NpmsDashboardItemRelations',
   fields: () => ({
+    /**
+     * Dashboard
+     */
     dashboard: {
       type: NpmsDashboardGqlNode,
       resolve: async (parent, args, ctx): Promise<OrNull<INpmsDashboardGqlNodeSource>> => {
@@ -19,6 +22,10 @@ export const NpmsDashboardItemGqlRelations: GraphQLObjectType<INpmsDashboardItem
         return model;
       },
     },
+
+    /**
+     * NpmsPackage
+     */
     npmsPackage: {
       type: NpmsPackageGqlNode,
       resolve: async (parent, args, ctx): Promise<OrNull<INpmsPackageGqlNodeSource>> => {
