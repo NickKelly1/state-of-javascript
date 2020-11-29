@@ -1,6 +1,7 @@
 import { DialogTitle, DialogContent, Grid, Box, Button, DialogActions } from "@material-ui/core";
 import React from "react";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
+import { JsonCopyButton } from "../json-copy-button/json-copy-button";
 import { JsonDownloadButton } from "../json-download-button/json-download-button";
 import { JsonPretty } from "../json-pretty/json-pretty";
 
@@ -14,7 +15,9 @@ export const DebugJsonDialog = WithDialogue<IDebugJsonDialogProps>({ fullWidth: 
   return (
     <>
       <DialogTitle>
-        {title}
+        <span>
+          {title}
+        </span>
       </DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
@@ -27,6 +30,7 @@ export const DebugJsonDialog = WithDialogue<IDebugJsonDialogProps>({ fullWidth: 
         <Button onClick={dialog.doClose} color="primary">
           Close
         </Button>
+        <JsonCopyButton data={data} />
         <JsonDownloadButton name={`${title}-data`} src={data} />
       </DialogActions>
     </>

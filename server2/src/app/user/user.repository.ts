@@ -1,4 +1,4 @@
-import { FindOptions, Model, ModelCtor, Op } from "sequelize";
+import { FindOptions, Model, ModelCtor, Op, Order } from "sequelize";
 import { BaseRepository } from "../../common/classes/repository.base";
 import { InternalServerException } from "../../common/exceptions/types/internal-server.exception";
 import { NotFoundException } from "../../common/exceptions/types/not-found.exception";
@@ -16,6 +16,16 @@ import { UserModel } from "./user.model";
 
 export class UserRepository extends BaseRepository<UserModel> {
   protected readonly Model = UserModel as ModelCtor<UserModel>;
+
+
+  /**
+   * @inheritdoc
+   */
+  order(): OrUndefined<Order> {
+    return [
+      [UserField.id, 'ASC'],
+    ];
+  }
 
 
   /**

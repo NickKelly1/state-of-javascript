@@ -547,7 +547,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         }
 
         // authorize
-        ctx.authorize(ctx.services.userPolicy.canConsumeVerificationEmail({ model: user }));
+        ctx.authorize(ctx.services.userPolicy.canConsumeEmailChangeVerificationEmail({ model: user }));
 
         const data = unwrap.right(TUserTokenVerifyEmailChangeData.decode(token.data));
 

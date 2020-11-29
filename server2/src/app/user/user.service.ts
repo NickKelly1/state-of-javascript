@@ -409,7 +409,7 @@ export class UserService {
         },
       })
 
-    runner.afterCommit(() => this._queueWelcomeEmail({ token_id: token.id }));
+    runner.afterCommit(() => this._queueSendVerifyEmailChangeEmail({ token_id: token.id }));
 
     return true;
   }
@@ -442,11 +442,11 @@ export class UserService {
         .add({
           to: [data.email],
           cc: null,
-          subject: this.ctx.lang(UserLang.WelcomeEmailSubject({
+          subject: this.ctx.lang(UserLang.VerifyEmailChangeSubject({
             welcomeTo: 'nickkelly.dev',
             name: user.name,
           })),
-          body: this.ctx.lang(UserLang.WelcomeEmailBody({
+          body: this.ctx.lang(UserLang.VerifyEmailChangeBody({
             welcomeTo: 'nickkelly.dev',
             verifyUrl: link,
             name: user.name,

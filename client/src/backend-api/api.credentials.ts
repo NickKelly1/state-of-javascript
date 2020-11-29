@@ -457,6 +457,10 @@ export class ApiCredentials {
     this.event.log_in_success.on(() => { Debug.ApiCredentials('on::log_in_success'); });
     this.event.log_in_fail.on(() => { Debug.ApiCredentials('on::log_in_fail'); });
 
+    this.event.log_out_start.on(() => { Debug.ApiCredentials('on::log_out_start'); });
+    this.event.log_out_success.on(() => { Debug.ApiCredentials('on::log_out_success'); });
+    this.event.log_out_fail.on(() => { Debug.ApiCredentials('on::log_out_fail'); });
+
     this.event.register_start.on(() => { Debug.ApiCredentials('on::register_start'); });
     this.event.register_success.on(() => { Debug.ApiCredentials('on::register_success'); });
     this.event.register_fail.on(() => { Debug.ApiCredentials('on::register_fail'); });
@@ -480,6 +484,10 @@ export class ApiCredentials {
     this.event.verify_email_change_start.on(() => { Debug.ApiCredentials('on::verify_email_change_start'); });
     this.event.verify_email_change_success.on(() => { Debug.ApiCredentials('on::verify_email_change_success'); });
     this.event.verify_email_change_fail.on(() => { Debug.ApiCredentials('on::verify_email_change_fail'); });
+
+    this.event.force_out_start.on(() => { Debug.ApiCredentials('on::force_out_start'); });
+    this.event.force_out_success.on(() => { Debug.ApiCredentials('on::force_out_success'); });
+    this.event.force_out_fail.on(() => { Debug.ApiCredentials('on::force_out_fail'); });
 
     // set shadow user...
     if (!!this._me.shad_id) {
@@ -583,11 +591,63 @@ export class ApiCredentials {
 
 
   /**
+   * Force out
+   *
+   *  1. Want to handle login / logout routes with GraphQL
+   *  2. Authentication can
+   *  3. ... todo
+   */
+  async _unlockedForceOut(): Promise<ActionsQuery> {
+    try {
+      this.event.force_out_start.fire(undefined);
+      const vars: ActionsQueryVariables = {};
+      const result = await this
+        .uncredentialedGqlClient
+        .request<ActionsQuery>(actionsQuery, vars);
+      const meOut = ApiMeFactory({
+        authenticated: false,
+        value: result.can,
+      });
+      this._removeAuthentication(meOut);
+      this.event.force_out_success.fire(meOut);
+      return result;
+    } catch (error) {
+      this.event.force_out_fail.fire(undefined);
+      throw error;
+    }
+  }
+
+
+  /**
+   * Logout
+   */
+  async _unlockedLogout(): Promise<LogoutMutation> {
+    try {
+      this.event.log_out_start.fire(undefined);
+      const logoutVars: LogoutMutationVariables = {};
+      // remove credentials before attempting log-out
+      // otherwise, if credentials are kept but stale, they will be 401'd by the server
+      this.credentialedGqlClient.setHeader('Authorization', 'Bearer ');
+      this.refreshGqlClient.setHeader('refresh_token', '');
+      const logoutResult = await this
+        .credentialedGqlClient
+        .request<LogoutMutation, LogoutMutationVariables>(logoutMutation, logoutVars);
+      const meOut = ApiMeFactory({ authenticated: false, value: logoutResult.logout.can });
+      this._removeAuthentication(meOut);
+      this.event.log_out_success.fire(meOut);
+      return logoutResult;
+    } catch(error) {
+      this.event.log_out_fail.fire(undefined);
+      await this._unlockedForceOut().catch();
+      throw error;
+    }
+  }
+
+
+  /**
    * Refresh authentication
    */
   async refresh(): Promise<RefreshMutation> {
-    // TODO: use a different requester....
-
     const release = await this.authenticationLock.acquire();
     try {
       this.event.refresh_start.fire(undefined);
@@ -602,21 +662,7 @@ export class ApiCredentials {
     }
     catch (error) {
       this.event.refresh_fail.fire(undefined);
-
-      // try to log out...
-      try {
-        this.event.log_out_start.fire(undefined);
-        const logoutVars: LogoutMutationVariables = {};
-        const logoutResult = await this
-          .credentialedGqlClient
-          .request<LogoutMutation, LogoutMutationVariables>(logoutMutation, logoutVars);
-        const meOut = ApiMeFactory({ authenticated: false, value: logoutResult.logout.can });
-        this._removeAuthentication(meOut);
-        this.event.log_out_success.fire(meOut);
-      } catch {
-        this.event.log_out_fail.fire(undefined);
-      }
-
+      await this._unlockedLogout().catch();
       throw error;
     }
     finally {
@@ -650,21 +696,7 @@ export class ApiCredentials {
     }
     catch (error) {
       this.event.log_in_fail.fire(undefined);
-
-      // try to log out...
-      try {
-        this.event.log_out_start.fire(undefined);
-        const logoutVars: LogoutMutationVariables = {};
-        const logoutResult = await this
-          .credentialedGqlClient
-          .request<LogoutMutation, LogoutMutationVariables>(logoutMutation, logoutVars);
-        const meOut = ApiMeFactory({ authenticated: false, value: logoutResult.logout.can });
-        this._removeAuthentication(meOut);
-        this.event.log_out_success.fire(meOut);
-      } catch {
-        this.event.log_out_fail.fire(undefined);
-      }
-
+      await this._unlockedLogout().catch();
       throw error;
     }
     finally {
@@ -699,21 +731,7 @@ export class ApiCredentials {
     }
     catch (error) {
       this.event.register_fail.fire(undefined);
-
-      // try to log out...
-      try {
-        this.event.log_out_start.fire(undefined);
-        const logoutVars: LogoutMutationVariables = {};
-        const logoutResult = await this
-          .credentialedGqlClient
-          .request<LogoutMutation, LogoutMutationVariables>(logoutMutation, logoutVars);
-        const meOut = ApiMeFactory({ authenticated: false, value: logoutResult.logout.can });
-        this._removeAuthentication(meOut);
-        this.event.log_out_success.fire(meOut);
-      } catch {
-        this.event.log_out_fail.fire(undefined);
-      }
-
+      await this._unlockedLogout().catch();
       throw error;
     }
     finally {
@@ -728,18 +746,10 @@ export class ApiCredentials {
   async logout(): Promise<LogoutMutation> {
     const release = await this.authenticationLock.acquire();
     try {
-      this.event.log_out_start.fire(undefined);
-      const logoutVars: LogoutMutationVariables = {};
-      const logoutResult = await this
-        .credentialedGqlClient
-        .request<LogoutMutation, LogoutMutationVariables>(logoutMutation, logoutVars);
-      const meOut = ApiMeFactory({ authenticated: false, value: logoutResult.logout.can });
-      this._removeAuthentication(meOut);
-      this.event.log_out_success.fire(meOut);
-      return logoutResult;
+      const result = await this._unlockedLogout();
+      return result;
     }
     catch (error) {
-      this.event.log_out_fail.fire(undefined);
       throw error;
     }
     finally {

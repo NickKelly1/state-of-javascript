@@ -67,6 +67,8 @@ import { RoleTabs } from '../roles/role.tabs';
 import { flsx } from '../../helpers/flsx.helper';
 import { UserMutateFormDialog } from './user-mutate.form.dialog';
 import { UserTabs } from './user.tabs';
+import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 
 const UsersTableDataQueryName = 'UsersTableDataQuery'
 const usersTableDataQuery = gql`
@@ -316,8 +318,12 @@ function UsersTableContent(props: IUsersTableContentProps) {
   const createDialog: IUseDialogReturn = useDialog();
   const handleCreated: IIdentityFn = useCallback(() => flsx(refetch, createDialog.doClose)(), [refetch, createDialog.doClose]);
 
+  const debugDialog = useDialog();
+  const debugData = useMemo(() => ({ queryData, tableData, }), [queryData, tableData]);
+
   return (
     <>
+      <DebugJsonDialog title="Users" dialog={debugDialog} data={debugData} />
       <UserMutateFormDialog dialog={createDialog} onSuccess={handleCreated} />
       {/* create user dialog */}
       <Grid container spacing={2}>
@@ -335,6 +341,13 @@ function UsersTableContent(props: IUsersTableContentProps) {
                 </IconButton>
               </Box>
             )}
+            <WhenDebugMode>
+              <Box pr={1}>
+                <IconButton color="primary" onClick={debugDialog.doOpen}>
+                  <BugReportIcon />
+                </IconButton>
+              </Box>
+            </WhenDebugMode>
           </Box>
         </Grid>
         <Grid item xs={12}>

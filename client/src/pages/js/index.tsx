@@ -3,6 +3,7 @@ import React, {
   useContext,
   useMemo,
   useState } from 'react';
+import BugReportIcon from '@material-ui/icons/BugReport';
 import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
 import SortIcon from '@material-ui/icons/Sort';
@@ -50,6 +51,8 @@ import { useDialog } from '../../hooks/use-dialog.hook';
 import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form.dialog';
 import { flsx } from '../../helpers/flsx.helper';
 import { IPageProps } from '../../types/page-props.interface';
+import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
+import { DebugJsonDialog } from '../../components/debug-json-dialog/debug-json-dialog';
 
 const JsPageDashboardQueryName = 'JsPageDashboardQuery';
 const jsPageDashboardQuery = gql`
@@ -248,7 +251,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
       {data && (
         <Grid item xs={12}>
           <JavaScriptPageContent
-            dashboards={data}
+            queryData={data}
             onStale={refetch}
           />
         </Grid>
@@ -258,19 +261,19 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
 }
 
 interface IJavaScriptPageContentProps {
-  dashboards: JsPageDashboardQuery;
+  queryData: JsPageDashboardQuery;
   onStale?: IIdentityFn;
 }
 
 
 function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
-  const { dashboards, onStale, } = props;
+  const { queryData, onStale, } = props;
   const classes = useStyles();
   const { api, me } = useContext(ApiContext);
   const colours = useRandomDashColours();
 
   const dashes: OrNull<INpmsDashboardDatasets[]> = useMemo(() => {
-    const dashes: INpmsDashboardDatasets[] = dashboards
+    const dashes: INpmsDashboardDatasets[] = queryData
       .npmsDashboards
       .nodes
       .filter(ist.notNullable)
@@ -493,15 +496,18 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
       });
 
     return dashes;
-  }, [dashboards]);
+  }, [queryData]);
 
   const createDashboardDialog = useDialog(false);
   const sortDashboardsDialog = useDialog(false);
   const handleNpmsDashboardCreated = useCallback(() => flsx(createDashboardDialog.doClose, onStale)(), []);
   const handleNpmsDashboardSorted = useCallback(() => flsx(sortDashboardsDialog.doClose, onStale)(), []);
 
+  const debugDialog = useDialog();
+
   return (
     <>
+      <DebugJsonDialog title="Npm Stats" dialog={debugDialog} data={queryData} />
       <NpmsDashboardMutateForm dialog={createDashboardDialog} onSuccess={handleNpmsDashboardCreated} />
       <NpmsDashboardSortForm dialog={sortDashboardsDialog} onSuccess={handleNpmsDashboardSorted} />
       <Grid container spacing={2} className="text-center">
@@ -512,20 +518,27 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 Dashboards
               </Typography>
             </Box>
-            {dashboards.npmsDashboards.can.create && (
+            {queryData.npmsDashboards.can.create && (
               <Box px={1}>
                 <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
                   <AddIcon />
                 </IconButton>
               </Box>
             )}
-            {dashboards.npmsDashboards.can.sort && (
+            {queryData.npmsDashboards.can.sort && (
               <Box px={1}>
                 <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
                   <SortIcon />
                 </IconButton>
               </Box>
             )}
+            <WhenDebugMode>
+              <Box pr={1}>
+                <IconButton color="primary" onClick={debugDialog.doOpen}>
+                  <BugReportIcon />
+                </IconButton>
+              </Box>
+            </WhenDebugMode>
           </Box>
         </Grid>
         {(dashes ?? []).map(dashboard => (

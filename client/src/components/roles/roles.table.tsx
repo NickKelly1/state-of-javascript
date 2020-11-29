@@ -68,6 +68,8 @@ import { RoleMutateFormDialog } from '../../components/roles/role-mutate.form.di
 import { IIdentityFn } from '../../types/identity-fn.type';
 import { WithMemo } from '../../components-hoc/with-memo/with-memo';
 import { flsx } from '../../helpers/flsx.helper';
+import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 
 const RolesTableDataQueryName = 'RolesTableDataQuery'
 const rolesTableDataQuery = gql`
@@ -172,6 +174,7 @@ export function RolesTable(props: IRolesTableProps) {
       keepPreviousData: true,
     },
   );
+
 
   return (
     <Grid container spacing={2}>
@@ -317,8 +320,12 @@ function RolesTableContent(props: IRolesTableContentProps) {
   const createDialog: IUseDialogReturn = useDialog();
   const handleCreated: IIdentityFn = useCallback(() => flsx(refetch, createDialog.doClose)(), [refetch, createDialog.doClose]);
 
+  const debugDialog = useDialog();
+  const debugData = useMemo(() => ({ queryData, tableData, }), [queryData, tableData]);
+
   return (
     <>
+      <DebugJsonDialog title="Roles" dialog={debugDialog} data={debugData} />
       <RoleMutateFormDialog dialog={createDialog} onSuccess={handleCreated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -335,6 +342,13 @@ function RolesTableContent(props: IRolesTableContentProps) {
                 </IconButton>
               </Box>
             )}
+            <WhenDebugMode>
+              <Box pr={1}>
+                <IconButton color="primary" onClick={debugDialog.doOpen}>
+                  <BugReportIcon />
+                </IconButton>
+              </Box>
+            </WhenDebugMode>
           </Box>
         </Grid>
         <Grid item xs={12}>
