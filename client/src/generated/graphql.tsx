@@ -1022,6 +1022,7 @@ export type NpmsDashboardActions = {
 
 export type NpmsDashboardRelations = {
   __typename?: 'NpmsDashboardRelations';
+  status?: Maybe<NpmsDashboardStatusNode>;
   items: NpmsDashboardItemCollectionNode;
   npmsPackages: NpmsPackageCollectionNode;
 };
@@ -1034,6 +1035,73 @@ export type NpmsDashboardRelationsItemsArgs = {
 
 export type NpmsDashboardRelationsNpmsPackagesArgs = {
   query?: Maybe<NpmsPackageQuery>;
+};
+
+export type NpmsDashboardStatusNode = {
+  __typename?: 'NpmsDashboardStatusNode';
+  cursor: Scalars['String'];
+  data: NpmsDashboardStatusData;
+  can: NpmsDashboardStatusActions;
+  relations: NpmsDashboardStatusRelations;
+};
+
+export type NpmsDashboardStatusData = {
+  __typename?: 'NpmsDashboardStatusData';
+  id: Scalars['Int'];
+  name: Scalars['String'];
+  colour: Scalars['String'];
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+};
+
+export type NpmsDashboardStatusActions = {
+  __typename?: 'NpmsDashboardStatusActions';
+  show: Scalars['Boolean'];
+};
+
+export type NpmsDashboardStatusRelations = {
+  __typename?: 'NpmsDashboardStatusRelations';
+  npmsDashboards: NpmsDashboardCollectionNode;
+};
+
+
+export type NpmsDashboardStatusRelationsNpmsDashboardsArgs = {
+  query?: Maybe<NpmsDashboardQuery>;
+};
+
+export type NpmsDashboardCollectionNode = {
+  __typename?: 'NpmsDashboardCollectionNode';
+  nodes: Array<Maybe<NpmsDashboardNode>>;
+  can: NpmsDashboardCollectionActions;
+  pagination: Meta;
+};
+
+export type NpmsDashboardCollectionActions = {
+  __typename?: 'NpmsDashboardCollectionActions';
+  show: Scalars['Boolean'];
+  sort: Scalars['Boolean'];
+  create: Scalars['Boolean'];
+};
+
+export type NpmsDashboardQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<NpmsDashboardQueryFilterFilterConditionGroup>>;
+};
+
+export type NpmsDashboardQueryFilterFilterConditionGroup = {
+  attr?: Maybe<NpmsDashboardQueryFilterFilterAttributes>;
+  or?: Maybe<Array<NpmsDashboardQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<NpmsDashboardQueryFilterFilterConditionGroup>>;
+};
+
+export type NpmsDashboardQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  name?: Maybe<FilterFieldString>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+  deleted_at?: Maybe<FilterFieldDateTime>;
 };
 
 export type NpmsDashboardItemQuery = {
@@ -1083,41 +1151,6 @@ export type NpmsPackageQueryFilterFilterAttributes = {
 export type NpmsDashboardItemCollectionActions = {
   __typename?: 'NpmsDashboardItemCollectionActions';
   show: Scalars['Boolean'];
-};
-
-export type NpmsDashboardCollectionNode = {
-  __typename?: 'NpmsDashboardCollectionNode';
-  nodes: Array<Maybe<NpmsDashboardNode>>;
-  can: NpmsDashboardCollectionActions;
-  pagination: Meta;
-};
-
-export type NpmsDashboardCollectionActions = {
-  __typename?: 'NpmsDashboardCollectionActions';
-  show: Scalars['Boolean'];
-  sort: Scalars['Boolean'];
-  create: Scalars['Boolean'];
-};
-
-export type NpmsDashboardQuery = {
-  offset?: Maybe<Scalars['Int']>;
-  limit?: Maybe<Scalars['Int']>;
-  sorts?: Maybe<Array<QuerySort>>;
-  filter?: Maybe<Array<NpmsDashboardQueryFilterFilterConditionGroup>>;
-};
-
-export type NpmsDashboardQueryFilterFilterConditionGroup = {
-  attr?: Maybe<NpmsDashboardQueryFilterFilterAttributes>;
-  or?: Maybe<Array<NpmsDashboardQueryFilterFilterConditionGroup>>;
-  and?: Maybe<Array<NpmsDashboardQueryFilterFilterConditionGroup>>;
-};
-
-export type NpmsDashboardQueryFilterFilterAttributes = {
-  id?: Maybe<FilterFieldNumber>;
-  name?: Maybe<FilterFieldString>;
-  created_at?: Maybe<FilterFieldDateTime>;
-  updated_at?: Maybe<FilterFieldDateTime>;
-  deleted_at?: Maybe<FilterFieldDateTime>;
 };
 
 export type NpmsPackageCollectionActions = {
@@ -2610,10 +2643,7 @@ export type JsPageDashboardQuery = (
   { __typename?: 'RootQueryType' }
   & { npmsDashboards: (
     { __typename?: 'NpmsDashboardCollectionNode' }
-    & { can: (
-      { __typename?: 'NpmsDashboardCollectionActions' }
-      & Pick<NpmsDashboardCollectionActions, 'show' | 'sort' | 'create'>
-    ), pagination: (
+    & { pagination: (
       { __typename?: 'meta' }
       & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), nodes: Array<Maybe<(
@@ -2621,13 +2651,19 @@ export type JsPageDashboardQuery = (
       & Pick<NpmsDashboardNode, 'cursor'>
       & { can: (
         { __typename?: 'NpmsDashboardActions' }
-        & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
+        & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'submit' | 'reject' | 'publish' | 'unpublish' | 'createNpmsDashboardItem' | 'hardDeleteNpmsDashboardItem'>
       ), data: (
         { __typename?: 'NpmsDashboardData' }
         & Pick<NpmsDashboardData, 'id' | 'name'>
       ), relations: (
         { __typename?: 'NpmsDashboardRelations' }
-        & { items: (
+        & { status?: Maybe<(
+          { __typename?: 'NpmsDashboardStatusNode' }
+          & { data: (
+            { __typename?: 'NpmsDashboardStatusData' }
+            & Pick<NpmsDashboardStatusData, 'id' | 'name' | 'colour'>
+          ) }
+        )>, items: (
           { __typename?: 'NpmsDashboardItemCollectionNode' }
           & { pagination: (
             { __typename?: 'meta' }
@@ -2639,7 +2675,10 @@ export type JsPageDashboardQuery = (
               & { npmsPackage?: Maybe<(
                 { __typename?: 'NpmsPackageNode' }
                 & Pick<NpmsPackageNode, 'cursor'>
-                & { data: (
+                & { can: (
+                  { __typename?: 'NpmsPackageActions' }
+                  & Pick<NpmsPackageActions, 'show' | 'softDelete' | 'hardDelete' | 'restore'>
+                ), data: (
                   { __typename?: 'NpmsPackageData' }
                   & Pick<NpmsPackageData, 'id' | 'name' | 'last_ran_at' | 'created_at' | 'updated_at'>
                   & { data?: Maybe<(

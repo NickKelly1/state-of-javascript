@@ -140,102 +140,44 @@ export function TopBar(props: ITopBarProps) {
           )}
         </List>
         <List component="nav" className="d-flex">
-          {!me.isAuthenticated && me.can.users.register && (
-            <ListItem color="primary">
-              {/* <ListItemIcon><PersonAddIcon /></ListItemIcon> */}
-              <Button onClick={flsx(registerDialog.doOpen, cogMenu.doClose)} className="text-transform-none">
-                <ListItemText primary="register" />
-              </Button>
-            </ListItem>
-          )}
-          {!me.isAuthenticated && me.can.users.login && (
-            <ListItem>
-              {/* <ListItemIcon><AccountCircleIcon /></ListItemIcon> */}
-              <Button onClick={handleLoginClicked} className="text-transform-none">
-                <ListItemText primary="login" />
-              </Button>
+          <ListItem className="text-transform-none">
+            <IconButton onClick={debugDialog.doToggle} color={debugMode.isOn ? 'primary' : 'inherit'}>
+              <AccountCircleIcon />
+            </IconButton>
+          </ListItem>
+          {me.isAuthenticated && (
+            <ListItem className="text-transform-none">
+              <ListItemText primary={me.name} />
             </ListItem>
           )}
           {me.isAuthenticated && (
-            // <ListItem>
-              <ListItem className="text-transform-none">
-                {/* {debugMode.isOn && ( */}
-                  {/* <Button color="primary" > */}
-                    {/* <ListItemIcon><AccountCircleIcon /></ListItemIcon> */}
-                    <ListItemIcon>
-                      <IconButton onClick={debugDialog.doToggle} color={debugMode.isOn ? 'primary' : 'inherit'} disabled={!debugMode.isOn}>
-                        <AccountCircleIcon />
-                      </IconButton>
-                    </ListItemIcon>
-                    <ListItemText primary={me.name} />
-                  {/* </Button> */}
-                {/* // )} */}
-                {/* {!debugMode.isOn && (
-                  <>
-                    <ListItemIcon><AccountCircleIcon /></ListItemIcon>
-                    <ListItemText primary={me.name} />
-                  </>
-                )} */}
-              </ListItem>
-            // </ListItem>
-          )}
-          {me.isAuthenticated && (
             <ListItem>
-              {/* <ListItemIcon></ListItemIcon> */}
               <Button onClick={flsx(handleLogout, cogMenu.doClose)} startIcon={<ExitToAppIcon />} className="text-transform-none">
                 <ListItemText primary="logout" />
               </Button>
             </ListItem>
           )}
-          {/* <WhenDebugMode>
-            <ListItem>
-              <IconButton color="primary" onClick={debugDialog.doToggle}>
-                <BugReportIcon />
-              </IconButton>
+          {/* register */}
+          {!me.isAuthenticated && me.can.users.register && (
+            <ListItem color="primary">
+              <Button onClick={flsx(registerDialog.doOpen, cogMenu.doClose)} className="text-transform-none">
+                <ListItemText primary="register" />
+              </Button>
             </ListItem>
-          </WhenDebugMode> */}
+          )}
+          {/* login */}
+          {!me.isAuthenticated && me.can.users.login && (
+            <ListItem>
+              <Button onClick={handleLoginClicked} className="text-transform-none">
+                <ListItemText primary="login" />
+              </Button>
+            </ListItem>
+          )}
           <ListItem onClick={debugMode.toggle}>
-            {/* <ListItemIcon> */}
-              <IconButton color={debugMode.isOn ? 'primary' : 'inherit'}>
-                <BugReportIcon />
-              </IconButton>
-            {/* </ListItemIcon> */}
+            <IconButton color={debugMode.isOn ? 'primary' : 'inherit'}>
+              <BugReportIcon />
+            </IconButton>
           </ListItem>
-          {/* todo position menu UNDER button */}
-          {/* <ListItem>
-            <Menu
-              anchorEl={cogMenu.anchor}
-              keepMounted
-              open={cogMenu.isOpen}
-              onClose={cogMenu.doClose}
-            >
-              {!me && (
-                <MenuItem color="primary" onClick={flsx(registerDialog.doOpen, cogMenu.doClose)}>
-                  <ListItemIcon><PersonAddIcon /></ListItemIcon>
-                  <ListItemText primary="register" />
-                </MenuItem>
-              )}
-              {!me && (
-                <MenuItem onClick={flsx(loginDialog.doOpen, cogMenu.doClose) }>
-                  <ListItemIcon><AccountCircleIcon /></ListItemIcon>
-                  <ListItemText primary="login" />
-                </MenuItem>
-              )}
-              {me && (
-                <MenuItem onClick={flsx(handleLogout, cogMenu.doClose)}>
-                  <ListItemIcon><ExitToAppIcon /></ListItemIcon>
-                  <ListItemText primary="logout" />
-                </MenuItem>
-              )}
-              <MenuItem onClick={flsx(debugMode.toggle, cogMenu.doClose)}>
-                <ListItemIcon><BugReportIcon color={debugMode.isOn ? 'primary' : 'inherit'} /></ListItemIcon>
-                <ListItemText primary="debug mode" />
-              </MenuItem>
-            </Menu>
-            <Button onClick={cogMenu.doOpen}>
-              <SettingsIcon />
-            </Button>
-          </ListItem> */}
           <ListItem>
             <MUILink
               className={clsx('centered', classes.icon)}

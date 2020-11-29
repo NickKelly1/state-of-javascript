@@ -90,9 +90,12 @@ export class NpmsDashboardPolicy {
    */
   canCreate(): boolean {
     // require to be Authenticated
+    console.log('1...');
     if (!this.ctx.auth.isAuthenticatedAsAny()) {
+      console.log('2...');
       return false;
     }
+    console.log('3...');
 
     // is Admin or Manager or Creator
     return this.ctx.auth.hasAnyPermissions([

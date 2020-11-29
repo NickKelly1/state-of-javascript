@@ -53,6 +53,7 @@ import { flsx } from '../../helpers/flsx.helper';
 import { IPageProps } from '../../types/page-props.interface';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { DebugJsonDialog } from '../../components/debug-json-dialog/debug-json-dialog';
+import { hidex } from '../../helpers/hidden.helper';
 
 const JsPageDashboardQueryName = 'JsPageDashboardQuery';
 const jsPageDashboardQuery = gql`
@@ -68,11 +69,6 @@ query JsPageDashboard(
       offset:$dashboardOffset
     }
   ){
-    can{
-      show
-      sort
-      create
-    }
     pagination{
       limit
       offset
@@ -88,12 +84,26 @@ query JsPageDashboard(
         update
         softDelete
         hardDelete
+        restore
+        submit
+        reject
+        publish
+        unpublish
+        createNpmsDashboardItem
+        hardDeleteNpmsDashboardItem
       }
       data{
         id
         name
       }
       relations{
+        status{
+          data{
+            id
+            name
+            colour
+          }
+        }
         items(
           query:{
             limit:$packageLimit
@@ -112,11 +122,12 @@ query JsPageDashboard(
             relations{
               npmsPackage{
                 cursor
-                # can{
-                #   show
-                #   softDelete
-                #   hardDelete
-                # }
+                can{
+                  show
+                  softDelete
+                  hardDelete
+                  restore
+                }
                 data{
                   id
                   name
@@ -525,20 +536,16 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 Dashboards
               </Typography>
             </Box>
-            {queryData.npmsDashboards.can.create && (
-              <Box px={1}>
-                <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
-                  <AddIcon />
-                </IconButton>
-              </Box>
-            )}
-            {queryData.npmsDashboards.can.sort && (
-              <Box px={1}>
-                <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
-                  <SortIcon />
-                </IconButton>
-              </Box>
-            )}
+            <Box className={hidex(me.can.npmsDashboards.create)} pr={1}>
+              <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box className={hidex(me.can.npmsDashboards.sort)} pr={1}>
+              <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
+                <SortIcon />
+              </IconButton>
+            </Box>
             <WhenDebugMode>
               <Box pr={1}>
                 <IconButton color="primary" onClick={debugDialog.doOpen}>

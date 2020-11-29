@@ -195,6 +195,7 @@ export class ApiMe {
   toJSON(): IJson {
     return {
       user: this.user as $FIXME<unknown> as IJson,
+      shad_id: this[shad_id],
       isAuthenticated: this.isAuthenticated,
       instance: this.instance,
       createdAt: this.createdAt.valueOf(),

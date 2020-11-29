@@ -135,3 +135,22 @@
   overflow: hidden;
   white-space: nowrap;
 }
+
+.visibility-hidden {
+  visibility: hidden;
+}
+
+.visibility-hidden-y {
+  visibility: hidden;
+  height: 0;
+}
+
+.visibility-hidden-x {
+  visibility: hidden;
+  width: 0;
+}
+
+
+.visibility-inherit {
+  visibility: inherit;
+}
