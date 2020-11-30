@@ -6,9 +6,9 @@ import {
   Grid,
   Typography,
 } from "@material-ui/core";
-import BugReportIcon from '@material-ui/icons/BugReport';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
+import EditIcon from '@material-ui/icons/EditOutlined';
+import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import {
   gql,
 } from "graphql-request";
@@ -71,6 +71,7 @@ import { useSnackbar } from "notistack";
 import { flsx } from "../../helpers/flsx.helper";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { IOnErrorFn } from "../../types/on-error-fn.type";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 
 const UserUserRolesFormDataQueryName = (id: Id) => `UserUserRolesFormDataQuery_${id}`;
@@ -190,9 +191,8 @@ export interface IUserUserRolesFormProps {
   onError?: IOnErrorFn;
 }
 
-export function UserUserRolesForm(props: IUserUserRolesFormProps) {
-  const { user_id, onSuccess, onError } = props;
-  const { api, me, } = useContext(ApiContext);
+export const UserUserRolesForm = WithApi<IUserUserRolesFormProps>((props) => {
+  const { user_id, onSuccess, onError, api, me } = props;
 
   const [vars, setVars] = useState<UserUserRolesFormDataQueryVariables>(() => ({
     id: Number(user_id),
@@ -245,7 +245,7 @@ export function UserUserRolesForm(props: IUserUserRolesFormProps) {
       )}
     </Grid>
   );
-}
+});
 
 
 interface IUserUserRolesFormContentProps {
@@ -256,9 +256,8 @@ interface IUserUserRolesFormContentProps {
 }
 
 
-function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
-  const { user, roles, onSuccess, onError, } = props;
-  const { api, me } = useContext(ApiContext);
+const UserUserRolesFormContent = WithApi<IUserUserRolesFormContentProps>((props) => {
+  const { user, roles, onSuccess, onError, api, me, } = props;
   const { enqueueSnackbar, } = useSnackbar();
 
   const [isDirty, setIsDirty] = useState(false);
@@ -403,4 +402,4 @@ function UserUserRolesFormContent(props: IUserUserRolesFormContentProps) {
       </Grid>
     </Grid>
   );
-}
+});

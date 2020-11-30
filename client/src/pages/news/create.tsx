@@ -8,6 +8,7 @@ import { ApiContext } from "../../components-contexts/api.context";
 import { CreateNewsArticle, CreateNewsArticleMutationVariables, } from "../../generated/graphql";
 import { staticPathsHandler, staticPropsHandler } from "../../helpers/static-props-handler.helper";
 import { INewsArticleFormData, NewsArticleForm } from "../../components/news/news-article.form";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 
 const createNewsQuery = gql`
@@ -47,9 +48,8 @@ interface ICreateNewsPageProps {
   //
 }
 
-function CreateNewsPage(props: ICreateNewsPageProps) {
-  const {} = props;
-  const { api, me } = useContext(ApiContext);
+const CreateNewsPage = WithApi<ICreateNewsPageProps>((props) => {
+  const { api, me } = props;
   const classes = useStyles();
 
   const [postNewsArticle, result] = useMutation<CreateNewsArticle, IApiException, CreateNewsArticleMutationVariables>(
@@ -87,7 +87,7 @@ function CreateNewsPage(props: ICreateNewsPageProps) {
       }}
     />
   );
-}
+})
 
 export const getStaticProps = staticPropsHandler<ICreateNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {
   const props: ICreateNewsPageProps = {

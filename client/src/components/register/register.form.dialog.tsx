@@ -27,15 +27,15 @@ import { useDialog } from "../../hooks/use-dialog.hook";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 import { RegisterMutation } from "../../generated/graphql";
 import { useSnackbar } from "notistack";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 
 export interface IRegisterFormDialogProps extends IWithDialogueProps {
   onSuccess: (result: RegisterMutation) => OrPromise<any>;
 }
 
-export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullWidth: true })((props) => {
-  const { dialog, onSuccess, } = props;
-  const { api } = useContext(ApiContext);
+export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullWidth: true })(WithApi((props) => {
+  const { dialog, onSuccess, api, me } = props;
   const { enqueueSnackbar } = useSnackbar();
   interface IFormState { name: string; email: string; password: string; };
   const [ formState, setFormState ] = useState<IFormState>({ name: '', email: '', password: '', });
@@ -130,4 +130,4 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
       </form>
     </>
   );
-});
+}));

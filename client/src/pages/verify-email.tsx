@@ -12,6 +12,7 @@ import { ApiException } from '../backend-api/api.exception';
 import { normaliseApiException, rethrow } from '../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../backend-api/types/api.exception.interface';
 import { ApiContext } from '../components-contexts/api.context';
+import { WithApi } from '../components-hoc/with-api/with-api.hoc';
 import { WithLoadable } from '../components-hoc/with-loadable/with-loadable';
 import { DebugException } from '../components/debug-exception/debug-exception';
 import { FilledCircularProgress } from '../components/filled-circular-progress/filled-circular-progress';
@@ -35,9 +36,9 @@ interface IVerifyEmailPageProps {
  *
  * @param props
  */
-function VerifyEmailPage(props: IVerifyEmailPageProps) {
+const VerifyEmailPage = WithApi<IVerifyEmailPageProps>((props) => {
+  const { api, me } = props;
   const classes = useStyles();
-  const { api, me } = useContext(ApiContext);
   const router = useRouter();
   const { enqueueSnackbar, } = useSnackbar();
 
@@ -112,6 +113,6 @@ function VerifyEmailPage(props: IVerifyEmailPageProps) {
       </Grid>
     </Grid>
   );
-}
+});
 
 export default VerifyEmailPage;

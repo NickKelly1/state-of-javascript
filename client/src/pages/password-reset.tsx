@@ -10,6 +10,7 @@ import { ApiException } from '../backend-api/api.exception';
 import { normaliseApiException, rethrow } from '../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../backend-api/types/api.exception.interface';
 import { ApiContext } from '../components-contexts/api.context';
+import { WithApi } from '../components-hoc/with-api/with-api.hoc';
 import { WithLoadable } from '../components-hoc/with-loadable/with-loadable';
 import { FilledCircularProgress } from '../components/filled-circular-progress/filled-circular-progress';
 import {
@@ -107,9 +108,8 @@ interface IPasswordResetPageContentsProps {
  *
  * @param props
  */
-function WelcomePageContents(props: IPasswordResetPageContentsProps) {
-  const { data, token } = props;
-  const { api, me } = useContext(ApiContext);
+const WelcomePageContents = WithApi<IPasswordResetPageContentsProps>((props) => {
+  const { data, token, api, me  } = props;
   const { enqueueSnackbar } = useSnackbar();
   const router = useRouter();
 
@@ -208,7 +208,7 @@ function WelcomePageContents(props: IPasswordResetPageContentsProps) {
     </form>
   );
   //
-}
+});
 
 
 /**

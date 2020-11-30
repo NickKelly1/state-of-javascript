@@ -23,11 +23,12 @@ import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
-import { BugReport } from "@material-ui/icons";
+import BugReportIcon from "@material-ui/icons/BugReportOutlined";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { ForgottenPasswordDialog } from "../forgotten-password-reset-dialog/forgotten-password-reset-dialog";
 import { LoginMutation } from "../../generated/graphql";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -41,9 +42,8 @@ interface IILoginFormContentProps extends IWithDialogueProps {
   onSuccess: (result: LoginMutation) => any;
 }
 
-export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth: true })((props) => {
-  const { onSuccess, dialog, } = props;
-  const { api } = useContext(ApiContext);
+export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth: true })(WithApi((props) => {
+  const { onSuccess, dialog, api, me, } = props;
 
   interface IFormState { name_or_email: string; password: string; };
   const [ formState, setFormState ] = useState<IFormState>({ name_or_email: '', password: '', });
@@ -121,7 +121,7 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
         <DialogActions >
           <WhenDebugMode>
             <IconButton color="primary" onClick={debugDialog.doToggle}>
-              <BugReport />
+              <BugReportIcon />
             </IconButton>
           </WhenDebugMode>
           <Button disabled={isDisabled} color="primary" onClick={dialog.doClose}>
@@ -134,4 +134,4 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
       </form>
     </>
   );
-});
+}));

@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import RestoreIcon from '@material-ui/icons/Restore';
-import BugReportIcon from '@material-ui/icons/BugReport';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { gql } from 'graphql-request';
 import React, {
   FormEventHandler,
@@ -54,6 +54,7 @@ import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dial
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
 const NpmsDashbortSortFormQueryName = 'NpmsDashbortSortFormQuery';
 const npmsDashboardSortFormQuery = gql`
@@ -122,9 +123,8 @@ const defaultQueryVars: NpmsDashbortSortFormQueryVariables = {
 }
 
 
-export const NpmsDashboardSortForm = WithDialogue<INpmsDashboardSortFormProps>({ fullWidth: true })((props) => {
-  const { onSuccess, dialog } = props;
-  const { api, me } = useContext(ApiContext);
+export const NpmsDashboardSortForm = WithDialogue<INpmsDashboardSortFormProps>({ fullWidth: true })(WithApi((props) => {
+  const { onSuccess, dialog, api, me, } = props;
 
   const [vars, setVars] = useState<NpmsDashbortSortFormQueryVariables>({
     dashboardLimit: defaultQueryVars.dashboardLimit,
@@ -171,7 +171,7 @@ export const NpmsDashboardSortForm = WithDialogue<INpmsDashboardSortFormProps>({
       )}
     </>
   );
-});
+}));
 
 
 interface INpmsDashboardSortFormContentProps extends IWithDialogueProps {
@@ -192,9 +192,8 @@ function npmsDashboardSortFormQueryToFormState(input: NpmsDashbortSortFormQuery)
   return state;
 };
 
-function NpmsDashboardSortFormContent(props: INpmsDashboardSortFormContentProps) {
-  const { source, onSuccess, dialog } = props;
-  const { me, api } = useContext(ApiContext);
+const NpmsDashboardSortFormContent = WithApi<INpmsDashboardSortFormContentProps>((props) => {
+  const { source, onSuccess, dialog, api, me } = props;
   const [formState, setFormState] = useState<INpmsDashboardSortFormState>(() => npmsDashboardSortFormQueryToFormState(source));
   const resetFromSource = useCallback(
     () => {
@@ -324,4 +323,4 @@ function NpmsDashboardSortFormContent(props: INpmsDashboardSortFormContentProps)
       </form>
     </>
   )
-}
+});

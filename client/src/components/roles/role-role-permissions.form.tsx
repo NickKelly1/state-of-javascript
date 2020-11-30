@@ -6,9 +6,9 @@ import {
   Grid,
   Typography,
 } from "@material-ui/core";
-import BugReportIcon from '@material-ui/icons/BugReport';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
+import EditIcon from '@material-ui/icons/EditOutlined';
+import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import {
   gql,
 } from "graphql-request";
@@ -70,6 +70,7 @@ import { IIdentityFn } from "../../types/identity-fn.type";
 import { IOnErrorFn } from "../../types/on-error-fn.type";
 import { useSnackbar } from "notistack";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 
 const RoleRolePermissionsFormDataQueryName = (id: Id) => `RoleRolePermissionsFormDataQuery_${id}`;
@@ -209,9 +210,8 @@ export interface IRoleRolePermissionFormProps {
   onError?: IOnErrorFn;
 }
 
-export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
-  const { role_id, onSuccess, onError, } = props;
-  const { api, me, } = useContext(ApiContext);
+export const RoleRolePermissionForm = WithApi((props: IRoleRolePermissionFormProps) => {
+  const { role_id, onSuccess, onError, api, me } = props;
 
   const [vars, setVars] = useState<RoleRolePermissionsFormDataQueryVariables>(() => ({
     id: Number(role_id),
@@ -263,7 +263,7 @@ export function RoleRolePermissionForm(props: IRoleRolePermissionFormProps) {
       )}
     </Grid>
   );
-}
+});
 
 
 interface IRoleRolePermissionFormContentProps {
@@ -274,9 +274,8 @@ interface IRoleRolePermissionFormContentProps {
 }
 
 
-function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProps) {
-  const { role, permissions, onSuccess, onError } = props;
-  const { api, me } = useContext(ApiContext);
+const RoleRolePermissionFormContent = WithApi<IRoleRolePermissionFormContentProps>((props) => {
+  const { role, permissions, onSuccess, onError, api, me, } = props;
 
   const [isDirty, setIsDirty] = useState(false);
 
@@ -437,4 +436,4 @@ function RoleRolePermissionFormContent(props: IRoleRolePermissionFormContentProp
       </Grid>
     </Grid>
   );
-}
+})

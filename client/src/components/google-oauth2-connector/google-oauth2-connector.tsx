@@ -46,6 +46,7 @@ import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { Id } from "../../types/id.type";
 import { IIdentityFn } from "../../types/identity-fn.type";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 const GoogleOAuth2ConnectorDataQueryName = 'GoogleOAuth2ConnectorData';
 const googleOAuth2ConnectorDataQuery = gql`
@@ -144,8 +145,8 @@ const useGoogleOAuth2ConnectorStyles = makeStyles((theme) => ({
   },
 }));
 
-export const GoogleOAuth2Connector = WithoutSsr((props: IGoogleOAuth2ConnectorProps) => {
-  const { api, me } = useContext(ApiContext);
+export const GoogleOAuth2Connector = WithoutSsr<IGoogleOAuth2ConnectorProps>(WithApi((props) => {
+  const { api, me, } = props;
   const classes = useGoogleOAuth2ConnectorStyles();
   const { data, error, isLoading, refetch } = useQuery<GoogleOAuth2ConnectorDataQuery, IApiException>(
     [GoogleOAuth2ConnectorDataQueryName, me.hash],
@@ -166,7 +167,7 @@ export const GoogleOAuth2Connector = WithoutSsr((props: IGoogleOAuth2ConnectorPr
       </WithLoadable>
     </Paper>
   )
-})
+}))
 
 interface IGoogleOAuth2ConnectorContentsProps {
   data: GoogleOAuth2ConnectorDataQuery;
@@ -269,9 +270,8 @@ interface IInitialiseIntegrationFormDialogProps extends IWithDialogueProps {
   onSuccess: IIntegrationInitialisedOnSuccessFn;
 }
 
-const InitialiseIntegrationFormDialog = WithDialogue<IInitialiseIntegrationFormDialogProps>({ fullWidth: true })((props) => {
-  const { name, dialog, onSuccess, integration_id, } = props;
-  const { api, me } = useContext(ApiContext);
+const InitialiseIntegrationFormDialog = WithDialogue<IInitialiseIntegrationFormDialogProps>({ fullWidth: true })(WithApi((props) => {
+  const { name, dialog, onSuccess, integration_id, api, me, } = props;
   const { enqueueSnackbar } = useSnackbar();
   interface IFormState { init: string; }
   const [ formState, setFormState ] = useState<IFormState>({ init: '{}' });
@@ -358,7 +358,7 @@ const InitialiseIntegrationFormDialog = WithDialogue<IInitialiseIntegrationFormD
       </form>
     </>
   );
-})
+}));
 
 
 interface IGoogleOAuth2OnSuccessFn { (arg: GoogleOAuth2ConnectorCodeFormMutation): any }
@@ -369,8 +369,7 @@ interface IGoogleOAuth2FormDialogProps extends IWithDialogueProps {
 
 
 const GoogleOAuth2FormDialog = WithDialogue<IGoogleOAuth2FormDialogProps>({ fullWidth: true })((props) => {
-  const { name, dialog, onSuccess, } = props;
-  const { api, me } = useContext(ApiContext);
+  const { name, dialog, onSuccess, api, me, } = props;
   const { enqueueSnackbar } = useSnackbar();
 
   interface IFormState { url: string; code: string }

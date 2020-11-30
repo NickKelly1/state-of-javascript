@@ -1,0 +1,1 @@
+export const isValidDate = (date: Date) => isFinite(date.valueOf());

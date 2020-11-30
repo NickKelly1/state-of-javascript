@@ -35,6 +35,7 @@ import { OrPromise } from "../../types/or-promise.type";
 import { Debounce } from "../../helpers/debounce.helper";
 import { _ls } from "../../helpers/_ls.helper";
 import { useSnackbar } from "notistack";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -87,7 +88,7 @@ const _ls_news_draft = {
 } as const;
 
 
-export function NewsArticleForm(props: ICreateNewsPageProps) {
+export const NewsArticleForm = WithApi<ICreateNewsPageProps>((props) => {
   const {
     id,
     onSave,
@@ -97,8 +98,9 @@ export function NewsArticleForm(props: ICreateNewsPageProps) {
     canShow,
     canSave,
     canSoftDelete,
+    api,
+    me,
   } = props;
-  const { api, me } = useContext(ApiContext);
   const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -317,4 +319,4 @@ export function NewsArticleForm(props: ICreateNewsPageProps) {
       </Grid>
     </Grid>
   );
-}
+});

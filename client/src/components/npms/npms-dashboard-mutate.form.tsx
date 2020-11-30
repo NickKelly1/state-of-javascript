@@ -64,10 +64,11 @@ import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dialog/with-dialog';
 import { change } from '../../helpers/change.helper';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
-import { BugReport } from '@material-ui/icons';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { OrNullable } from '../../types/or-nullable.type';
 import { not } from '../../helpers/not.helper';
+import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
 // TODO: updating vs creating...
 const createNpmsDashboardQuery = gql`
@@ -141,9 +142,8 @@ export interface INpmsDashboardMutateFormProps extends IWithDialogueProps {
 
 // interface IDashboardPackageOption { key: string; option: OrNull<INpmsPackageSearchOption>; };
 type IDashboardPackageOption = { key: string; option: string; };
-export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProps>({ fullWidth: true })((props) => {
-  const { onSuccess, initial, title, dialog } = props;
-  const { api, me } = useContext(ApiContext);
+export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProps>({ fullWidth: true })(WithApi((props) => {
+  const { onSuccess, initial, title, dialog, api, me } = props;
   const seq = useSequence();
 
   const _initial = useMemo(() => initial, []);
@@ -383,7 +383,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
         <DialogActions>
           <WhenDebugMode>
             <IconButton onClick={debugDialog.doToggle} color="primary">
-              <BugReport />
+              <BugReportIcon />
             </IconButton>
           </WhenDebugMode>
           <Button color="primary" onClick={dialog.doClose}>
@@ -396,4 +396,4 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
       </form>
     </>
   );
-})
+}))

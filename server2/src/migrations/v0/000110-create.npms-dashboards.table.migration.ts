@@ -9,7 +9,7 @@ export default class implements IMigration {
     const { env, queryInterface, sequelize, transaction } = arg;
     await queryInterface.createTable('npms_dashboards', {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, },
-      name: { type: DataTypes.STRING(100), unique: true, allowNull: false, },
+      name: { type: DataTypes.STRING(100), allowNull: false, },
       owner_id: { type: DataTypes.INTEGER, references: { model: 'users', key: 'id' }, allowNull: true, },
       shadow_id: { type: DataTypes.STRING(255), allowNull: true, },
       status_id: { type: DataTypes.INTEGER, references: { model: 'npms_dashboard_statuses', key: 'id' }, allowNull: false, },

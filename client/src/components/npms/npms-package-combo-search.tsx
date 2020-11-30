@@ -6,7 +6,7 @@ import { ApiContext } from '../../components-contexts/api.context';
 import { SearchNpmsPackageQuery, SearchNpmsPackageQueryVariables } from '../../generated/graphql';
 import { ist } from '../../helpers/ist.helper';
 import { pretty } from '../../helpers/pretty.helper';
-import { useAsync } from '../../hooks/use-async.hook';
+import { useAsyncify } from '../../hooks/use-asyncify.hook';
 import { useDebounce } from '../../hooks/use-debounce.hook';
 import { Id } from '../../types/id.type';
 import { OrUndefined } from '../../types/or-undefined.type';
@@ -14,6 +14,7 @@ import { CircularProgress, FormHelperText, TextField } from '@material-ui/core';
 import { OrNull } from '../../types/or-null.type';
 import { OrNullable } from '../../types/or-nullable.type';
 import { ApiException } from '../../backend-api/api.exception';
+import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
 const npmsPackageSearchQuery = gql`
 query SearchNpmsPackage(
@@ -58,9 +59,17 @@ interface INpmsPackageComboSearchProps {
   helperText?: string;
 }
 
-export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
-  const { className, onChange, error, isDisabled, helperText, option: _optProps } = props
-  const { api, me } = useContext(ApiContext);
+export const NpmsPackageComboSearch = WithApi<INpmsPackageComboSearchProps>((props) => {
+  const {
+    className,
+    onChange,
+    error,
+    isDisabled,
+    helperText,
+    option: _optProps,
+    api,
+    me,
+  } = props
   const initialised = useRef(false);
 
   // switch between controlled & uncontrolled...
@@ -73,7 +82,7 @@ export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
   const [search, setSearch] = useState(() => ist.notNullable(_opt) ? _opt.name : '');
 
   type IFetchArg = string;
-  const io = useAsync<IFetchArg, SearchNpmsPackageQuery, ApiException>((search) => {
+  const io = useAsyncify<IFetchArg, SearchNpmsPackageQuery, ApiException>((search) => {
     const response = api.gql<SearchNpmsPackageQuery, SearchNpmsPackageQueryVariables>(
       npmsPackageSearchQuery,
       { likeName: `%${search}%`, },
@@ -151,4 +160,4 @@ export function NpmsPackageComboSearch(props: INpmsPackageComboSearchProps) {
       )}
     />
   )
-}
+})

@@ -26,6 +26,7 @@ import { useMutation } from 'react-query';
 import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { ApiContext } from '../../components-contexts/api.context';
+import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dialog/with-dialog';
 import { CreateNpmsPackageFormMutation, CreateNpmsPackageFormMutationVariables } from '../../generated/graphql';
 import { change } from '../../helpers/change.helper';
@@ -67,9 +68,8 @@ export interface INpmsPackageCreateFormProps extends IWithDialogueProps {
 }
 
 
-export const NpmsPackageCreateForm = WithDialogue<INpmsPackageCreateFormProps>({ fullWidth: true })((props) => {
-  const { dialog, onSuccess, className } = props;
-  const { api, me, } = useContext(ApiContext);
+export const NpmsPackageCreateForm = WithDialogue<INpmsPackageCreateFormProps>({ fullWidth: true })(WithApi((props) => {
+  const { dialog, onSuccess, className, api, me } = props;
   const [formState, setFormState] = useState<CreateNpmsPackageFormMutationVariables>(({ name: '' }));
   const [doSubmit, submitState] = useMutation<CreateNpmsPackageFormMutation, IApiException>(
     async () => {
@@ -136,4 +136,4 @@ export const NpmsPackageCreateForm = WithDialogue<INpmsPackageCreateFormProps>({
       </form>
     </>
   );
-});
+}));

@@ -15,6 +15,7 @@ import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { useUpdate } from "../../hooks/use-update.hook";
 import { Id } from "../../types/id.type";
 import { OrNullable } from "../../types/or-nullable.type";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 const mutateRoleFormCreateMutation = gql`
 mutation MutateRoleFromCreate(
@@ -75,9 +76,8 @@ export interface IRoleMutateFormProps extends IWithDialogueProps {
   onSuccess?: IRoleMutateFormOnSuccessFn;
 }
 
-export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWidth: true })((props) => {
-  const { role, onSuccess, dialog, } = props;
-  const { api, me, } = useContext(ApiContext);
+export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWidth: true })(WithApi((props) => {
+  const { role, onSuccess, dialog, api, me } = props;
 
   interface IFormState { name: string; };
   const [formState, setFormState] = useState<IFormState>(() => ({ name: role?.name ?? '', }));
@@ -167,4 +167,4 @@ export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWid
       </form>
     </>
   );
-});
+}));

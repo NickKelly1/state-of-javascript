@@ -10,10 +10,11 @@ import { gql } from 'graphql-request';
 import { useMutation } from 'react-query';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 import { change } from '../../helpers/change.helper';
-import { BugReport } from '@material-ui/icons';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 import { useDialog } from '../../hooks/use-dialog.hook';
+import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
 const requestUserEmailChangeFormMutation = gql`
 mutation RequestUserEmailChangeForm(
@@ -36,9 +37,8 @@ export interface IRequestUserEmailChangeFormDialogProps extends IWithDialoguePro
   onSuccess: IRequestUserEmailChangeFormOnSuccessFn;
 }
 
-export const RequestUserEmailChangeFormDialog = WithDialogue<IRequestUserEmailChangeFormDialogProps>({ fullWidth: true })((props) => {
-  const { user_id, initialEmail, dialog, onSuccess, } = props;
-  const { api, me } = useContext(ApiContext);
+export const RequestUserEmailChangeFormDialog = WithDialogue<IRequestUserEmailChangeFormDialogProps>({ fullWidth: true })(WithApi((props) => {
+  const { user_id, initialEmail, dialog, onSuccess, api, me, } = props;
   const { enqueueSnackbar, } = useSnackbar();
 
   interface IFormState { email: string; };
@@ -105,7 +105,7 @@ export const RequestUserEmailChangeFormDialog = WithDialogue<IRequestUserEmailCh
         <DialogActions>
           <WhenDebugMode>
             <IconButton onClick={debugDialog.doToggle} color="primary">
-              <BugReport />
+              <BugReportIcon />
             </IconButton>
           </WhenDebugMode>
           <Button color="primary" disabled={isDisabled} onClick={dialog.doClose}>
@@ -118,4 +118,4 @@ export const RequestUserEmailChangeFormDialog = WithDialogue<IRequestUserEmailCh
       </form>
     </>
   );
-});
+}));

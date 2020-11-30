@@ -86,11 +86,11 @@ export const NpmsPackageGqlData: GraphQLObjectType<NpmsPackageModel, GqlContext>
           })})},
         })})},
         npm: { type: new GraphQLObjectType<NpmsPackageInfo_Collected_Npm>({ name: 'NpmsPackageDataInfoCollectedNpm', fields: () => ({
-          downloads: { type: new GraphQLObjectType<NpmsPackageInfo_Collected_Npm_Downloads>({ name: 'NpmsPackageDataInfoCollectedNpmDownloads', fields: () => ({
+          downloads: { type: GraphQLList(GraphQLNonNull(new GraphQLObjectType<NpmsPackageInfo_Collected_Npm_Downloads>({ name: 'NpmsPackageDataInfoCollectedNpmDownloads', fields: () => ({
             from: { type: GqlDateTimeScalar },
             to: { type: GqlDateTimeScalar },
             count: { type: GraphQLInt },
-          })})},
+          })})))},
           dependentsCount: { type: GraphQLInt, },
           dependencies: { type: GqlJsonObjectScalar },
           devDependencies: { type: GqlJsonObjectScalar },

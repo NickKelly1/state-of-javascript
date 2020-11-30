@@ -59,7 +59,7 @@ export default function MyApp(props: IMyAppProps) {
                     <NpmsApiProvider>
                         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
                         <CssBaseline />
-                        <Layout appProps={props} />
+                      <Layout appProps={props} />
                     </NpmsApiProvider>
                   </CmsProvider>
                 </ApiProvider>

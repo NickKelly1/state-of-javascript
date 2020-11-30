@@ -8,9 +8,9 @@ export interface IWithDialogueProps {
   dialog: IUseDialogReturn;
 }
 
-export function WithDialogue<P extends IWithDialogueProps>(dialogProps?: Partial<DialogProps> | ((props: P) => Partial<DialogProps>)) {
-  return function WithDialogueComponent(Comp: React.ComponentType<P>): React.ComponentType<P> {
-    return function WithDialogRenderer(props: P): JSX.Element {
+export function WithDialogue<P>(dialogProps?: Partial<DialogProps> | ((props: P) => Partial<DialogProps>)) {
+  return function WithDialogueComponent(Comp: React.ComponentType<P & IWithDialogueProps>): React.ComponentType<P & IWithDialogueProps> {
+    return function WithDialogRenderer(props: P & IWithDialogueProps): JSX.Element {
       const { dialog } = props;
       const dProps = ist.fn(dialogProps) ? dialogProps(props) : dialogProps;
       return (

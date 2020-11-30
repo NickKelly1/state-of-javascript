@@ -11,9 +11,9 @@ import {
 } from "@material-ui/core";
 import MailOutlineIcon from '@material-ui/icons/MailOutline';
 import LockOpenIcon from '@material-ui/icons/LockOpen';
-import BugReportIcon from '@material-ui/icons/BugReport';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
+import EditIcon from '@material-ui/icons/EditOutlined';
+import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import { gql } from "graphql-request";
 import React, { useCallback, useContext, useMemo, useState } from "react";
 import { useMutation, useQuery } from "react-query";
@@ -43,6 +43,7 @@ import { useSnackbar } from "notistack";
 import { LoadingDialog } from "../loading-dialog/loading-dialog";
 import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 import { RequestUserEmailChangeFormDialog } from "./request-user-email-change.form.dialog";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 const UserDetailDataQueryName = (id: Id) => `UserDetailDataQuery_${id}`;
 const userDetailDataQuery = gql`
@@ -131,9 +132,8 @@ interface IUserDetailProps {
   onUpdated?: IIdentityFn;
 }
 
-export function UserDetail(props: IUserDetailProps) {
-  const { user_id, onUpdated } = props;
-  const { me, api } = useContext(ApiContext);
+export const UserDetail = WithApi<IUserDetailProps>((props) => {
+  const { user_id, onUpdated, api, me, } = props;
 
   const [vars, setVars] = useState<UserDetailDataQueryVariables>({ id: Number(user_id), });
   const {
@@ -160,16 +160,15 @@ export function UserDetail(props: IUserDetailProps) {
       {(data) => <UserDetailContent user={data} onSuccess={handleSuccess} />}
     </WithLoadable>
   );
-}
+});
 
 interface IRoleDetailContentProps {
   user: NonNullable<UserDetailDataQuery['users']['nodes'][0]>
   onSuccess: IIdentityFn;
 }
 
-function UserDetailContent(props: IRoleDetailContentProps) {
-  const { user, onSuccess, } = props;
-  const { api, me } = useContext(ApiContext);
+const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
+  const { user, onSuccess, api, me, } = props;
   const { enqueueSnackbar } = useSnackbar();
   const editDialog = useDialog();
   const handleRoleUpdated = useCallback(
@@ -366,4 +365,4 @@ function UserDetailContent(props: IRoleDetailContentProps) {
       </Grid>
     </>
   );
-}
+});

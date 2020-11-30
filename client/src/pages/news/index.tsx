@@ -9,6 +9,7 @@ import { ist } from "../../helpers/ist.helper";
 import { staticPropsHandler } from "../../helpers/static-props-handler.helper";
 import { INewsArticleTeaserProps, NewsArticleTeaser } from "../../components/news/news-article.teaser";
 import { WithMemo } from "../../components-hoc/with-memo/with-memo";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 const pageQuery = gql`
 query IndexNewsPage(
@@ -94,9 +95,8 @@ interface IIndexNewsPageProps {
   query: IndexNewsPageQuery;
 }
 
-function IndexNewsPage(props: IIndexNewsPageProps) {
-  const { query } = props;
-  const { api, me } = useContext(ApiContext);
+const IndexNewsPage = WithApi<IIndexNewsPageProps>((props) => {
+  const { query, api, me } = props;
 
   const classes = useStyles();
 
@@ -160,7 +160,7 @@ function IndexNewsPage(props: IIndexNewsPageProps) {
       </Grid>
     </Grid>
   );
-}
+});
 
 
 export const getStaticProps = staticPropsHandler<IIndexNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {

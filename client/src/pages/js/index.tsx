@@ -3,7 +3,8 @@ import React, {
   useContext,
   useMemo,
   useState } from 'react';
-import BugReportIcon from '@material-ui/icons/BugReport';
+import { NextPageContext } from 'next';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
 import SortIcon from '@material-ui/icons/Sort';
@@ -13,6 +14,7 @@ import {
   CircularProgress,
   Dialog,
   DialogContent,
+  Link as MUILink,
   DialogTitle,
   Grid,
   IconButton,
@@ -54,6 +56,12 @@ import { IPageProps } from '../../types/page-props.interface';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { DebugJsonDialog } from '../../components/debug-json-dialog/debug-json-dialog';
 import { hidex } from '../../helpers/hidden.helper';
+import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
+import { isValidDate } from '../../helpers/is-valid-date.helper';
+import { OrNullable } from '../../types/or-nullable.type';
+import { msToDay } from '../../helpers/ms-to.helper';
+import { orNull } from '../../helpers/or-null.helper';
+import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
 const JsPageDashboardQueryName = 'JsPageDashboardQuery';
 const jsPageDashboardQuery = gql`
@@ -210,7 +218,7 @@ query JsPageDashboard(
 
 
 interface IJavaScriptPageProps {
-  dashboards: Attempt<JsPageDashboardQuery, ApiException>;
+  // dashboards: Attempt<JsPageDashboardQuery, ApiException>;
 }
 
 
@@ -234,17 +242,18 @@ const defaultQueryVars: JsPageDashboardQueryVariables = {
   packageOffset: 0,
 }
 
-function JavaScriptPage(props: IJavaScriptPageProps) {
-  const { dashboards } = props;
-  const { api, me } = useContext(ApiContext);
+const JavaScriptPage = WithApi<IJavaScriptPageProps>((props) => {
+  const { api, me } = props;
 
   const { data, isLoading, refetch, error, } = useQuery<JsPageDashboardQuery, ApiException>(
+    // TODO: check hash integrity under diff conditions...!?! something not not working
     [ JsPageDashboardQueryName, defaultQueryVars, me.hash ],
     async (): Promise<JsPageDashboardQuery> => {
       const result = await runPageDataQuery(api, defaultQueryVars);
       return result;
     },
     {
+      // TODO: SSR initial data, but also re-load initial data after shadow id loads... or something...!?
       // initialData: isSuccess(dashboards) ? dashboards.value : undefined,
     },
   );
@@ -256,7 +265,7 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
           <DebugException centered always exception={error} />
         </Grid>
       )}
-      {isLoading && (
+      {isLoading && !data && (
         <Grid className="centered" item xs={12}>
           <CircularProgress />
         </Grid>
@@ -271,18 +280,32 @@ function JavaScriptPage(props: IJavaScriptPageProps) {
       )}
     </Grid>
   );
-}
+});
 
 interface IJavaScriptPageContentProps {
   queryData: JsPageDashboardQuery;
   onStale?: IIdentityFn;
 }
 
+interface ITimeRateableData { from?: OrNullable<number | string>; to?: OrNullable<number | string>; count?: OrNullable<number>; }
+function timeRate(arg: OrNullable<ITimeRateableData>): OrNull<number> {
+  if (ist.nullable(arg)) return null;
+  const from = arg.from;
+  const to = arg.to;
+  if (!from || !to) return null;
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+  if (!isValidDate(fromDate) || !isValidDate(toDate)) return null;
+  const diff = toDate.valueOf() - fromDate.valueOf();
+  if (!diff) return null;
+  if (!arg.count) return null;
+  return (arg.count / msToDay(diff));
+}
 
-function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
-  const { queryData, onStale, } = props;
+
+const JavaScriptPageContent = WithApi((props: IJavaScriptPageContentProps) => {
+  const { queryData, onStale, api, me, } = props;
   const classes = useStyles();
-  const { api, me } = useContext(ApiContext);
   const colours = useRandomDashColours();
 
   const dashes: OrNull<INpmsDashboardDatasets[]> = useMemo(() => {
@@ -336,46 +359,99 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 dimensions: packageNames,
                 points: [{
                   name: 'popularity',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.popularity ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.score?.detail?.popularity)),
                 }, {
                   name: 'quality',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.quality ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.score?.detail?.quality)),
                 }, {
                   name: 'maintenance',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.detail?.maintenance ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.score?.detail?.maintenance)),
                 }, {
                   name: 'total',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.score?.final ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.score?.final)),
                 }],
-              }
+              },
+              // 0 - 1 day
+              // 1 - 1 week
+              // 2 - 1 month
+              // 3 - 3 month
+              // 4 - 6 month
+              // 5 - 12 month
+              averageDailyDownloads: {
+                dimensions: packageNames,
+                points: [{
+                  name: '1 Day',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[0]))),
+                }, {
+                  name: '1 Week',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[1]))),
+                }, {
+                  name: '1 Month',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[2]))),
+                }, {
+                  name: '3 Months',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[3]))),
+                }, {
+                  name: '6 Months',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[4]))),
+                }, {
+                  name: '12 Months',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[5]))),
+                }].reverse(),
+              },
+              // 0 - 1 day
+              // 1 - 1 week
+              // 2 - 1 month
+              // 3 - 3 month
+              // 4 - 6 month
+              // 5 - 12 month
+              averageDailyCommits: {
+                dimensions: packageNames,
+                points: [{
+                  name: '1 Week',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[0]))),
+                }, {
+                  name: '1 Month',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[1]))),
+                }, {
+                  name: '3 Months',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[2]))),
+                }, {
+                  name: '6 Months',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[3]))),
+                }, {
+                  name: '12 Months',
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[4]))),
+                }].reverse(),
+              },
             },
             quality: {
               carefulness: {
                 dimensions: packageNames,
                 points: [{
                   name: 'carefulness',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.carefulness ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.quality?.carefulness)),
                 }],
               },
               tests: {
                 dimensions: packageNames,
                 points: [{
                   name: 'tests',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.tests ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.quality?.tests)),
                 }],
               },
               health: {
                 dimensions: packageNames,
                 points: [{
                   name: 'health',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.health ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.quality?.health)),
                 }],
               },
               branding: {
                 dimensions: packageNames,
                 points: [{
                   name: 'branding',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.quality?.branding ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.quality?.branding)),
                 }],
               },
             },
@@ -384,28 +460,28 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 dimensions: packageNames,
                 points: [{
                   name: 'community interest',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.communityInterest ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.popularity?.communityInterest)),
                 }],
               },
               downloadCount: {
                 dimensions: packageNames,
                 points: [{
                   name: 'download count',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.downloadsCount ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.popularity?.downloadsCount)),
                 }],
               },
               downloadAcceleration: {
                 dimensions: packageNames,
                 points: [{
                   name: 'download acceleration',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.downloadsAcceleration ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.popularity?.downloadsAcceleration)),
                 }],
               },
               dependentCount: {
                 dimensions: packageNames,
                 points: [{
                   name: 'dependent count',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.popularity?.dependentsCount ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.popularity?.dependentsCount)),
                 }],
               },
             },
@@ -414,28 +490,28 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 dimensions: packageNames,
                 points: [{
                   name: 'release frequency',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.releasesFrequency ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.maintenance?.releasesFrequency)),
                 }],
               },
               commitFrequency: {
                 dimensions: packageNames,
                 points: [{
                   name: 'commit frequency',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.commitsFrequency ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.maintenance?.commitsFrequency)),
                 }],
               },
               openIssues: {
                 dimensions: packageNames,
                 points: [{
                   name: 'open issues',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.openIssues ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.maintenance?.openIssues)),
                 }],
               },
               issuesDistribution: {
                 dimensions: packageNames,
                 points: [{
                   name: 'issues distribution',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.evaluation?.maintenance?.issuesDistribution ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.evaluation?.maintenance?.issuesDistribution)),
                 }],
               },
             },
@@ -444,14 +520,14 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 dimensions: packageNames,
                 points: [{
                   name: 'stars',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.npm?.starsCount ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.collected?.npm?.starsCount)),
                 }],
               },
               dependents: {
                 dimensions: packageNames,
                 points: [{
                   name: 'dependents',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.npm?.dependentsCount ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.collected?.npm?.dependentsCount)),
                 }],
               },
             },
@@ -460,7 +536,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 dimensions: packageNames,
                 points: [{
                   name: 'stars',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.starsCount ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.collected?.github?.starsCount)),
                 }],
               },
               recentCommits: {
@@ -480,31 +556,33 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
                 dimensions: packageNames,
                 points: [{
                   name: 'open issues',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.issues?.openCount ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.collected?.github?.issues?.openCount)),
                 }],
               },
               closedIssues: {
                 dimensions: packageNames,
                 points: [{
                   name: 'closed issues',
-                  coordinates: npmsPackages.map((packageNode) => Math.max(
-                    0,
-                    (packageNode.data.data?.collected?.github?.issues?.count ?? 0) - (packageNode.data.data?.collected?.github?.issues?.openCount ?? 0),
-                  )),
+                  coordinates: npmsPackages.map((packageNode) => {
+                    const all = packageNode.data.data?.collected?.github?.issues?.count;
+                    const open = packageNode.data.data?.collected?.github?.issues?.openCount;
+                    if (ist.nullable(all) || ist.nullable(open)) return null;
+                    return all - open;
+                  }),
                 }],
               },
               forks: {
                 dimensions: packageNames,
                 points: [{
                   name: 'forks',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.forksCount ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.collected?.github?.forksCount)),
                 }],
               },
               subscribers: {
                 dimensions: packageNames,
                 points: [{
                   name: 'subscribers',
-                  coordinates: npmsPackages.map((packageNode) => (packageNode.data.data?.collected?.github?.subscribersCount ?? 0)),
+                  coordinates: npmsPackages.map((packageNode) => orNull(packageNode.data.data?.collected?.github?.subscribersCount)),
                 }],
               },
             },
@@ -530,33 +608,43 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
       <NpmsDashboardSortForm dialog={sortDashboardsDialog} onSuccess={handleNpmsDashboardSorted} />
       <Grid container spacing={2} className="text-center">
         <Grid item xs={12}>
-          <Box display="flex" justifyContent="flex-start" alignItems="center">
-            <Box pr={1}>
-              <Typography className={clsx(classes.title, 'text-left')} component="h1" variant="h1">
-                Dashboards
-              </Typography>
-            </Box>
-            <Box className={hidex(me.can.npmsDashboards.create)} pr={1}>
-              <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
-                <AddIcon />
-              </IconButton>
-            </Box>
-            <Box className={hidex(me.can.npmsDashboards.sort)} pr={1}>
-              <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
-                <SortIcon />
-              </IconButton>
-            </Box>
-            <WhenDebugMode>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Box display="flex" justifyContent="flex-start" alignItems="center">
               <Box pr={1}>
-                <IconButton color="primary" onClick={debugDialog.doOpen}>
-                  <BugReportIcon />
+                <Typography className={clsx(classes.title, 'text-left')} component="h1" variant="h1">
+                  Dashboards
+                </Typography>
+              </Box>
+              <Box className={hidex(!me.can.npmsDashboards.create)} pr={1}>
+                <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
+                  <AddIcon />
                 </IconButton>
               </Box>
-            </WhenDebugMode>
+              <Box className={hidex(!me.can.npmsDashboards.sort)} pr={1}>
+                <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
+                  <SortIcon />
+                </IconButton>
+              </Box>
+              <WhenDebugMode>
+                <Box pr={1}>
+                  <IconButton color="primary" onClick={debugDialog.doOpen}>
+                    <BugReportIcon />
+                  </IconButton>
+                </Box>
+              </WhenDebugMode>
+            </Box>
+            <Box pr={2} display="flex" justifyContent="flex-start" alignItems="center">
+              <Typography color="textSecondary">
+                data provided by&nbsp;
+                <Box component="span">
+                  <MUILink href="https://npms.io/">npms.io</MUILink>
+                </Box>
+              </Typography>
+            </Box>
           </Box>
         </Grid>
         {(dashes ?? []).map(dashboard => (
-          <Grid key={dashboard.original.id.toString()} item xs={12} sm={6}>
+          <Grid key={dashboard.original.id.toString()} item xs={12} sm={12}>
             <Paper className={classes.paper}>
               <NpmsDashboard
                 key={dashboard.original.id.toString()}
@@ -569,7 +657,7 @@ function JavaScriptPageContent(props: IJavaScriptPageContentProps) {
       </Grid>
     </>
   );
-}
+});
 
 
 async function runPageDataQuery(
@@ -583,30 +671,34 @@ async function runPageDataQuery(
   return dashboards;
 }
 
-async function getProps(args: { cms: Cms; npmsApi: NpmsApi; api: Api; }): Promise<IJavaScriptPageProps> {
-  const { cms, npmsApi, api } = args
+// export const getInitialProps  = async () => {
+//   //
+// }
 
-  const dashboards = await attemptAsync(
-    runPageDataQuery(
-      api,
-      defaultQueryVars,
-    ),
-    normaliseApiException
-  );
+// async function getProps(args: { cms: Cms; npmsApi: NpmsApi; api: Api; }): Promise<IJavaScriptPageProps> {
+//   const { cms, npmsApi, api } = args
 
-  return {
-    dashboards,
-  }
-}
+//   const dashboards = await attemptAsync(
+//     runPageDataQuery(
+//       api,
+//       defaultQueryVars,
+//     ),
+//     normaliseApiException
+//   );
+
+//   return {
+//     dashboards,
+//   }
+// }
 
 
-export const getStaticProps = staticPropsHandler<IJavaScriptPageProps>(async ({ ctx, cms, npmsApi, api, }) => {
-  const props = await getProps({ cms, npmsApi, api });
-  return {
-    props,
-    // revalidate: false,
-  };
-});
+// export const getStaticProps = staticPropsHandler<IJavaScriptPageProps>(async ({ ctx, cms, npmsApi, api, }) => {
+//   const props = await getProps({ cms, npmsApi, api });
+//   return {
+//     props,
+//     // revalidate: false,
+//   };
+// });
 
 
 // export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {

@@ -436,6 +436,10 @@ export interface IApiCredentialsConsumeChangeVerificationArg {
 }
 
 
+const credentialsFns = {
+  //
+};
+
 export class ApiCredentials {
   // protected readonly syncLock: Mutex = new Mutex();
   protected readonly authenticationLock: Mutex = new Mutex();

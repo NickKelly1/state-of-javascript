@@ -6,6 +6,7 @@ import { formatRelative } from 'date-fns';
 import { OrNull } from "../../types/or-null.type";
 import { ApiContext } from "../../components-contexts/api.context";
 import { Markdown } from "../markdown/markdown";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -51,9 +52,8 @@ export interface INewsArticleTeaserProps {
   },
 };
 
-export function NewsArticleTeaser(props: INewsArticleTeaserProps) {
-  const { node } = props;
-  const { me } = useContext(ApiContext);
+export const NewsArticleTeaser = WithApi<INewsArticleTeaserProps>((props) => {
+  const { node, me, api } = props;
   const classes = useStyles();
   const created = useMemo(() => formatRelative(node.data.created_at, new Date()), [node.data.created_at]);
 
@@ -95,4 +95,4 @@ export function NewsArticleTeaser(props: INewsArticleTeaserProps) {
       </div>
     </Paper>
   );
-}
+});

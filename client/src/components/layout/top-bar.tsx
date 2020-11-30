@@ -21,10 +21,11 @@ import {
   Typography
 } from "@material-ui/core";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import SettingsIcon from '@material-ui/icons/Settings';
-import BugReportIcon from '@material-ui/icons/BugReport';
+// import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import PersonAddIcon from '@material-ui/icons/PersonAddOutlined';
+// import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import AccountCircleIcon from '@material-ui/icons/AccountCircleOutlined';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { useRouter } from 'next/router';
 import NextLink from 'next/link';
 import clsx from 'clsx';
@@ -40,6 +41,7 @@ import { useMenu } from "../../hooks/use-menu.hook";
 import { flsx } from "../../helpers/flsx.helper";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 interface ITopBarProps {
   //
@@ -71,8 +73,8 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-export function TopBar(props: ITopBarProps) {
-  const { api, me } = useContext(ApiContext);
+export const TopBar = WithApi<ITopBarProps>((props) => {
+  const { api, me } = props;
   const classes = useStyles();
 
   const debugMode = useContext(DebugModeContext);
@@ -190,4 +192,4 @@ export function TopBar(props: ITopBarProps) {
       </Box>
     </>
   );
-}
+});

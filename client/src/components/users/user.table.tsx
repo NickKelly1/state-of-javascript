@@ -1,7 +1,7 @@
 import KeyboardArrowUpIcon  from '@material-ui/icons/KeyboardArrowUpSharp';
-import BugReportIcon from '@material-ui/icons/BugReport';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
+import EditIcon from '@material-ui/icons/EditOutlined';
+import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import AddIcon from '@material-ui/icons/Add';
 import TablePagination from '@material-ui/core/TablePagination';
 import KeyboardArrowDownIcon  from '@material-ui/icons/KeyboardArrowDownSharp';
@@ -69,6 +69,7 @@ import { UserMutateFormDialog } from './user-mutate.form.dialog';
 import { UserTabs } from './user.tabs';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
+import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
 const UsersTableDataQueryName = 'UsersTableDataQuery'
 const usersTableDataQuery = gql`
@@ -149,9 +150,8 @@ export interface IUsersTableProps {
 }
 
 
-export function UsersTable(props: IUsersTableProps) {
-  const { limit, offset } = props;
-  const { api, me } = useContext(ApiContext);
+export const UsersTable = WithApi<IUsersTableProps>((props) => {
+  const { limit, offset, api, me, } = props;
   const vars = useMemo((): UsersTableDataQueryVariables => ({
     limit: limit ?? defaultQueryVariables.limit,
     offset: offset ?? defaultQueryVariables.offset,
@@ -197,7 +197,7 @@ export function UsersTable(props: IUsersTableProps) {
       )}
     </Grid>
   );
-}
+});
 
 interface IUsersTableContentProps {
   queryData: UsersTableDataQuery;
@@ -211,9 +211,8 @@ const useRolesTableContentStyles = makeStyles((theme) => ({
   },
 }));
 
-function UsersTableContent(props: IUsersTableContentProps) {
-  const { queryData, refetch } = props;
-  const { api, me } = useContext(ApiContext);
+const UsersTableContent = WithApi<IUsersTableContentProps>((props) => {
+  const { queryData, refetch, api, me, } = props;
   const classes = useRolesTableContentStyles();
   const router: NextRouter = useRouter();
   const handleChangeRowsPerPage: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = useCallback((evt) => {
@@ -435,4 +434,4 @@ function UsersTableContent(props: IUsersTableContentProps) {
       </Grid>
     </>
   );
-}
+})

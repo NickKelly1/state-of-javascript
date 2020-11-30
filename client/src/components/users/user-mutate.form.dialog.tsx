@@ -46,8 +46,9 @@ import { OrNullable } from "../../types/or-nullable.type";
 import { OrNull } from "../../types/or-null.type";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
-import { BugReport } from "@material-ui/icons";
+import BugReportIcon from "@material-ui/icons/BugReportOutlined";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 
 const userMutateFormCreateMutation = gql`
@@ -133,9 +134,8 @@ export interface IUserMutateFormProps extends IWithDialogueProps {
 }
 
 
-export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWidth: true })((props) => {
-  const { user, onSuccess, dialog, } = props;
-  const { api, me, } = useContext(ApiContext);
+export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWidth: true })(WithApi((props) => {
+  const { user, onSuccess, dialog, api, me, } = props;
 
   interface IFormState {
     name: string;
@@ -289,7 +289,7 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
         <DialogActions>
           <WhenDebugMode>
             <IconButton onClick={debugDialog.doToggle} color="primary">
-              <BugReport />
+              <BugReportIcon />
             </IconButton>
           </WhenDebugMode>
           <Button color="primary" disabled={isDisabled} onClick={dialog.doClose}>
@@ -302,4 +302,4 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
       </form>
     </>
   );
-});
+}));

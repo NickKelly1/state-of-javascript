@@ -1,49 +1,50 @@
-import { DependencyList, useCallback, useMemo, useRef, useState } from "react";
+import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ist } from "../helpers/ist.helper";
+import { IAsyncState, IAsyncStateErrored, IAsyncStateLoading, IAsyncStateSuccess } from "../types/async.types";
+import { OrFn } from "../types/or-fn.type";
 import { OrPromise } from "../types/or-promise.type";
 import { OrUndefined } from "../types/or-undefined.type";
+import { useAsyncify } from "./use-asyncify.hook";
 
-export interface IUseAsyncFireFnArg<A, R> {
-  (arg: A): OrPromise<R>;
-}
-export interface IUseAsyncFireFnReturn<A> {
-  (arg: A): Promise<void>;
-}
-export interface IUseAsyncReturn<A, R, E> {
-  fire: IUseAsyncFireFnReturn<A>;
-  data: OrUndefined<R>;
-  isLoading: boolean;
-  error: OrUndefined<E>;
-}
-export function useAsync<A, R, E>(preFire: IUseAsyncFireFnArg<A, R>, deps: DependencyList): IUseAsyncReturn<A, R, E> {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<OrUndefined<E>>(undefined);
-  const [data, setData] = useState<OrUndefined<R>>(undefined);
-  const callRef = useRef(0);
-  const fire: IUseAsyncFireFnReturn<A> = useCallback(async (args: A) => {
-    // if fire is called while still executing, forget the stale execution context...
-    const call = (callRef.current += 1);
-    const isCurrent = () => (call === callRef.current);
-    setIsLoading(true);
-    setError(undefined);
-    try {
-      const result = await preFire(args);
-      if (isCurrent()) setData(result);
-    } catch (error) {
-      if (isCurrent()) setError(error as E);
-    } finally {
-      if (isCurrent()) setIsLoading(false);
+export interface IUseAsyncFireFnArg<R> { (): OrPromise<R>; }
+export interface IUseAsyncFireFnReturn { (): Promise<void>; }
+export type IUseAsyncReturn<R, E>  = [refire: IUseAsyncFireFnReturn, state: IAsyncState<R, E>];
+export function useAsync<R, E = unknown>(arg: {
+  fn: IUseAsyncFireFnArg<R>;
+  deps: DependencyList;
+  initial?: OrFn<OrUndefined<R>>;
+}): IUseAsyncReturn<R, E> {
+  const { fn, deps, initial } = arg;
+  const fn2 = useMemo(() => fn, [deps]);
+  const [ fire, _state ] = useAsyncify<undefined, R, E>({ fn: fn2, deps: [...deps, fn2], initial });
+  const refire = useCallback(() => fire(undefined), [fire]);
+  // map from useAsyncify return to our useAsync return...
+  const state = useMemo(() => {
+    if (_state.isLoading) {
+      const mapped: IAsyncStateLoading<R> = { isLoading: _state.isLoading, error: null, value: _state.value };
+      return mapped;
     }
-  }, deps);
-  const result: IUseAsyncReturn<A, R, E> = useMemo(() => ({
-    isLoading,
-    error,
-    data,
-    fire,
-  }), [
-    isLoading,
-    error,
-    data,
-    fire,
-  ]);
-  return result;
+    if (_state.error) {
+      const mapped: IAsyncStateErrored<R, E> = { isLoading: _state.isLoading, error: _state.error, value: _state.value };
+      return mapped;
+    }
+    if (_state.value) {
+      const mapped: IAsyncStateSuccess<R> = { isLoading: _state.isLoading, error: null, value: _state.value };
+      return mapped;
+    }
+    const mapped: IAsyncStateLoading<R> = { isLoading: true, error: null, value: null };
+    return mapped;
+  }, [_state]);
+  console.log('-- 1');
+  const skip = useRef(ist.defined(_state.value));
+  console.log('-- 2');
+  // skip the first run if given initial data...
+  useEffect(() => {
+    console.log('-- 3');
+    if (skip.current) { return void (skip.current = false); }
+    console.log('-- 4');
+    refire();
+    console.log('-- 5');
+  }, [refire]);
+  return [ refire, state ];
 }

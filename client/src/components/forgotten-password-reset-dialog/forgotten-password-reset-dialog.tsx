@@ -9,6 +9,7 @@ import { rethrow, normaliseApiException } from "../../backend-api/normalise-api-
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { ApiContext } from "../../components-contexts/api.context";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import {
   RequestForgottenUserPasswordResetMutation,
@@ -36,14 +37,13 @@ mutation RequestForgottenUserPasswordReset(
 
 export type IForgottenPasswordDialogOnSuccessFnArg = RequestForgottenUserPasswordResetMutation;
 export interface IForgottenPasswordDialogOnSuccessFn { (arg: IForgottenPasswordDialogOnSuccessFnArg):  any };
-export interface IForgottenPasswordDialogProps extends IWithDialogueProps {
+export interface IForgottenPasswordDialogProps {
   initialEmail: string;
   onSuccess?: IForgottenPasswordDialogOnSuccessFn;
 }
 
-export const ForgottenPasswordDialog = WithDialogue<IForgottenPasswordDialogProps>({ fullWidth: true })((props) => {
-  const { dialog, initialEmail, onSuccess } = props;
-  const { api, me } = useContext(ApiContext);
+export const ForgottenPasswordDialog = WithDialogue<IForgottenPasswordDialogProps>({ fullWidth: true })(WithApi((props) => {
+  const { dialog, initialEmail, onSuccess, api, me } = props;
   const { enqueueSnackbar, } = useSnackbar();
 
   interface IFormState { email: string };
@@ -125,4 +125,4 @@ export const ForgottenPasswordDialog = WithDialogue<IForgottenPasswordDialogProp
       </form>
     </>
   );
-})
+}));

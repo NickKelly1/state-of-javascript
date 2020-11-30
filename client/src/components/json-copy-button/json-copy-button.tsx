@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, useCallback, useRef } from 'react';
 import { IconButton } from '@material-ui/core';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
+import FileCopyIcon from '@material-ui/icons/FileCopyOutlined';
 import { useSnackbar } from 'notistack';
 import { OrNullable } from '../../types/or-nullable.type';
 

@@ -1,6 +1,6 @@
-import { Button } from '@material-ui/core';
+import { Button, IconButton } from '@material-ui/core';
 import { CSSProperties } from '@material-ui/core/styles/withStyles';
-import GetAppIcon from '@material-ui/icons/GetApp';
+import GetAppIcon from '@material-ui/icons/GetAppOutlined';
 import React, { useCallback } from 'react';
 import { pretty } from '../../helpers/pretty.helper';
 
@@ -34,8 +34,8 @@ export function JsonDownloadButton(props: IJsonDownloadButton) {
   }, [name, src]);
 
   return (
-    <Button style={style} className={className} onClick={handleClick} color="primary">
+    <IconButton style={style} className={className} onClick={handleClick} color="primary">
       <GetAppIcon />
-    </Button>
+    </IconButton>
   )
 }

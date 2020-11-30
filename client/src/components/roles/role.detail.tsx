@@ -9,9 +9,9 @@ import {
   Button,
   IconButton,
 } from "@material-ui/core";
-import BugReportIcon from '@material-ui/icons/BugReport';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
+import EditIcon from '@material-ui/icons/EditOutlined';
+import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import { gql } from "graphql-request";
 import React, { useCallback, useContext, useMemo, useState } from "react";
 import { useQuery } from "react-query";
@@ -32,6 +32,7 @@ import { OrNull } from "../../types/or-null.type";
 import { OrNullable } from "../../types/or-nullable.type";
 import { INodeable, nodeify } from "../../helpers/nodeify.helper";
 import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 const RoleDetailDataQueryName = (id: Id) => `RoleDetailDataQuery_${id}`;
 const roleDetailDataQuery = gql`
@@ -71,9 +72,8 @@ interface IRoleDetailProps {
   onUpdated?: IIdentityFn;
 }
 
-export function RoleDetail(props: IRoleDetailProps) {
-  const { role_id, onUpdated } = props;
-  const { me, api } = useContext(ApiContext);
+export const RoleDetail = WithApi<IRoleDetailProps>((props) => {
+  const { role_id, onUpdated, me, api } = props;
 
   const [vars, setVars] = useState<RoleDetailDataQueryVariables>({ id: Number(role_id), });
   const {
@@ -103,7 +103,7 @@ export function RoleDetail(props: IRoleDetailProps) {
       {dat => <RoleDetailContent role={dat} onSuccess={handleSuccess} />}
     </WithLoadable>
   );
-}
+});
 
 
 interface IRoleDetailContentProps {

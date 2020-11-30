@@ -12,6 +12,7 @@ import { serverSidePropsHandler } from "../../../helpers/server-side-props-handl
 import { Markdown } from "../../../components/markdown/markdown";
 import { OrNull } from "../../../types/or-null.type";
 import { GetServerSidePropsResult } from "next";
+import { WithApi } from "../../../components-hoc/with-api/with-api.hoc";
 
 const pageQuery = gql`
 query ViewNewsArticlePage(
@@ -86,9 +87,8 @@ interface IViewNewsArticlePageProps {
   query: OrNull<ViewNewsArticlePageQuery>;
 }
 
-function ViewNewsArticlePage(props: IViewNewsArticlePageProps) {
-  const { query } = props;
-  const { api, me } = useContext(ApiContext);
+const ViewNewsArticlePage = WithApi<IViewNewsArticlePageProps>((props) => {
+  const { query, api, me  } = props;
   const classes = useStyles();
   const article = query?.newsArticles.nodes[0];
 
@@ -144,7 +144,7 @@ function ViewNewsArticlePage(props: IViewNewsArticlePageProps) {
       </Grid>
     </Grid>
   );
-}
+})
 
 async function runPageQuery(arg: { id: number, api: Api }): Promise<ViewNewsArticlePageQuery> {
   const { id, api } = arg;

@@ -797,7 +797,7 @@ export type NpmsPackageDataInfoCollectedMetadataRepository = {
 
 export type NpmsPackageDataInfoCollectedNpm = {
   __typename?: 'NpmsPackageDataInfoCollectedNpm';
-  downloads?: Maybe<NpmsPackageDataInfoCollectedNpmDownloads>;
+  downloads?: Maybe<Array<NpmsPackageDataInfoCollectedNpmDownloads>>;
   dependentsCount?: Maybe<Scalars['Int']>;
   dependencies?: Maybe<Scalars['JsonObject']>;
   devDependencies?: Maybe<Scalars['JsonObject']>;
@@ -2720,10 +2720,10 @@ export type JsPageDashboardQuery = (
                       )>, npm?: Maybe<(
                         { __typename?: 'NpmsPackageDataInfoCollectedNpm' }
                         & Pick<NpmsPackageDataInfoCollectedNpm, 'starsCount' | 'dependentsCount' | 'dependencies' | 'devDependencies'>
-                        & { downloads?: Maybe<(
+                        & { downloads?: Maybe<Array<(
                           { __typename?: 'NpmsPackageDataInfoCollectedNpmDownloads' }
                           & Pick<NpmsPackageDataInfoCollectedNpmDownloads, 'from' | 'to' | 'count'>
-                        )> }
+                        )>> }
                       )> }
                     )> }
                   )> }

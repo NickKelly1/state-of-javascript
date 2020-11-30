@@ -1,4 +1,4 @@
-import BugReportIcon from '@material-ui/icons/BugReport';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { Grid, makeStyles, Typography } from '@material-ui/core';
 import React, { useContext } from 'react';
 import { ApiException } from "../../backend-api/api.exception";

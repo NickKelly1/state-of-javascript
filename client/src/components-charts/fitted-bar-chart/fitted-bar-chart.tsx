@@ -6,9 +6,13 @@ import {
   BarChart, Bar,
   ResponsiveContainer,
 } from 'recharts';
+import { ist } from '../../helpers/ist.helper';
+import { num } from '../../helpers/num.helper';
 import { ring } from '../../helpers/ring.helper';
 import { MultiDimensionalDataPoint } from '../../types/bar-chart-data-point.type';
 import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
+import { OrNull } from '../../types/or-null.type';
+import { OrNullable } from '../../types/or-nullable.type';
 import { OrUndefined } from '../../types/or-undefined.type';
 
 export interface IFittedBarChartProps<T extends string = string> {
@@ -16,7 +20,7 @@ export interface IFittedBarChartProps<T extends string = string> {
   dontScale?: boolean;
   colours: string[];
   height: number;
-  definition: MultiDimensionDataDefinition<T>
+  definition: MultiDimensionDataDefinition<T>;
 }
 
 
@@ -25,39 +29,19 @@ export function FittedBarChart<T extends string = string>(props: IFittedBarChart
 
   const usingColours = colours;
 
-  const [data, bars, unit]: [MultiDimensionalDataPoint[], { colour: string, key: T, }[], OrUndefined<string>] = useMemo(() => {
+  const [data, bars, unit]: [MultiDimensionalDataPoint[], { colour: string, key: T, }[], OrNullable<string>] = useMemo(() => {
     const { dimensions, points } = definition;
-
-    let max = 0;
-    points.forEach(point => {
-      point.coordinates.forEach(coordinate => {
-        if (coordinate > max) max = coordinate;
-      });
-    });
-
-    let unit: string | undefined = undefined;
-    let unitMultiplier = 1;
-    if (!dontScale) {
-      // no multiplier
-      if (max <= 1_000) unit = undefined;
-      // thousands
-      else if (max <= 1_000_000) { unit = 'k'; unitMultiplier = 1/1000 }
-      // millions
-      else if (max <= 1_000_000_000) { unit = 'm'; unitMultiplier = 1/1_000_000 }
-      // billions
-      else if (max <= 1_000_000_000_000) { unit = 'b'; unitMultiplier = 1/1_000_000_000 }
-      // trillions
-      else if (max <= 1_000_000_000_000_000) { unit = 't'; unitMultiplier = 1/1_000_000_000_000 }
-      // whoa.... unhandled huge number...
-      else {
-        console.warn('number too large to scale...');
-      }
-    }
-
+    const { multiplier, unit } = dontScale
+      ? { multiplier: 0, unit: null }
+      : num.scaleOf(points.flatMap(point => point.coordinates), 0);
     const data: MultiDimensionalDataPoint[] = points.map((point) => {
       const { name, coordinates } = point;
       const datum: MultiDimensionalDataPoint = { name: name ?? '' };
-      dimensions.forEach((dimension, i) => { datum[dimension] = coordinates[i] * unitMultiplier; });
+      dimensions.forEach((dimension, i) => {
+        const coord = coordinates[i]
+        if (ist.nullable(coord)) datum[dimension] = null;
+        else datum[dimension] = coord  * multiplier;
+      });
       return datum;
     });
     const bars = dimensions.map((dimension, i) => ({
@@ -65,26 +49,24 @@ export function FittedBarChart<T extends string = string>(props: IFittedBarChart
       key: dimension
     }));
     return [data, bars, unit];
-  }, [definition]);
+  }, [definition, dontScale]);
 
   return (
-    // <WithoutFirstLoad>
-      <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis unit={unit} />
-          {/* <Tooltip /> */}
-          {bars.map(bar => (
-            <Bar
-              stroke={borderless ? "none" : undefined}
-              key={bar.key}
-              dataKey={bar.key}
-              fill={bar.colour}
-            />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
-    // </WithoutFirstLoad>
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis unit={unit ?? undefined} />
+        {/* <Tooltip /> */}
+        {bars.map(bar => (
+          <Bar
+            stroke={borderless ? "none" : undefined}
+            key={bar.key}
+            dataKey={bar.key}
+            fill={bar.colour}
+          />
+        ))}
+      </BarChart>
+    </ResponsiveContainer>
   )
 }

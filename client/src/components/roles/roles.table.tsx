@@ -1,7 +1,7 @@
 import KeyboardArrowUpIcon  from '@material-ui/icons/KeyboardArrowUpSharp';
-import BugReportIcon from '@material-ui/icons/BugReport';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
+import BugReportIcon from '@material-ui/icons/BugReportOutlined';
+import EditIcon from '@material-ui/icons/EditOutlined';
+import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import AddIcon from '@material-ui/icons/Add';
 import TablePagination from '@material-ui/core/TablePagination';
 import KeyboardArrowDownIcon  from '@material-ui/icons/KeyboardArrowDownSharp';
@@ -70,6 +70,7 @@ import { WithMemo } from '../../components-hoc/with-memo/with-memo';
 import { flsx } from '../../helpers/flsx.helper';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
+import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
 const RolesTableDataQueryName = 'RolesTableDataQuery'
 const rolesTableDataQuery = gql`
@@ -149,9 +150,8 @@ export interface IRolesTableProps {
 }
 
 
-export function RolesTable(props: IRolesTableProps) {
-  const { limit, offset } = props;
-  const { api, me } = useContext(ApiContext);
+export const RolesTable = WithApi<IRolesTableProps>((props) => {
+  const { limit, offset, api, me } = props;
   const vars = useMemo((): RolesTableDataQueryVariables => ({
     limit: limit ?? defaultQueryVariables.limit,
     offset: offset ?? defaultQueryVariables.offset,
@@ -198,7 +198,7 @@ export function RolesTable(props: IRolesTableProps) {
       )}
     </Grid>
   );
-}
+});
 
 interface IRolesTableContentRefetchFn { (): any; }
 interface IRolesTableContentProps {
@@ -213,9 +213,8 @@ const useRolesTableContentStyles = makeStyles((theme) => ({
   },
 }));
 
-function RolesTableContent(props: IRolesTableContentProps) {
-  const { queryData, refetch } = props;
-  const { api, me } = useContext(ApiContext);
+const RolesTableContent = WithApi<IRolesTableContentProps>((props) => {
+  const { queryData, refetch, api, me, } = props;
   const classes = useRolesTableContentStyles();
   const router: NextRouter = useRouter();
   const handleChangeRowsPerPage: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = useCallback((evt) => {
@@ -436,4 +435,4 @@ function RolesTableContent(props: IRolesTableContentProps) {
       </Grid>
     </>
   );
-}
+});

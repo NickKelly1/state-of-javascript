@@ -17,6 +17,7 @@ import { INewsArticleFormData, NewsArticleForm } from "../../../components/news/
 import { IApiException } from "../../../backend-api/types/api.exception.interface";
 import { normaliseApiException, rethrow } from "../../../backend-api/normalise-api-exception.helper";
 import { ApiException } from "../../../backend-api/api.exception";
+import { WithApi } from "../../../components-hoc/with-api/with-api.hoc";
 
 const pageQuery = gql`
 query EditNewsArticlePage(
@@ -120,9 +121,8 @@ interface IEditNewsArticlePageProps {
   query: OrNull<EditNewsArticlePageQuery>;
 }
 
-function EditNewsArticlePage(props: IEditNewsArticlePageProps) {
-  const { query } = props;
-  const { api, me } = useContext(ApiContext);
+export const EditNewsArticlePage = WithApi<IEditNewsArticlePageProps>((props) => {
+  const { query, api, me, } = props;
   const classes = useStyles();
   const article = query?.newsArticles.nodes[0];
 
@@ -177,7 +177,7 @@ function EditNewsArticlePage(props: IEditNewsArticlePageProps) {
       </Grid>
     </Grid>
   );
-}
+});
 
 async function runPageQuery(arg: { id: number, api: Api }): Promise<ViewNewsArticlePageQuery> {
   const { id, api } = arg;
