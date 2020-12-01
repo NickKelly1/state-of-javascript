@@ -1,5 +1,6 @@
-import { GqlSchema } from './gql.schema';
 import * as overrides from './custom';
+import { GqlSchema } from './gql.schema';
+import * as cron from 'cron';
 import Bull, { DoneCallback, Job, ProcessCallbackFunction, ProcessPromiseFunction } from 'bull';
 import express, { Handler, Request, Response } from 'express';
 import path from 'path';
@@ -29,12 +30,16 @@ import { universalServiceContainerFactory } from './common/containers/universal.
 import { GqlContext } from './common/context/gql.context';
 import { IGoogleIntegrationServiceSendEmailDto } from './app/google/dtos/google.service.send-email-dto';
 import { Integration } from './app/integration/integration.const';
-import { jb } from './common/helpers/jb.helper';
+import { JobRunnerFactory } from './common/helpers/jb.helper';
 import { ist } from './common/helpers/ist.helper';
 import { InternalServerException } from './common/exceptions/types/internal-server.exception';
 import { BadRequestException } from './common/exceptions/types/bad-request.exception';
 import { Exception, IApiException } from './common/exceptions/exception';
 import { IExceptionData } from './common/interfaces/exception-data.interface';
+import { Printable } from './common/types/printable.type';
+import { CronTickHandlerFactory, ICronTickHandlerFnArg } from './common/helpers/cron-tick-handler.helper';
+import { Op } from 'sequelize/types';
+import { NpmsPackageField } from './app/npms-package/npms-package.attributes';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
@@ -49,8 +54,8 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   ScriptGuard.setNo();
 
   // TODO: put job runner somewhere else...
-  const jobRunner = jb(universal);
-  universal.gmailQueue.process(jobRunner(async ({ ctx, job }) => {
+  const jr = JobRunnerFactory(universal);
+  universal.gmailQueue.process(jr(async ({ ctx, job }) => {
     logger.info(`Processing gmail:\n${prettyQ(job.data)}`);
     await ctx.services.universal.db.transact(async ({ runner }) => {
       const serviceDto: IGoogleIntegrationServiceSendEmailDto = {
@@ -70,6 +75,34 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
       });
     });
   }));
+
+
+  if (env.MASTER) {
+    const onTick = CronTickHandlerFactory(universal);
+
+    const job = new cron.CronJob(
+      '* * * * *',
+      onTick(async ({ ctx }: ICronTickHandlerFnArg) => {
+        logger.info('Updating old npms packages...');
+        ctx.services.universal.db.transact(async ({ runner }) => {
+          // find all that haven't been checked in the last day...
+          // const yesterday = new Date(Date.now() - 1_000 * 60 * 60 * 24);
+          const threeMinutesAgo = new Date(Date.now() - 1_000 * 60 * 3);
+          await ctx.services.npmsPackageService.synchronise({
+            runner,
+            since: threeMinutesAgo,
+          });
+        });
+      }),
+      function onComplete() {
+        //
+      },
+      true,
+      'UTC',
+    );
+
+    job.start();
+  }
 
   const app = new ExpressContext({ root: express() });
 
@@ -107,10 +140,15 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
             positions: err.positions ? err.positions.map(String) : undefined,
             path: err.path ? err.path.map(String) : undefined,
           };
+          const debug: Printable = {
+            source: err.source,
+            name: err.name,
+          }
           exception = ctx.except(BadRequestException({
             error,
             message,
             data,
+            debug,
           }));
         } else {
           exception = makeException(ctx, err.originalError);

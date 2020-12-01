@@ -14,7 +14,7 @@ import { IUniversalServices } from '../interfaces/universal.services.interface';
 export interface IJobFnArg<T> { ctx: JobContext; job: Bull.Job<T>; }
 export interface IJobFn<T> { (arg: IJobFnArg<T>): Promise<void>; }
 
-export const jb = (universal: IUniversalServices) => <T>(fn: IJobFn<T>): ProcessPromiseFunction<T> => {
+export const JobRunnerFactory = (universal: IUniversalServices) => <T>(fn: IJobFn<T>): ProcessPromiseFunction<T> => {
   const doJob: ProcessPromiseFunction<T> = async (job) => {
     try {
       const ctx = new JobContext(universal);

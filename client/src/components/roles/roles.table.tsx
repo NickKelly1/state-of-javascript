@@ -71,6 +71,7 @@ import { flsx } from '../../helpers/flsx.helper';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
+import { hidex } from '../../helpers/hidden.helper';
 
 const RolesTableDataQueryName = 'RolesTableDataQuery'
 const rolesTableDataQuery = gql`
@@ -334,13 +335,13 @@ const RolesTableContent = WithApi<IRolesTableContentProps>((props) => {
                 Roles
               </Typography>
             </Box>
-            {queryData.roles.can.create && (
-              <Box pr={1}>
+            <Box className={hidex(!me.can?.roles.create)}>
+              <Box mr={1}>
                 <IconButton color="primary" onClick={createDialog.doOpen}>
                   <AddIcon />
                 </IconButton>
               </Box>
-            )}
+            </Box>
             <WhenDebugMode>
               <Box pr={1}>
                 <IconButton color="primary" onClick={debugDialog.doOpen}>

@@ -69,6 +69,7 @@ import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-m
 import { OrNullable } from '../../types/or-nullable.type';
 import { not } from '../../helpers/not.helper';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
+import { FormException } from '../form-error/form-exception.helper';
 
 // TODO: updating vs creating...
 const createNpmsDashboardQuery = gql`
@@ -169,10 +170,6 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
     const after = prev.npmsPackages.slice(index + 1, prev.npmsPackages.length);
     const target = prev.npmsPackages[index];
     const nextNpmsPackages: IDashboardPackageOption[] = [ ...before, { key: target.key, option }, ...after, ];
-    // add to the end if there are no free spots left
-    // const doAppend = !nextNpmsPackages.map(pkg => pkg.option).some(ist.falsy);
-    // console.log('checking...', { doAppend, nextNpmsPackages });
-    // if (doAppend) { nextNpmsPackages.push({ key: seq.next().toString(), option: '' }); }
     return { ...prev, npmsPackages: nextNpmsPackages };
   }), [setFormState]);
 
@@ -180,10 +177,6 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
     const before = prev.npmsPackages.slice(0, index);
     const after = prev.npmsPackages.slice(index + 1, prev.npmsPackages.length);
     const nextNpmsPackages = [ ...before, ...after, ];
-    // add to the end if there are no free spots left
-    // const doAppend = !nextNpmsPackages.map(pkg => pkg.option).some(ist.falsy);
-    // console.log('checking...', { doAppend, nextNpmsPackages });
-    // if (doAppend) { nextNpmsPackages.push({ key: seq.next().toString(), option: '' }); }
     return { ...prev, npmsPackages: nextNpmsPackages };
   }), [setFormState]);
 
@@ -317,7 +310,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
                                 {(provided, snapshot) => (
                                   <div ref={provided.innerRef} {...provided.draggableProps}>
                                     <div className="centered">
-                                      <Box className="centered" pr={1} {...provided.dragHandleProps}>
+                                      <Box className="centered" mr={1} {...provided.dragHandleProps}>
                                         <Box className="centered" border={0} borderColor={snapshot.isDragging ? 'primary' : 'grey.500'} borderRadius={4}>
                                           <DragIndicatorIcon color={snapshot.isDragging ? 'primary' : 'inherit'} />
                                         </Box>
@@ -367,10 +360,8 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
               </Button>
             </Grid>
             {error && (
-              <Grid item xs={12}>
-                <FormHelperText className="centered" error>
-                  {error.message}
-                </FormHelperText>
+              <Grid className="centered" item xs={12}>
+                <FormException className="centered" exception={error} />
               </Grid>
             )}
             {isDisabled && (

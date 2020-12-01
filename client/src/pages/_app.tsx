@@ -57,8 +57,8 @@ export default function MyApp(props: IMyAppProps) {
                 <ApiProvider initialMe={_me}>
                   <CmsProvider>
                     <NpmsApiProvider>
-                        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-                        <CssBaseline />
+                      {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+                      <CssBaseline />
                       <Layout appProps={props} />
                     </NpmsApiProvider>
                   </CmsProvider>

@@ -1,6 +1,5 @@
-import { Mutex, } from 'async-mutex';
+import { Mutex } from 'async-mutex';
 import { gql, GraphQLClient, } from 'graphql-request';
-import { shad_id } from '../constants/shad-id.const';
 import { Debug } from '../debug/debug';
 import { PublicEnv } from '../env/public-env.helper';
 import {
@@ -22,10 +21,11 @@ import {
   ConsumeUserWelcomeMutationVariables,
   ConsumeEmailChangeVerificationMutation,
   ConsumeEmailChangeVerificationMutationVariables,
+  AuthorisedActionsFieldsFragment,
 } from '../generated/graphql';
 import { ist } from '../helpers/ist.helper';
 import { IApiEvents } from './api.events';
-import { ApiMe, ApiMeFactory, } from './api.me';
+import { apiMeFns, IApiMe } from './api.me';
 
 
 /**
@@ -265,186 +265,53 @@ mutation ConsumeEmailChangeVerification(
 ${authenticationFieldsFragment}
 `;
 
-export enum ApiCredentialsFactoryArgType {
-  WithMe,
-  WithCredentials,
-  WithoutCredentials,
-}
-
-type IApiCredentialsFactoryArgWithMe = {
-  type: ApiCredentialsFactoryArgType.WithMe
-  me: ApiMe;
+export type IApiCredentialsFactoryArg = {
+  me: IApiMe;
   publicEnv: PublicEnv,
   credentialedGqlClient: GraphQLClient,
   uncredentialedGqlClient: GraphQLClient,
   refreshGqlClient: GraphQLClient,
   event: IApiEvents,
 };
-type IApiCredentialsFactoryArgWithCredentials = {
-  type: ApiCredentialsFactoryArgType.WithCredentials
-  me: undefined;
-  publicEnv: PublicEnv,
-  credentialedGqlClient: GraphQLClient,
-  uncredentialedGqlClient: GraphQLClient,
-  refreshGqlClient: GraphQLClient,
-  event: IApiEvents,
-};
-type IApiCredentialsFactoryArgWithoutCredentials = {
-  type: ApiCredentialsFactoryArgType.WithoutCredentials
-  me: undefined;
-  publicEnv: PublicEnv,
-  credentialedGqlClient: GraphQLClient,
-  uncredentialedGqlClient: GraphQLClient,
-  refreshGqlClient: GraphQLClient,
-  event: IApiEvents,
-};
-
-export type IApiCredentialsFactoryArg =
-  | IApiCredentialsFactoryArgWithMe
-  | IApiCredentialsFactoryArgWithCredentials
-  | IApiCredentialsFactoryArgWithoutCredentials;
-
 
 /**
  * Create ApiCredentials
  *
  * @param arg
  */
-export function ApiCredentialsFactory(arg: IApiCredentialsFactoryArgWithMe): ApiCredentials
-export function ApiCredentialsFactory(arg: IApiCredentialsFactoryArgWithCredentials): Promise<ApiCredentials>
-export function ApiCredentialsFactory(arg: IApiCredentialsFactoryArgWithoutCredentials): Promise<ApiCredentials>
-export function ApiCredentialsFactory(arg: IApiCredentialsFactoryArg): ApiCredentials | Promise<ApiCredentials> {
-
-  switch (arg.type) {
-
-    // with me
-    case ApiCredentialsFactoryArgType.WithMe: {
-      const {
-        me,
-        credentialedGqlClient,
-        publicEnv,
-        uncredentialedGqlClient,
-        refreshGqlClient,
-        event,
-      } = arg;
-      const creds = new ApiCredentials(
-        publicEnv,
-        credentialedGqlClient,
-        uncredentialedGqlClient,
-        refreshGqlClient,
-        event,
-        me,
-      );
-      return creds;
-    }
-
-    // with credentials
-    case ApiCredentialsFactoryArgType.WithCredentials: {
-      const {
-        credentialedGqlClient,
-        publicEnv,
-        uncredentialedGqlClient,
-        refreshGqlClient,
-        event,
-      } = arg;
-      const vars: RefreshMutationVariables = {};
-      return refreshGqlClient
-        .request<RefreshMutation, RefreshMutationVariables>(refreshMutation, vars)
-        .then(result => {
-          const me = ApiMeFactory({ authenticated: true, value: result.refresh });
-          const creds = new ApiCredentials(
-            publicEnv,
-            credentialedGqlClient,
-            uncredentialedGqlClient,
-            refreshGqlClient,
-            event,
-            me,
-          );
-          return creds;
-        });
-    }
-
-    // without credentials
-    case ApiCredentialsFactoryArgType.WithoutCredentials: {
-      const {
-        credentialedGqlClient,
-        publicEnv,
-        uncredentialedGqlClient,
-        refreshGqlClient,
-        event,
-      } = arg;
-      const vars: ActionsQueryVariables = {};
-      return uncredentialedGqlClient
-        .request<ActionsQuery, ActionsQueryVariables>(actionsQuery, vars)
-        .then(result => {
-          const me = ApiMeFactory({ authenticated: false, value: result.can });
-          const creds = new ApiCredentials(
-            publicEnv,
-            credentialedGqlClient,
-            uncredentialedGqlClient,
-            refreshGqlClient,
-            event,
-            me,
-          );
-          return creds;
-        });
-    }
-
-
-    default: {
-      // @ts-expect-error
-      throw new Error(`Unhandled type: "${(arg).type}"`);
-    }
-  }
+export function ApiCredentialsFactory(arg: IApiCredentialsFactoryArg): ApiCredentials {
+  const {
+    me,
+    credentialedGqlClient,
+    publicEnv,
+    uncredentialedGqlClient,
+    refreshGqlClient,
+    event,
+  } = arg;
+  const credentials = new ApiCredentials(
+    publicEnv,
+    credentialedGqlClient,
+    uncredentialedGqlClient,
+    refreshGqlClient,
+    event,
+    me,
+  );
+  return credentials;
 }
 
-export interface IGraphQLClientWrapper {
-  me: ApiMe;
-  credentialed: boolean;
-  client: GraphQLClient;
-}
-
-export interface IApiCredentialsLoginArg {
-  name_or_email: string;
-  password: string;
-}
-
-
-export interface IApiCredentialsRegisterArg {
-  name: string;
-  email: string;
-  password: string;
-}
-
-export interface IApiCredentialsVerifyEmailArg {
-  token: string;
-}
-
-export interface IApiCredentialsResetPasswordArg {
-  token: string;
-  password: string;
-}
-
-export interface IApiCredentialsConsumeUserWelcomeArg {
-  token: string;
-  name: string;
-  password: string;
-}
-
-export interface IApiCredentialsConsumeChangeVerificationArg {
-  token: string;
-}
-
-
-const credentialsFns = {
-  //
-};
+export interface IGraphQLClientWrapper { me: IApiMe; credentialed: boolean; client: GraphQLClient; }
+export interface IApiCredentialsLoginArg { name_or_email: string; password: string; }
+export interface IApiCredentialsRegisterArg { name: string; email: string; password: string; }
+export interface IApiCredentialsVerifyEmailArg { token: string; }
+export interface IApiCredentialsResetPasswordArg { token: string; password: string; }
+export interface IApiCredentialsConsumeUserWelcomeArg { token: string; name: string; password: string; }
+export interface IApiCredentialsConsumeChangeVerificationArg { token: string; }
 
 export class ApiCredentials {
   // protected readonly syncLock: Mutex = new Mutex();
   protected readonly authenticationLock: Mutex = new Mutex();
 
-  get me(): ApiMe { return this._me; }
+  get me(): IApiMe { return this._me; }
 
   constructor(
     protected readonly publicEnv: PublicEnv,
@@ -452,10 +319,10 @@ export class ApiCredentials {
     protected readonly uncredentialedGqlClient: GraphQLClient,
     protected readonly refreshGqlClient: GraphQLClient,
     protected readonly event: IApiEvents,
-    protected _me: ApiMe,
+    protected _me: IApiMe,
   ) {
-    this.event.authenticated.on(() => { Debug.ApiCredentials('on::authenticated'); });
-    this.event.unauthenticated.on(() => { Debug.ApiCredentials('on::unauthenticated'); });
+    this.event.authenticated.on((me) => { Debug.ApiCredentials('on::authenticated', me); });
+    this.event.unauthenticated.on((me) => { Debug.ApiCredentials('on::unauthenticated', me); });
 
     this.event.log_in_start.on(() => { Debug.ApiCredentials('on::log_in_start'); });
     this.event.log_in_success.on(() => { Debug.ApiCredentials('on::log_in_success'); });
@@ -493,14 +360,6 @@ export class ApiCredentials {
     this.event.force_out_success.on(() => { Debug.ApiCredentials('on::force_out_success'); });
     this.event.force_out_fail.on(() => { Debug.ApiCredentials('on::force_out_fail'); });
 
-    // set shadow user...
-    if (!!this._me.shad_id) {
-      this.uncredentialedGqlClient.setHeader(shad_id, this._me.shad_id);
-    }
-    else {
-      this.uncredentialedGqlClient.setHeader(shad_id, '');
-    }
-
     // set authenticated user
     if (ist.defined(this._me.user)) {
       this.credentialedGqlClient.setHeader('Authorization', `Bearer ${this._me.user.access_token}`);
@@ -513,7 +372,7 @@ export class ApiCredentials {
    * Am I authenticated?
    */
   isAuthenticated(): boolean {
-    return this._me.isAuthenticated;
+    return apiMeFns.isAuthenticated(this._me);
   }
 
 
@@ -528,7 +387,7 @@ export class ApiCredentials {
   /**
    * Wait for everything to be settled and get me...
    */
-  async getSafeMe(): Promise<ApiMe> {
+  async getSafeMe(): Promise<IApiMe> {
     // wait for lock to settle & get me
     const unlock = await this.authenticationLock.acquire();
     const me = this._me;
@@ -542,7 +401,7 @@ export class ApiCredentials {
    *
    * @param me
    */
-  protected _saveAuthentication(me: ApiMe): void {
+  protected _saveAuthentication(me: IApiMe): void {
     this._me = me;
     // set authentication for requests
     if (ist.defined(this._me.user)) {
@@ -556,14 +415,8 @@ export class ApiCredentials {
   /**
    * Remove the authentication
    */
-  protected _removeAuthentication(me: ApiMe): void {
+  protected _removeAuthentication(me: IApiMe): void {
     this._me = me;
-    if (!!this._me.shad_id) {
-      this.uncredentialedGqlClient.setHeader(shad_id, this._me.shad_id);
-    }
-    else {
-      this.uncredentialedGqlClient.setHeader(shad_id, '');
-    }
     // clear other authorisation
     // we will remove the refresh_token too so that when refreshing the cookies refresh_token, not the headers
     this.credentialedGqlClient.setHeader('Authorization', 'Bearer ');
@@ -579,7 +432,7 @@ export class ApiCredentials {
     const unlock = await this.authenticationLock.acquire();
     const me = this._me;
     unlock();
-    if (me.isAuthenticated) {
+    if (apiMeFns.isAuthenticated(me)) {
       return {
         me,
         credentialed: true,
@@ -605,15 +458,10 @@ export class ApiCredentials {
     try {
       this.event.force_out_start.fire(undefined);
       const vars: ActionsQueryVariables = {};
-      const result = await this
-        .uncredentialedGqlClient
-        .request<ActionsQuery>(actionsQuery, vars);
-      const meOut = ApiMeFactory({
-        authenticated: false,
-        value: result.can,
-      });
-      this._removeAuthentication(meOut);
-      this.event.force_out_success.fire(meOut);
+      const result = await this.uncredentialedGqlClient.request<ActionsQuery>(actionsQuery, vars);
+      const me = apiMeFns.unauthenticate({ can: result.can, ss: false });
+      this._removeAuthentication(me);
+      this.event.force_out_success.fire(me);
       return result;
     } catch (error) {
       this.event.force_out_fail.fire(undefined);
@@ -623,9 +471,23 @@ export class ApiCredentials {
 
 
   /**
+   * Get the actions I can take...
+   */
+  async _unlockedActions(client: GraphQLClient): Promise<AuthorisedActionsFieldsFragment> {
+    try {
+      const vars: ActionsQueryVariables = {};
+      const result = await client.request<ActionsQuery>(actionsQuery, vars);
+      return result.can;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
+  /**
    * Logout
    */
-  async _unlockedLogout(): Promise<LogoutMutation> {
+  async _unlockedLogout(): Promise<AuthorisedActionsFieldsFragment> {
     try {
       this.event.log_out_start.fire(undefined);
       const logoutVars: LogoutMutationVariables = {};
@@ -633,19 +495,39 @@ export class ApiCredentials {
       // otherwise, if credentials are kept but stale, they will be 401'd by the server
       this.credentialedGqlClient.setHeader('Authorization', 'Bearer ');
       this.refreshGqlClient.setHeader('refresh_token', '');
-      const logoutResult = await this
-        .credentialedGqlClient
-        .request<LogoutMutation, LogoutMutationVariables>(logoutMutation, logoutVars);
-      const meOut = ApiMeFactory({ authenticated: false, value: logoutResult.logout.can });
-      this._removeAuthentication(meOut);
-      this.event.log_out_success.fire(meOut);
-      return logoutResult;
+      await this.credentialedGqlClient.request<LogoutMutation, LogoutMutationVariables>(logoutMutation, logoutVars);
+      // now that we've logged out, determine which actions we can take...
+      const can = await this._unlockedActions(this.uncredentialedGqlClient);
+      const me = apiMeFns.unauthenticate({ can, ss: false });
+      this._removeAuthentication(me);
+      this.event.log_out_success.fire(me);
+      return can;
     } catch(error) {
       this.event.log_out_fail.fire(undefined);
       await this._unlockedForceOut().catch();
       throw error;
     }
   }
+
+
+  /**
+   * Get the latest version of me
+   */
+  async actions(): Promise<AuthorisedActionsFieldsFragment> {
+    const requester = await this.getSafeRequester()
+    const release = await this.authenticationLock.acquire();
+    try {
+      return this._unlockedActions(requester.client);
+    } catch (error) {
+      throw error;
+    } finally {
+      release();
+    }
+  }
+
+  // async syncWhoami(): Promise<> {
+  //   //
+  // }
 
 
   /**
@@ -656,10 +538,8 @@ export class ApiCredentials {
     try {
       this.event.refresh_start.fire(undefined);
       const vars: RefreshMutationVariables = {};
-      const result = await this
-        .refreshGqlClient
-        .request<RefreshMutation, RefreshMutationVariables>(refreshMutation, vars);
-      const me = ApiMeFactory({ authenticated: true, value: result.refresh });
+      const result = await this.refreshGqlClient.request<RefreshMutation, RefreshMutationVariables>(refreshMutation, vars);
+      const me = apiMeFns.authenticate({ authentication: result.refresh, ss: false, });
       this._saveAuthentication(me);
       this.event.refresh_success.fire(me);
       return result;
@@ -683,17 +563,9 @@ export class ApiCredentials {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.log_in_start.fire(undefined);
-      const vars: LoginMutationVariables = {
-        name_or_email,
-        password,
-      };
-      const result = await this
-        .credentialedGqlClient
-        .request<LoginMutation, LoginMutationVariables>(
-          loginMutation,
-          vars,
-        );
-      const me = ApiMeFactory({ authenticated: true, value: result.login });
+      const vars: LoginMutationVariables = { name_or_email, password, };
+      const result = await this.credentialedGqlClient.request<LoginMutation, LoginMutationVariables>(loginMutation, vars);
+      const me = apiMeFns.authenticate({ authentication: result.login, ss: false, });
       this._saveAuthentication(me);
       this.event.log_in_success.fire(me);
       return result;
@@ -717,18 +589,9 @@ export class ApiCredentials {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.register_start.fire(undefined);
-      const vars: RegisterMutationVariables = {
-        name,
-        email,
-        password,
-      };
-      const result = await this
-        .credentialedGqlClient
-        .request<RegisterMutation, RegisterMutationVariables>(
-          registerMutation,
-          vars,
-        );
-      const me = ApiMeFactory({ authenticated: true, value: result.register });
+      const vars: RegisterMutationVariables = { name, email, password, };
+      const result = await this.credentialedGqlClient.request<RegisterMutation, RegisterMutationVariables>(registerMutation, vars);
+      const me = apiMeFns.authenticate({ authentication: result.register, ss: false, });
       this._saveAuthentication(me);
       this.event.register_success.fire(me);
       return result;
@@ -747,7 +610,7 @@ export class ApiCredentials {
   /**
    * Logout
    */
-  async logout(): Promise<LogoutMutation> {
+  async logout(): Promise<AuthorisedActionsFieldsFragment> {
     const release = await this.authenticationLock.acquire();
     try {
       const result = await this._unlockedLogout();
@@ -769,16 +632,9 @@ export class ApiCredentials {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.verify_email_start.fire(undefined);
-      const vars: ConsumeEmailVerificationMutationVariables = {
-        token: arg.token,
-      };
-      const result = await this
-        .credentialedGqlClient
-        .request<ConsumeEmailVerificationMutation, ConsumeEmailVerificationMutationVariables>(
-          consumeEmailVerificationMutation,
-          vars,
-        );
-      const me = ApiMeFactory({ authenticated: true, value: result.consumeEmailVerification });
+      const vars: ConsumeEmailVerificationMutationVariables = { token: arg.token, };
+      const result = await this.credentialedGqlClient.request<ConsumeEmailVerificationMutation, ConsumeEmailVerificationMutationVariables>(consumeEmailVerificationMutation, vars);
+      const me = apiMeFns.authenticate({ authentication: result.consumeEmailVerification, ss: false, });
       this._saveAuthentication(me);
       this.event.verify_email_success.fire(me);
       return result;
@@ -800,17 +656,9 @@ export class ApiCredentials {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.reset_password_start.fire(undefined);
-      const vars: ConsumeResetPasswordMutationVariables = {
-        token: arg.token,
-        password: arg.password,
-      };
-      const result = await this
-        .credentialedGqlClient
-        .request<ConsumeResetPasswordMutation, ConsumeResetPasswordMutationVariables>(
-          consumeResetPasswordMutation,
-          vars,
-        );
-      const me = ApiMeFactory({ authenticated: true, value: result.consumeForgottenUserPasswordReset });
+      const vars: ConsumeResetPasswordMutationVariables = { token: arg.token, password: arg.password, };
+      const result = await this.credentialedGqlClient.request<ConsumeResetPasswordMutation, ConsumeResetPasswordMutationVariables>(consumeResetPasswordMutation, vars);
+      const me = apiMeFns.authenticate({ authentication: result.consumeForgottenUserPasswordReset, ss: false, });
       this._saveAuthentication(me);
       this.event.reset_password_success.fire(me);
       return result;
@@ -832,15 +680,9 @@ export class ApiCredentials {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.accept_welcome_start.fire(undefined);
-      const vars: ConsumeUserWelcomeMutationVariables = {
-        token: arg.token,
-        name: arg.name,
-        password: arg.password,
-      };
-      const result = await this
-        .credentialedGqlClient
-        .request<ConsumeUserWelcomeMutation, ConsumeUserWelcomeMutationVariables>(consumeUserWelcomeMutation, vars);
-      const me = ApiMeFactory({ authenticated: true, value: result.consumeUserWelcome });
+      const vars: ConsumeUserWelcomeMutationVariables = { token: arg.token, name: arg.name, password: arg.password, };
+      const result = await this.credentialedGqlClient.request<ConsumeUserWelcomeMutation, ConsumeUserWelcomeMutationVariables>(consumeUserWelcomeMutation, vars);
+      const me = apiMeFns.authenticate({ authentication: result.consumeUserWelcome, ss: false, });
       this._saveAuthentication(me);
       this.event.accept_welcome_success.fire(me);
       return result;
@@ -862,16 +704,9 @@ export class ApiCredentials {
     const release = await this.authenticationLock.acquire();
     try {
       this.event.verify_email_change_start.fire(undefined);
-      const vars: ConsumeEmailChangeVerificationMutationVariables = {
-        token: arg.token,
-      };
-      const result = await this
-        .credentialedGqlClient
-        .request<ConsumeEmailChangeVerificationMutation, ConsumeEmailChangeVerificationMutationVariables>(
-          consumeEmailChangeVerification,
-          vars,
-        );
-      const me = ApiMeFactory({ authenticated: true, value: result.consumeEmailChangeVerification });
+      const vars: ConsumeEmailChangeVerificationMutationVariables = { token: arg.token, };
+      const result = await this.credentialedGqlClient.request<ConsumeEmailChangeVerificationMutation, ConsumeEmailChangeVerificationMutationVariables>( consumeEmailChangeVerification, vars);
+      const me = apiMeFns.authenticate({ authentication: result.consumeEmailChangeVerification, ss: false, });
       this._saveAuthentication(me);
       this.event.verify_email_change_success.fire(me);
       return result;

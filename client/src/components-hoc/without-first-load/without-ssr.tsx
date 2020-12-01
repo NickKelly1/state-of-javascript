@@ -1,3 +1,4 @@
+import { CircularProgress } from '@material-ui/core';
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useMounted } from '../../hooks/use-mounted.hook';
 
@@ -23,11 +24,11 @@ export function WithoutSsr<P>(Component: React.ComponentType<P>): React.ElementT
     }, [process.browser]);
 
     // is ssr - don't render
-    if (!process.browser) return null;
+    if (!process.browser) return <CircularProgress />;
     // wasn't ssr - instant browser render
     if (!wasSsr) { return <Component {...props} /> }
     // was ssr - wait for settle before render
-    if (!isSettled) { return null; }
+    if (!isSettled) { return <CircularProgress />; }
     // was ssr - is settled
     return <Component {...props} />;
   }

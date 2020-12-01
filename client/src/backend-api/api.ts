@@ -1,9 +1,27 @@
 import { RequestDocument, Variables } from "graphql-request/dist/types";
 import { PublicEnv } from "../env/public-env.helper";
-import { ConsumeEmailChangeVerificationMutation, ConsumeUserWelcomeMutation, LoginMutation, LogoutMutation, RefreshMutation, RegisterMutation, ConsumeResetPasswordMutation, ConsumeEmailVerificationMutation } from "../generated/graphql";
+import {
+  ConsumeEmailChangeVerificationMutation,
+  ConsumeUserWelcomeMutation,
+  LoginMutation,
+  LogoutMutation,
+  RefreshMutation,
+  RegisterMutation,
+  ConsumeResetPasswordMutation,
+  ConsumeEmailVerificationMutation,
+  AuthorisedActionsFieldsFragment,
+} from "../generated/graphql";
 import { ApiConnector } from "./api.connector";
-import { ApiCredentials, IApiCredentialsConsumeChangeVerificationArg, IApiCredentialsConsumeUserWelcomeArg, IApiCredentialsLoginArg, IApiCredentialsRegisterArg, IApiCredentialsResetPasswordArg, IApiCredentialsVerifyEmailArg } from "./api.credentials";
+import { ApiCredentials,
+  IApiCredentialsConsumeChangeVerificationArg,
+  IApiCredentialsConsumeUserWelcomeArg,
+  IApiCredentialsLoginArg,
+  IApiCredentialsRegisterArg,
+  IApiCredentialsResetPasswordArg,
+  IApiCredentialsVerifyEmailArg,
+} from "./api.credentials";
 import { IApiEvents } from "./api.events";
+import { IApiMe } from "./api.me";
 import { normaliseApiException, rethrow } from "./normalise-api-exception.helper";
 
 export class Api {
@@ -16,10 +34,18 @@ export class Api {
     //
   }
 
+
+  /**
+   * Check actions I can take
+   *
+   * @throws ApiException
+   */
+  actions(): Promise<AuthorisedActionsFieldsFragment> {
+    return this.credentials.actions().catch(rethrow(normaliseApiException));
+  }
+
   /**
    * Do login
-   *
-   * Guarnteed to throw ApiException
    *
    * @throws ApiException
    */
@@ -30,8 +56,6 @@ export class Api {
 
   /**
    * Do login
-   *
-   * Guarnteed to throw ApiException
    *
    * @throws ApiException
    */
@@ -115,7 +139,7 @@ export class Api {
   /**
    * Get Me
    */
-  get me(): ApiMe {
+  get me(): IApiMe {
     return this.credentials.me;
   }
 
@@ -125,7 +149,7 @@ export class Api {
    *
    * @throws ApiException
    */
-  safeMe(): Promise<ApiMe> {
+  safeMe(): Promise<IApiMe> {
     return this.credentials.getSafeMe().catch(rethrow(normaliseApiException));
   }
 }

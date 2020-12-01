@@ -70,6 +70,7 @@ import { UserTabs } from './user.tabs';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
+import { hidex } from '../../helpers/hidden.helper';
 
 const UsersTableDataQueryName = 'UsersTableDataQuery'
 const usersTableDataQuery = gql`
@@ -333,15 +334,15 @@ const UsersTableContent = WithApi<IUsersTableContentProps>((props) => {
                 Users
               </Typography>
             </Box>
-            {queryData.users.can.create && (
-              <Box pr={1}>
+            <Box className={hidex(!queryData.users.can.create)}>
+              <Box mr={1}>
                 <IconButton color="primary" onClick={createDialog.doOpen}>
                   <AddIcon />
                 </IconButton>
               </Box>
-            )}
+            </Box>
             <WhenDebugMode>
-              <Box pr={1}>
+              <Box mr={1}>
                 <IconButton color="primary" onClick={debugDialog.doOpen}>
                   <BugReportIcon />
                 </IconButton>

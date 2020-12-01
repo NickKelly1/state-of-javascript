@@ -130,4 +130,21 @@ export class RequestAuth {
     const { permissions } = arg;
     permissions.forEach(this._permissions.add.bind(this._permissions));
   }
+
+
+  /**
+   * to JSON
+   */
+  toJSON() {
+    const {
+      user_id,
+      shadow_id,
+      permissions,
+    } = this;
+    return {
+      user_id,
+      shadow_id,
+      permissions: Array.from(permissions),
+    };
+  }
 }

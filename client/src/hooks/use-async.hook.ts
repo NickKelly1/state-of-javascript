@@ -35,16 +35,11 @@ export function useAsync<R, E = unknown>(arg: {
     const mapped: IAsyncStateLoading<R> = { isLoading: true, error: null, value: null };
     return mapped;
   }, [_state]);
-  console.log('-- 1');
   const skip = useRef(ist.defined(_state.value));
-  console.log('-- 2');
   // skip the first run if given initial data...
   useEffect(() => {
-    console.log('-- 3');
     if (skip.current) { return void (skip.current = false); }
-    console.log('-- 4');
     refire();
-    console.log('-- 5');
   }, [refire]);
   return [ refire, state ];
 }

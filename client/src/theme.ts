@@ -78,9 +78,9 @@ const theme = createMuiTheme(({
   palette: {
     type: 'dark',
     primary: { main: blue, },
-    secondary: { main: yellow, },
+    secondary: { main: red, },
     success: { main: green, },
-    warning: { main: red, },
+    warning: { main: yellow, },
     info: { main: purple, },
     text: {
       primary: textLight,

@@ -55,13 +55,15 @@ import { flsx } from '../../helpers/flsx.helper';
 import { IPageProps } from '../../types/page-props.interface';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { DebugJsonDialog } from '../../components/debug-json-dialog/debug-json-dialog';
-import { hidex } from '../../helpers/hidden.helper';
+import { hidex, hidey } from '../../helpers/hidden.helper';
 import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
 import { isValidDate } from '../../helpers/is-valid-date.helper';
 import { OrNullable } from '../../types/or-nullable.type';
 import { msToDay } from '../../helpers/ms-to.helper';
 import { orNull } from '../../helpers/or-null.helper';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
+import { WithLoadable } from '../../components-hoc/with-loadable/with-loadable';
+import { WithoutSsr } from '../../components-hoc/without-first-load/without-ssr';
 
 const JsPageDashboardQueryName = 'JsPageDashboardQuery';
 const jsPageDashboardQuery = gql`
@@ -246,39 +248,22 @@ const JavaScriptPage = WithApi<IJavaScriptPageProps>((props) => {
   const { api, me } = props;
 
   const { data, isLoading, refetch, error, } = useQuery<JsPageDashboardQuery, ApiException>(
-    // TODO: check hash integrity under diff conditions...!?! something not not working
     [ JsPageDashboardQueryName, defaultQueryVars, me.hash ],
     async (): Promise<JsPageDashboardQuery> => {
       const result = await runPageDataQuery(api, defaultQueryVars);
       return result;
     },
-    {
-      // TODO: SSR initial data, but also re-load initial data after shadow id loads... or something...!?
-      // initialData: isSuccess(dashboards) ? dashboards.value : undefined,
-    },
   );
 
   return (
-    <Grid container spacing={2}>
-      {error && (
-        <Grid item xs={12}>
-          <DebugException centered always exception={error} />
-        </Grid>
+    <WithLoadable isLoading={isLoading} error={error} data={data}>
+      {(data) => (
+        <JavaScriptPageContent
+          queryData={data}
+          onStale={refetch}
+        />
       )}
-      {isLoading && !data && (
-        <Grid className="centered" item xs={12}>
-          <CircularProgress />
-        </Grid>
-      )}
-      {data && (
-        <Grid item xs={12}>
-          <JavaScriptPageContent
-            queryData={data}
-            onStale={refetch}
-          />
-        </Grid>
-      )}
-    </Grid>
+    </WithLoadable>
   );
 });
 
@@ -303,7 +288,7 @@ function timeRate(arg: OrNullable<ITimeRateableData>): OrNull<number> {
 }
 
 
-const JavaScriptPageContent = WithApi((props: IJavaScriptPageContentProps) => {
+const JavaScriptPageContent = WithoutSsr(WithApi<IJavaScriptPageContentProps>((props) => {
   const { queryData, onStale, api, me, } = props;
   const classes = useStyles();
   const colours = useRandomDashColours();
@@ -612,18 +597,22 @@ const JavaScriptPageContent = WithApi((props: IJavaScriptPageContentProps) => {
             <Box display="flex" justifyContent="flex-start" alignItems="center">
               <Box pr={1}>
                 <Typography className={clsx(classes.title, 'text-left')} component="h1" variant="h1">
-                  Dashboards
+                  Npm Stats
                 </Typography>
               </Box>
-              <Box className={hidex(!me.can.npmsDashboards.create)} pr={1}>
-                <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
-                  <AddIcon />
-                </IconButton>
+              <Box className={hidex(!me.can?.npmsDashboards.create)}>
+                <Box pr={1}>
+                  <IconButton color="primary" onClick={createDashboardDialog.doOpen}>
+                    <AddIcon />
+                  </IconButton>
+                </Box>
               </Box>
-              <Box className={hidex(!me.can.npmsDashboards.sort)} pr={1}>
-                <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
-                  <SortIcon />
-                </IconButton>
+              <Box className={hidex(!me.can?.npmsDashboards.sort)}>
+                <Box pr={1}>
+                  <IconButton color="primary" onClick={sortDashboardsDialog.doOpen}>
+                    <SortIcon />
+                  </IconButton>
+                </Box>
               </Box>
               <WhenDebugMode>
                 <Box pr={1}>
@@ -657,7 +646,7 @@ const JavaScriptPageContent = WithApi((props: IJavaScriptPageContentProps) => {
       </Grid>
     </>
   );
-});
+}));
 
 
 async function runPageDataQuery(
@@ -671,8 +660,9 @@ async function runPageDataQuery(
   return dashboards;
 }
 
-// export const getInitialProps  = async () => {
-//   //
+
+// (JavaScriptPage as any).getInitialProps = async (ctx: NextPageContext): Promise<IJavaScriptPageProps> => {
+//   return {};
 // }
 
 // async function getProps(args: { cms: Cms; npmsApi: NpmsApi; api: Api; }): Promise<IJavaScriptPageProps> {

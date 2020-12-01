@@ -21,6 +21,7 @@ import { LoginGqlInput, LoginGqlInputValidator } from "./gql-input/login.gql.inp
 import { ILogoutGqlNodeSource, LogoutGqlNode } from "./gql/logout.gql.node";
 import { RefreshGqlInput, RefreshGqlInputValidator } from "./gql-input/refresh.gql.input";
 import { RegisterGqlInput, RegisterGqlInputValidator } from "./gql-input/register.gql.input";
+import { IMeGqlNodeSource, MeGqlNode } from "./gql-input/me.gql";
 
 
 export const AuthGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = {

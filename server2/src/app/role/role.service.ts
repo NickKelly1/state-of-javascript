@@ -85,8 +85,6 @@ export class RoleService {
     // already exist
     const normal = Array.from(combinator.bJoinA.a.values());
 
-    console.dir(combinator.toDebug());
-
     const [_, rolePermissions] = await Promise.all([
       Promise.all(unexpected.map(staleRolePermission => staleRolePermission.destroy({ transaction }))),
       Promise.all(missing.map(async (permission) => {

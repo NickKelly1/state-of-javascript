@@ -30,7 +30,7 @@ import { useRouter } from 'next/router';
 import NextLink from 'next/link';
 import clsx from 'clsx';
 import GitHubIcon from '@material-ui/icons/GitHub';
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, useContext, useMemo, useState } from "react";
 import { ApiContext } from "../../components-contexts/api.context";
 import { useMutation } from "react-query";
 import { DebugModeContext } from "../../components-contexts/debug-mode.context";
@@ -42,6 +42,7 @@ import { flsx } from "../../helpers/flsx.helper";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
+import { apiMeFns } from "../../backend-api/api.me";
 
 interface ITopBarProps {
   //
@@ -102,11 +103,12 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
     }
   }, [loginDialog, cogMenu, api]);
 
-  const debugDialog = useDialog()
+  const meDebugDialog = useDialog()
+  const meDebugData = useMemo(() => apiMeFns.toJSON(me), [me]);
 
   return (
     <>
-      <DebugJsonDialog title="Me" dialog={debugDialog} data={me} />
+      <DebugJsonDialog title="Me" dialog={meDebugDialog} data={meDebugData} />
       <LoginFormDialog dialog={loginDialog} onSuccess={loginDialog.doClose} />
       <RegisterFormDialog dialog={registerDialog} onSuccess={registerDialog.doClose} />
       <Box className={classes.root}>
@@ -128,31 +130,31 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
           </ListItem>
           <ListItem><NextLink href="/hire-me" passHref><MUILink color="inherit">Hire me</MUILink></NextLink></ListItem>
           <ListItem><NextLink href="/blog" passHref><MUILink color="inherit">Blog</MUILink></NextLink></ListItem>
-          {me.can.newsArticles.show && (
+          {me.can?.newsArticles.show && (
             <ListItem><NextLink href="/news" passHref><MUILink color="inherit">News</MUILink></NextLink></ListItem>
           )}
-          {me.can.roles.show && (
+          {me.can?.roles.show && (
             <ListItem><NextLink href="/roles" passHref><MUILink color="inherit">Roles</MUILink></NextLink></ListItem>
           )}
-          {me.can.users.show && (
+          {me.can?.users.show && (
             <ListItem><NextLink href="/users" passHref><MUILink color="inherit">Users</MUILink></NextLink></ListItem>
           )}
-          {me.can.integrations.show && (
+          {me.can?.integrations.show && (
             <ListItem><NextLink href="/admin/integrations" passHref><MUILink color="inherit">Integrations</MUILink></NextLink></ListItem>
           )}
         </List>
         <List component="nav" className="d-flex">
+          {me.user && (
+            <ListItem className="text-transform-none">
+              <ListItemText primary={me.user.name} />
+            </ListItem>
+          )}
           <ListItem className="text-transform-none">
-            <IconButton onClick={debugDialog.doToggle} color={debugMode.isOn ? 'primary' : 'inherit'}>
+            <IconButton onClick={meDebugDialog.doToggle} color="primary">
               <AccountCircleIcon />
             </IconButton>
           </ListItem>
-          {me.isAuthenticated && (
-            <ListItem className="text-transform-none">
-              <ListItemText primary={me.name} />
-            </ListItem>
-          )}
-          {me.isAuthenticated && (
+          {(me.isAuthenticated) && (
             <ListItem>
               <Button onClick={flsx(handleLogout, cogMenu.doClose)} startIcon={<ExitToAppIcon />} className="text-transform-none">
                 <ListItemText primary="logout" />
@@ -160,7 +162,7 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
             </ListItem>
           )}
           {/* register */}
-          {!me.isAuthenticated && me.can.users.register && (
+          {(!me.isAuthenticated && me.can?.users.register) && (
             <ListItem color="primary">
               <Button onClick={flsx(registerDialog.doOpen, cogMenu.doClose)} className="text-transform-none">
                 <ListItemText primary="register" />
@@ -168,7 +170,7 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
             </ListItem>
           )}
           {/* login */}
-          {!me.isAuthenticated && me.can.users.login && (
+          {(!me.isAuthenticated && me.can?.users.login) && (
             <ListItem>
               <Button onClick={handleLoginClicked} className="text-transform-none">
                 <ListItemText primary="login" />

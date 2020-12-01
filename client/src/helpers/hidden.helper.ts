@@ -1,10 +1,13 @@
+import { OrNullable } from "../types/or-nullable.type";
+import { OrUndefined } from "../types/or-undefined.type";
+
 /**
  * Return a css class to affect visibility
  *
  * @param boolean
  */
-export function hide(boolean: boolean): string {
-  if (boolean) return 'visibility-hidden';
+export function hide(boolean?: OrNullable<boolean>): string {
+  if (!!boolean) return 'visibility-hidden';
   return 'visibility-inherit';
 }
 
@@ -13,8 +16,8 @@ export function hide(boolean: boolean): string {
  *
  * @param boolean
  */
-export function hidey(boolean: boolean): string {
-  if (boolean) return 'visibility-hidden-y';
+export function hidey(boolean?: OrNullable<boolean>): string {
+  if (!!boolean) return 'visibility-hidden-y';
   return 'visibility-inherit';
 }
 
@@ -23,7 +26,7 @@ export function hidey(boolean: boolean): string {
  *
  * @param boolean
  */
-export function hidex(boolean: boolean): string {
-  if (boolean) return 'visibility-hidden-x';
+export function hidex(boolean?: OrNullable<boolean>): string {
+  if (!!boolean) return 'visibility-hidden-x';
   return 'visibility-inherit';
 }

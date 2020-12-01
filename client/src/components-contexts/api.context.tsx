@@ -1,7 +1,7 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Api } from '../backend-api/api';
-import { ApiMe } from '../backend-api/api.me';
-import { ApiFactory, ApiFactoryArgType } from '../backend-api/api.factory';
+import { apiMeFns, IApiMe } from '../backend-api/api.me';
+import { ApiFactory } from '../backend-api/api.factory';
 import { OrNull } from '../types/or-null.type';
 import { PublicEnvContext } from './public-env.context';
 import { IApiMeSerialized } from '../types/api-me-serialized.hinterface';
@@ -19,9 +19,9 @@ import { IApiException } from '../backend-api/types/api.exception.interface';
 import { OrUndefined } from '../types/or-undefined.type';
 import { IAsyncState } from '../types/async.types';
 import { useUpdate } from '../hooks/use-update.hook';
+import { useMutation, useQuery } from 'react-query';
 
-export interface IApiContextValue { me: ApiMe, api: Api; }
-export type IApiContext = IAsyncState<IApiContextValue, ApiException>;
+export interface IApiContext { me: IApiMe; api: Api; }
 export const ApiContext = createContext<IApiContext>(null!);
 export const useApiContext = (): IApiContext => useContext(ApiContext);
 
@@ -32,44 +32,46 @@ interface IApiProviderProps {
 
 export function ApiProvider(props: IApiProviderProps) {
   // load the initial context
-
   const { children, initialMe, } = props;
   const { publicEnv } = useContext(PublicEnvContext);
 
-  // lazy load api/me if not given by server...
-  const [_, ctx2] = useAsync<IApiContextValue, IApiException>({
-    fn: async (): Promise<IApiContextValue> => {
-      const api = await ApiFactory({
-        publicEnv,
-        type: ApiFactoryArgType.WithoutCredentials,
-        me: undefined,
-      }).catch(rethrow(normaliseApiException))
-      const me = api.me;
-      return { api, me, };
-    },
-    initial: (): OrUndefined<IApiContextValue> => {
-      if (!initialMe) return undefined;
-      const me = ApiMe.deserialize(initialMe);
-      const api = ApiFactory({ publicEnv, type: ApiFactoryArgType.WithMe, me, });
-      return { me, api, };
-    },
-    deps: [],
-  })
+  const [ctx, setCtx] = useState(() => {
+    const me = !!initialMe
+      ? apiMeFns.deserialise(initialMe)
+      : apiMeFns.defaultInitialMe({ ss: !process.browser });
+    const api = ApiFactory({ me, publicEnv });
+    api.event.authenticated;
+    return { api, me };
+  });
 
-  const [ctx, setCtx] = useState(() => ctx2);
-  useUpdate(() => { setCtx(ctx2); }, [ctx2]);
+  // TODO: somehow regularly update whoami...? at the connector level...
 
-  // update on authentication events when possible...
+  // don't have _can_? try to load on first run...
   useEffect(() => {
-    if (ctx.value) {
-      const unsubs: IUnsubscribe[] = [];
-      unsubs.push(ctx.value.api.event.authenticated.on((me) => setCtx((prev) => ({ ...prev, me, }))));
-      unsubs.push(ctx.value.api.event.unauthenticated.on((me) => setCtx((prev) => ({ ...prev, me, }))));
-      () => unsubs.forEach(invoke);
+    if (process.browser && !ctx.me.can) {
+      (async () => {
+        try {
+          const can = await ctx.api.actions();
+          if (!ctx.me.can) {
+            setCtx((prev) => ({
+              ...prev,
+              me: apiMeFns.deserialise({ ...apiMeFns.serialize(prev.me), can, }),
+            }));
+          }
+        } catch (error) {
+          // ruh roh
+          console.warn('DANGER: Failed to query actions...', error);
+        }
+      })();
     }
-  }, [ctx.value]);
+  }, []);
 
-  // having problemos...
+  useEffect(() => {
+    const unsubs: IUnsubscribe[] = [];
+    unsubs.push(ctx.api.event.authenticated.on((me) => setCtx((prev) => ({ ...prev, me, }))));
+    unsubs.push(ctx.api.event.unauthenticated.on((me) => setCtx((prev) => ({ ...prev, me, }))));
+    () => unsubs.forEach(invoke);
+  }, [ctx.api.event]);
 
   return (
     <ApiContext.Provider value={ctx}>
@@ -77,36 +79,3 @@ export function ApiProvider(props: IApiProviderProps) {
     </ApiContext.Provider>
   );
 }
-
-// interface IApiProviderContentProps {
-//   children: ReactNode;
-//   incomingCtx: IApiContext;
-// }
-// export function ApiProviderContent(props: IApiProviderContentProps) {
-//   // take the initial context & load change made to it
-
-//   const { children, incomingCtx, } = props;
-//   const { publicEnv } = useContext(PublicEnvContext);
-//   const [ready, setReady] = useState(false);
-
-//   const [ctx, setCtx] = useState<IApiContext>(incomingCtx);
-//   useEffect(() => incomingCtx)
-
-//   useEffect(() => {
-//     const { api } = ctx;
-//     const unsubs: IUnsubscribe[] = [];
-//     unsubs.push(api.event.authenticated.on((me) => {
-//       setCtx((prev) => ({ ...prev, me, }));
-//     }));
-//     unsubs.push(api.event.unauthenticated.on((me) => {
-//       setCtx((prev) => ({ ...prev, me, }));
-//     }));
-//     () => { unsubs.forEach(unsub => unsub()); }
-//   }, []);
-
-//   return (
-//     <ApiContext.Provider value={ctx}>
-//       {children}
-//     </ApiContext.Provider>
-//   )
-// }

@@ -1,10 +1,10 @@
 import { IMeUserData } from '../backend-api/api.me';
 import { AuthorisedActionsFieldsFragment } from '../generated/graphql';
+import { OrNull } from './or-null.type';
 
 export interface IApiMeSerialized {
-  instance: number;
-  createdAt: number;
-  user: null | IMeUserData;
+  ss: boolean;
+  user: OrNull<IMeUserData>;
   permissions: number[];
-  can: AuthorisedActionsFieldsFragment;
+  can: OrNull<AuthorisedActionsFieldsFragment>;
 }

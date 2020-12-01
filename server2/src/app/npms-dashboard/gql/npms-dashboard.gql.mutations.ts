@@ -26,14 +26,13 @@ import { orWhere } from "../../../common/helpers/or-where.helper.ts";
 import { NpmsPackageModel } from "../../npms-package/npms-package.model";
 import { NpmsLang } from "../../../common/i18n/packs/npms.lang";
 import { BadRequestException } from "../../../common/exceptions/types/bad-request.exception";
-import { toMapArrBy, toMapBy, toMapById } from "../../../common/helpers/to-id-map.helper";
+import { toMapBy } from "../../../common/helpers/to-id-map.helper";
 import { NpmsPackageId } from "../../npms-package/npms-package.id.type";
 import { IRequestContext } from "../../../common/interfaces/request-context.interface";
 import { OrNullable } from "../../../common/types/or-nullable.type";
 import { QueryRunner } from "../../db/query-runner";
 import { OrUndefined } from "../../../common/types/or-undefined.type";
 import { Combinator } from "../../../common/helpers/combinator.helper";
-import { InternalServerError } from "http-errors";
 import { InternalServerException } from "../../../common/exceptions/types/internal-server.exception";
 
 /**
@@ -73,7 +72,8 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
       const shadow_id = ctx.auth.shadow_id || null;
 
       if (ist.nullable(owner_id) && ist.nullable(shadow_id)) {
-        throw ctx.except(UnauthenticatedException());
+        const message = ctx.lang(NpmsLang.NoAuthentication);
+        throw ctx.except(BadRequestException({ message }));
       }
 
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {

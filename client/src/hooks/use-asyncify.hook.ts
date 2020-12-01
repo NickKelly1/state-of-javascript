@@ -79,28 +79,18 @@ export function useAsyncify<A, R, E = unknown>(arg: {
   const callRef = useRef(0);
   const fire: IUseAsyncifyFireFnReturn<A> = useCallback(async (args: A) => {
     // if fire is called while still executing, forget the stale execution context...
-    // console.log('=== 1');
     const call = (callRef.current += 1);
-    // console.log('=== 2');
     const isCurrent = () => (call === callRef.current);
-    // console.log('=== 3');
     // set loading
     setState(toAsyncLoading);
-    // console.log('=== 4');
     try {
-      // console.log('=== 5');
       const result = await fn(args);
-      // console.log('=== 6');
       // set success
       if (isCurrent()) { setState(toAsyncSuccess(result)); }
-      // console.log('=== 7');
     } catch (error) {
       // set errored
-      // console.log('=== 8');
       if (isCurrent()) { setState(toAsyncError(error as E)); }
-      // console.log('=== 9');
     }
-    // console.log('=== 10');
   }, deps);
 
   return [fire, state];

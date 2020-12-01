@@ -1,50 +1,40 @@
 import { GraphQLClient } from "graphql-request";
-import { shad_id } from "../constants/shad-id.const";
+import { _header_shad_id_key, _ls_shad_id_key } from "../constants/shad-id.const";
 import { PublicEnv } from "../env/public-env.helper";
 import { isoFetch } from "../iso-fetch";
 import { Api } from "./api";
 import { ApiConnector } from "./api.connector";
-import { ApiCredentials, ApiCredentialsFactory, ApiCredentialsFactoryArgType } from "./api.credentials";
+import { ApiCredentials, ApiCredentialsFactory } from "./api.credentials";
 import { ApiEventsFactory, IApiEvents } from "./api.events";
-import { ApiMe } from "./api.me";
+import { apiMeFns, IApiMe } from "./api.me";
 
-export enum ApiFactoryArgType {
-  WithMe,
-  WithCredentials,
-  WithoutCredentials,
-}
-
-type IApiFactoryArgWithMe = { type: ApiFactoryArgType.WithMe; me: ApiMe; publicEnv: PublicEnv; }
-type IApiFactoryArgWithCredentials = { type: ApiFactoryArgType.WithCredentials; me: undefined; publicEnv: PublicEnv; }
-type IApiFactoryArgWithoutCredentials = { type: ApiFactoryArgType.WithoutCredentials; me: undefined; publicEnv: PublicEnv; }
-
-type IApiFactoryArg =
-  | IApiFactoryArgWithMe
-  | IApiFactoryArgWithCredentials
-  | IApiFactoryArgWithoutCredentials;
+type IApiFactoryArg = {
+  me: IApiMe; publicEnv: PublicEnv;
+};
 
 /**
  * Create an Api instance
  *
  * @param arg
  */
-export function ApiFactory(arg: IApiFactoryArgWithMe): Api
-export function ApiFactory(arg: IApiFactoryArgWithCredentials): Promise<Api>
-export function ApiFactory(arg: IApiFactoryArgWithoutCredentials): Promise<Api>
-export function ApiFactory(arg: IApiFactoryArg): Api | Promise<Api> {
+export function ApiFactory(arg: IApiFactoryArg): Api {
+  const { me, publicEnv } = arg;
   const event = ApiEventsFactory();
 
+  const shadow_id = me.shadow_id;
   const credentialedGqlClient = new GraphQLClient(`${arg.publicEnv.API_URL}/v1/gql`, {
     fetch: isoFetch,
     credentials: 'include',
     mode: 'cors',
   });
+  credentialedGqlClient.setHeader(_header_shad_id_key, shadow_id);
 
   const uncredentialedGqlClient = new GraphQLClient(`${arg.publicEnv.API_URL}/v1/gql`, {
     fetch: isoFetch,
     credentials: 'omit',
     mode: 'cors',
   });
+  uncredentialedGqlClient.setHeader(_header_shad_id_key, shadow_id);
 
   const refreshGqlClient = new GraphQLClient(`${arg.publicEnv.API_URL}/refresh/v1/gql`, {
     fetch: isoFetch,
@@ -52,105 +42,28 @@ export function ApiFactory(arg: IApiFactoryArg): Api | Promise<Api> {
     mode: 'cors',
     // headers
   });
+  refreshGqlClient.setHeader(_header_shad_id_key, shadow_id);
 
-  switch (arg.type) {
+  const credentials = ApiCredentialsFactory({
+    me,
+    credentialedGqlClient,
+    event,
+    refreshGqlClient,
+    uncredentialedGqlClient,
+    publicEnv,
+  });
 
-    // with me
-    case ApiFactoryArgType.WithMe: {
-      const {
-        me,
-        publicEnv,
-      } = arg;
-      const credentials = ApiCredentialsFactory({
-        type: ApiCredentialsFactoryArgType.WithMe,
-        me,
-        credentialedGqlClient,
-        event,
-        refreshGqlClient,
-        uncredentialedGqlClient,
-        publicEnv,
-      });
-      const apiConnector = new ApiConnector(
-        publicEnv,
-        credentials,
-      );
-      const api = new Api(
-        publicEnv,
-        apiConnector,
-        credentials,
-        event,
-      );
+  const apiConnector = new ApiConnector(
+    publicEnv,
+    credentials,
+  );
 
-      return api;
-    }
+  const api = new Api(
+    publicEnv,
+    apiConnector,
+    credentials,
+    event,
+  );
 
-    // with credentials
-    case ApiFactoryArgType.WithCredentials: {
-      const {
-        me,
-        publicEnv,
-      } = arg;
-      const result: Promise<Api> =  ApiCredentialsFactory({
-        type: ApiCredentialsFactoryArgType.WithCredentials,
-        me,
-        credentialedGqlClient,
-        event,
-        refreshGqlClient,
-        uncredentialedGqlClient,
-        publicEnv,
-      })
-        .then(credentials => {
-          const apiConnector = new ApiConnector(
-            publicEnv,
-            credentials,
-          );
-          const api = new Api(
-            publicEnv,
-            apiConnector,
-            credentials,
-            event,
-          );
-          return api;
-        });
-
-      return result;
-    }
-
-    // without credentials
-    case ApiFactoryArgType.WithoutCredentials: {
-      const {
-        me,
-        publicEnv,
-      } = arg;
-      const result: Promise<Api> = ApiCredentialsFactory({
-          type: ApiCredentialsFactoryArgType.WithoutCredentials,
-          me,
-          credentialedGqlClient,
-          event,
-          refreshGqlClient,
-          uncredentialedGqlClient,
-          publicEnv,
-        })
-        .then(credentials => {
-          const apiConnector = new ApiConnector(
-            publicEnv,
-            credentials,
-          );
-          const api = new Api(
-            publicEnv,
-            apiConnector,
-            credentials,
-            event,
-          );
-          return api;
-        });
-
-      return result;
-    }
-
-    default: {
-      // @ts-expect-error
-      throw new Error(`Unhandled type "${(arg).type}"`);
-    }
-  }
+  return api;
 }
