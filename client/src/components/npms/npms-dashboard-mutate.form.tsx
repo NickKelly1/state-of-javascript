@@ -75,7 +75,7 @@ import { FormException } from '../form-error/form-exception.helper';
 const createNpmsDashboardQuery = gql`
 mutation CreateNpmsDashboardForm(
   $name:String!,
-  $npms_package_names:[String!]!
+  $npms_package_names:[String!]
 ){
   createNpmsDashboard(
     dto:{
@@ -102,7 +102,7 @@ const updateNpmsDashboardQuery = gql`
 mutation UpdateNpmsDashboardForm(
   $id:Int!,
   $name:String!
-  $npms_package_names:[String!]!
+  $npms_package_names:[String!]
 ){
   updateNpmsDashboard(
     dto:{
@@ -134,6 +134,7 @@ export interface INpmsDashboardMutateFormOnSuccessFn {
 export interface INpmsDashboardMutateFormProps extends IWithDialogueProps {
   title?: string;
   onSuccess?: INpmsDashboardMutateFormOnSuccessFn;
+  hideItems?: boolean;
   initial?: {
     id: Id;
     name: string;
@@ -144,7 +145,7 @@ export interface INpmsDashboardMutateFormProps extends IWithDialogueProps {
 // interface IDashboardPackageOption { key: string; option: OrNull<INpmsPackageSearchOption>; };
 type IDashboardPackageOption = { key: string; option: string; };
 export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProps>({ fullWidth: true })(WithApi((props) => {
-  const { onSuccess, initial, title, dialog, api, me } = props;
+  const { onSuccess, initial, title, dialog, api, me, hideItems, } = props;
   const seq = useSequence();
 
   const _initial = useMemo(() => initial, []);
@@ -192,10 +193,8 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
 
       if (ist.nullable(_initial)) {
         // create
-        const vars: CreateNpmsDashboardFormMutationVariables = {
-          name: _vars.name,
-          npms_package_names: _vars.npms_package_names,
-        };
+        const vars: CreateNpmsDashboardFormMutationVariables = { name: _vars.name, };
+        if (!hideItems) { vars.npms_package_names = _vars.npms_package_names; }
         const result = await api.gql<CreateNpmsDashboardFormMutation, CreateNpmsDashboardFormMutationVariables>(
           createNpmsDashboardQuery,
           vars,
@@ -209,11 +208,8 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
 
       else {
         // update
-        const vars: UpdateNpmsDashboardFormMutationVariables = {
-          id: Number(_initial.id),
-          name: _vars.name,
-          npms_package_names: _vars.npms_package_names,
-        };
+        const vars: UpdateNpmsDashboardFormMutationVariables = { id: Number(_initial.id), name: _vars.name, };
+        if (!hideItems) { vars.npms_package_names = _vars.npms_package_names; }
         const result = await api.gql<UpdateNpmsDashboardFormMutation, UpdateNpmsDashboardFormMutationVariables>(
           updateNpmsDashboardQuery,
           vars,
@@ -227,18 +223,6 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
     },
     { onSuccess, },
   );
-
-  // const createNpmsPackageDialog = useDialog();
-
-  // const handleChangePackage = useCallback((index: number, option: OrNull<INpmsPackageSearchOption>) => {
-  //   if (ist.nullable(option)) return void removePackage(index);
-  //   return void changePackage(index, option);
-  // }, [changePackage, removePackage]);
-
-  // const handleNpmsPackageCreated: INpmsPackageCreateFormOnSuccessFn = useCallback((result) => {
-  //   addPackage({ id: result.createNpmsPackage.data.id, name: result.createNpmsPackage.data.name, });
-  //   createNpmsPackageDialog.doClose();
-  // }, [addPackage, createNpmsPackageDialog.doClose]);
 
   const handleAddPackageClicked = useCallback(() => addPackage(), [addPackage]);
   const handleRemovePackageClicked = removePackage;
@@ -297,68 +281,71 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
                 </FormHelperText>
               )}
             </Grid>
-            <Grid item xs={12}>
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <WithRandomId>
-                  {(dragDropId) => (
-                    <Droppable droppableId={dragDropId}>
-                      {(provided, snapshot) => (
-                        <Grid ref={provided.innerRef} container spacing={2} >
-                          {formState.npmsPackages.filter(ist.notNullable).map((pkg, i) => (
-                            <Grid key={pkg.key} item xs={12}>
-                              <Draggable draggableId={pkg.key} index={i} >
-                                {(provided, snapshot) => (
-                                  <div ref={provided.innerRef} {...provided.draggableProps}>
-                                    <div className="centered">
-                                      <Box className="centered" mr={1} {...provided.dragHandleProps}>
-                                        <Box className="centered" border={0} borderColor={snapshot.isDragging ? 'primary' : 'grey.500'} borderRadius={4}>
-                                          <DragIndicatorIcon color={snapshot.isDragging ? 'primary' : 'inherit'} />
-                                        </Box>
-                                      </Box>
-                                      <TextField
-                                        label="name"
-                                        autoFocus
-                                        fullWidth
-                                        margin="dense"
-                                        variant="outlined"
-                                        disabled={isDisabled}
-                                        value={pkg.option}
-                                        onChange={(evt) => handleChangePackageName(i, evt.target.value)}
-                                      />
-                                      <Box
-                                        // Hide if the last option & is empty
-                                        visibility={i === (formState.npmsPackages.length - 1) && pkg.option.trim() === '' ? 'hidden' : 'inherit'}
-                                        pl={1}
-                                      >
-                                        <IconButton onClick={() => handleRemovePackageClicked(i)} color="primary" disabled={isDisabled} className="centered">
-                                          <HighlightOffIcon />
-                                        </IconButton>
-                                      </Box>
-                                    </div>
-                                  </div>
-                                )}
-                              </Draggable>
+            {!hideItems && (
+              <>
+                <Grid item xs={12}>
+                  <DragDropContext onDragEnd={handleDragEnd}>
+                    <WithRandomId>
+                      {(dragDropId) => (
+                        <Droppable droppableId={dragDropId}>
+                          {(provided, snapshot) => (
+                            <Grid ref={provided.innerRef} container spacing={2} >
+                              {formState.npmsPackages.filter(ist.notNullable).map((pkg, i) => (
+                                <Grid key={pkg.key} item xs={12}>
+                                  <Draggable draggableId={pkg.key} index={i} >
+                                    {(provided, snapshot) => (
+                                      <div ref={provided.innerRef} {...provided.draggableProps}>
+                                        <div className="centered">
+                                          <Box className="centered" mr={1} {...provided.dragHandleProps}>
+                                            <Box className="centered" border={0} borderColor={snapshot.isDragging ? 'primary' : 'grey.500'} borderRadius={4}>
+                                              <DragIndicatorIcon color={snapshot.isDragging ? 'primary' : 'inherit'} />
+                                            </Box>
+                                          </Box>
+                                          <TextField
+                                            label="name"
+                                            autoFocus
+                                            fullWidth
+                                            margin="dense"
+                                            variant="outlined"
+                                            disabled={isDisabled}
+                                            value={pkg.option}
+                                            onChange={(evt) => handleChangePackageName(i, evt.target.value)}
+                                          />
+                                          <Box
+                                            // Hide if the last option & is empty
+                                            visibility={i === (formState.npmsPackages.length - 1) && pkg.option.trim() === '' ? 'hidden' : 'inherit'}
+                                            pl={1}
+                                          >
+                                            <IconButton onClick={() => handleRemovePackageClicked(i)} color="primary" disabled={isDisabled} className="centered">
+                                              <HighlightOffIcon />
+                                            </IconButton>
+                                          </Box>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </Draggable>
+                                </Grid>
+                              ))}
+                              {provided.placeholder}
                             </Grid>
-                          ))}
-                          {provided.placeholder}
-                        </Grid>
+                          )}
+                        </Droppable>
                       )}
-                    </Droppable>
-                  )}
-                </WithRandomId>
-              </DragDropContext>
-            </Grid>
-            <Grid className="centered" item xs={12}>
-              <Button
-                onClick={handleAddPackageClicked}
-                className="centered text-center"
-                startIcon={<AddCircleOutlineIcon />}
-                color="primary"
-                // variant="outlined"
-              >
-                Add
-              </Button>
-            </Grid>
+                    </WithRandomId>
+                  </DragDropContext>
+                </Grid>
+                <Grid className="centered" item xs={12}>
+                  <Button
+                    onClick={handleAddPackageClicked}
+                    className="centered text-center"
+                    startIcon={<AddCircleOutlineIcon />}
+                    color="primary"
+                  >
+                    Add
+                  </Button>
+                </Grid>
+              </>
+            )}
             {error && (
               <Grid className="centered" item xs={12}>
                 <FormException className="centered" exception={error} />

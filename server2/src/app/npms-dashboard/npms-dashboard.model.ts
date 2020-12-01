@@ -56,6 +56,22 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   isSubmitted() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Submitted; }
   isApproved() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Approved; }
   isPublished() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Published; }
+  isUnpublished() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Unpublished; }
+
+  /** Is the NpmsDashboardModel Submittable? */
+  isSubmittable() { return this.isDraft() || this.isRejected() || this.isUnpublished(); }
+
+  /** Is the NpmsDashboardModel Rejectable? */
+  isRejectable() { return this.isSubmitted() || this.isApproved() || this.isPublished() || this.isUnpublished(); }
+
+  /** Is the NpmsDashboardModel Approvable? */
+  isApprovable() { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
+
+  /** Is the NpmsDashboardModel Publishable? */
+  isPublishable() { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isApproved() || this.isUnpublished(); }
+
+  /** Is the NpmsDashboardModel Unpublishable? */
+  isUnpublishable() { return this.isPublished(); }
 
 
   /**

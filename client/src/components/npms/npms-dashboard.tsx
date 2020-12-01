@@ -1,5 +1,12 @@
 // import * as remember from '../../custom.d.ts';
-import React, { CSSProperties, PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react';
+import ThumbDownIcon from '@material-ui/icons/ThumbDownOutlined';
+import CheckIcon from '@material-ui/icons/CheckOutlined';
+import PublishIcon from '@material-ui/icons/PublishOutlined';
+import RemoveCircleOutlineIcon from '@material-ui/icons/RemoveCircleOutline';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDownOutlined';
+import SendIcon from '@material-ui/icons/SendOutlined';
+import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUpOutlined';
+import React, { CSSProperties, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import EditIcon from '@material-ui/icons/EditOutlined';
@@ -24,16 +31,40 @@ import {
   IconButtonProps,
   Theme,
   PropTypes,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from '@material-ui/core';
 import { gql } from 'graphql-request';
-import { NpmsDashboardSoftDeleteDashboardMutation, NpmsDashboardSoftDeleteDashboardMutationVariables } from '../../generated/graphql';
-import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
+import {
+  SubmitNpmsDashboardMutation,
+  SubmitNpmsDashboardMutationVariables,
+  RejectNpmsDashboardMutation,
+  RejectNpmsDashboardMutationVariables,
+  PublishNpmsDashboardMutation,
+  PublishNpmsDashboardMutationVariables,
+  UnpublishNpmsDashboardMutation,
+  UnpublishNpmsDashboardMutationVariables,
+  ApproveNpmsDashboardMutation,
+  ApproveNpmsDashboardMutationVariables,
+  SoftDeleteNpmsDashboardMutation,
+  SoftDeleteNpmsDashboardMutationVariables,
+} from '../../generated/graphql';
+import {
+  normaliseApiException,
+  rethrow,
+} from '../../backend-api/normalise-api-exception.helper';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
 import { Legend } from '../legend/legend';
 import { PieChartDatum } from '../../types/pie-chart-datum.type';
 import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
-import { INpmsPackageSearchOption, } from './npms-package-combo-search';
-import { NpmsDashboardMutateForm, } from './npms-dashboard-mutate.form';
+import {
+  INpmsPackageSearchOption,
+} from './npms-package-combo-search';
+import {
+  NpmsDashboardMutateForm,
+} from './npms-dashboard-mutate.form';
 import { ApiContext } from '../../components-contexts/api.context';
 import { Id } from '../../types/id.type';
 import { JsonPretty } from '../json-pretty/json-pretty';
@@ -45,76 +76,111 @@ import { FittedPieChart } from '../../components-charts/fitted-pie-chart/fitted-
 import { IWithDialogueProps } from '../../components-hoc/with-dialog/with-dialog';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 import { FittedAreaChart } from '../../components-charts/fitted-area-chart/fitted-area-chart';
-import { ClassNameMap, Styles } from '@material-ui/core/styles/withStyles';
+import withStyles, {
+  ClassNameMap,
+  Styles,
+} from '@material-ui/core/styles/withStyles';
 import { $DANGER } from '../../types/$danger.type';
 import clsx from 'clsx';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
+import { OrNull } from '../../types/or-null.type';
+import { useMutation } from 'react-query';
+import { useSnackbar } from 'notistack';
+import { ApiException } from '../../backend-api/api.exception';
+import { IApiException } from '../../backend-api/types/api.exception.interface';
+import { DebugModeContext, useDebugMode } from '../../components-contexts/debug-mode.context';
+import { hidex } from '../../helpers/hidden.helper';
+import { ArrowDropUp } from '@material-ui/icons';
+import { useThemeColours } from '../../hooks/use-theme-colours.hook';
+import { LoadingDialog } from '../loading-dialog/loading-dialog';
 
-// const useBorderedStyles = makeStyles<Theme, BorderedStylesProps>((theme) => ({
-//   bordered: (props: BorderedStylesProps) => {
-//     const cssClass: CSSProperties = {};
-//     if (props.color != null) {
-//       if (props.color === 'secondary') { cssClass.borderColor = theme.palette.secondary.main }
-//       else if (props.color === 'primary') { cssClass.borderColor = theme.palette.primary.main }
-//       else if (props.color === 'inherit') { cssClass.borderColor = 'inherit' }
-//       // else if (props.color === 'default') { cssClass.color = 'def'}
-//       // cssClass.color = props.color.split('.').reduce((c, n) => c[n], (theme.palette as any)) as $DANGER<string>;
-//     }
-//     if (props.border != null) { cssClass.borderWidth = `${props.border}px`; }
-//     if (props.borderTop != null) { cssClass.borderTop = `${props.borderTop}px`; }
-//     if (props.borderRight != null) { cssClass.borderRight = `${props.borderRight}px`; }
-//     if (props.borderBottom != null) { cssClass.borderBottom = `${props.borderBottom}px`; }
-//     if (props.borderLeft != null) { cssClass.borderLeft = `${props.borderLeft}px`; }
-//     const result = { bordered: { ...cssClass, color: 'red', } };
-//     console.log('result:', result);
-//     return result;
-//   },
-//   testing: {
-//     color: (props) => 'red',
-//   }
-// }));
+const submitNpmsDashboardMutation = gql`
+mutation SubmitNpmsDashboard(
+  $id:Int!
+){
+  submitNpmsDashboard(
+    dto:{
+      id:$id
+    }
+  ){
+    data{
+      id
+      name
+    }
+  }
+}
+`;
 
-// interface BorderedStylesProps {
-//   color?: PropTypes.Color;
-//   border?: number;
-//   borderTop?: number;
-//   borderRight?: number;
-//   borderBottom?: number;
-//   borderLeft?: number;
-//   borderRadius?: number;
-// }
+const rejectNpmsDashboardMutation = gql`
+mutation RejectNpmsDashboard(
+  $id:Int!
+){
+  rejectNpmsDashboard(
+    dto:{
+      id:$id
+    }
+  ){
+    data{
+      id
+      name
+    }
+  }
+}
+`;
 
-// const BorderedIconButton = (props: PropsWithChildren<BorderedStylesProps & IconButtonProps>) => {
-//   const {
-//     children,
-//     color,
-//     border,
-//     borderTop,
-//     borderRight,
-//     borderBottom,
-//     borderLeft,
-//     borderRadius,
-//     ...otherProps
-//   } = props;
+const approveNpmsDashboardMutation = gql`
+mutation ApproveNpmsDashboard(
+  $id:Int!
+){
+  approveNpmsDashboard(
+    dto:{
+      id:$id
+    }
+  ){
+    data{
+      id
+      name
+    }
+  }
+}
+`;
 
-//   const propsMemo = useMemo(
-//     () => props,
-//     [ color, border, borderTop, borderRadius, borderBottom, borderLeft, ],
-//   );
+const publishNpmsDashboardMutation = gql`
+mutation PublishNpmsDashboard(
+  $id:Int!
+){
+  publishNpmsDashboard(
+    dto:{
+      id:$id
+    }
+  ){
+    data{
+      id
+      name
+    }
+  }
+}
+`;
 
-//   const classes = useBorderedStyles(propsMemo);
+const unpublishNpmsDashboardMutation = gql`
+mutation UnpublishNpmsDashboard(
+  $id:Int!
+){
+  unpublishNpmsDashboard(
+    dto:{
+      id:$id
+    }
+  ){
+    data{
+      id
+      name
+    }
+  }
+}
+`;
 
-//   console.log('classes:', classes);
-
-//   return (
-//     <IconButton className={clsx(classes.bordered, otherProps.className, classes.testing)} color={color}>
-//       {children}
-//     </IconButton>
-//   );
-// }
-
-const npmsDashboardSoftDeleteDashboardQuery = gql`
-mutation NpmsDashboardSoftDeleteDashboard(
+const softDeleteNpmsDashboardMutation = gql`
+mutation SoftDeleteNpmsDashboard(
   $id:Int!
 ){
   softDeleteNpmsDashboard(
@@ -135,10 +201,24 @@ export interface INpmsDashboardDatasets {
   graphical: {
     name: string;
     colours: string[];
+    ownedByMe: boolean;
+    status: OrNull<{
+      name: string;
+      colour: string;
+    }>;
     can: {
-      show: boolean,
-      update: boolean,
-      softDelete: boolean,
+      show: boolean;
+      update: boolean;
+      softDelete: boolean;
+      hardDelete: boolean;
+      restore: boolean;
+      submit: boolean;
+      reject: boolean;
+      approve: boolean;
+      publish: boolean;
+      unpublish: boolean;
+      createDashboardItems: boolean;
+      hardDeleteDashboardItems: boolean;
     },
     overview: {
       legend: { names: string[]; colours: string[]; };
@@ -183,6 +263,7 @@ export interface INpmsDashboardDatasets {
   }
 }
 
+
 interface INpmsDashboardProps {
   dashboard: INpmsDashboardDatasets;
   onChange?: () => any;
@@ -190,16 +271,224 @@ interface INpmsDashboardProps {
 
 export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const { dashboard, onChange, api, me } = props;
+  const { enqueueSnackbar } = useSnackbar();
   const colours = useRandomDashColours();
+  const themeColours = useThemeColours();
 
-  const handleSoftDeleteDashboard = useCallback(async () => {
-    const vars: NpmsDashboardSoftDeleteDashboardMutationVariables = { id: Number(dashboard.original.id) };
-    const result = await api.gql<NpmsDashboardSoftDeleteDashboardMutation, NpmsDashboardSoftDeleteDashboardMutationVariables>(
-      npmsDashboardSoftDeleteDashboardQuery,
-      vars,
-    );
-    onChange?.();
-  }, [dashboard.original.id]);
+  /**
+   * Menu
+   */
+
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const handleMenuClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => { setMenuAnchor(evt.currentTarget); }, []);
+  const handleMenuClose = useCallback(() => { setMenuAnchor(null); }, []);
+
+  /**
+   * ----------------
+   * Submit
+   * ----------------
+   */
+
+  const handleSubmitSuccess = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Submitted ${dashboard.original.name}`, { variant: 'success' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const handleSubmitError = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Failed to Submit ${dashboard.original.name}`, { variant: 'error' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const [doSubmit, submitState] = useMutation<SubmitNpmsDashboardMutation, IApiException>(
+    async (): Promise<SubmitNpmsDashboardMutation> => {
+      const vars: SubmitNpmsDashboardMutationVariables = { id: Number(dashboard.original.id) };
+      const result = await api.gql<SubmitNpmsDashboardMutation, SubmitNpmsDashboardMutationVariables>(
+        submitNpmsDashboardMutation,
+        vars,
+      );
+      return result;
+    },
+    { onSuccess: handleSubmitSuccess, onError: handleSubmitError, }
+  );
+
+  /**
+   * ----------------
+   * Approve
+   * ----------------
+   */
+
+  const handleApproveSuccess = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Approved ${dashboard.original.name}`, { variant: 'success' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const handleApproveError = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Failed to Approve ${dashboard.original.name}`, { variant: 'error' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const [doApprove, approveState] = useMutation<ApproveNpmsDashboardMutation, IApiException>(
+    async (): Promise<ApproveNpmsDashboardMutation> => {
+      const vars: ApproveNpmsDashboardMutationVariables = { id: Number(dashboard.original.id) };
+      const result = await api.gql<ApproveNpmsDashboardMutation, ApproveNpmsDashboardMutationVariables>(
+        approveNpmsDashboardMutation,
+        vars,
+      );
+      return result;
+    },
+    { onSuccess: handleApproveSuccess, onError: handleApproveError, }
+  );
+
+  /**
+   * ----------------
+   * Reject
+   * ----------------
+   */
+
+  const handleRejectSuccess = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Rejected ${dashboard.original.name}`, { variant: 'success' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const handleRejectError = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Failed to Reject ${dashboard.original.name}`, { variant: 'error' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const [doReject, rejectState] = useMutation<RejectNpmsDashboardMutation, IApiException>(
+    async (): Promise<RejectNpmsDashboardMutation> => {
+      const vars: RejectNpmsDashboardMutationVariables = { id: Number(dashboard.original.id) };
+      const result = await api.gql<RejectNpmsDashboardMutation, RejectNpmsDashboardMutationVariables>(
+        rejectNpmsDashboardMutation,
+        vars,
+      );
+      return result;
+    },
+    { onSuccess: handleRejectSuccess, onError: handleRejectError, }
+  );
+
+  /**
+   * ----------------
+   * Publish
+   * ----------------
+   */
+
+  const handlePublishSuccess = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Published ${dashboard.original.name}`, { variant: 'success' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const handlePublishError = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Failed to Publish ${dashboard.original.name}`, { variant: 'error' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const [doPublish, publishState] = useMutation<PublishNpmsDashboardMutation, IApiException>(
+    async (): Promise<PublishNpmsDashboardMutation> => {
+      const vars: PublishNpmsDashboardMutationVariables = { id: Number(dashboard.original.id) };
+      const result = await api.gql<PublishNpmsDashboardMutation, PublishNpmsDashboardMutationVariables>(
+        publishNpmsDashboardMutation,
+        vars,
+      );
+      return result;
+    },
+    { onSuccess: handlePublishSuccess, onError: handlePublishError, }
+  );
+
+  /**
+   * ----------------
+   * Unpublish
+   * ----------------
+   */
+
+  const handleUnpublishSuccess = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Unpublished ${dashboard.original.name}`, { variant: 'success' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const handleUnpublishError = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Failed to unpublish ${dashboard.original.name}`, { variant: 'error' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const [doUnpublish, unpublishState] = useMutation<UnpublishNpmsDashboardMutation, IApiException>(
+    async (): Promise<UnpublishNpmsDashboardMutation> => {
+      const vars: UnpublishNpmsDashboardMutationVariables = { id: Number(dashboard.original.id) };
+      const result = await api.gql<UnpublishNpmsDashboardMutation, UnpublishNpmsDashboardMutationVariables>(
+        unpublishNpmsDashboardMutation,
+        vars,
+      );
+      return result;
+    },
+    { onSuccess: handleUnpublishSuccess, onError: handleUnpublishError, }
+  );
+
+  /**
+   * ----------------
+   * SoftDelete
+   * ----------------
+   */
+
+  const handleSoftDeleteSuccess = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Deleted ${dashboard.original.name}`, { variant: 'success' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const handleSoftDeleteError = useCallback(
+    () => {
+      handleMenuClose();
+      enqueueSnackbar(`Failed to delete ${dashboard.original.name}`, { variant: 'error' });
+      onChange?.();
+    },
+    [handleMenuClose, enqueueSnackbar, onChange],
+  );
+  const [doSoftDelete, softDeleteState] = useMutation<SoftDeleteNpmsDashboardMutation, IApiException>(
+    async (): Promise<SoftDeleteNpmsDashboardMutation> => {
+      const vars: SoftDeleteNpmsDashboardMutationVariables = { id: Number(dashboard.original.id) };
+      const result = await api.gql<SoftDeleteNpmsDashboardMutation, SoftDeleteNpmsDashboardMutationVariables>(
+        softDeleteNpmsDashboardMutation,
+        vars,
+      );
+      return result;
+    },
+    { onSuccess: handleSoftDeleteSuccess, onError: handleSoftDeleteError, }
+  );
+
+  // --------
+
 
   const debugDialog = useDialog();
   const mutationDialog = useDialog();
@@ -208,13 +497,41 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
     onChange?.();
   }, []);
 
-  const [showMore, setShowMore] = useState(false);
 
+  const [showMore, setShowMore] = useState(false);
+  const debugMode = useDebugMode();
+  const isLoading =
+    submitState.isLoading
+    || rejectState.isLoading
+    || approveState.isLoading
+    || publishState.isLoading
+    || softDeleteState.isLoading;
+  const isDisabled = isLoading;
+
+  const canSubmit = dashboard.graphical.can.submit;
+  const canReject = dashboard.graphical.can.reject;
+  const canApprove = dashboard.graphical.can.approve;
+  const canPublish = dashboard.graphical.can.publish;
+  const canUnpublish = dashboard.graphical.can.unpublish;
+  const hasExtraActions =
+    canSubmit
+    || canReject
+    || canApprove
+    || canPublish
+    || canUnpublish;
+
+  const handleSubmitDashboardClicked = useCallback(() => doSubmit(), [doSubmit]);
+  const handleApproveDashboardClicked = useCallback(() => doApprove(), [doApprove]);
+  const handleRejectDashboardClicked = useCallback(() => doReject(), [doReject]);
+  const handlePublishDashboardClicked = useCallback(() => doPublish(), [doPublish]);
+  const handleUnpublishDashboardClicked = useCallback(() => doUnpublish(), [doUnpublish]);
+  const handleSoftDeleteDashboardClicked = useCallback(() => doSoftDelete(), [doSoftDelete]);
 
   return (
     <>
       <NpmsDashboardMutateForm
         dialog={mutationDialog}
+        hideItems={!(dashboard.graphical.can.createDashboardItems && dashboard.graphical.can.hardDeleteDashboardItems)}
         initial={{
           id: dashboard.original.id,
           name: dashboard.original.name,
@@ -226,36 +543,98 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
       <DebugJsonDialog dialog={debugDialog} title={dashboard.original.name} data={dashboard} />
       <Grid className="text-center" container spacing={2}>
         <Grid item xs={12}>
-          <Typography className="centered" component="h2" variant="h2">
-            {dashboard.graphical.name}
-          </Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Box display="flex" justifyContent="center">
-            <WhenDebugMode>
-              <Box px={1}>
-                <IconButton color="primary" onClick={debugDialog.doToggle}>
-                  {/* <BugReportIcon /> */}
-                  <BugReportIcon />
-                </IconButton>
+          <Box position="relative" className="centered" mb={1}>
+            <Typography className="centered" component="h2" variant="h2">
+              {dashboard.graphical.name}
+            </Typography>
+            <Box width="100%" position="absolute" display="flex" justifyContent="space-between" alignItems="center" left={0}>
+              <Box className="centered">
+                {(dashboard.graphical.status && (hasExtraActions || dashboard.graphical.ownedByMe)) && (
+                  <Box mr={1}>
+                  <Typography className="capitalise" component="h4" variant="h4">
+                    Status:&nbsp;
+                    <span style={{ color: dashboard.graphical.status.colour }}>
+                      {dashboard.graphical.status.name}
+                    </span>
+                  </Typography>
+                  </Box>
+                )}
               </Box>
-            </WhenDebugMode>
-            {dashboard.graphical.can.update && (
-              <Box px={1}>
-                <IconButton color="primary" onClick={mutationDialog.doOpen}>
-                  <EditIcon />
-                </IconButton>
+              <Box className="centered">
+                <Box className={hidex(!debugMode.isOn)} mr={1}>
+                  <IconButton disabled={isDisabled} color="primary" onClick={debugDialog.doToggle}>
+                    <BugReportIcon />
+                  </IconButton>
+                </Box>
+                {dashboard.graphical.can.update && (
+                  <Box>
+                    <Box mr={1}>
+                      <IconButton disabled={isDisabled} color="primary" onClick={mutationDialog.doOpen}>
+                        <EditIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                )}
+                {dashboard.graphical.can.softDelete && (
+                  <Box>
+                    <Box mr={1}>
+                      <IconButton disabled={isDisabled} color="primary" onClick={handleSoftDeleteDashboardClicked}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                )}
+                {hasExtraActions && (
+                  <>
+                    <Button
+                      startIcon={!!menuAnchor ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+                      variant="outlined"
+                      color="primary"
+                      onClick={handleMenuClick}
+                    >
+                      More Actions
+                    </Button>
+                    <Menu
+                      anchorEl={menuAnchor}
+                      onClose={handleMenuClose}
+                      open={!!menuAnchor}
+                      keepMounted
+                    >
+                      {canPublish && (
+                        <MenuItem disabled={isDisabled} onClick={handlePublishDashboardClicked}>
+                          <ListItemIcon className={themeColours.success}><PublishIcon /></ListItemIcon>
+                          <ListItemText className={themeColours.success}>Publish</ListItemText>
+                        </MenuItem>
+                      )}
+                      {canApprove && (
+                        <MenuItem disabled={isDisabled} onClick={handleApproveDashboardClicked}>
+                          <ListItemIcon className={themeColours.primary}><CheckIcon /></ListItemIcon>
+                          <ListItemText className={themeColours.primary}>Approve</ListItemText>
+                        </MenuItem>
+                      )}
+                      {canSubmit && (
+                        <MenuItem onClick={handleSubmitDashboardClicked}>
+                          <ListItemIcon className={themeColours.primary}><SendIcon /></ListItemIcon>
+                          <ListItemText className={themeColours.primary}>Submit</ListItemText>
+                        </MenuItem>
+                      )}
+                      {canReject && (
+                        <MenuItem disabled={isDisabled} onClick={handleRejectDashboardClicked}>
+                          <ListItemIcon className={themeColours.warning}><ThumbDownIcon /></ListItemIcon>
+                          <ListItemText className={themeColours.warning}>Reject</ListItemText>
+                        </MenuItem>
+                      )}
+                      {canUnpublish && (
+                        <MenuItem disabled={isDisabled} onClick={handleUnpublishDashboardClicked}>
+                          <ListItemIcon className={themeColours.error}><RemoveCircleOutlineIcon /></ListItemIcon>
+                          <ListItemText className={themeColours.error}>Unpublish</ListItemText>
+                        </MenuItem>
+                      )}
+                    </Menu>
+                  </>
+                )}
               </Box>
-            )}
-            {dashboard.graphical.can.softDelete && (
-              <Box px={1}>
-                <IconButton color="primary" onClick={handleSoftDeleteDashboard}>
-                {/* <BorderedIconButton border={1} color="primary" onClick={handleSoftDeleteDashboard}> */}
-                  <DeleteIcon />
-                {/* </BorderedIconButton> */}
-                </IconButton>
-              </Box>
-            )}
+            </Box>
           </Box>
         </Grid>
         <Grid className="centered col" item xs={12} sm={4} md={2}>

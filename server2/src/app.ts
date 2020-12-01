@@ -86,11 +86,11 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
         logger.info('Updating old npms packages...');
         ctx.services.universal.db.transact(async ({ runner }) => {
           // find all that haven't been checked in the last day...
-          // const yesterday = new Date(Date.now() - 1_000 * 60 * 60 * 24);
-          const threeMinutesAgo = new Date(Date.now() - 1_000 * 60 * 3);
+          const yesterday = new Date(Date.now() - 1_000 * 60 * 60 * 24);
+          // const threeMinutesAgo = new Date(Date.now() - 1_000 * 60 * 3);
           await ctx.services.npmsPackageService.synchronise({
             runner,
-            since: threeMinutesAgo,
+            since: yesterday,
           });
         });
       }),

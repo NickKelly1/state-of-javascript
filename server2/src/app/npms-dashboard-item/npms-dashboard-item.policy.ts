@@ -192,9 +192,12 @@ export class NpmsDashboardItemPolicy {
       return true;
     };
 
+    const t = this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.HardDeleteOnOwnDashboards]) && dashboard.isOwnedBy(this.ctx.auth);
+
+    // console.log('-------------------', this.ctx.auth.toJSON(), t);
+
     // can if Owner & can HardDelete on own Dashboards
-    return this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.HardDeleteOnOwnDashboards])
-      && dashboard.isOwnedBy(this.ctx.auth);
+    return t
   }
 
 

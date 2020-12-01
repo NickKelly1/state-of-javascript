@@ -996,6 +996,7 @@ export type NpmsDashboardNode = {
 
 export type NpmsDashboardData = {
   __typename?: 'NpmsDashboardData';
+  ownedByMe: Scalars['Boolean'];
   id: Scalars['Int'];
   name: Scalars['String'];
   order: Scalars['Int'];
@@ -2090,7 +2091,7 @@ export type InitialiseIntegrationFormMutation = (
 
 export type CreateNpmsDashboardFormMutationVariables = Exact<{
   name: Scalars['String'];
-  npms_package_names: Array<Scalars['String']>;
+  npms_package_names?: Maybe<Array<Scalars['String']>>;
 }>;
 
 
@@ -2112,7 +2113,7 @@ export type CreateNpmsDashboardFormMutation = (
 export type UpdateNpmsDashboardFormMutationVariables = Exact<{
   id: Scalars['Int'];
   name: Scalars['String'];
-  npms_package_names: Array<Scalars['String']>;
+  npms_package_names?: Maybe<Array<Scalars['String']>>;
 }>;
 
 
@@ -2171,12 +2172,92 @@ export type NpmsDashbortSortFormSubmitMutation = (
   & Pick<RootMutationType, 'sortNpmsDashboards'>
 );
 
-export type NpmsDashboardSoftDeleteDashboardMutationVariables = Exact<{
+export type SubmitNpmsDashboardMutationVariables = Exact<{
   id: Scalars['Int'];
 }>;
 
 
-export type NpmsDashboardSoftDeleteDashboardMutation = (
+export type SubmitNpmsDashboardMutation = (
+  { __typename?: 'RootMutationType' }
+  & { submitNpmsDashboard: (
+    { __typename?: 'NpmsDashboardNode' }
+    & { data: (
+      { __typename?: 'NpmsDashboardData' }
+      & Pick<NpmsDashboardData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
+export type RejectNpmsDashboardMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type RejectNpmsDashboardMutation = (
+  { __typename?: 'RootMutationType' }
+  & { rejectNpmsDashboard: (
+    { __typename?: 'NpmsDashboardNode' }
+    & { data: (
+      { __typename?: 'NpmsDashboardData' }
+      & Pick<NpmsDashboardData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
+export type ApproveNpmsDashboardMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type ApproveNpmsDashboardMutation = (
+  { __typename?: 'RootMutationType' }
+  & { approveNpmsDashboard: (
+    { __typename?: 'NpmsDashboardNode' }
+    & { data: (
+      { __typename?: 'NpmsDashboardData' }
+      & Pick<NpmsDashboardData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
+export type PublishNpmsDashboardMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type PublishNpmsDashboardMutation = (
+  { __typename?: 'RootMutationType' }
+  & { publishNpmsDashboard: (
+    { __typename?: 'NpmsDashboardNode' }
+    & { data: (
+      { __typename?: 'NpmsDashboardData' }
+      & Pick<NpmsDashboardData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
+export type UnpublishNpmsDashboardMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type UnpublishNpmsDashboardMutation = (
+  { __typename?: 'RootMutationType' }
+  & { unpublishNpmsDashboard: (
+    { __typename?: 'NpmsDashboardNode' }
+    & { data: (
+      { __typename?: 'NpmsDashboardData' }
+      & Pick<NpmsDashboardData, 'id' | 'name'>
+    ) }
+  ) }
+);
+
+export type SoftDeleteNpmsDashboardMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type SoftDeleteNpmsDashboardMutation = (
   { __typename?: 'RootMutationType' }
   & Pick<RootMutationType, 'softDeleteNpmsDashboard'>
 );
@@ -2651,10 +2732,10 @@ export type JsPageDashboardQuery = (
       & Pick<NpmsDashboardNode, 'cursor'>
       & { can: (
         { __typename?: 'NpmsDashboardActions' }
-        & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'submit' | 'reject' | 'publish' | 'unpublish' | 'createNpmsDashboardItem' | 'hardDeleteNpmsDashboardItem'>
+        & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'submit' | 'approve' | 'reject' | 'publish' | 'unpublish' | 'createNpmsDashboardItem' | 'hardDeleteNpmsDashboardItem'>
       ), data: (
         { __typename?: 'NpmsDashboardData' }
-        & Pick<NpmsDashboardData, 'id' | 'name'>
+        & Pick<NpmsDashboardData, 'id' | 'name' | 'ownedByMe'>
       ), relations: (
         { __typename?: 'NpmsDashboardRelations' }
         & { status?: Maybe<(

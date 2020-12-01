@@ -96,6 +96,7 @@ query JsPageDashboard(
         hardDelete
         restore
         submit
+        approve
         reject
         publish
         unpublish
@@ -105,6 +106,7 @@ query JsPageDashboard(
       data{
         id
         name
+        ownedByMe
       }
       relations{
         status{
@@ -325,10 +327,26 @@ const JavaScriptPageContent = WithoutSsr(WithApi<IJavaScriptPageContentProps>((p
           graphical: {
             name: dashName,
             colours,
+            ownedByMe: dashNode.data.ownedByMe,
+            status: (dashNode.relations.status?.data.colour && dashNode.relations.status?.data.colour)
+              ? {
+                name: dashNode.relations.status.data.name,
+                colour: dashNode.relations.status.data.colour,
+              }
+              : null,
             can: {
               update: dashNode.can.update,
               softDelete: dashNode.can.softDelete,
               show: dashNode.can.show,
+              hardDelete: dashNode.can.hardDelete,
+              restore: dashNode.can.restore,
+              submit: dashNode.can.submit,
+              approve: dashNode.can.approve,
+              reject: dashNode.can.reject,
+              publish: dashNode.can.publish,
+              unpublish: dashNode.can.unpublish,
+              createDashboardItems: dashNode.can.createNpmsDashboardItem,
+              hardDeleteDashboardItems: dashNode.can.hardDeleteNpmsDashboardItem,
             },
             overview: {
               legend: { names: packageNames, colours },

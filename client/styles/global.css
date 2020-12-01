@@ -154,3 +154,8 @@
 .visibility-inherit {
   visibility: inherit;
 }
+
+
+.capitalise {
+  text-transform: capitalize;
+}

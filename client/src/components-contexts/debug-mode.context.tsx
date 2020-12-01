@@ -1,5 +1,5 @@
 import { useSnackbar } from 'notistack';
-import React, { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { _ls } from '../helpers/_ls.helper';
 import { useUpdate } from '../hooks/use-update.hook';
 
@@ -12,6 +12,7 @@ export interface IDebugModeContext {
 }
 
 export const DebugModeContext = createContext<IDebugModeContext>(null!);
+export const useDebugMode = (): IDebugModeContext => useContext(DebugModeContext);
 
 interface IDebugModeProviderProps {
   children: ReactNode;

@@ -133,7 +133,7 @@ export class NpmsDashboardPolicy {
     }
 
     // failed
-    return true;
+    return false;
   }
 
 
@@ -249,8 +249,8 @@ export class NpmsDashboardPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // must be Draft
-    if (!model.isDraft()) return false;
+    // must be Submittable
+    if (!(model.isSubmittable())) return false;
 
     // must be Updateable
     return this.canUpdate({ model });
@@ -273,8 +273,11 @@ export class NpmsDashboardPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // is Submitted
-    if (!model.isSubmitted()) return false;
+    // must be Rejectable
+    if (!(model.isRejectable())) return false;
+
+    // can if Owner
+    if (model.isOwnedBy(this.ctx.auth)) return true;
 
     // can if Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
@@ -300,8 +303,8 @@ export class NpmsDashboardPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // must be Submitted
-    if (!model.isSubmitted()) return false;
+    // must be Approvable
+    if (!(model.isApprovable())) return false;
 
     // can if Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
@@ -327,8 +330,8 @@ export class NpmsDashboardPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // must be Approved
-    if (!model.isApproved()) return false;
+    // must be Publishable
+    if (!(model.isPublishable())) return false;
 
     // can if Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
@@ -354,8 +357,8 @@ export class NpmsDashboardPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // must be Publsihed
-    if (!model.isPublished()) return false;
+    // must be Unpublishable
+    if (!model.isUnpublishable()) return false;
 
     // can if Admin or Manager
     return this.ctx.auth.hasAnyPermissions([
