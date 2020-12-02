@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
+echo "building api..."
+cd ../api
+npm run build
+
 echo "building client..."
 cd ../client
 npm run build

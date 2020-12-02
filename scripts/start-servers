@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
 
-pm2 --cwd ../server start npm --name "server" -- run develop
-pm2 --cwd ../client start npm --name "client" -- start
+pm2 --cwd ../cms start npm --name "soj-cms" -- run develop
+pm2 --cwd ../api start npm --name "soj-api" -- start
+pm2 --cwd ../client start npm --name "soj-client" -- start

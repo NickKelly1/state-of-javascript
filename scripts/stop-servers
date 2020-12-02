@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
 
-pm2 delete "server"
-pm2 delete "client"
+pm2 delete "soj-cms"
+pm2 delete "soj-api"
+pm2 delete "soj-client"
