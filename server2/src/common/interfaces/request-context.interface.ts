@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { PermissionId } from "../../app/permission/permission-id.type";
 import { UserId } from "../../app/user/user.id.type";
 import { UserModel } from "../../app/user/user.model";
 import { RequestAuth } from "../classes/request-auth";
@@ -16,6 +17,11 @@ export interface IThrowable {
 
 export interface IRequestContext {
   except(throwable: IThrowable): Exception;
+  // duck-type some RequestAuth methods
+  isSuperAdmin(): boolean;
+  isMe(user?: OrNullable<UserModel>): boolean;
+  isMeById(id?: OrNullable<UserId>): boolean;
+  hasPermission(...permissions: (PermissionId | PermissionId[])[]): boolean;
   authorize(can: boolean): void | never;
   lang(switcher: LangSwitch): string;
   info(): IJson;

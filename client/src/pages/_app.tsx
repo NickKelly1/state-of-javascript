@@ -1,5 +1,5 @@
 import '../../styles/global.css';
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
 import { ThemeProvider } from '@material-ui/core/styles';
@@ -15,6 +15,25 @@ import { DebugModeProvider } from '../components-contexts/debug-mode.context';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 import { SnackbarProvider } from 'notistack';
 import { IPageProps } from '../types/page-props.interface';
+import ReactGA from 'react-ga';
+import { GA, GAEventCategory, PublicEnvSingleton } from '../env/public-env.helper';
+import { useRouter, Router } from 'next/router';
+import nprogress from 'nprogress';
+
+Router.events.on('routeChangeStart', (url) => {
+  nprogress.start();
+  GA?.event({ category: GAEventCategory.routing, action: `start: ${url}`, });
+});
+Router.events.on('routeChangeComplete', (url) => {
+  nprogress.done();
+  GA?.event({ category: GAEventCategory.routing, action: `complete: ${url}`, });
+});
+Router.events.on('routeChangeError', (url) => {
+  nprogress.done();
+  GA?.event({ category: GAEventCategory.routing, action: `error: ${url}`, });
+});
+
+
 
 interface IMyAppProps extends AppProps {
   //
@@ -35,12 +54,19 @@ export default function MyApp(props: IMyAppProps) {
 
   const { _me, ..._pageProps } = pageProps as IPageProps;
 
+  const router = useRouter();
+
   React.useEffect(() => {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
       jssStyles.parentElement?.removeChild(jssStyles);
     }
+  }, []);
+
+  useEffect(() => {
+    // router.events.on()
+    //
   }, []);
 
   return (

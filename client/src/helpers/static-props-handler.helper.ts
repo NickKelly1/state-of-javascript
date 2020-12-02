@@ -16,10 +16,11 @@ import { Cms } from "../cms/cms";
 import { CmsConnector } from "../cms/cms-connector";
 import { Debug } from "../debug/debug";
 import { Api } from "../backend-api/api";
-import { ApiFactory, ApiFactoryArgType } from "../backend-api/api.factory";
+import { ApiFactory } from "../backend-api/api.factory";
 import { CmsFactory } from "../cms/cms.factory";
 import { NpmsApiFactory } from "../npms-api/npms-api.factory";
 import { IPageProps } from "../types/page-props.interface";
+import { apiMeFns } from "../backend-api/api.me";
 
 interface StaticPropsHander<P extends { [key: string]: any }, Q extends ParsedUrlQuery> {
   (arg: {
@@ -54,7 +55,8 @@ export function staticPropsHandler<
     const publicEnv = PublicEnvSingleton;
     const cms = CmsFactory({ publicEnv });
     const npmsApi = NpmsApiFactory({ publicEnv });
-    const api = await ApiFactory({ publicEnv, type: ApiFactoryArgType.WithoutCredentials, me: undefined, });
+    const me = apiMeFns.defaultInitialMe({ ss: true });
+    const api = await ApiFactory({ publicEnv, me, });
     const result = await handler({ ctx, npmsApi, publicEnv, cms, api, });
     const end = Date.now();
     const dur = end - start;
@@ -64,7 +66,7 @@ export function staticPropsHandler<
       ...result,
       props: {
         ...result.props,
-        _me: _me.serialize(),
+        _me: apiMeFns.serialize(_me),
       } };
   }
   return wrapper;
@@ -81,7 +83,8 @@ export function staticPathsHandler<
     const publicEnv = PublicEnvSingleton;
     const cms = CmsFactory({ publicEnv });
     const npmsApi = NpmsApiFactory({ publicEnv });
-    const api = await ApiFactory({ publicEnv, type: ApiFactoryArgType.WithoutCredentials, me: undefined, });
+    const me = apiMeFns.defaultInitialMe({ ss: true });
+    const api = await ApiFactory({ publicEnv, me, });
     const result = await handler({ npmsApi, publicEnv, cms, api, });
     const end = Date.now();
     const dur = end - start;

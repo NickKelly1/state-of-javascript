@@ -1,12 +1,9 @@
-import { Box, Button, ButtonGroup, CircularProgress, Grid, Input, InputLabel, LinearProgress, makeStyles, Paper, Switch, TextField, Typography } from "@material-ui/core";
+import { CircularProgress, Grid, Input, InputLabel, LinearProgress, makeStyles, Paper, Switch, TextField, Typography } from "@material-ui/core";
 import { gql } from "graphql-request";
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, } from "react";
 import { useMutation } from "react-query";
-import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { ApiContext } from "../../components-contexts/api.context";
 import { CreateNewsArticle, CreateNewsArticleMutationVariables, } from "../../generated/graphql";
-import { staticPathsHandler, staticPropsHandler } from "../../helpers/static-props-handler.helper";
 import { INewsArticleFormData, NewsArticleForm } from "../../components/news/news-article.form";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
@@ -89,17 +86,17 @@ const CreateNewsPage = WithApi<ICreateNewsPageProps>((props) => {
   );
 })
 
-export const getStaticProps = staticPropsHandler<ICreateNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {
-  const props: ICreateNewsPageProps = {
-    //
-  };
+// export const getStaticProps = staticPropsHandler<ICreateNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {
+//   const props: ICreateNewsPageProps = {
+//     //
+//   };
 
 
-  return {
-    props,
-    // revalidate: false,
-  };
-});
+//   return {
+//     props,
+//     // revalidate: false,
+//   };
+// });
 
 // export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
 //   return {

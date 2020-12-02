@@ -19,10 +19,10 @@ export class PermissionCategoryPolicy {
   }): boolean {
 
     // is Admin or Shower
-    return this.ctx.auth.hasAnyPermissions([
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.PermissionsCategories.Show,
-    ]);
+      Permission.PermissionsCategories.Viewer,
+    );
   }
 
 
@@ -35,10 +35,10 @@ export class PermissionCategoryPolicy {
     model: PermissionCategoryModel;
   }): boolean {
 
-    // is Admin or Shower
-    return this.ctx.auth.hasAnyPermissions([
+    // is Admin or Viewer
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.PermissionsCategories.Show,
-    ]);
+      Permission.PermissionsCategories.Viewer,
+    );
   }
 }

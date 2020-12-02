@@ -12,30 +12,18 @@ export class UserPolicy {
 
 
   /**
-   * Is the user a protected / system / migrated user?
-   *
-   * @param user
-   */
-  protected isProtectedUser(user: UserModel): boolean {
-    return (user.isAdmin() || user.isAnonymous() || user.isSystem());
-  }
-
-
-  /**
    * Can the Requester FindMany Users?
    *
    * @param arg
    */
-  canFindMany(arg?: {
-    //
-  }): boolean {
+  canFindMany(): boolean {
 
-    // is Admin, Manager or Shower
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.Show,
-    ]);
+    // is UserAdmin, or UserManager, or UserViewer
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.Manager,
+      Permission.Users.Viewer,
+    );
   }
 
 
@@ -49,12 +37,12 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // is Admin, Manager or Shower
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.Show,
-    ]);
+    // is UserAdmin, or UserManager, or UserViewer
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.Manager,
+      Permission.Users.Viewer,
+    );
   }
 
 
@@ -68,18 +56,19 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // self
+    // is me and UserViewer
     if (
-      this.ctx.auth.isMe(model)
-      && this.ctx.auth.hasAnyPermissions([Permission.Users.Show])
-    ) return true;
+      this.ctx.isMe(model)
+      && this.ctx.hasPermission(Permission.Users.Viewer)
+    ) {
+      return true;
+    }
 
-    // other
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.ShowIdentities,
-    ]);
+    // is UserAdmin or IdentitiyViewer
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.ViewIdentities,
+    );
   }
 
 
@@ -92,12 +81,11 @@ export class UserPolicy {
     //
   }): boolean {
 
-    // is Admin, Manager or Registerer
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
+    // is UserAdmin or UserRegisterer
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
       Permission.Users.Register,
-    ]);
+    );
   }
 
 
@@ -108,9 +96,7 @@ export class UserPolicy {
    */
   canLogin(): boolean {
 
-    // ability to LogIn is required
-    // if you can't LogIn as anything, not even Admin,
-    // all hope is lost
+    // LogIn is required otherwise Admin can't log in to change it
     return true;
   }
 
@@ -124,7 +110,7 @@ export class UserPolicy {
    */
   canLogout() {
     // Can LogOut if LoggedIn
-    return this.ctx.auth.isAuthenticatedAsUser();
+    return this.ctx.auth.isLoggedIn();
   }
 
 
@@ -160,11 +146,12 @@ export class UserPolicy {
   canCreate(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.Create,
-    ]);
+
+    // is UserAdmin or UserManager
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.Manager,
+    );
   }
 
 
@@ -178,74 +165,29 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // protected?
-    if (this.isProtectedUser(model)) return false;
+    // is not the Admin user
+    if (model.isAdmin()) return false;
 
-    // self
-    if (this.ctx.auth.isMe(model)
-      && this.ctx.auth.hasAnyPermissions([Permission.Users.UpdateSelf])
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
+    // is me & can Update Self
+    if (this.ctx.isMe(model)
+      && this.ctx.hasPermission(Permission.Users.UpdateSelf)
     ) {
       return true;
     }
 
-    // is SuperAdmin, Manager, Updater
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.Update,
+    // is UserAdmin or UserManager
+    return this.ctx.hasPermission([
+      Permission.Users.Admin,
+      Permission.Users.Manager,
     ]);
   }
 
-
-  /**
-   * Can the Requester Update the Users Password?
-   *
-   * @param arg
-   */
-  canUpdatePassword(arg: {
-    model: UserModel;
-  }): boolean {
-    const { model } = arg;
-
-    // protected?
-    if (this.isProtectedUser(model)) return false;
-
-    // self
-    if (this.ctx.auth.isMe(model)
-      && this.ctx.auth.hasAnyPermissions([Permission.Users.UpdateSelf])
-    ) {
-      return true;
-    }
-
-    // is Admin, Manager or PasswordUpdater
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.UpdatePasswords,
-    ]);
-  }
-
-
-  /**
-   * Can the Requester Deactivate the user?
-   *
-   * @param arg
-   */
-  canDeactivate(arg: {
-    model: UserModel;
-  }): boolean {
-    const { model } = arg;
-
-    // protected?
-    if (this.isProtectedUser(model)) return false;
-
-    // is Admin, Manager or Deactivator
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.Deactivate,
-    ]);
-  }
 
 
   /**
@@ -258,25 +200,23 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
+    // is not the Admin user
+    if (model.isAdmin()) return false;
+
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // is not Protected
-    if (this.isProtectedUser(model)) return false;
-
-    // is Self
-    if (this.ctx.auth.isMe(model)
-      && this.ctx.auth.hasAnyPermissions([Permission.Users.SoftDeleteSelf])
-    ) {
-      return true;
-    }
-
-    // is Admin, Manager or SoftDeleter
-    return this.ctx.auth.hasAnyPermissions([
+    // is UserAdmin or UserManager
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.SoftDelete,
-    ]);
+      Permission.Users.Admin,
+    );
   }
 
 
@@ -290,15 +230,19 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // is not Protected
-    if (this.isProtectedUser(model)) return false;
+    // is not the Admin user
+    if (model.isAdmin()) return false;
 
-    // is Admin, Manager or HardDeleter
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.HardDelete,
-    ]);
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
+    // is UserAdmin
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+    );
   }
 
 
@@ -312,19 +256,146 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // must not be SoftDeleted
+    // is not the Admin user
+    if (model.isAdmin()) return false;
+
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
+    // must be SoftDeleted
     if (!model.isSoftDeleted()) return false;
 
-    // is not Protected
-    if (this.isProtectedUser(model)) return false;
-
-    // is Admin, Manager or Restorer
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-      Permission.Users.Restore,
-    ]);
+    // is UserAdmin or UserManager
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.Manager,
+    );
   }
+
+
+  /**
+   * Can the Requester Update the Users Password?
+   *
+   * @param arg
+   */
+  canUpdatePassword(arg: {
+    model: UserModel;
+  }): boolean {
+    const { model } = arg;
+
+    // can on Admin user if Requester is SuperAdmin
+    if (model.isAdmin() && this.ctx.isSuperAdmin()) return true;
+
+    // is not the Admin user
+    if (model.isAdmin()) return false;
+
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
+    // is me & can UpdateSelf
+    if (this.ctx.isMe(model)
+      && this.ctx.hasPermission(Permission.Users.UpdateSelf)
+    ) {
+      return true;
+    }
+
+    // is UserAdmin or UserPasswordUpdater
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.UpdatePasswords,
+    );
+  }
+
+
+  /**
+   * Can the Requester Deactivate the user?
+   *
+   * @param arg
+   */
+  canDeactivate(arg: {
+    model: UserModel;
+  }): boolean {
+    const { model } = arg;
+
+    // is not the Admin user
+    if (model.isAdmin()) return false;
+
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
+    // is UserAdmin or UserDeactivator
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.Deactivate,
+    );
+  }
+
+
+  /**
+   * Can the Requester Update the Email of the User (without requesting & accepting an EmailChangeVerificationEmail)?
+   *
+   * @param arg
+   */
+  canForceUpdateEmail(arg: {
+    model: UserModel;
+  }) {
+    const { model } = arg;
+
+    // can on Admin user if Requester is SuperAdmin
+    if (model.isAdmin() && this.ctx.isSuperAdmin()) return true;
+
+    // is not the Admin User
+    if (model.isAdmin()) return false;
+
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
+    // is UserAdmin or UserForceUpdateEmails
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.ForceUpdateEmails,
+    );
+  }
+
+
+  /**
+   * Can the Requester Verify the User (without requesting & accepting an UserVerificationEmail)?
+   *
+   * @param arg
+   */
+  canForceVerify(arg: {
+    model: UserModel;
+  }) {
+    const { model } = arg;
+
+    // is not the Admin User
+    if (model.isAdmin()) return false;
+
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
+    // is UserAdmin or UserForceVerifier
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.ForceVerify,
+    );
+  }
+
 
 
   /**
@@ -340,11 +411,11 @@ export class UserPolicy {
     // can AcceptWelcome
     if (!this.canAcceptWelcome({ model })) return false;
 
-    // is Admin or Manager
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
-    ]);
+    // is UserAdmin or UserManager
+    return this.ctx.hasPermission(
+      Permission.Users.Admin,
+      Permission.Users.Manager,
+    );
   }
 
 
@@ -358,12 +429,6 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // must not be SoftDeleted
-    if (model.isSoftDeleted()) return false;
-
-    // is not deactivated
-    if (model.isDeactivated()) return false;
-
     // is not the Admin User
     if (model.isAdmin()) return false;
 
@@ -372,6 +437,12 @@ export class UserPolicy {
 
     // is not the Anonymous User
     if (model.isAnonymous()) return false;
+
+    // must not be SoftDeleted
+    if (model.isSoftDeleted()) return false;
+
+    // is not deactivated
+    if (model.isDeactivated()) return false;
 
     return true;
   }
@@ -394,13 +465,13 @@ export class UserPolicy {
     // their email to yours. Therefore this is -only- allowed by Admin on arbitrary
     // accounts
 
-    // can if is Admin
-    if (this.ctx.auth.hasAnyPermissions([Permission.SuperAdmin.SuperAdmin])) {
+    // can if is SuperAdmin
+    if (this.ctx.isSuperAdmin()) {
       return true;
     };
 
-    // can if is the Requester
-    if (this.ctx.auth.isMe(model)) {
+    // can on self
+    if (this.ctx.isMe(model)) {
       return true;
     }
 
@@ -419,12 +490,6 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
-    // must not be SoftDeleted
-    if (model.isSoftDeleted()) return false;
-
-    // is not deactivated
-    if (model.isDeactivated()) return false;
-
     // Admin can RequestEmailChange
     // if (model.isAdmin()) return false;
 
@@ -434,8 +499,14 @@ export class UserPolicy {
     // is not Anonymous User
     if (model.isAnonymous()) return false;
 
+    // must not be SoftDeleted
+    if (model.isSoftDeleted()) return false;
+
+    // is not deactivated
+    if (model.isDeactivated()) return false;
+
     // is Me
-    if (this.ctx.auth.isMe(model)) return true;
+    if (this.ctx.isMe(model)) return true;
 
     return true;
   }
@@ -454,9 +525,9 @@ export class UserPolicy {
     if (!this.canConsumeVerificationEmail({ model })) return false;
 
     // is UserManager or SuperAdmin
-    return this.ctx.auth.hasAnyPermissions([
+    return this.ctx.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Users.Manage,
+      Permission.Users.Admin,
     ]);
   }
 
@@ -471,6 +542,15 @@ export class UserPolicy {
   }): boolean {
     const { model } = arg;
 
+    // is not the Admin User
+    if (model.isAdmin()) return false;
+
+    // is not the System User
+    if (model.isSystem()) return false;
+
+    // is not the Anonymous User
+    if (model.isAnonymous()) return false;
+
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
@@ -483,17 +563,8 @@ export class UserPolicy {
     // is not Deactivated
     if (model.isDeactivated()) return false;
 
-    // is not the Admin User
-    if (model.isAdmin()) return false;
-
-    // is not the System User
-    if (model.isSystem()) return false;
-
-    // is not the Anonymous User
-    if (model.isAnonymous()) return false;
-
     // is Me
-    if (this.ctx.auth.isMe(model)) return true;
+    if (this.ctx.isMe(model)) return true;
 
     // no other requirements
     return true;
@@ -547,7 +618,7 @@ export class UserPolicy {
     if (model.isAnonymous()) return false;
 
     // is Me
-    if (this.ctx.auth.isMe(model)) return true;
+    if (this.ctx.isMe(model)) return true;
 
     return true;
   }

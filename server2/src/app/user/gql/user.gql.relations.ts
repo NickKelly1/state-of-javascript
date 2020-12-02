@@ -25,6 +25,7 @@ import { PermissionCollectionGqlNode, IPermissionCollectionGqlNodeSource } from 
 import { PermissionCollectionOptionsGqlInput } from "../../permission/gql/permission.collection.gql.options";
 import { PermissionAssociation } from "../../permission/permission.associations";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
+import { UserRoleAssociation } from "../../user-role/user-role.associations";
 
 export type IUserGqlRelationsSource = UserModel;
 export const UserGqlRelations = new GraphQLObjectType<IUserGqlRelationsSource, GqlContext>({
@@ -39,16 +40,26 @@ export const UserGqlRelations = new GraphQLObjectType<IUserGqlRelationsSource, G
           runner: null,
           options: {
             ...options,
+            include: [ { association: UserRoleAssociation.role, }, ],
             where: andWhere([
               options.where,
               { [UserRoleField.user_id]: { [Op.eq]: parent.id } }
             ]),
           },
         });
+        // prime roles
+        rows.map(row => {
+          const role = assertDefined(row.role);
+          ctx.loader.roles.prime(role.id, role);
+        });
         const pagination = collectionMeta({ data: rows, total: count, page });
         const collection: IUserRoleCollectionGqlNodeSource = {
           models: rows.map((model): OrNull<UserRoleModel> =>
-            ctx.services.userRolePolicy.canFindOne({ model })
+            ctx.services.userRolePolicy.canFindOne({
+              model,
+              user: parent,
+              role: assertDefined(model.role),
+            })
               ? model
               : null,
           ),

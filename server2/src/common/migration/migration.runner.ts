@@ -72,8 +72,10 @@ export class MigrationRunner {
    * @param currentDirectory
    */
   protected async _scanFsMigrations(currentDirectory: string): Promise<IFsMigrationDescriptor[]> {
-    logger.info(`scanning for migrations "${currentDirectory}"...`);
-    const topLevelFiles = await fs.readdir(currentDirectory, { withFileTypes: true });
+    logger.debug(`scanning for migrations in "${currentDirectory}" ending with ${this.env.EXT}...`);
+    const topLevelFiles = await fs
+      .readdir(currentDirectory, { withFileTypes: true })
+      .then(tlfs => (tlfs.filter(tlf => (!tlf.isFile() ||  tlf.name.endsWith(this.env.EXT)))));
     const nestedDescriptors = await Promise.all(topLevelFiles.map(async (file): Promise<IFsMigrationDescriptor[]> => {
       const filePath = path.join(currentDirectory, file.name);
 
@@ -83,6 +85,7 @@ export class MigrationRunner {
         if (!match?.[0]) { throw new TypeError(`File name "${file.name}" does not start with a number`) }
         const number = parseInt(match.toString(), 10);
         if (!Number.isFinite(number)) throw new Error(`Unexpected migration number "${match.toString()}" for file "${filePath}"`);
+        logger.debug(`importing "${filePath}"`)
         const imp = await import(filePath);
         let mig: IFsMigrationDescriptor;
         // assume import is ctor
@@ -108,7 +111,7 @@ export class MigrationRunner {
         }
         // import is not a function or object
         else { throw new Error(`Unexpected migration file import ${prettyQ(imp)}`) }
-        logger.info(`parsed migration "${number}" - "${file.name}"`);
+        logger.debug(`parsed migration "${number}" - "${file.name}"`);
         const result: IFsMigrationDescriptor[] = [mig];
         return result;
       }

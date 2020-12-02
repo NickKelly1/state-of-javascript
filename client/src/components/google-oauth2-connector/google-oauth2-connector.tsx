@@ -368,7 +368,7 @@ interface IGoogleOAuth2FormDialogProps extends IWithDialogueProps {
 }
 
 
-const GoogleOAuth2FormDialog = WithDialogue<IGoogleOAuth2FormDialogProps>({ fullWidth: true })((props) => {
+const GoogleOAuth2FormDialog = WithDialogue<IGoogleOAuth2FormDialogProps>({ fullWidth: true })(WithApi((props) => {
   const { name, dialog, onSuccess, api, me, } = props;
   const { enqueueSnackbar } = useSnackbar();
 
@@ -510,4 +510,4 @@ const GoogleOAuth2FormDialog = WithDialogue<IGoogleOAuth2FormDialogProps>({ full
       </DialogActions>
     </>
   );
-});
+}));

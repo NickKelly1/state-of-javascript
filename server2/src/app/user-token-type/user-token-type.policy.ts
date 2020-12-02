@@ -12,22 +12,26 @@ export class UserLinkTypePolicy {
     //
   }
 
-  canFindMany(arg?: {
-    //
-  }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.UserTokenTypes.Show,
-    ]);
+  /**
+   * Can the Requester FindMany UserTokensTypes?
+   */
+  canFindMany(): boolean {
+
+    // has UserTokenTypeViewer
+    return this.ctx.auth.hasPermission(Permission.UserTokenTypes.Viewer);
   }
 
+  /**
+   * Can the Requester Find this UserTokenType?
+   *
+   * @param arg
+   */
   canFindOne(arg: {
     model: UserTokenTypeModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.UserTokenTypes.Show,
-    ]);
+
+    // has UserTokenTypeViewer
+    return this.ctx.auth.hasPermission(Permission.UserTokenTypes.Viewer);
   }
 }

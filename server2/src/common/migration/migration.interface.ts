@@ -22,3 +22,5 @@ export interface IMigration {
 
   down: (arg: IMigrationDownArg) => Promise<void>;
 }
+
+export default null;

@@ -14,9 +14,17 @@ export const RolePermissionGqlActions = new GraphQLObjectType<IRolePermissionGql
   fields: {
     show: {
       type: GraphQLNonNull(GraphQLBoolean),
-      resolve: (parent, args, ctx): boolean => {
-        return ctx.services.rolePermissionPolicy.canFindOne({ model: parent });
-      },
+      resolve: async (parent, args, ctx): Promise<boolean> => {
+        const [role, permission] = await Promise.all([
+          ctx.loader.roles.load(parent.role_id).then(assertDefined),
+          ctx.loader.permissions.load(parent.permission_id).then(assertDefined),
+        ]);
+        return ctx.services.rolePermissionPolicy.canFindOne({
+          model: parent,
+          permission,
+          role,
+        });
+      }
     },
     delete: {
       type: GraphQLNonNull(GraphQLBoolean),
@@ -25,7 +33,11 @@ export const RolePermissionGqlActions = new GraphQLObjectType<IRolePermissionGql
           ctx.loader.roles.load(parent.role_id).then(assertDefined),
           ctx.loader.permissions.load(parent.permission_id).then(assertDefined),
         ]);
-        return ctx.services.rolePermissionPolicy.canHardDelete({ model: parent, role, permission });
+        return ctx.services.rolePermissionPolicy.canHardDelete({
+          model: parent,
+          role,
+          permission,
+        });
       },
     },
   },

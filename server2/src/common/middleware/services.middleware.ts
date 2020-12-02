@@ -17,7 +17,12 @@ export const servicesMw = (arg: {
   const ctx = HttpContext.ensure({ req, res });
   const services = new RequestSerivceContainer(ctx, universal);
   const systemPermissions = await universal.systemPermissions.getPermissions();
-  const auth = new RequestAuth(systemPermissions.pub.map(toId), undefined, req.header(shad_id) ?? null);
+  const auth = new RequestAuth(
+    systemPermissions.pub.map(toId),
+    undefined,
+    // TODO: hash shad_id so it can't be spoofed so easy...
+    req.header(shad_id) ?? null,
+  );
   req.__locals__ = { auth, httpCtx: ctx, services, };
   next();
 });

@@ -47,6 +47,18 @@ export const UserGqlActions = new GraphQLObjectType<IUserGqlActionsSource, GqlCo
         return ctx.services.userPolicy.canDeactivate({ model: parent });
       },
     },
+    forceUpdateEmail: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canForceUpdateEmail({ model: parent });
+      },
+    },
+    forceVerify: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: (parent, args, ctx): boolean => {
+        return ctx.services.userPolicy.canForceVerify({ model: parent });
+      },
+    },
     login: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {

@@ -20,6 +20,8 @@ import { NewsArticleStatusModel } from '../news-article-status/news-article-stat
 import { NewsArticleStatusField } from '../news-article-status/news-article-status.attributes';
 import { UserField } from '../user/user.attributes';
 import { NewsArticleStatus } from '../news-article-status/news-article-status.const';
+import { RequestAuth } from '../../common/classes/request-auth';
+import { IRequestContext } from '../../common/interfaces/request-context.interface';
 
 
 export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticleCreationAttributes> implements INewsArticleAttributes {
@@ -53,6 +55,8 @@ export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticle
   isSubmitted() { return this[NewsArticleField.status_id] === NewsArticleStatus.Submitted; }
   isApproved() { return this[NewsArticleField.status_id] === NewsArticleStatus.Approved; }
   isPublished() { return this[NewsArticleField.status_id] === NewsArticleStatus.Published; }
+  authIsAuthor(auth: RequestAuth): boolean { return auth.isMeById(this.author_id); }
+  ctxIsAuthor(ctx: IRequestContext): boolean { return this.authIsAuthor(ctx.auth); }
 }
 
 

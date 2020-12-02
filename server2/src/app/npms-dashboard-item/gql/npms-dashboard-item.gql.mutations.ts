@@ -71,7 +71,11 @@ export const NpmsDashboardItemGqlMutations: Thunk<GraphQLFieldConfigMap<undefine
         });
         const dashboard = assertDefined(npmsDashboardItem.dashboard);
         const npmsPackage = assertDefined(npmsDashboardItem.npmsPackage);
-        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canHardDelete({ model: npmsDashboardItem, dashboard }));
+        ctx.authorize(ctx.services.npmsDashboardItemPolicy.canHardDelete({
+          model: npmsDashboardItem,
+          dashboard,
+          npmsPackage,
+        }));
         await ctx.services.npmsDashboardItemService.hardDelete({
           runner,
           groups: [{ dashboard, model: npmsDashboardItem, }]

@@ -162,7 +162,7 @@ export type UserData = {
   name: Scalars['String'];
   deactivated: Scalars['Boolean'];
   email?: Maybe<Scalars['String']>;
-  verified?: Maybe<Scalars['Boolean']>;
+  verified: Scalars['Boolean'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
   deleted_at?: Maybe<Scalars['DateTime']>;
@@ -176,6 +176,8 @@ export type UserActions = {
   hardDelete: Scalars['Boolean'];
   restore: Scalars['Boolean'];
   deactivate: Scalars['Boolean'];
+  forceUpdateEmail: Scalars['Boolean'];
+  forceVerify: Scalars['Boolean'];
   login: Scalars['Boolean'];
   updatePassword: Scalars['Boolean'];
   createUserRoles: Scalars['Boolean'];
@@ -245,6 +247,7 @@ export type UserRoleData = {
 export type UserRoleActions = {
   __typename?: 'UserRoleActions';
   show: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
 };
 
 export type UserRoleRelations = {
@@ -1016,7 +1019,6 @@ export type NpmsDashboardActions = {
   hardDeleteNpmsDashboardItem: Scalars['Boolean'];
   submit: Scalars['Boolean'];
   reject: Scalars['Boolean'];
-  approve: Scalars['Boolean'];
   publish: Scalars['Boolean'];
   unpublish: Scalars['Boolean'];
 };
@@ -1359,7 +1361,6 @@ export type RootMutationType = {
   restoreNpmsDashboard: NpmsDashboardNode;
   submitNpmsDashboard: NpmsDashboardNode;
   rejectNpmsDashboard: NpmsDashboardNode;
-  approveNpmsDashboard: NpmsDashboardNode;
   publishNpmsDashboard: NpmsDashboardNode;
   unpublishNpmsDashboard: NpmsDashboardNode;
   createNpmsDashboardItem: NpmsDashboardItemNode;
@@ -1448,11 +1449,6 @@ export type RootMutationTypeSubmitNpmsDashboardArgs = {
 
 export type RootMutationTypeRejectNpmsDashboardArgs = {
   dto: RejectNpmsDashboard;
-};
-
-
-export type RootMutationTypeApproveNpmsDashboardArgs = {
-  dto: ApproveNpmsDashboard;
 };
 
 
@@ -1648,10 +1644,6 @@ export type RejectNpmsDashboard = {
   id: Scalars['Int'];
 };
 
-export type ApproveNpmsDashboard = {
-  id: Scalars['Int'];
-};
-
 export type PublishNpmsDashboard = {
   id: Scalars['Int'];
 };
@@ -1705,6 +1697,7 @@ export type UpdateUser = {
   name?: Maybe<Scalars['String']>;
   email?: Maybe<Scalars['String']>;
   deactivated?: Maybe<Scalars['Boolean']>;
+  verified?: Maybe<Scalars['Boolean']>;
   password?: Maybe<Scalars['String']>;
   role_ids?: Maybe<Array<Scalars['Int']>>;
 };
@@ -2204,22 +2197,6 @@ export type RejectNpmsDashboardMutation = (
   ) }
 );
 
-export type ApproveNpmsDashboardMutationVariables = Exact<{
-  id: Scalars['Int'];
-}>;
-
-
-export type ApproveNpmsDashboardMutation = (
-  { __typename?: 'RootMutationType' }
-  & { approveNpmsDashboard: (
-    { __typename?: 'NpmsDashboardNode' }
-    & { data: (
-      { __typename?: 'NpmsDashboardData' }
-      & Pick<NpmsDashboardData, 'id' | 'name'>
-    ) }
-  ) }
-);
-
 export type PublishNpmsDashboardMutationVariables = Exact<{
   id: Scalars['Int'];
 }>;
@@ -2260,28 +2237,6 @@ export type SoftDeleteNpmsDashboardMutationVariables = Exact<{
 export type SoftDeleteNpmsDashboardMutation = (
   { __typename?: 'RootMutationType' }
   & Pick<RootMutationType, 'softDeleteNpmsDashboard'>
-);
-
-export type SearchNpmsPackageQueryVariables = Exact<{
-  likeName?: Maybe<Scalars['String']>;
-}>;
-
-
-export type SearchNpmsPackageQuery = (
-  { __typename?: 'RootQueryType' }
-  & { npmsPackages: (
-    { __typename?: 'NpmsPackageCollectionNode' }
-    & { pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
-    ), nodes: Array<Maybe<(
-      { __typename?: 'NpmsPackageNode' }
-      & { data: (
-        { __typename?: 'NpmsPackageData' }
-        & Pick<NpmsPackageData, 'id' | 'name'>
-      ) }
-    )>> }
-  ) }
 );
 
 export type CreateNpmsPackageFormMutationVariables = Exact<{
@@ -2534,6 +2489,7 @@ export type UserMutateFormUpdateMutationVariables = Exact<{
   email?: Maybe<Scalars['String']>;
   password?: Maybe<Scalars['String']>;
   deactivated?: Maybe<Scalars['Boolean']>;
+  verified?: Maybe<Scalars['Boolean']>;
 }>;
 
 
@@ -2644,7 +2600,7 @@ export type UserDetailDataQuery = (
       { __typename?: 'UserNode' }
       & { can: (
         { __typename?: 'UserActions' }
-        & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'deactivate' | 'updatePassword' | 'requestWelcome' | 'acceptWelcome' | 'requestVerificationEmail' | 'requestEmailChange' | 'requestForgottenPasswordReset'>
+        & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'deactivate' | 'forceVerify' | 'forceUpdateEmail' | 'updatePassword' | 'requestWelcome' | 'acceptWelcome' | 'requestVerificationEmail' | 'requestEmailChange' | 'requestForgottenPasswordReset'>
       ), data: (
         { __typename?: 'UserData' }
         & Pick<UserData, 'id' | 'name' | 'email' | 'verified' | 'deactivated' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -2732,7 +2688,7 @@ export type JsPageDashboardQuery = (
       & Pick<NpmsDashboardNode, 'cursor'>
       & { can: (
         { __typename?: 'NpmsDashboardActions' }
-        & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'submit' | 'approve' | 'reject' | 'publish' | 'unpublish' | 'createNpmsDashboardItem' | 'hardDeleteNpmsDashboardItem'>
+        & Pick<NpmsDashboardActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'submit' | 'reject' | 'publish' | 'unpublish' | 'createNpmsDashboardItem' | 'hardDeleteNpmsDashboardItem'>
       ), data: (
         { __typename?: 'NpmsDashboardData' }
         & Pick<NpmsDashboardData, 'id' | 'name' | 'ownedByMe'>

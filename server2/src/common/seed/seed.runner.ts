@@ -44,8 +44,11 @@ export class SeedRunner {
    * @param currentDirectory
    */
   protected async _scanFsSeeders(currentDirectory: string): Promise<IFsSeederDescriptor[]> {
-    logger.info(`scanning for seeders "${currentDirectory}"...`);
-    const topLevelFiles = await fs.readdir(currentDirectory, { withFileTypes: true });
+    logger.debug(`scanning for seeders in "${currentDirectory}" ending with ${this.env.EXT}...`);
+    // const topLevelFiles = await fs.readdir(currentDirectory, { withFileTypes: true });
+    const topLevelFiles = await fs
+      .readdir(currentDirectory, { withFileTypes: true })
+      .then(tlfs => (tlfs.filter(tlf => (!tlf.isFile() ||  tlf.name.endsWith(this.env.EXT)))));
     const nestedDescriptors = await Promise.all(topLevelFiles.map(async (file): Promise<IFsSeederDescriptor[]> => {
       const filePath = path.join(currentDirectory, file.name);
 
@@ -55,6 +58,7 @@ export class SeedRunner {
         if (!match?.[0]) { throw new TypeError(`File name "${file.name}" does not start with a number`) }
         const number = parseInt(match.toString(), 10);
         if (!Number.isFinite(number)) throw new Error(`Unexpected seeder number "${match.toString()}" for file "${filePath}"`);
+        logger.debug(`importing "${filePath}"`)
         const imp = await import(filePath);
         let seeder: IFsSeederDescriptor;
         // assume import is ctor
@@ -80,7 +84,7 @@ export class SeedRunner {
         }
         // import is not a function or object
         else { throw new Error(`Unexpected seeder file import ${prettyQ(imp)}`) }
-        logger.info(`parsed seeder "${number}" - "${file.name}"`);
+        logger.debug(`parsed seeder "${number}" - "${file.name}"`);
         const result: IFsSeederDescriptor[] = [seeder];
         return result;
       }

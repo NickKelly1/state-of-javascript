@@ -57,15 +57,20 @@ export const NpmsDashboardGqlRelations: GraphQLObjectType<INpmsDashboardGqlRelat
             include: { association: NpmsDashboardItemAssociation.npmsPackage, },
           },
         });
-        // prime / eager load items
+        // prime / eager load Packages
         rows.forEach(row => {
           const npmsPackage = assertDefined(row.npmsPackage);
           ctx.loader.npmsPackage.prime(npmsPackage.id, npmsPackage);
         });
+
         const pagination = collectionMeta({ data: rows, total: count, page });
         const collection: INpmsDashboardItemCollectionGqlNodeSource = {
           models: rows.map((model): OrNull<NpmsDashboardItemModel> =>
-            ctx.services.npmsDashboardItemPolicy.canFindOne({ model, dashboard: parent, })
+            ctx.services.npmsDashboardItemPolicy.canFindOne({
+              model,
+              dashboard: parent,
+              npmsPackage: assertDefined(model.npmsPackage)
+            })
               ? model
               : null,
           ),

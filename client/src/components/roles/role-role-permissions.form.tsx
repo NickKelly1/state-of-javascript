@@ -210,7 +210,7 @@ export interface IRoleRolePermissionFormProps {
   onError?: IOnErrorFn;
 }
 
-export const RoleRolePermissionForm = WithApi((props: IRoleRolePermissionFormProps) => {
+export const RoleRolePermissionForm = WithApi<IRoleRolePermissionFormProps>((props) => {
   const { role_id, onSuccess, onError, api, me } = props;
 
   const [vars, setVars] = useState<RoleRolePermissionsFormDataQueryVariables>(() => ({

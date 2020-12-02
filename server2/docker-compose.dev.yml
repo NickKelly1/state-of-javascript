@@ -4,20 +4,20 @@ version: '3.8'
 
 services:
   # https://hub.docker.com/_/redis
-  soj_redis_dev_svc:
+  soj_redis_dev:
     container_name: soj_redis_dev
     image: redis:6.0.9
     restart: unless-stopped
     ports:
-      - "${DEV_REDIS_PORT}:6379"
-    command: redis-server --requirepass ${DEV_REDIS_PSW}
-  soj_db_dev_svc:
-    container_name: soj_db_dev
+      - "${REDIS_PORT}:6379"
+    command: redis-server --requirepass ${REDIS_PSW}
+  soj_pg_dev:
+    container_name: soj_pg_dev
     image: postgres:12.4
     restart: unless-stopped
     ports:
-      - "${DEV_PG_PORT}:5432"
+      - "${PG_PORT}:5432"
     environment:
-      POSTGRES_USER: ${DEV_PG_USER}
-      POSTGRES_PASSWORD: ${DEV_PG_PSW}
-      POSTGRES_DB: ${DEV_PG_DB}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PSW}
+      POSTGRES_DB: ${PG_DB}

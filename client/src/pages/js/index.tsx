@@ -10,22 +10,13 @@ import clsx from 'clsx';
 import SortIcon from '@material-ui/icons/Sort';
 import {
   Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogContent,
   Link as MUILink,
-  DialogTitle,
   Grid,
   IconButton,
   makeStyles,
   Paper,
   Typography,
 } from '@material-ui/core';
-import { Attempt, attemptAsync, isSuccess, } from '../../helpers/attempted.helper';
-import { staticPathsHandler, staticPropsHandler } from '../../helpers/static-props-handler.helper';
-import { Cms } from '../../cms/cms';
-import { NpmsApi } from '../../npms-api/npms-api';
 import { gql } from 'graphql-request';
 import { Api } from '../../backend-api/api';
 import {
@@ -38,28 +29,21 @@ import { PieChartDatum } from '../../types/pie-chart-datum.type';
 import { shuffle } from '../../helpers/shuffle.helper';
 import { DashColours } from '../../dashboard-theme';
 import SeedRandom from 'seed-random';
-import { INpmsPackageSearchOption, } from '../../components/npms/npms-package-combo-search';
 import { NpmsDashboardMutateForm, } from '../../components/npms/npms-dashboard-mutate.form';
-import { ApiContext } from '../../components-contexts/api.context';
 import { ist } from '../../helpers/ist.helper';
-import { useUpdate } from '../../hooks/use-update.hook';
 import { INpmsDashboardDatasets, NpmsDashboard } from '../../components/npms/npms-dashboard';
 import { ApiException } from '../../backend-api/api.exception';
-import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { useQuery } from 'react-query';
 import { IIdentityFn } from '../../types/identity-fn.type';
-import { DebugException } from '../../components/debug-exception/debug-exception';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form.dialog';
 import { flsx } from '../../helpers/flsx.helper';
-import { IPageProps } from '../../types/page-props.interface';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { DebugJsonDialog } from '../../components/debug-json-dialog/debug-json-dialog';
 import { hidex, hidey } from '../../helpers/hidden.helper';
-import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
 import { isValidDate } from '../../helpers/is-valid-date.helper';
 import { OrNullable } from '../../types/or-nullable.type';
-import { msToDay } from '../../helpers/ms-to.helper';
+import { msToDay, msToWeek } from '../../helpers/ms-to.helper';
 import { orNull } from '../../helpers/or-null.helper';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { WithLoadable } from '../../components-hoc/with-loadable/with-loadable';
@@ -96,7 +80,6 @@ query JsPageDashboard(
         hardDelete
         restore
         submit
-        approve
         reject
         publish
         unpublish
@@ -275,7 +258,7 @@ interface IJavaScriptPageContentProps {
 }
 
 interface ITimeRateableData { from?: OrNullable<number | string>; to?: OrNullable<number | string>; count?: OrNullable<number>; }
-function timeRate(arg: OrNullable<ITimeRateableData>): OrNull<number> {
+function timeRate(arg: OrNullable<ITimeRateableData>, freq: 'daily' | 'weekly'): OrNull<number> {
   if (ist.nullable(arg)) return null;
   const from = arg.from;
   const to = arg.to;
@@ -286,7 +269,13 @@ function timeRate(arg: OrNullable<ITimeRateableData>): OrNull<number> {
   const diff = toDate.valueOf() - fromDate.valueOf();
   if (!diff) return null;
   if (!arg.count) return null;
-  return (arg.count / msToDay(diff));
+  if (freq === 'daily') {
+    return (arg.count / msToDay(diff));
+  } if (freq === 'weekly') {
+    return (arg.count / msToWeek(diff));
+  }
+  throw new Error(`Unhandled freq: ${freq}`);
+
 }
 
 
@@ -318,10 +307,7 @@ const JavaScriptPageContent = WithoutSsr(WithApi<IJavaScriptPageContentProps>((p
           original: {
             id: dashNode.data.id,
             name: dashNode.data.name,
-            packages: npmsPackages.map((packageNode): INpmsPackageSearchOption => ({
-              id: packageNode.data.id,
-              name: packageNode.data.name,
-            })),
+            packages: npmsPackages.map((packageNode): string => packageNode.data.name),
             source: dashNode,
           },
           graphical: {
@@ -341,7 +327,6 @@ const JavaScriptPageContent = WithoutSsr(WithApi<IJavaScriptPageContentProps>((p
               hardDelete: dashNode.can.hardDelete,
               restore: dashNode.can.restore,
               submit: dashNode.can.submit,
-              approve: dashNode.can.approve,
               reject: dashNode.can.reject,
               publish: dashNode.can.publish,
               unpublish: dashNode.can.unpublish,
@@ -380,26 +365,26 @@ const JavaScriptPageContent = WithoutSsr(WithApi<IJavaScriptPageContentProps>((p
               // 3 - 3 month
               // 4 - 6 month
               // 5 - 12 month
-              averageDailyDownloads: {
+              averageWeeklyDownloads: {
                 dimensions: packageNames,
                 points: [{
                   name: '1 Day',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[0]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[0], 'weekly'))),
                 }, {
                   name: '1 Week',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[1]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[1], 'weekly'))),
                 }, {
                   name: '1 Month',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[2]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[2], 'weekly'))),
                 }, {
                   name: '3 Months',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[3]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[3], 'weekly'))),
                 }, {
                   name: '6 Months',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[4]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[4], 'weekly'))),
                 }, {
                   name: '12 Months',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[5]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.npm?.downloads?.[5], 'weekly'))),
                 }].reverse(),
               },
               // 0 - 1 day
@@ -412,19 +397,19 @@ const JavaScriptPageContent = WithoutSsr(WithApi<IJavaScriptPageContentProps>((p
                 dimensions: packageNames,
                 points: [{
                   name: '1 Week',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[0]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[0], 'daily'))),
                 }, {
                   name: '1 Month',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[1]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[1], 'daily'))),
                 }, {
                   name: '3 Months',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[2]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[2], 'daily'))),
                 }, {
                   name: '6 Months',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[3]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[3], 'daily'))),
                 }, {
                   name: '12 Months',
-                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[4]))),
+                  coordinates: npmsPackages.map((packageNode) => orNull(timeRate(packageNode.data.data?.collected?.github?.commits?.[4], 'daily'))),
                 }].reverse(),
               },
             },
@@ -677,44 +662,6 @@ async function runPageDataQuery(
   );
   return dashboards;
 }
-
-
-// (JavaScriptPage as any).getInitialProps = async (ctx: NextPageContext): Promise<IJavaScriptPageProps> => {
-//   return {};
-// }
-
-// async function getProps(args: { cms: Cms; npmsApi: NpmsApi; api: Api; }): Promise<IJavaScriptPageProps> {
-//   const { cms, npmsApi, api } = args
-
-//   const dashboards = await attemptAsync(
-//     runPageDataQuery(
-//       api,
-//       defaultQueryVars,
-//     ),
-//     normaliseApiException
-//   );
-
-//   return {
-//     dashboards,
-//   }
-// }
-
-
-// export const getStaticProps = staticPropsHandler<IJavaScriptPageProps>(async ({ ctx, cms, npmsApi, api, }) => {
-//   const props = await getProps({ cms, npmsApi, api });
-//   return {
-//     props,
-//     // revalidate: false,
-//   };
-// });
-
-
-// export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {
-//   return {
-//     fallback: false,
-//     paths: [],
-//   };
-// });
 
 
 export default JavaScriptPage;

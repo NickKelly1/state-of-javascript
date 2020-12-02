@@ -15,15 +15,21 @@ export const NpmsDashboardItemGqlActions = new GraphQLObjectType<INpmsDashboardI
     show: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: async (parent, args, ctx): Promise<boolean> => {
-        const dashboard = await ctx.loader.npmsDashboard.load(parent.dashboard_id).then(assertDefined);
-        return ctx.services.npmsDashboardItemPolicy.canFindOne({ model: parent, dashboard });
+        const [dashboard, npmsPackage] = await Promise.all([
+          ctx.loader.npmsDashboard.load(parent.dashboard_id).then(assertDefined),
+          ctx.loader.npmsPackage.load(parent.npms_package_id).then(assertDefined),
+        ]);
+        return ctx.services.npmsDashboardItemPolicy.canFindOne({ model: parent, dashboard, npmsPackage });
       },
     },
     hardDelete: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: async (parent, args, ctx): Promise<boolean> => {
-        const dashboard = await ctx.loader.npmsDashboard.load(parent.dashboard_id).then(assertDefined);
-        return ctx.services.npmsDashboardItemPolicy.canHardDelete({ model: parent, dashboard });
+        const [dashboard, npmsPackage] = await Promise.all([
+          ctx.loader.npmsDashboard.load(parent.dashboard_id).then(assertDefined),
+          ctx.loader.npmsPackage.load(parent.npms_package_id).then(assertDefined),
+        ]);
+        return ctx.services.npmsDashboardItemPolicy.canHardDelete({ model: parent, dashboard, npmsPackage });
       },
     },
   },

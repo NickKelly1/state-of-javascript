@@ -6,6 +6,7 @@ module.exports = {
     //
   },
   publicRuntimeConfig: {
+    GA_ID: process.env.GA_ID,
     CMS_URL: process.env.CMS_URL,
     API_URL: process.env.API_URL,
     DEBUG: process.env.DEBUG,

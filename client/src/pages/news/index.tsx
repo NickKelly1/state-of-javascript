@@ -96,92 +96,99 @@ interface IIndexNewsPageProps {
 }
 
 const IndexNewsPage = WithApi<IIndexNewsPageProps>((props) => {
-  const { query, api, me } = props;
+  // TODO...
+  return null;
+  // const { query, api, me } = props;
 
-  const classes = useStyles();
+  // const classes = useStyles();
 
-  return (
-    <Grid className={classes.root} container spacing={2}>
-      <Grid item xs={12}>
-        <Typography component="h1" variant="h1">News</Typography>
-      </Grid>
-      {query.newsArticles.can.create && (
-        <Grid item xs={12}>
-          <ListItem>
-            <NextLink href="/news/create" passHref>
-              <MUILink className={classes.create_btn} color="inherit">
-                <Button variant="outlined" color="primary">
-                  Create article
-                </Button>
-              </MUILink>
-            </NextLink>
-          </ListItem>
-        </Grid>
-      )}
-      <Grid item xs={12}>
-        <Grid container spacing={2}>
-          {query.newsArticles.nodes.filter(ist.notNullable).map(node => (
-            <Grid key={node.data.id} item xs={12}>
-              <WithMemo<INewsArticleTeaserProps>
-                deps={[node]}
-                memo={(): INewsArticleTeaserProps => ({
-                  node: {
-                    data: {
-                      id: node.data.id,
-                      title: node.data.title,
-                      teaser: node.data.teaser,
-                      author_id: node.data.author_id,
-                      created_at: new Date(node.data.created_at),
-                      updated_at: new Date(node.data.updated_at),
-                      deleted_at: node.data.deleted_at ? new Date(node.data.deleted_at) : null,
-                    },
-                    can: {
-                      softDelete: node.can.softDelete,
-                      update: node.can.update,
-                      show: node.can.show,
-                    },
-                    relations: {
-                      author: ist.nullable(node.relations.author)
-                        ? null
-                        : {
-                          data: {
-                            id: node.relations.author.data.id,
-                            name: node.relations.author.data.name,
-                          },
-                        },
-                    },
-                  },
-                })}>
-                {(teaserProps) => (<NewsArticleTeaser {...teaserProps} />)}
-              </WithMemo>
-            </Grid>
-          ))}
-        </Grid>
-      </Grid>
-    </Grid>
-  );
+  // return (
+  //   <Grid className={classes.root} container spacing={2}>
+  //     <Grid item xs={12}>
+  //       <Typography component="h1" variant="h1">News</Typography>
+  //     </Grid>
+  //     {query.newsArticles.can.create && (
+  //       <Grid item xs={12}>
+  //         <ListItem>
+  //           <NextLink href="/news/create" passHref>
+  //             <MUILink className={classes.create_btn} color="inherit">
+  //               <Button variant="outlined" color="primary">
+  //                 Create article
+  //               </Button>
+  //             </MUILink>
+  //           </NextLink>
+  //         </ListItem>
+  //       </Grid>
+  //     )}
+  //     <Grid item xs={12}>
+  //       <Grid container spacing={2}>
+  //         {query.newsArticles.nodes.filter(ist.notNullable).map(node => (
+  //           <Grid key={node.data.id} item xs={12}>
+  //             <WithMemo<INewsArticleTeaserProps>
+  //               deps={[node]}
+  //               memo={(): INewsArticleTeaserProps => ({
+  //                 node: {
+  //                   data: {
+  //                     id: node.data.id,
+  //                     title: node.data.title,
+  //                     teaser: node.data.teaser,
+  //                     author_id: node.data.author_id,
+  //                     created_at: new Date(node.data.created_at),
+  //                     updated_at: new Date(node.data.updated_at),
+  //                     deleted_at: node.data.deleted_at ? new Date(node.data.deleted_at) : null,
+  //                   },
+  //                   can: {
+  //                     softDelete: node.can.softDelete,
+  //                     update: node.can.update,
+  //                     show: node.can.show,
+  //                   },
+  //                   relations: {
+  //                     author: ist.nullable(node.relations.author)
+  //                       ? null
+  //                       : {
+  //                         data: {
+  //                           id: node.relations.author.data.id,
+  //                           name: node.relations.author.data.name,
+  //                         },
+  //                       },
+  //                   },
+  //                 },
+  //               })}>
+  //               {(teaserProps) => (<NewsArticleTeaser {...teaserProps} />)}
+  //             </WithMemo>
+  //           </Grid>
+  //         ))}
+  //       </Grid>
+  //     </Grid>
+  //   </Grid>
+  // );
 });
 
 
-export const getStaticProps = staticPropsHandler<IIndexNewsPageProps>(async ({ ctx, cms, npmsApi, api }) => {
-  const query = await api.gql<IndexNewsPageQuery, IndexNewsPageQueryVariables>(
-    pageQuery,
-    {
-      news_limit: 10,
-      news_offset: 0,
-    },
-  );
+// export const getStaticProps = staticPropsHandler<IIndexNewsPageProps>(async ({ ctx, cms, npmsApi, api, publicEnv, }) => {
+//   console.log('running index.tsx news!!!!');
+//   console.log('publicEnv:', publicEnv);
 
-  const props: IIndexNewsPageProps = {
-    query,
-  };
+//   const query = await api
+//     .gql<IndexNewsPageQuery, IndexNewsPageQueryVariables>(
+//       pageQuery,
+//       { news_limit: 10, news_offset: 0, },
+//     )
+//     .catch(error => {
+//       console.log('ERRORED FETCHING NEWS PAGE...', error);
+//       throw error;
+//     });
+
+//   const props: IIndexNewsPageProps = {
+//     query,
+//   };
 
 
-  return {
-    props,
-    // revalidate: false,
-  };
-});
+//   return {
+//     props,
+//     // revalidate: false,
+//   };
+// });
 
 
 // export const getStaticPaths = staticPathsHandler(async ({ api, cms, npmsApi, publicEnv, }) => {

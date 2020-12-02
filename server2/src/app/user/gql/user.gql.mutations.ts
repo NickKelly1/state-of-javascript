@@ -104,24 +104,43 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
           ] },
         });
         ctx.authorize(ctx.services.userPolicy.canUpdate({ model: user }));
+
         const serviceDto: IUserServiceUpdateUserDto = {
           name: dto.name ?? undefined,
-          email: dto.email,
+          email: undefined,
           verified: undefined,
           deactivated: undefined,
         };
 
+        // change email?
+        if (ist.notNullable(dto.email) && user.email !== dto.email) {
+          // verify can update email
+          ctx.authorize(ctx.services.userPolicy.canForceUpdateEmail({ model: user }));
+          serviceDto.email = dto.email;
+        }
+
+        // change verified?
+        if (ist.notNullable(dto.verified) && user.verified !== dto.verified) {
+          // verify can verify
+          ctx.authorize(ctx.services.userPolicy.canForceVerify({ model: user }));
+          serviceDto.verified = dto.verified;
+        }
+
         // deactivate?
-        if (ist.notNullable(dto.deactivated)) {
+        if (ist.notNullable(dto.deactivated) && user.deactivated !== dto.deactivated) {
+          // verify can deactivate
           ctx.authorize(ctx.services.userPolicy.canDeactivate({ model: user }));
           serviceDto.deactivated = dto.deactivated;
         }
+
+        // do update
         await ctx.services.userService.update({ runner, model: user, dto: serviceDto, });
 
         // change password?
-        // create / update password
         if (ist.notNullable(dto.password)) {
+          // verify can cahnge password
           ctx.authorize(ctx.services.userPolicy.canUpdatePassword({ model: user }));
+          // create or update password
           const oldPassword = user.password;
           if (!oldPassword) {
             // create

@@ -5,10 +5,12 @@ import { GqlContext } from "../../../common/context/gql.context";
 import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
 import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
 import { andWhere } from "../../../common/helpers/and-where.helper.ts";
+import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { collectionMeta } from "../../../common/responses/collection-meta";
 import { OrNull } from "../../../common/types/or-null.type";
 import { IPermissionCategoryGqlNodeSource, PermissionCategoryGqlNode } from "../../permission-category/gql/permission-category.gql.node";
 import { IRolePermissionCollectionGqlNodeSource, RolePermissionCollectionGqlNode } from "../../role-permission/gql/role-permission.collection.gql.node";
+import { RolePermissionAssociation } from "../../role-permission/role-permission.associations";
 import { RolePermissionField } from "../../role-permission/role-permission.attributes";
 import { RoleCollectionGqlNode, IRoleCollectionGqlNodeSource } from "../../role/gql/role.collection.gql.node";
 import { RoleCollectionOptionsGqlInput } from "../../role/gql/role.collection.gql.options";
@@ -17,6 +19,7 @@ import { UserCollectionGqlNode, IUserCollectionGqlNodeSource } from "../../user/
 import { UserCollectionOptionsGqlInput } from "../../user/gql/user.collection.gql.options";
 import { UserAssociation } from "../../user/user.associations";
 import { UserField } from "../../user/user.attributes";
+import { PermissionAssociation } from "../permission.associations";
 import { PermissionField } from "../permission.attributes";
 import { PermissionCollectionOptionsGqlInput } from "./permission.collection.gql.options";
 
@@ -43,16 +46,26 @@ export const PermissionGqlRelations = new GraphQLObjectType<IPermissionGqlRelati
           runner: null,
           options: {
             ...options,
+            include: [{ association: RolePermissionAssociation.role, }],
             where: andWhere([
               options.where,
               { [RolePermissionField.permission_id]: { [Op.eq]: parent.id } },
             ]),
           }
         });
+        // prime roles
+        rows.forEach(row => {
+          const role = assertDefined(row.role);
+          ctx.loader.roles.prime(role.id, role);
+        });
         const pagination = collectionMeta({ data: rows, total: count, page });
         const connection: IRolePermissionCollectionGqlNodeSource = {
           models: rows.map((model): OrNull<RolePermissionModel> =>
-            ctx.services.rolePermissionPolicy.canFindOne({ model })
+            ctx.services.rolePermissionPolicy.canFindOne({
+              model,
+              permission: parent,
+              role: assertDefined(model.role),
+            })
               ? model
               : null
           ),

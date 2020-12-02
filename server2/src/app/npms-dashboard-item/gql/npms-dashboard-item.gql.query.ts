@@ -24,7 +24,10 @@ export const NpmsDashboardItemsGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, Gq
           ...options,
           include: concatIncludables([
             options.include,
-            [{ association: NpmsDashboardItemAssociation.dashboard }],
+            [
+              { association: NpmsDashboardItemAssociation.dashboard },
+              { association: NpmsDashboardItemAssociation.npmsPackage },
+            ],
           ]),
         },
       });
@@ -37,7 +40,11 @@ export const NpmsDashboardItemsGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, Gq
 
       const connection: INpmsDashboardItemCollectionGqlNodeSource = {
         models: rows.map((model): OrNull<NpmsDashboardItemModel> =>
-          ctx.services.npmsDashboardItemPolicy.canFindOne({ model, dashboard: assertDefined(model.dashboard), })
+          ctx.services.npmsDashboardItemPolicy.canFindOne({
+            model,
+            dashboard: assertDefined(model.dashboard),
+            npmsPackage: assertDefined(model.npmsPackage),
+          })
             ? model
             : null
           ),

@@ -25,13 +25,14 @@ export const UserGqlData = new GraphQLObjectType<IUserGqlDataSource, GqlContext>
         return parent.email;
       },
     },
-    verified: {
-      type: GraphQLBoolean,
-      resolve: (parent, args, ctx): OrNull<boolean> => {
-        if (!ctx.services.userPolicy.canShowIdentity({ model: parent })) return null;
-        return parent.verified;
-      },
-    },
+    verified: { type: GraphQLNonNull(GraphQLBoolean), },
+    // verified: {
+    //   type: GraphQLBoolean,
+    //   resolve: (parent, args, ctx): OrNull<boolean> => {
+    //     if (!ctx.services.userPolicy.canShowIdentity({ model: parent })) return null;
+    //     return parent.verified;
+    //   },
+    // },
     ...AuditableGql,
     ...SoftDeleteableGql,
   }),

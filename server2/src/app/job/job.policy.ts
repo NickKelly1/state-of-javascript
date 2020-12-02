@@ -13,9 +13,7 @@ export class JobPolicy {
   canFindMany(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Jobs.Show,
-    ]);
+    // has JobViewer
+    return this.ctx.hasPermission(Permission.Jobs.Viewer);
   }
 }

@@ -17,9 +17,9 @@ export class IntegrationPolicy {
   canFindMany(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Integrations.Show,
+      Permission.Integrations.Viewer,
     ]);
   }
 
@@ -32,9 +32,9 @@ export class IntegrationPolicy {
   canFindOne(arg: {
     model: IntegrationModel;
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Integrations.Show,
+      Permission.Integrations.Viewer,
     ]);
   }
 
@@ -43,9 +43,9 @@ export class IntegrationPolicy {
    * Can show encrypted data
    */
   canShowSecrets(): boolean {
-    return this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Integrations.ShowSecrets,
+      Permission.Integrations.ViewSecrets,
     ]);
   }
 
@@ -67,7 +67,7 @@ export class IntegrationPolicy {
    * Can initialise integrations?
    */
   canInititialise(): boolean {
-    return this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
       Permission.Integrations.Manage,
     ]);

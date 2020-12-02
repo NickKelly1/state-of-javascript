@@ -8,9 +8,8 @@ function getData() {
     { id: 10, name: 'draft', colour: '#F7DCB7', created_at: now, updated_at: now },
     { id: 20, name: 'rejected', colour: '#F7AFD6', created_at: now, updated_at: now },
     { id: 30, name: 'submitted', colour: '#BBEDDE', created_at: now, updated_at: now },
-    { id: 40, name: 'approved', colour: '#CAD69F', created_at: now, updated_at: now },
-    { id: 50, name: 'unpublished', colour: '#BFBFD6', created_at: now, updated_at: now },
-    { id: 60, name: 'published', colour: '#B8D9C5', created_at: now, updated_at: now },
+    { id: 40, name: 'unpublished', colour: '#BFBFD6', created_at: now, updated_at: now },
+    { id: 50, name: 'published', colour: '#B8D9C5', created_at: now, updated_at: now },
   ];
   return { statuses };
 }

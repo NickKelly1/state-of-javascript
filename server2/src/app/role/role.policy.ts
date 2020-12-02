@@ -15,16 +15,14 @@ export class RolePolicy {
    *
    * @param arg
    */
-  canFindMany(arg?: {
-    //
-  }): boolean {
+  canFindMany(): boolean {
 
-    // is Admin, Manager or Shower
-    return this.ctx.auth.hasAnyPermissions([
+    // is SuperAdmin, RoleAdmin, or RoleViewer
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Roles.Manage,
-      Permission.Roles.Show,
-    ]);
+      Permission.Roles.Admin,
+      Permission.Roles.Viewer,
+    );
   }
 
 
@@ -38,12 +36,12 @@ export class RolePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is Admin, Manager or Shower
-    return this.ctx.auth.hasAnyPermissions([
+    // is SuperAdmin, RoleAdmin, or RoleViewer
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Roles.Manage,
-      Permission.Roles.Show,
-    ]);
+      Permission.Roles.Admin,
+      Permission.Roles.Viewer,
+    );
   }
 
 
@@ -52,16 +50,14 @@ export class RolePolicy {
    *
    * @param arg
    */
-  canCreate(arg?: {
-    //
-  }): boolean {
+  canCreate(): boolean {
 
-    // is Admin, Manager or Creator
-    return this.ctx.auth.hasAnyPermissions([
+    // is SuperAdmin, RoleAdmin, or RoleManager
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Roles.Manage,
-      Permission.Roles.Create,
-    ]);
+      Permission.Roles.Admin,
+      Permission.Roles.Manager,
+    );
   }
 
 
@@ -84,12 +80,12 @@ export class RolePolicy {
     // is not Public Role
     if (model.isPublic()) return false;
 
-    // is Admin, Manager or Updater
-    return this.ctx.auth.hasAnyPermissions([
+    // is SuperAdmin, RoleAdmin, or Rolemanager
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Roles.Manage,
-      Permission.Roles.Update,
-    ]);
+      Permission.Roles.Admin,
+      Permission.Roles.Manager,
+    );
   }
 
 
@@ -112,12 +108,12 @@ export class RolePolicy {
     // is not Public Role
     if (model.isPublic()) return false;
 
-    // is Admin, Manager or SoftDeleter
-    return this.ctx.auth.hasAnyPermissions([
+    // is SuperAdmin, RoleAdmin or RoleManager
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Roles.Manage,
-      Permission.Roles.SoftDelete,
-    ]);
+      Permission.Roles.Admin,
+      Permission.Roles.Manager,
+    );
   }
 
 
@@ -140,12 +136,12 @@ export class RolePolicy {
     // is not Public Role
     if (model.isPublic()) return false;
 
-    // is Admin, Manager or HardDeleter
-    return this.ctx.auth.hasAnyPermissions([
+    // is SuperAdmin, RoleAdmin or RoleManager
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Roles.Manage,
-      Permission.Roles.HardDelete,
-    ]);
+      Permission.Roles.Admin,
+      Permission.Roles.Manager,
+    );
   }
 
 
@@ -168,11 +164,11 @@ export class RolePolicy {
     // is not Public Role
     if (model.isPublic()) return false;
 
-    // is Admin, Manager or Restorer
-    return this.ctx.auth.hasAnyPermissions([
+    // is SuperAdmin, RoleAdmin or RoleManager
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.Roles.Manage,
-      Permission.Roles.Restore,
-    ]);
+      Permission.Roles.Admin,
+      Permission.Roles.Manager,
+    );
   }
 }

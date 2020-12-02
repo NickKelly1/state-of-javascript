@@ -69,7 +69,7 @@ export class Api {
    *
    * @throws ApiException
    */
-  logout(): Promise<LogoutMutation> {
+  logout(): Promise<AuthorisedActionsFieldsFragment> {
     return this.credentials.logout().catch(rethrow(normaliseApiException));
   }
 
@@ -132,7 +132,10 @@ export class Api {
    * @throws ApiException
    */
   gql<T = any, V = Variables>(doc: RequestDocument, vars: V): Promise<T> {
-    return this.connector.graphql<T, V>(doc, vars).catch(rethrow(normaliseApiException));
+    return this.connector.graphql<T, V>(doc, vars).catch(error => {
+      console.error('Failed gql request;', error);
+      return rethrow(normaliseApiException)(error);
+    });
   }
 
 

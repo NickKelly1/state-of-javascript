@@ -6,7 +6,6 @@ import React, { useContext, } from "react";
 import { ApiContext } from "../../../components-contexts/api.context";
 import { ViewNewsArticlePageQuery, ViewNewsArticlePageQueryVariables } from "../../../generated/graphql";
 import { ist } from "../../../helpers/ist.helper";
-import { staticPathsHandler, staticPropsHandler } from "../../../helpers/static-props-handler.helper";
 import { Api } from "../../../backend-api/api";
 import { serverSidePropsHandler } from "../../../helpers/server-side-props-handler.helper";
 import { Markdown } from "../../../components/markdown/markdown";

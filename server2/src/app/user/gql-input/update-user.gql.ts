@@ -9,6 +9,7 @@ export interface IUpdateUserInput {
   name?: OrNullable<string>;
   email?: OrNullable<string>;
   deactivated?: OrNullable<boolean>;
+  verified?: OrNullable<boolean>;
   password?: OrNullable<string>;
   role_ids?: OrNullable<number[]>;
 }
@@ -20,6 +21,7 @@ export const UpdateUserGqlInput = new GraphQLInputObjectType({
     name: { type: GraphQLString, },
     email: { type: GraphQLString, },
     deactivated: { type: GraphQLBoolean, },
+    verified: { type: GraphQLBoolean, },
     password: { type: GraphQLString, },
     role_ids: { type: GraphQLList(GraphQLNonNull(GraphQLInt)), },
   }),
@@ -30,6 +32,7 @@ export const UpdateUserValidator = Joi.object<IUpdateUserInput>({
   name: Joi.string().min(UserDefinition.name.min).max(UserDefinition.name.max).optional(),
   email: Joi.string().email().min(UserDefinition.email.min).max(UserDefinition.email.max).optional(),
   deactivated: Joi.bool().optional(),
+  verified: Joi.bool().optional(),
   password: Joi.string().min(UserPasswordDefinition.password.min).max(UserPasswordDefinition.password.max).optional(),
   role_ids: Joi.array().items(Joi.number().integer().positive().required()).optional(),
 });

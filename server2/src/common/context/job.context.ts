@@ -26,7 +26,7 @@ export class JobContext extends BaseContext {
   ) {
     super();
     // give job context all permissions
-    this.auth = new RequestAuth(Object.values(Permission).flatMap(cats => Object.values(cats)), User.System);
+    this.auth = new RequestAuth(Object.values(Permission).flatMap(category => Object.values(category)), User.System);
     this.services = new RequestSerivceContainer(this, universal)
   }
 

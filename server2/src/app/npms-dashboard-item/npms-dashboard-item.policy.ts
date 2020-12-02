@@ -17,17 +17,11 @@ export class NpmsDashboardItemPolicy {
    *
    * @param arg
    */
-  canFindMany(arg?: {
-    //
-  }): boolean {
+  canFindMany(): boolean {
 
-    // is Admin or Manager or Shower
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboardItems.Manage,
-      Permission.NpmsDashboardItems.ShowAll,
-      Permission.NpmsDashboardItems.ShowOnVisibleDashboards,
-    ]);
+    // Can find NpmsDashboard & NpmsPackages
+    return this.ctx.services.npmsDashboardPolicy.canFindMany()
+      && this.ctx.services.npmsPackagePolicy.canFindMany();
   }
 
 
@@ -41,25 +35,25 @@ export class NpmsDashboardItemPolicy {
   }): boolean {
     const { dashboard } = arg;
 
-    // is Admin, Manager or ShowAller
-    if (this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboardItems.Manage,
-      Permission.NpmsDashboardItems.ShowAll,
-    ])) {
-      return true;
-    };
-
-    // Dashboard must be Findable & Requester can ShowOnVisibleDashboards
-    if (this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })
-      && this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.ShowOnVisibleDashboards])
-    ) {
-      return true;
-    }
-
-    // failed
-    return false;
+    // Dashboard must be Findable
+    return this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard });
   }
+
+
+  /**
+   * Can the requester Show NpmsDashboardItem's for the NpmsPackage?
+   *
+   * @param arg
+   */
+  canFindOneForPackage(arg: {
+    npmsPackage: NpmsPackageModel;
+  }): boolean {
+    const { npmsPackage } = arg;
+
+    // Dashboard must be Findable
+    return this.ctx.services.npmsPackagePolicy.canFindOne({ model: npmsPackage });
+  }
+
 
 
   /**
@@ -70,11 +64,13 @@ export class NpmsDashboardItemPolicy {
   canFindOne(arg: {
     model: NpmsDashboardItemModel;
     dashboard: NpmsDashboardModel;
+    npmsPackage: NpmsPackageModel;
   }): boolean {
-    const { model, dashboard } = arg;
+    const { model, dashboard, npmsPackage } = arg;
 
-    // can FindOne for the Dashboard
-    return this.canFindOneForDashboard({ dashboard });
+    // NpmsDashboard and NpmsPackage must be Findable
+    return this.canFindOneForDashboard({ dashboard })
+      && this.canFindOneForPackage({ npmsPackage });
   }
 
 
@@ -88,24 +84,24 @@ export class NpmsDashboardItemPolicy {
   }) {
     const { dashboard } = arg;
 
-    // Dashboard must be Findable
-    if (!this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })) return false;
+    // Dashboard must be Findable and Updateable
+    return this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })
+      && this.ctx.services.npmsDashboardPolicy.canUpdate({ model: dashboard });
+  }
 
-    // can if Admin or Manager
-    if (this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboardItems.Manage,
-      Permission.NpmsDashboardItems.CreateOnVisibleDashboards,
-    ])) {
-      return true;
-    }
 
-    // Dashboard must not be SoftDeleted
-    if (dashboard.isSoftDeleted()) return false;
+  /**
+   * Can the requester Create NpmsDashboardItem's for the given NpmsDashboard?
+   *
+   * @param arg
+   */
+  canCreateForNpmsPackage(arg: {
+    npmsPackage: NpmsPackageModel;
+  }) {
+    const { npmsPackage } = arg;
 
-    // can if Owner & can Create on own Dashboards
-    return this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.CreateOnOwnDashboards])
-      && dashboard.isOwnedBy(this.ctx.auth);
+    // NpmsPackage must be Findable
+    return this.ctx.services.npmsPackagePolicy.canFindOne({ model: npmsPackage });
   }
 
 
@@ -118,55 +114,11 @@ export class NpmsDashboardItemPolicy {
     dashboard: NpmsDashboardModel;
     npmsPackage: NpmsPackageModel;
   }): boolean {
-    const { dashboard } = arg;
+    const { dashboard, npmsPackage, } = arg;
 
     // can Create for the Dashboard
-    return this.canCreateForDashboard({ dashboard });
-  }
-
-
-  /**
-   * Can the requester Update NpmsDashboardItem's for the NpmsDashboard?
-   *
-   * @param arg
-   */
-  canUpdateForDashboard(arg: {
-    dashboard: NpmsDashboardModel;
-  }) {
-    const { dashboard } = arg;
-
-    // Dashboard must be Findable
-    if (!this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })) return false;
-
-    // is Admin or Manager
-    if (this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboardItems.Manage,
-      Permission.NpmsDashboardItems.UpdateOnVisibleDashboards,
-    ])) {
-      return true;
-    };
-
-    // Dashboard must not be SoftDeleted
-    if (dashboard.isSoftDeleted()) return false;
-
-    // can if Owner & can Update on own Dashboards
-    return this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.UpdateOnOwnDashboards])
-      && dashboard.isOwnedBy(this.ctx.auth);
-  }
-
-
-  /**
-   * Can the requester Update the NpmsDashboardItem?
-   *
-   * @param arg
-   */
-  canUpdate(arg: {
-    model: NpmsDashboardItemModel;
-    dashboard: NpmsDashboardModel;
-  }): boolean {
-    const { model, dashboard } = arg;
-    return this.canUpdateForDashboard({ dashboard, });
+    return this.canCreateForDashboard({ dashboard })
+      && this.canCreateForNpmsPackage({ npmsPackage });
   }
 
 
@@ -180,24 +132,24 @@ export class NpmsDashboardItemPolicy {
   }) {
     const { dashboard } = arg;
 
-    // Dashboard must be Findable
-    if (!this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })) return false;
+    // Dashboard must be Findable and Updateable
+    return this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })
+      && this.ctx.services.npmsDashboardPolicy.canUpdate({ model: dashboard });
+  }
 
-    // is Admin or Manager
-    if (this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboardItems.Manage,
-      Permission.NpmsDashboardItems.HardDeleteOnVisibleDashboards,
-    ])) {
-      return true;
-    };
 
-    const t = this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboardItems.HardDeleteOnOwnDashboards]) && dashboard.isOwnedBy(this.ctx.auth);
+  /**
+   * Can the request HardDelete NpmsDashboardItem's for the given NpmsDashboard?
+   *
+   * @param arg
+   */
+  canHardDeleteForNpmsPackage(arg: {
+    npmsPackage: NpmsPackageModel;
+  }) {
+    const { npmsPackage } = arg;
 
-    // console.log('-------------------', this.ctx.auth.toJSON(), t);
-
-    // can if Owner & can HardDelete on own Dashboards
-    return t
+    // NpmsPackage must be Findable
+    return this.ctx.services.npmsPackagePolicy.canFindOne({ model: npmsPackage });
   }
 
 
@@ -209,9 +161,11 @@ export class NpmsDashboardItemPolicy {
   canHardDelete(arg: {
     model: NpmsDashboardItemModel;
     dashboard: NpmsDashboardModel;
+    npmsPackage: NpmsPackageModel;
   }): boolean {
-    const { model, dashboard } = arg;
+    const { model, dashboard, npmsPackage } = arg;
 
-    return this.canHardDeleteForDashboard({ dashboard });
+    return this.canHardDeleteForDashboard({ dashboard })
+      && this.canHardDeleteForNpmsPackage({ npmsPackage });
   }
 }

@@ -19,13 +19,10 @@ export class NpmsDashboardStatusPolicy {
    *
    * @param arg
    */
-  canFindMany(arg?: {
-    //
-  }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboardStatuses.Show,
-    ]);
+  canFindMany(): boolean {
+
+    // is NpmsDashboardStatusViewer
+    return this.ctx.hasPermission(Permission.NpmsDashboardStatuses.Viewer);
   }
 
 
@@ -38,9 +35,8 @@ export class NpmsDashboardStatusPolicy {
     model: NpmsDashboardStatusModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboardStatuses.Show,
-    ]);
+
+    // is NpmsDashboardStatusViewer
+    return this.ctx.hasPermission(Permission.NpmsDashboardStatuses.Viewer);
   }
 }

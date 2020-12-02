@@ -1,5 +1,7 @@
 import qs from 'qs';
 import getConfig from 'next/config';
+import ReactGA from 'react-ga';
+import { OrUndefined } from '../types/or-undefined.type';
 
 const config = getConfig();
 const envHost = config.publicRuntimeConfig;
@@ -60,6 +62,7 @@ function oneOf<T extends string>(name: string, oneOf: T[]): T {
 export class PublicEnv {
   static create(): PublicEnv { return new PublicEnv(); }
   // public readonly NODE_ENV = oneOf('NODE_ENV', ['development', 'testing', 'production']);
+  public readonly GA_ID = string('GA_ID');
   public readonly CMS_URL = string('CMS_URL');
   public readonly API_URL = string('API_URL');
   public readonly API_AUTH_REFRESH_ATTEMPT_COUNT = integer('API_AUTH_REFRESH_ATTEMPT_COUNT');
@@ -72,10 +75,15 @@ export class PublicEnv {
 
 export const PublicEnvSingleton = PublicEnv.create();
 
-
-// TODO: only in debug mode...
-if (typeof window !== 'undefined') {
-  (window as any).__debug__ = {
-    qs,
-  };
+// Google analytics
+const ga_id = PublicEnvSingleton.GA_ID;
+export let GA: OrUndefined<typeof ReactGA>;;
+if (ga_id) {
+  GA = ReactGA;
+  GA.initialize(ga_id);
 }
+
+export enum GAEventCategory {
+  authentication = 'authentication',
+  routing = 'routing',
+};

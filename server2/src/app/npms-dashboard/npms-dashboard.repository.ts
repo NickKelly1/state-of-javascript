@@ -34,17 +34,17 @@ export class NpmsDashboardRepository extends BaseRepository<NpmsDashboardModel> 
     const user_id = this.ctx.auth.user_id;
 
     // let Admin, Manager and ShowAller see all
-    if (this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsDashboards.Manage,
-      Permission.NpmsDashboards.ShowAll,
+    if (this.ctx.auth.hasPermission([
+      Permission.NpmsDashboards.Admin,
+      // TODO: admin can see all, manager can't see deleted...
+      Permission.NpmsDashboards.Manager,
     ])) {
       // Admin or Moderator: no filters...
       return undefined;
     }
 
-    // must have NpmsDashboards.ShowSome
-    if (!this.ctx.auth.hasAnyPermissions([Permission.NpmsDashboards.ShowSome])) {
+    // must have Viewer|Creator
+    if (!this.ctx.hasPermission(Permission.NpmsDashboards.Viewer, Permission.NpmsDashboards.Creator)) {
       return { [NpmsDashboardField.id]: { [Op.eq]: null }, };
     }
 

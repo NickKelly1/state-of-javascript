@@ -34,6 +34,8 @@ import { QueryRunner } from "../../db/query-runner";
 import { OrUndefined } from "../../../common/types/or-undefined.type";
 import { Combinator } from "../../../common/helpers/combinator.helper";
 import { InternalServerException } from "../../../common/exceptions/types/internal-server.exception";
+import { NpmsDashboardItemAssociation } from "../../npms-dashboard-item/npms-dashboard-item.associations";
+import { toMap } from "fp-ts/lib/ReadonlyMap";
 
 /**
  * NpmsDashboard Mutations
@@ -99,6 +101,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
             dashboard,
             nextPackages,
             prevDashboardItems: [],
+            prevNpmsPackages: new Map(),
             runner,
           });
         }
@@ -129,10 +132,16 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
         const dashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
-            include: [{ association: NpmsDashboardAssociation.items, }],
+            include: [{
+              association: NpmsDashboardAssociation.items,
+              include: [{
+                association: NpmsDashboardItemAssociation.npmsPackage,
+              }]
+            }],
           }
         });
         const prevDashboardItems = assertDefined(dashboard.items);
+        const prevNpmsPackages = new Map(prevDashboardItems.map(item => [item.npms_package_id, assertDefined(item.npmsPackage)]));
         const serviceDto: INpmsDashboardServiceUpdateNpmsDashboardDto = {
           name: dto.name,
         };
@@ -151,6 +160,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
             dashboard,
             nextPackages,
             prevDashboardItems,
+            prevNpmsPackages,
             runner,
           });
         }
@@ -264,27 +274,6 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
         });
         ctx.authorize(ctx.services.npmsDashboardPolicy.canReject({ model: npmsDashboard }));
         await ctx.services.npmsDashboardService.reject({ runner, model: npmsDashboard });
-        return npmsDashboard;
-      });
-      return final;
-    },
-  },
-
-
-  /**
-   * Approve an NpmsDashboard
-   */
-  approveNpmsDashboard: {
-    type: GraphQLNonNull(NpmsDashboardGqlNode),
-    args: { dto: { type: GraphQLNonNull(ApproveNpmsDashboardGqlInput) } },
-    resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
-      const dto = ctx.validate(ApproveNpmsDashboardGqlInputValidator, args.dto);
-      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
-          runner,
-        });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canApprove({ model: npmsDashboard }));
-        await ctx.services.npmsDashboardService.approve({ runner, model: npmsDashboard });
         return npmsDashboard;
       });
       return final;
@@ -442,9 +431,10 @@ async function syncItems(arg: {
   runner: QueryRunner;
   dashboard: NpmsDashboardModel;
   prevDashboardItems: NpmsDashboardItemModel[];
+  prevNpmsPackages: Map<number, NpmsPackageModel>;
   nextPackages: NpmsPackageModel[];
 }): Promise<NpmsDashboardItemModel[]> {
-  const { runner, ctx, dashboard, prevDashboardItems, nextPackages } = arg;
+  const { runner, ctx, dashboard, prevDashboardItems, nextPackages, prevNpmsPackages } = arg;
   const { transaction } = runner;
 
   const combinator = new Combinator({
@@ -460,17 +450,26 @@ async function syncItems(arg: {
   // already exist
   const normal = combinator.bJoinA.a;
 
-  // authorise creation
-  missing.forEach(npmsPackage => ctx.authorize(ctx
-    .services
-    .npmsDashboardItemPolicy
-    .canCreate({ dashboard, npmsPackage: npmsPackage })));
 
-  // authorise deletion
-  unexpected.forEach(model => ctx.authorize(ctx
-    .services
-    .npmsDashboardItemPolicy
-    .canHardDelete({ dashboard, model })));
+  if (missing.length) {
+    // authorise creation
+    missing.forEach(npmsPackage => ctx.authorize(ctx
+      .services
+      .npmsDashboardItemPolicy
+      .canCreate({ dashboard, npmsPackage })));
+  }
+
+  if (unexpected.length) {
+    // authorise deletion
+    unexpected.forEach(model => ctx.authorize(ctx
+      .services
+      .npmsDashboardItemPolicy
+      .canHardDelete({
+        dashboard,
+        model,
+        npmsPackage: assertDefined(prevNpmsPackages.get(model.npms_package_id)),
+      })));
+  }
 
   // synchronise items
   const [_, createdLinkages] = await Promise.all([

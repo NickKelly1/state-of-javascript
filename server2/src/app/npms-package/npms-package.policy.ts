@@ -15,16 +15,13 @@ export class NpmsPackagePolicy {
    *
    * @param arg
    */
-  canFindMany(arg?: {
-    //
-  }): boolean {
+  canFindMany(): boolean {
 
-    // is Admin, Manager or Shower
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsPackages.Manage,
-      Permission.NpmsPackages.Show,
-    ]);
+    // is NpmsPackage Admin|Viewer
+    return this.ctx.hasPermission(
+      Permission.NpmsPackages.Admin,
+      Permission.NpmsPackages.Viewer,
+    );
   }
 
 
@@ -38,12 +35,11 @@ export class NpmsPackagePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is Admin, Manager or Shower
-    return this.ctx.auth.hasAnyPermissions([
+    // is NpmsPackage Admin|Viewer
+    return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsPackages.Manage,
-      Permission.NpmsPackages.Show,
-    ]);
+      Permission.NpmsPackages.Viewer,
+    );
   }
 
 
@@ -57,11 +53,10 @@ export class NpmsPackagePolicy {
   }): boolean {
 
     // is Admin, Manager or Creator
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsPackages.Manage,
-      Permission.NpmsPackages.Create,
-    ]);
+    return this.ctx.hasPermission(
+      Permission.NpmsPackages.Admin,
+      Permission.NpmsPackages.Creator,
+    );
   }
 
 
@@ -75,15 +70,14 @@ export class NpmsPackagePolicy {
   }): boolean {
     const { model } = arg;
 
+    // must be Findable
+    if (!this.canFindOne({ model })) return false;
+
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // is Admin, Manager or SoftDeleter
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsPackages.Manage,
-      Permission.NpmsPackages.SoftDelete,
-    ]);
+    // is NpmsPackageAdmin
+    return this.ctx.hasPermission(Permission.NpmsPackages.Admin);
   }
 
 
@@ -97,12 +91,11 @@ export class NpmsPackagePolicy {
   }): boolean {
     const { model } = arg;
 
-    // is Admin, Manager or HardDeleter
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsPackages.Manage,
-      Permission.NpmsPackages.HardDelete,
-    ]);
+    // must be Findable
+    if (!this.canFindOne({ model })) return false;
+
+    // is NpmsPackageAdmin
+    return this.ctx.hasPermission(Permission.NpmsPackages.Admin);
   }
 
 
@@ -117,14 +110,13 @@ export class NpmsPackagePolicy {
   }): boolean {
     const { model } = arg;
 
-    // must not be SoftDeleted
+    // must be SoftDeleted
     if (!model.isSoftDeleted()) return false;
 
-    // is Admin, Manager or Restorer
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NpmsPackages.Manage,
-      Permission.NpmsPackages.Restore,
-    ]);
+    // must be Findable
+    if (!this.canFindOne({ model })) return false;
+
+    // is NpmsPackageAdmin
+    return this.ctx.hasPermission(Permission.NpmsPackages.Admin);
   }
 }

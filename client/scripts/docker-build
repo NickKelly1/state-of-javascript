@@ -1,0 +1,9 @@
+#! /usr/bin/sh
+
+docker build -t <your username>/node-web-app .
+
+docker images
+
+# running the image
+
+docker ps

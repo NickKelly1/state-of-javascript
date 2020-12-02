@@ -49,6 +49,8 @@ import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 import BugReportIcon from "@material-ui/icons/BugReportOutlined";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
+import { verify } from "crypto";
+import { FormException } from "../form-error/form-exception.helper";
 
 
 const userMutateFormCreateMutation = gql`
@@ -89,6 +91,7 @@ mutation UserMutateFormUpdate(
   $email:String
   $password:String
   $deactivated:Boolean
+  $verified:Boolean
 ){
   updateUser(
     dto:{
@@ -97,6 +100,7 @@ mutation UserMutateFormUpdate(
       email:$email
       password:$password
       deactivated:$deactivated
+      verified:$verified
     }
   ){
     can{
@@ -125,8 +129,11 @@ export interface IUserMutateFormRole {
   email?: OrNull<string>;
   verified?: OrNull<boolean>;
   deactivated: boolean;
+  canUpdate: boolean; 
   canUpdatePassword: boolean; 
   canDeactivate: boolean; 
+  canForceVerify: boolean;
+  canForceUpdateEmail: boolean;
 };
 export interface IUserMutateFormProps extends IWithDialogueProps {
   user?: OrNullable<IUserMutateFormRole>;
@@ -135,25 +142,33 @@ export interface IUserMutateFormProps extends IWithDialogueProps {
 
 
 export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWidth: true })(WithApi((props) => {
-  const { user, onSuccess, dialog, api, me, } = props;
+  const {
+    user,
+    onSuccess,
+    dialog,
+    api,
+    me,
+  } = props;
 
   interface IFormState {
     name: string;
     email: string;
     password: string;
     deactivated?: boolean;
+    verified?: boolean;
   };
-  const [formState, setFormState] = useState<IFormState>(() => ({
+  const [formState, setFormState] = useState<IFormState>((): IFormState => ({
     name: user?.name ?? '',
     email: user?.email ?? '',
     password: '',
     deactivated: user?.deactivated,
-    verified: user?.verified,
+    verified: user?.verified ?? undefined,
   }));
   const [doSubmit, submitState] = useMutation<IUserMutateFormOnSuccessFnArg, ApiException>(
     async () => {
       if (ist.notNullable(user)) {
         // update
+
         const vars: UserMutateFormUpdateMutationVariables = {
           id: Number(user.id),
           name: formState.name,
@@ -163,6 +178,8 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
           password: formState.password || undefined,
           // set if given, otherwise undefined
           deactivated: formState.deactivated ?? undefined,
+          // set if given, otherwise undefined
+          verified: formState.verified ?? undefined,
         };
         const result = await api.gql<UserMutateFormUpdateMutation, UserMutateFormUpdateMutationVariables>(
           userMutateFormUpdateMutation,
@@ -196,11 +213,15 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
   const handleSubmit = useSubmitForm(doSubmit, [doSubmit]);
   const handleNameChange = useCallback(change(setFormState, 'name'), [setFormState]);
   const handleDeactivatedChanged = useCallback(() => setFormState(prev => ({ ...prev, deactivated: !prev.deactivated })), [setFormState]);
+  const handleVerifiedChanged = useCallback(() => setFormState(prev => ({ ...prev, verified: !prev.verified })), [setFormState]);
   const handleEmailChange = useCallback(change(setFormState, 'email'), [setFormState]);
   const handlePasswordChange = useCallback(change(setFormState, 'password'), [setFormState]);
 
+  const canUpdate: boolean = useMemo(() => !user || user.canUpdate, [user]);
   const canEditPassword: boolean = useMemo(() => !user || user.canUpdatePassword, [user]);
   const canDeactivate: boolean = useMemo(() => !!user?.canDeactivate, [user]);
+  const canForceVerify: boolean = useMemo(() => !!user?.canForceVerify, [user]);
+  const canForceEmailUpdate: boolean = useMemo(() => !!user?.canForceUpdateEmail, [user]);
   const isDisabled = submitState.isLoading;
   const error = submitState.error;
 
@@ -231,32 +252,52 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
                 </Box>
               </Grid>
             )}
-            <Grid item xs={12}>
-              <TextField
-                label="name"
-                margin="dense"
-                autoFocus
-                fullWidth
-                disabled={isDisabled}
-                value={formState.name}
-                error={!!error?.data?.name}
-                helperText={error?.data?.name?.join('\n')}
-                onChange={handleNameChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="email"
-                type="email"
-                margin="dense"
-                fullWidth
-                disabled={isDisabled}
-                value={formState.email}
-                error={!!error?.data?.email}
-                helperText={error?.data?.email?.join('\n')}
-                onChange={handleEmailChange}
-              />
-            </Grid>
+            {canForceVerify && (
+              <Grid item xs={12}>
+                <Box display="flex" justifyContent="flex-start" alignItems="between" textAlign="center">
+                  <Typography className="centered" component="span" variant="body2">
+                    Verified
+                  </Typography>
+                  <Switch
+                    color="primary"
+                    checked={!!formState.verified}
+                    onChange={handleVerifiedChanged}
+                    name="verified"
+                    inputProps={{ 'aria-label': 'auto save' }}
+                  />
+                </Box>
+              </Grid>
+            )}
+            {(!user || canUpdate) && (
+              <Grid item xs={12}>
+                <TextField
+                  label="name"
+                  margin="dense"
+                  autoFocus
+                  fullWidth
+                  disabled={isDisabled}
+                  value={formState.name}
+                  error={!!error?.data?.name}
+                  helperText={error?.data?.name?.join('\n')}
+                  onChange={handleNameChange}
+                />
+              </Grid>
+            )}
+            {(!user || canForceEmailUpdate) && (
+              <Grid item xs={12}>
+                <TextField
+                  label="email"
+                  type="email"
+                  margin="dense"
+                  fullWidth
+                  disabled={isDisabled}
+                  value={formState.email}
+                  error={!!error?.data?.email}
+                  helperText={error?.data?.email?.join('\n')}
+                  onChange={handleEmailChange}
+                />
+              </Grid>
+            )}
             {canEditPassword && (
               <Grid item xs={12}>
                 <TextField
@@ -274,9 +315,7 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
             )}
             {error && (
               <Grid className="centered col" item xs={12}>
-                <FormHelperText error>
-                  {error.message}
-                </FormHelperText>
+                <FormException exception={error} />
               </Grid>
             )}
             {isDisabled && (

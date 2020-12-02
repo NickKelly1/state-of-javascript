@@ -5,7 +5,8 @@ import { ROOT_DIR, SRC_DIR } from '../../root';
 import { Extractor } from '../helpers/extractor.helper';
 import { OrUndefined } from '../types/or-undefined.type';
 
-dotenv.config();
+// optional ENV_FILE can be provided...
+dotenv.config({ path: process.env.ENV_FILE });
 
 const to = Extractor({ fromObj: process.env, fromName: 'Environment variable' });
 
@@ -61,42 +62,52 @@ export class EnvService {
   public readonly SEEDERS_DIR = path.join(SRC_DIR, '/seeds');
 
   constructor() {
-    if (this.is_testing()) {
-      this.PG_USER = to.string('TEST_PG_USER');
-      this.PG_PSW = to.string('TEST_PG_PSW');
-      this.PG_DB = to.string('TEST_PG_DB');
-      this.PG_PORT = to.int('TEST_PG_PORT');
-      this.PG_HOST = to.string('TEST_PG_HOST');
-      this.REDIS_PSW = to.string('TEST_REDIS_PSW');
-      this.REDIS_HOST = to.string('TEST_REDIS_HOST');
-      this.REDIS_PORT = to.int('TEST_REDIS_PORT');
-    }
+    this.REDIS_PSW = to.string('REDIS_PSW');
+    this.REDIS_HOST = to.string('REDIS_HOST');
+    this.REDIS_PORT = to.int('REDIS_PORT');
 
-    else if (this.is_dev()) {
-      this.PG_USER = to.string('DEV_PG_USER');
-      this.PG_PSW = to.string('DEV_PG_PSW');
-      this.PG_DB = to.string('DEV_PG_DB');
-      this.PG_PORT = to.int('DEV_PG_PORT');
-      this.PG_HOST = to.string('DEV_PG_HOST');
-      this.REDIS_PSW = to.string('DEV_REDIS_PSW');
-      this.REDIS_HOST = to.string('DEV_REDIS_HOST');
-      this.REDIS_PORT = to.int('DEV_REDIS_PORT');
-    }
+    this.PG_USER = to.string('PG_USER');
+    this.PG_PSW = to.string('PG_PSW');
+    this.PG_DB = to.string('PG_DB');
+    this.PG_PORT = to.int('PG_PORT');
+    this.PG_HOST = to.string('PG_HOST');
 
-    else if (this.is_prod()) {
-      this.PG_USER = to.string('PROD_PG_USER');
-      this.PG_PSW = to.string('PROD_PG_PSW');
-      this.PG_DB = to.string('PROD_PG_DB');
-      this.PG_PORT = to.int('PROD_PG_PORT');
-      this.PG_HOST = to.string('PROD_PG_HOST');
-      this.REDIS_PSW = to.string('PROD_REDIS_PSW');
-      this.REDIS_HOST = to.string('PROD_REDIS_HOST');
-      this.REDIS_PORT = to.int('PROD_REDIS_PORT');
-    }
+    // if (this.is_testing()) {
+    //   this.PG_USER = to.string('TEST_PG_USER');
+    //   this.PG_PSW = to.string('TEST_PG_PSW');
+    //   this.PG_DB = to.string('TEST_PG_DB');
+    //   this.PG_PORT = to.int('TEST_PG_PORT');
+    //   this.PG_HOST = to.string('TEST_PG_HOST');
+    //   this.REDIS_PSW = to.string('TEST_REDIS_PSW');
+    //   this.REDIS_HOST = to.string('TEST_REDIS_HOST');
+    //   this.REDIS_PORT = to.int('TEST_REDIS_PORT');
+    // }
 
-    else {
-      throw new Error(`unhandled environment "${this.NODE_ENV}"`);
-    }
+    // else if (this.is_dev()) {
+    //   this.PG_USER = to.string('DEV_PG_USER');
+    //   this.PG_PSW = to.string('DEV_PG_PSW');
+    //   this.PG_DB = to.string('DEV_PG_DB');
+    //   this.PG_PORT = to.int('DEV_PG_PORT');
+    //   this.PG_HOST = to.string('DEV_PG_HOST');
+    //   this.REDIS_PSW = to.string('DEV_REDIS_PSW');
+    //   this.REDIS_HOST = to.string('DEV_REDIS_HOST');
+    //   this.REDIS_PORT = to.int('DEV_REDIS_PORT');
+    // }
+
+    // else if (this.is_prod()) {
+    //   this.PG_USER = to.string('PROD_PG_USER');
+    //   this.PG_PSW = to.string('PROD_PG_PSW');
+    //   this.PG_DB = to.string('PROD_PG_DB');
+    //   this.PG_PORT = to.int('PROD_PG_PORT');
+    //   this.PG_HOST = to.string('PROD_PG_HOST');
+    //   this.REDIS_PSW = to.string('PROD_REDIS_PSW');
+    //   this.REDIS_HOST = to.string('PROD_REDIS_HOST');
+    //   this.REDIS_PORT = to.int('PROD_REDIS_PORT');
+    // }
+
+    // else {
+    //   throw new Error(`unhandled environment "${this.NODE_ENV}"`);
+    // }
   }
 }
 

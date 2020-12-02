@@ -13,9 +13,6 @@ export class LogPolicy {
   canFindMany(arg?: {
     //
   }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.Logs.Show,
-    ]);
+    return this.ctx.hasPermission(Permission.Logs.Viewer);
   }
 }

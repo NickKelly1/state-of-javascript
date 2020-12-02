@@ -14,7 +14,7 @@ export class GooglePolicy {
    */
   canOAuth2(arg: { model: IntegrationModel }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
       Permission.Integrations.Manage,
     ]);
@@ -27,7 +27,7 @@ export class GooglePolicy {
   canSendGmail(arg: { model: IntegrationModel }): boolean {
     const { model } = arg;
     if (!model.isConnected()) return false;
-    return this.ctx.auth.hasAnyPermissions([
+    return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
       Permission.Integrations.Manage,
     ]);

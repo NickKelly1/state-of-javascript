@@ -91,6 +91,7 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
   const loginDialog = useDialog();
   const registerDialog = useDialog();
 
+  // TODO: use mutation
   const handleLoginClicked = useCallback(async () => {
     // try to refresh...
     try {
@@ -128,8 +129,8 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
               </MUILink>
             </NextLink>
           </ListItem>
-          <ListItem><NextLink href="/hire-me" passHref><MUILink color="inherit">Hire me</MUILink></NextLink></ListItem>
-          <ListItem><NextLink href="/blog" passHref><MUILink color="inherit">Blog</MUILink></NextLink></ListItem>
+          {/* <ListItem><NextLink href="/hire-me" passHref><MUILink color="inherit">Hire me</MUILink></NextLink></ListItem> */}
+          {/* <ListItem><NextLink href="/blog" passHref><MUILink color="inherit">Blog</MUILink></NextLink></ListItem> */}
           {me.can?.newsArticles.show && (
             <ListItem><NextLink href="/news" passHref><MUILink color="inherit">News</MUILink></NextLink></ListItem>
           )}

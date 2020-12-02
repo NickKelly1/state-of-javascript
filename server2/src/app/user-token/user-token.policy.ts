@@ -1,8 +1,5 @@
 import { IRequestContext } from "../../common/interfaces/request-context.interface";
-import { OrNull } from "../../common/types/or-null.type";
-import { OrNullable } from "../../common/types/or-nullable.type";
 import { Permission } from "../permission/permission.const";
-import { UserModel } from "../user/user.model";
 import { UserTokenTypeModel } from "../user-token-type/user-token-type.model";
 
 export class UserTokenPolicy {
@@ -12,24 +9,30 @@ export class UserTokenPolicy {
     //
   }
 
-  canFindMany(arg?: {
-    //
-  }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.UserTokens.Show,
-    ]);
+  /**
+   * Can the Requester find UserTokens?
+   *
+   * @param arg
+   */
+  canFindMany(): boolean {
+
+    // can View UserTokens
+    return this.ctx.hasPermission(Permission.UserTokens.Viewer);
   }
 
+  /**
+   * Can the Requester find this UserToken?
+   *
+   * @param arg
+   */
   canFindOne(arg: {
     model: UserTokenTypeModel;
   }): boolean {
     const { model } = arg;
 
-    // TODO: heavier authorisation?...
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.UserTokens.Show,
-    ]);
+    // TODO: harder authentication?
+
+    // can Show UserTokens
+    return this.ctx.hasPermission(Permission.UserTokens.Viewer);
   }
 }

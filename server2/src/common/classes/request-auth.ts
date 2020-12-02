@@ -7,6 +7,7 @@ import { ist } from "../helpers/ist.helper";
 import { OrNull } from "../types/or-null.type";
 import { shad_id } from "../constants/shad.const";
 import { OrNullable } from "../types/or-nullable.type";
+import { Permission } from "../../app/permission/permission.const";
 
 export class RequestAuth {
   protected _permissions: Set<PermissionId>;
@@ -34,7 +35,7 @@ export class RequestAuth {
    * Is the Request authenticated as either User or Shadow?
    */
   isAuthenticatedAsAny(): boolean {
-    return this.isAuthenticatedAsUser() || this.isAuthenticatedAsShadow();
+    return this.isLoggedIn() || this.isAuthenticatedAsShadow();
   }
 
   /**
@@ -47,7 +48,7 @@ export class RequestAuth {
   /**
    * Is the Request authenticated as a User?
    */
-  isAuthenticatedAsUser(): boolean {
+  isLoggedIn(): boolean {
     return ist.defined(this.user_id);
   }
 
@@ -57,10 +58,10 @@ export class RequestAuth {
    *
    * @param user
    */
-  isMe(user: OrNullable<UserModel>): boolean {
+  isMe(user?: OrNullable<UserModel>): boolean {
     if (ist.nullable(user)) return false;
     if (ist.nullable(this.user_id)) return false;
-    return this.isMeByUserId(user.id);
+    return this.isMeById(user.id);
   }
 
 
@@ -69,7 +70,7 @@ export class RequestAuth {
    *
    * @param id
    */
-  isMeByUserId(id: OrNullable<UserId>): boolean {
+  isMeById(id?: OrNullable<UserId>): boolean {
     if (ist.nullable(id)) return false;
     if (ist.nullable(this.user_id)) return false;
     return this.user_id === id;
@@ -90,23 +91,38 @@ export class RequestAuth {
 
 
   /**
-   * Does the Requester have any of the given Permissions?
-   *
-   * @param permissions
+   * Does the request have SuperAdmin authentication?
    */
-  hasAnyPermissions(permissions: PermissionId[]): boolean {
-    return permissions.some(perm => this.permissions.has(perm));
+  isSuperAdmin(): boolean {
+    return this.permissions.has(Permission.SuperAdmin.SuperAdmin);
   }
 
 
   /**
-   * Does the Requester have all of the given Permissions?
+   * Does the Requester have any of the given Permissions?
    *
    * @param permissions
    */
-  hasAllPermissions(permissions: PermissionId[]): boolean {
-    return permissions.every(perm => this.permissions.has(perm));
+  hasPermission(...permissions: (PermissionId | PermissionId[])[]): boolean {
+    // SuperAdmin has every Permission
+    if (this.isSuperAdmin()) return true;
+
+    // Check if has the requisite Permissions
+    return permissions.some(permissionOrArray => Array.isArray(permissionOrArray)
+      ? permissionOrArray.some(permission => this.permissions.has(permission))
+      : this.permissions.has(permissionOrArray)
+    );
   }
+
+
+  // /**
+  //  * Does the Requester have all of the given Permissions?
+  //  *
+  //  * @param permissions
+  //  */
+  // hasAllPermissions(permissions: PermissionId[]): boolean {
+  //   return permissions.every(perm => this.permissions.has(perm));
+  // }
 
 
   /**

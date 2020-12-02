@@ -27,7 +27,7 @@ export class SystemContext extends BaseContext {
   ) {
     super();
     // give ambient context all permissions
-    this.auth = new RequestAuth(Object.values(Permission), User.System);
+    this.auth = new RequestAuth(Object.values(Permission).flatMap(category => Object.values(category)), User.System);
     this.services = new RequestSerivceContainer(this, universal)
   }
 

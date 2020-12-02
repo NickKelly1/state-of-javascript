@@ -263,23 +263,6 @@ export class NpmsDashboardService {
 
 
   /**
-   * Approve the NpmsDashboard for Publishing
-   *
-   * @param arg
-   */
-  async approve(arg: {
-    model: NpmsDashboardModel;
-    runner: QueryRunner;
-  }): Promise<NpmsDashboardModel> {
-    const { model, runner } = arg;
-    const { transaction } = runner;
-    model.status_id = NpmsDashboardStatus.Approved;
-    await model.save({ transaction });
-    return model;
-  }
-
-
-  /**
    * Publish the NpmsDashboard
    *
    * @param arg

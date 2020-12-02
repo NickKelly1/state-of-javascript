@@ -54,7 +54,6 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   isDraft() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Draft; }
   isRejected() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Rejected; }
   isSubmitted() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Submitted; }
-  isApproved() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Approved; }
   isPublished() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Published; }
   isUnpublished() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Unpublished; }
 
@@ -62,13 +61,10 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   isSubmittable() { return this.isDraft() || this.isRejected() || this.isUnpublished(); }
 
   /** Is the NpmsDashboardModel Rejectable? */
-  isRejectable() { return this.isSubmitted() || this.isApproved() || this.isPublished() || this.isUnpublished(); }
-
-  /** Is the NpmsDashboardModel Approvable? */
-  isApprovable() { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
+  isRejectable() { return this.isSubmitted() || this.isPublished() || this.isUnpublished(); }
 
   /** Is the NpmsDashboardModel Publishable? */
-  isPublishable() { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isApproved() || this.isUnpublished(); }
+  isPublishable() { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
 
   /** Is the NpmsDashboardModel Unpublishable? */
   isUnpublishable() { return this.isPublished(); }
@@ -80,7 +76,16 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
    * @param auth
    */
   isOwnedBy(auth: RequestAuth): boolean {
-    return auth.isMeByUserId(this.owner_id) || auth.isMeByShadowId(this.shadow_id);
+    return auth.isMeById(this.owner_id) || auth.isMeByShadowId(this.shadow_id);
+  }
+
+  /**
+   * Does the Requester own this Model?
+   *
+   * @param ctx
+   */
+  isOwnedByCtx(ctx: IRequestContext): boolean {
+    return this.isOwnedBy(ctx.auth);
   }
 }
 

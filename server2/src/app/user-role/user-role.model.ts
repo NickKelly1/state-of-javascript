@@ -28,7 +28,7 @@ export class UserRoleModel extends Model<IUserRoleAttributes, IUserRoleCreationA
 
   // eager loaded associations
   [UserRoleAssociation.user]?: UserModel;
-  [UserRoleAssociation.role]?: PermissionModel;
+  [UserRoleAssociation.role]?: RoleModel;
 
   // associations
   getUser!: BelongsToGetAssociationMixin<UserModel>;

@@ -79,7 +79,10 @@ query UserDetailData(
         update
         softDelete
         hardDelete
+        restore
         deactivate
+        forceVerify
+        forceUpdateEmail
         updatePassword
         requestWelcome
         acceptWelcome
@@ -182,8 +185,11 @@ const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
       email: user.data.email,
       verified: user.data.verified,
       deactivated: user.data.deactivated,
+      canUpdate: user.can.update,
       canDeactivate: user.can.deactivate,
       canUpdatePassword: user.can.updatePassword,
+      canForceVerify: user.can.forceVerify,
+      canForceUpdateEmail: user.can.forceUpdateEmail,
     }),
     [user],
   );
@@ -313,7 +319,8 @@ const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
                 </IconButton>
               </Box>
             </WhenDebugMode>
-            {user.can.update && (
+            {/* TODO: clean up user updating... */}
+            {(user.can.update || user.can.deactivate || user.can.forceUpdateEmail || user.can.forceVerify) && (
               <Box ml={1}>
                 <IconButton color="primary" onClick={editDialog.doOpen}>
                   <EditIcon />

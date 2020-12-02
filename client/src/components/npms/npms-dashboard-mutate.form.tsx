@@ -54,10 +54,6 @@ import {
   NpmsPackageCreateForm,
   INpmsPackageCreateFormOnSuccessFn,
 } from './npms-package-create.form';
-import {
-  INpmsPackageSearchOption,
-  NpmsPackageComboSearch,
-} from './npms-package-combo-search';
 import { WithRandomId } from '../../components-hoc/with-random-id/with-random-id';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
@@ -70,6 +66,7 @@ import { OrNullable } from '../../types/or-nullable.type';
 import { not } from '../../helpers/not.helper';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { FormException } from '../form-error/form-exception.helper';
+import { useHasMounted } from '../../hooks/use-has-mounted.hook';
 
 // TODO: updating vs creating...
 const createNpmsDashboardQuery = gql`
@@ -138,7 +135,7 @@ export interface INpmsDashboardMutateFormProps extends IWithDialogueProps {
   initial?: {
     id: Id;
     name: string;
-    packages: INpmsPackageSearchOption[];
+    packages: string[];
   },
 }
 
@@ -153,7 +150,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
   const [formState, setFormState] = useState<IFormState>(() => ({
     name: _initial?.name ?? '',
     npmsPackages: [
-      ...(_initial?.packages ?? []).map((pkg): IDashboardPackageOption => ({ key: seq.next().toString(), option: pkg.name, })),
+      ...(_initial?.packages ?? []).map((pkg): IDashboardPackageOption => ({ key: seq.next().toString(), option: pkg, })),
       { key: seq.next().toString(), option: '', },
     ]
   }));
@@ -254,6 +251,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
 
   const debugDialog = useDialog();
   const debugData = useMemo(() => ({ formState, initial }), [formState, initial]);
+  const hasMounted = useHasMounted();
 
   return (
     <>
@@ -303,7 +301,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
                                           </Box>
                                           <TextField
                                             label="name"
-                                            autoFocus
+                                            autoFocus={hasMounted}
                                             fullWidth
                                             margin="dense"
                                             variant="outlined"

@@ -6,7 +6,10 @@ import RemoveCircleOutlineIcon from '@material-ui/icons/RemoveCircleOutline';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDownOutlined';
 import SendIcon from '@material-ui/icons/SendOutlined';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUpOutlined';
-import React, { CSSProperties, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useState,
+} from 'react';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import EditIcon from '@material-ui/icons/EditOutlined';
@@ -14,23 +17,8 @@ import {
   Box,
   Button,
   Grid,
-  Link,
-  makeStyles,
-  Modal,
-  Paper,
   Typography,
-  withTheme,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
-  IconTypeMap,
-  IconButtonTypeMap,
-  useTheme,
-  IconButtonProps,
-  Theme,
-  PropTypes,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -46,8 +34,6 @@ import {
   PublishNpmsDashboardMutationVariables,
   UnpublishNpmsDashboardMutation,
   UnpublishNpmsDashboardMutationVariables,
-  ApproveNpmsDashboardMutation,
-  ApproveNpmsDashboardMutationVariables,
   SoftDeleteNpmsDashboardMutation,
   SoftDeleteNpmsDashboardMutationVariables,
 } from '../../generated/graphql';
@@ -59,9 +45,6 @@ import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
 import { Legend } from '../legend/legend';
 import { PieChartDatum } from '../../types/pie-chart-datum.type';
 import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data-definition.type';
-import {
-  INpmsPackageSearchOption,
-} from './npms-package-combo-search';
 import {
   NpmsDashboardMutateForm,
 } from './npms-dashboard-mutate.form';
@@ -86,13 +69,10 @@ import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { OrNull } from '../../types/or-null.type';
 import { useMutation } from 'react-query';
 import { useSnackbar } from 'notistack';
-import { ApiException } from '../../backend-api/api.exception';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
-import { DebugModeContext, useDebugMode } from '../../components-contexts/debug-mode.context';
+import { useDebugMode } from '../../components-contexts/debug-mode.context';
 import { hidex } from '../../helpers/hidden.helper';
-import { ArrowDropUp } from '@material-ui/icons';
 import { useThemeColours } from '../../hooks/use-theme-colours.hook';
-import { LoadingDialog } from '../loading-dialog/loading-dialog';
 
 const submitNpmsDashboardMutation = gql`
 mutation SubmitNpmsDashboard(
@@ -128,22 +108,6 @@ mutation RejectNpmsDashboard(
 }
 `;
 
-const approveNpmsDashboardMutation = gql`
-mutation ApproveNpmsDashboard(
-  $id:Int!
-){
-  approveNpmsDashboard(
-    dto:{
-      id:$id
-    }
-  ){
-    data{
-      id
-      name
-    }
-  }
-}
-`;
 
 const publishNpmsDashboardMutation = gql`
 mutation PublishNpmsDashboard(
@@ -195,7 +159,7 @@ export interface INpmsDashboardDatasets {
   original: {
     id: Id;
     name: string;
-    packages: INpmsPackageSearchOption[];
+    packages: string[];
     source?: unknown;
   };
   graphical: {
@@ -214,7 +178,6 @@ export interface INpmsDashboardDatasets {
       restore: boolean;
       submit: boolean;
       reject: boolean;
-      approve: boolean;
       publish: boolean;
       unpublish: boolean;
       createDashboardItems: boolean;
@@ -226,7 +189,7 @@ export interface INpmsDashboardDatasets {
       growth: PieChartDatum[];
       summary: MultiDimensionDataDefinition;
       // time chart...
-      averageDailyDownloads: MultiDimensionDataDefinition,
+      averageWeeklyDownloads: MultiDimensionDataDefinition,
       // time chart...
       averageDailyCommits: MultiDimensionDataDefinition,
     };
@@ -315,40 +278,6 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
       return result;
     },
     { onSuccess: handleSubmitSuccess, onError: handleSubmitError, }
-  );
-
-  /**
-   * ----------------
-   * Approve
-   * ----------------
-   */
-
-  const handleApproveSuccess = useCallback(
-    () => {
-      handleMenuClose();
-      enqueueSnackbar(`Approved ${dashboard.original.name}`, { variant: 'success' });
-      onChange?.();
-    },
-    [handleMenuClose, enqueueSnackbar, onChange],
-  );
-  const handleApproveError = useCallback(
-    () => {
-      handleMenuClose();
-      enqueueSnackbar(`Failed to Approve ${dashboard.original.name}`, { variant: 'error' });
-      onChange?.();
-    },
-    [handleMenuClose, enqueueSnackbar, onChange],
-  );
-  const [doApprove, approveState] = useMutation<ApproveNpmsDashboardMutation, IApiException>(
-    async (): Promise<ApproveNpmsDashboardMutation> => {
-      const vars: ApproveNpmsDashboardMutationVariables = { id: Number(dashboard.original.id) };
-      const result = await api.gql<ApproveNpmsDashboardMutation, ApproveNpmsDashboardMutationVariables>(
-        approveNpmsDashboardMutation,
-        vars,
-      );
-      return result;
-    },
-    { onSuccess: handleApproveSuccess, onError: handleApproveError, }
   );
 
   /**
@@ -503,25 +432,21 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const isLoading =
     submitState.isLoading
     || rejectState.isLoading
-    || approveState.isLoading
     || publishState.isLoading
     || softDeleteState.isLoading;
   const isDisabled = isLoading;
 
   const canSubmit = dashboard.graphical.can.submit;
   const canReject = dashboard.graphical.can.reject;
-  const canApprove = dashboard.graphical.can.approve;
   const canPublish = dashboard.graphical.can.publish;
   const canUnpublish = dashboard.graphical.can.unpublish;
   const hasExtraActions =
     canSubmit
     || canReject
-    || canApprove
     || canPublish
     || canUnpublish;
 
   const handleSubmitDashboardClicked = useCallback(() => doSubmit(), [doSubmit]);
-  const handleApproveDashboardClicked = useCallback(() => doApprove(), [doApprove]);
   const handleRejectDashboardClicked = useCallback(() => doReject(), [doReject]);
   const handlePublishDashboardClicked = useCallback(() => doPublish(), [doPublish]);
   const handleUnpublishDashboardClicked = useCallback(() => doUnpublish(), [doUnpublish]);
@@ -606,12 +531,6 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
                           <ListItemText className={themeColours.success}>Publish</ListItemText>
                         </MenuItem>
                       )}
-                      {canApprove && (
-                        <MenuItem disabled={isDisabled} onClick={handleApproveDashboardClicked}>
-                          <ListItemIcon className={themeColours.primary}><CheckIcon /></ListItemIcon>
-                          <ListItemText className={themeColours.primary}>Approve</ListItemText>
-                        </MenuItem>
-                      )}
                       {canSubmit && (
                         <MenuItem onClick={handleSubmitDashboardClicked}>
                           <ListItemIcon className={themeColours.primary}><SendIcon /></ListItemIcon>
@@ -653,8 +572,8 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
           <FittedBarChart borderless height={110} colours={dashboard.graphical.colours} definition={dashboard.graphical.overview.summary} />
         </Grid>
         <Grid className="centered col" item xs={12} md={6}>
-          <Typography gutterBottom>Average Daily Downloads</Typography>
-          <FittedAreaChart borderless height={160} colours={dashboard.graphical.colours} definition={dashboard.graphical.overview.averageDailyDownloads} />
+          <Typography gutterBottom>Average Weekly Downloads</Typography>
+          <FittedAreaChart borderless height={160} colours={dashboard.graphical.colours} definition={dashboard.graphical.overview.averageWeeklyDownloads} />
         </Grid>
         <Grid className="centered col" item xs={12} md={6}>
           <Typography gutterBottom>Average Daily Commits</Typography>

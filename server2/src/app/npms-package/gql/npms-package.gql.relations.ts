@@ -33,17 +33,28 @@ export const NpmsPackageGqlRelations: GraphQLObjectType<INpmsPackageGqlRelations
           runner: null,
           options: {
             ...options,
-            include: [{ association: NpmsDashboardItemAssociation.dashboard }],
+            include: [
+              { association: NpmsDashboardItemAssociation.dashboard },
+            ],
             where: andWhere([
               options.where,
               { [NpmsDashboardItemField.npms_package_id]: { [Op.eq]: parent.id } }
             ]),
           },
         });
+        // prime dashboards
+        rows.forEach(row => {
+          const dashboard = assertDefined(row.dashboard);
+          ctx.loader.npmsDashboard.prime(dashboard.id, dashboard);
+        });
         const pagination = collectionMeta({ data: rows, total: count, page });
         const collection: INpmsDashboardItemCollectionGqlNodeSource = {
           models: rows.map((model): OrNull<NpmsDashboardItemModel> =>
-            ctx.services.npmsDashboardItemPolicy.canFindOne({ model, dashboard: assertDefined(model.dashboard) })
+            ctx.services.npmsDashboardItemPolicy.canFindOne({
+              model,
+              dashboard: assertDefined(model.dashboard),
+              npmsPackage: parent,
+            })
               ? model
               : null,
           ),
@@ -52,6 +63,7 @@ export const NpmsPackageGqlRelations: GraphQLObjectType<INpmsPackageGqlRelations
         return collection;
       },
     },
+
     dashboards: {
       type: GraphQLNonNull(NpmsDashboardCollectionGqlNode),
       args: gqlQueryArg(NpmsDashboardCollectionOptionsGqlInput),

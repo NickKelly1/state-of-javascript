@@ -65,12 +65,6 @@ export const NpmsDashboardGqlActions = new GraphQLObjectType<INpmsDashboardGqlAc
         return ctx.services.npmsDashboardPolicy.canReject({ model: parent });
       },
     },
-    approve: {
-      type: GraphQLNonNull(GraphQLBoolean),
-      resolve: async (parent, args, ctx): Promise<boolean> => {
-        return ctx.services.npmsDashboardPolicy.canApprove({ model: parent });
-      },
-    },
     publish: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: async (parent, args, ctx): Promise<boolean> => {

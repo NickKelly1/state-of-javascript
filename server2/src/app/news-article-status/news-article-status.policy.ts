@@ -12,22 +12,27 @@ export class NewsArticleStatusPolicy {
     //
   }
 
-  canFindMany(arg?: {
-    //
-  }): boolean {
-    return this.ctx.auth.hasAnyPermissions([
+  /**
+   * Can the Requester find NewsArticleStatuses?
+   */
+  canFindMany(): boolean {
+    return this.ctx.auth.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
-      Permission.NewsArticleStatuses.Show,
-    ]);
+      Permission.NewsArticleStatuses.Viewer,
+    );
   }
 
+  /**
+   * Can the Requester find this NewsArticleStatus?
+   *
+   * @param arg
+   */
   canFindOne(arg: {
     model: NewsArticleStatusModel;
   }): boolean {
     const { model } = arg;
-    return this.ctx.auth.hasAnyPermissions([
-      Permission.SuperAdmin.SuperAdmin,
-      Permission.NewsArticleStatuses.Show,
-    ]);
+
+    // has NewsArticleStatusViewer
+    return this.ctx.auth.hasPermission(Permission.NewsArticleStatuses.Viewer);
   }
 }
