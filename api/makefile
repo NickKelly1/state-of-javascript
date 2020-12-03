@@ -1,5 +1,5 @@
 # https://blog.container-solutions.com/tagging-docker-images-the-right-way
-NAME		:= nick3141/nickkelly.dev-backend
+NAME		:= nick3141/nickkelly.dev-api
 # TAG 		:= $$(git log -1 --pretty=%!H(MISSING))
 TAG 		:= $$(git log -1 --pretty=%h)
 IMG			:= ${NAME}:${TAG}
@@ -15,5 +15,5 @@ push:
 login:
 	@docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}
 
-production-up:
-	@docker-compose --env-file .env.prod up -d
+# production-up:
+# 	@docker-compose --env-file .env.prod up -d
