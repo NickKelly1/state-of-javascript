@@ -41,6 +41,7 @@ api-down:
 # rm
 api-rm:
 	@docker-compose -f api.yml rm
+	@docker image rm nick3141/nickkelly.dev-api
 
 # ----------
 # client
@@ -69,3 +70,4 @@ client-down:
 # rm
 client-rm:
 	@docker-compose -f client.yml rm
+	@docker image rm nick3141/nickkelly.dev-frontend
