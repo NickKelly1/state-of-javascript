@@ -39,7 +39,7 @@ api-up:
 	@docker-compose -f api.yml up
 
 # up (daemon)
-api-up:
+api-up-d:
 	@docker-compose -f api.yml up -d
 
 # down
@@ -72,7 +72,7 @@ client-up:
 	@docker-compose -f client.yml up
 
 # up (daemon)
-client-up:
+client-up-d:
 	@docker-compose -f client.yml up -d
 
 # down
