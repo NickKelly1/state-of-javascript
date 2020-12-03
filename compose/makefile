@@ -22,6 +22,14 @@ services-rm:
 api-build:
 	@cd ../api && make build
 
+# push
+api-push:
+	@cd ../api && make push
+
+# pull
+api-pull:
+	@cd ../api && make pull
+
 # up
 api-up:
 	@docker-compose -f api.yml up
@@ -45,6 +53,10 @@ client-build:
 # push
 client-push:
 	@cd ../client && make push
+
+# pull
+client-pull:
+	@cd ../client && make pull
 
 # up
 client-up:
