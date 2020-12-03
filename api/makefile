@@ -9,6 +9,10 @@ build:
 	@docker build -t ${IMG} .
 	@docker tag ${IMG} ${LATEST}
 
+build-no-cache:
+	@docker build --no-cache=true -t ${IMG} .
+	@docker tag ${IMG} ${LATEST}
+
 push:
 	@docker push ${NAME}
 
