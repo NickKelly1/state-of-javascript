@@ -4,10 +4,8 @@ import { OrUndefined } from "../types/or-undefined.type";
 import { ApiException } from "./api.exception";
 
 export function normaliseApiException(exp: unknown): ApiException {
-  if (exp instanceof ApiException) return exp as ApiException;
-
   // is already api exception?
-  if (isu.apiExceptionShape(exp)) return ApiException(exp);
+  if (isu.apiPartialExceptionShape(exp)) return ApiException(exp);
 
   // has an extension.exception object on it?
   if (isu.hasExtensionException(exp)) {
@@ -18,10 +16,10 @@ export function normaliseApiException(exp: unknown): ApiException {
   if (ist.obj(exp) && ist.arr(exp.errors)) {
     const exceptions = exp
       .errors
-      .filter(isu.apiExceptionShape)
+      .filter(isu.apiPartialExceptionShape)
       .concat(...exp
         .errors
-        .filter(err => !isu.apiExceptionShape(err))
+        .filter(err => !isu.apiPartialExceptionShape(err))
         .filter(isu.hasExtensionException)
         .map(err => err.extensions.exception)
         .map(normaliseApiException));
@@ -55,17 +53,13 @@ export function normaliseApiException(exp: unknown): ApiException {
     }
   }
 
+  // comes from GraphQL object?
   if (ist.obj(exp) && ist.obj(exp.response)) {
     return normaliseApiException(exp.response);
   }
 
   // neither - fake it
-  return ApiException({
-    name: 'unknown error',
-    code: -1,
-    error: 'unknown error',
-    message: 'unknown error',
-  });
+  return ApiException({ code: -1, });
 }
 
 

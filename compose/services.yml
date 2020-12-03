@@ -18,9 +18,9 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: nk
+      POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PSW}
-      POSTGRES_DB: nk
+      POSTGRES_DB: ${PG_DB}
     networks:
       - nk
 

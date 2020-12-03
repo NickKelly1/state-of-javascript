@@ -1,8 +1,15 @@
 import { IApiExceptionData } from "./types/api.exception-data.interface";
-import { IApiException } from "./types/api.exception.interface";
+import { IApiException, IPartialApiException } from "./types/api.exception.interface";
 
 export type ApiException = IApiException;
-export function ApiException(_orig: IApiException): ApiException { return _orig; }
+export function ApiException(_orig: IPartialApiException): ApiException {
+  return {
+    ..._orig,
+    name: _orig.name ?? 'UnknownException',
+    message: _orig.message ?? 'unknown message',
+    error: _orig.error ?? 'unknown error',
+  }
+}
 // can't pass class to client.... class not serializable
 // export class extends Error implements IApiException {
 //   public readonly name: string;

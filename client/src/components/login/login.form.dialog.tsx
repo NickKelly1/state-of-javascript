@@ -77,6 +77,7 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
               <TextField
                 label="name"
                 margin="dense"
+                autoComplete="email"
                 fullWidth
                 autoFocus
                 disabled={isDisabled}
@@ -90,6 +91,7 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
               <TextField
                 label="password"
                 margin="dense"
+                autoComplete="password"
                 fullWidth
                 type="password"
                 disabled={isDisabled}

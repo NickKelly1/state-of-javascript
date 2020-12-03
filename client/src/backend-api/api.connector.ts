@@ -5,6 +5,7 @@ import { ApiCredentials } from "./api.credentials";
 import { GraphQLClient, request } from "graphql-request";
 import { normaliseApiException } from "./normalise-api-exception.helper";
 import { isoFetch } from "../iso-fetch";
+import { GraphQLError } from "graphql";
 
 let counter = 0;
 
@@ -74,8 +75,9 @@ export class ApiConnector {
       return result1;
     } catch (error1) {
       // 1: fail
-      const exception1 = normaliseApiException(error1);
-      Debug.ApiConnector(`[${ident}] 1: fail...`, { error1, exception1 });
+      // GraphQLError is thrown with a .request and .response
+      const exception1 = normaliseApiException(error1.response);
+      Debug.ApiConnector(`[${ident}] 1: fail...`);
 
       // 2: case 440 - login hard expired - logout
       if (exception1.code === 440) {
