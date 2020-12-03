@@ -6,6 +6,10 @@
 services-up:
 	@docker-compose -f services.yml up
 
+# up (daemon)
+services-up-d:
+	@docker-compose -f services.yml up -d
+
 # down
 services-down:
 	@docker-compose -f services.yml down
@@ -33,6 +37,10 @@ api-pull:
 # up
 api-up:
 	@docker-compose -f api.yml up
+
+# up (daemon)
+api-up:
+	@docker-compose -f api.yml up -d
 
 # down
 api-down:
@@ -62,6 +70,10 @@ client-pull:
 # up
 client-up:
 	@docker-compose -f client.yml up
+
+# up (daemon)
+client-up:
+	@docker-compose -f client.yml up -d
 
 # down
 client-down:
