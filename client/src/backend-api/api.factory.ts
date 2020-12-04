@@ -70,22 +70,18 @@ export function ApiFactory(arg: IApiFactoryArg): Api {
     credentials: 'include',
     mode: 'cors',
   });
-  credentialedGqlClient.setHeader(_header_shad_id_key, shadow_id);
 
   const uncredentialedGqlClient = new GraphQLClient(`${arg.publicEnv.API_URL}/v1/gql`, {
     fetch: isoFetch,
     credentials: 'omit',
     mode: 'cors',
   });
-  uncredentialedGqlClient.setHeader(_header_shad_id_key, shadow_id);
 
   const refreshGqlClient = new GraphQLClient(`${arg.publicEnv.API_URL}/refresh/v1/gql`, {
     fetch: isoFetch,
     credentials: 'include',
     mode: 'cors',
-    // headers
   });
-  refreshGqlClient.setHeader(_header_shad_id_key, shadow_id);
 
   const credentials = ApiCredentialsFactory({
     me,

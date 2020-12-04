@@ -7,7 +7,7 @@ import { handler } from "../helpers/handler.helper";
 import { RequestSerivceContainer } from "../containers/request.service.container";
 import { IUniversalServices } from "../interfaces/universal.services.interface";
 import { toId } from "../helpers/to-id.helper";
-import { shad_id } from "../constants/shad.const";
+import { c_shadow_id, h_shadow_id } from "../constants/shad.const";
 
 export const servicesMw = (arg: {
   universal: IUniversalServices,
@@ -21,7 +21,7 @@ export const servicesMw = (arg: {
     systemPermissions.pub.map(toId),
     undefined,
     // TODO: hash shad_id so it can't be spoofed so easy...
-    req.header(shad_id) ?? null,
+    req.header(h_shadow_id) ?? req.cookies[c_shadow_id] ?? null,
   );
   req.__locals__ = { auth, httpCtx: ctx, services, };
   next();

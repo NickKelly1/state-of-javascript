@@ -1,19 +1,19 @@
 # https://hub.docker.com/_/postgres
 # Use postgres/example user/password credentials
-version: '3.8'
+version: '3'
 
 services:
   # https://hub.docker.com/_/redis
-  soj_redis_dev:
-    container_name: soj_redis_dev
+  nk_redis_dev:
+    container_name: nk_redis_dev
     image: redis:6.0.9
     restart: unless-stopped
     ports:
       - "${REDIS_PORT}:6379"
     command: redis-server --requirepass ${REDIS_PSW}
 
-  soj_pg_dev:
-    container_name: soj_pg_dev
+  nk_pg_dev:
+    container_name: nk_pg_dev
     image: postgres:12.4
     restart: unless-stopped
     ports:

@@ -1,5 +1,6 @@
 import { Mutex } from 'async-mutex';
 import { gql, GraphQLClient, } from 'graphql-request';
+import { _header_shad_id_key } from '../constants/shad-id.const';
 import { Debug } from '../debug/debug';
 import { PublicEnv } from '../env/public-env.helper';
 import {
@@ -307,6 +308,29 @@ export interface IApiCredentialsResetPasswordArg { token: string; password: stri
 export interface IApiCredentialsConsumeUserWelcomeArg { token: string; name: string; password: string; }
 export interface IApiCredentialsConsumeChangeVerificationArg { token: string; }
 
+function setClientHeaders(arg: {
+  readonly _me: IApiMe;
+  readonly credentialedGqlClient: GraphQLClient;
+  readonly uncredentialedGqlClient: GraphQLClient;
+  readonly refreshGqlClient: GraphQLClient;
+}) {
+  const {
+    _me,
+    credentialedGqlClient,
+    uncredentialedGqlClient,
+    refreshGqlClient,
+  } = arg;
+  const sharedHeaders = _me.shadow_id ? [[_header_shad_id_key, _me.shadow_id]] : [];
+  const credHeaders = _me.user ? [['authorization', `Bearer ${_me.user.access_token}`]] : [];
+  const refreshHeaders = _me.user ? [['refresh_token', _me.user.refresh_token]] : [];
+  // uncrednetialed client
+  uncredentialedGqlClient.setHeaders([ ...sharedHeaders, ]);
+  // credentialed client
+  credentialedGqlClient.setHeaders([ ...credHeaders, ...sharedHeaders, ]);
+  // refresh client
+  refreshGqlClient.setHeaders([ ...refreshHeaders, ...sharedHeaders, ]);
+}
+
 export class ApiCredentials {
   // protected readonly syncLock: Mutex = new Mutex();
   protected readonly authenticationLock: Mutex = new Mutex();
@@ -360,11 +384,12 @@ export class ApiCredentials {
     this.event.force_out_success.on(() => { Debug.ApiCredentials('on::force_out_success'); });
     this.event.force_out_fail.on(() => { Debug.ApiCredentials('on::force_out_fail'); });
 
-    // set authenticated user
-    if (ist.defined(this._me.user)) {
-      this.credentialedGqlClient.setHeader('Authorization', `Bearer ${this._me.user.access_token}`);
-      this.refreshGqlClient.setHeader('refresh_token', this._me.user.refresh_token);
-    }
+    setClientHeaders({
+      _me: this._me,
+      credentialedGqlClient: this.credentialedGqlClient,
+      refreshGqlClient: this.refreshGqlClient,
+      uncredentialedGqlClient: this.uncredentialedGqlClient,
+    });
   }
 
 
@@ -403,11 +428,13 @@ export class ApiCredentials {
    */
   protected _saveAuthentication(me: IApiMe): void {
     this._me = me;
-    // set authentication for requests
-    if (ist.defined(this._me.user)) {
-      this.credentialedGqlClient.setHeader('Authorization', `Bearer ${this._me.user.access_token}`);
-      this.refreshGqlClient.setHeader('refresh_token', this._me.user.refresh_token);
-    }
+    // set headers
+    setClientHeaders({
+      _me: this._me,
+      credentialedGqlClient: this.credentialedGqlClient,
+      refreshGqlClient: this.refreshGqlClient,
+      uncredentialedGqlClient: this.uncredentialedGqlClient,
+    });
     this.event.authenticated.fire(me);
   }
 
@@ -417,10 +444,13 @@ export class ApiCredentials {
    */
   protected _removeAuthentication(me: IApiMe): void {
     this._me = me;
-    // clear other authorisation
-    // we will remove the refresh_token too so that when refreshing the cookies refresh_token, not the headers
-    this.credentialedGqlClient.setHeader('Authorization', 'Bearer ');
-    this.refreshGqlClient.setHeader('refresh_token', '');
+    // set headers
+    setClientHeaders({
+      _me: this._me,
+      credentialedGqlClient: this.credentialedGqlClient,
+      refreshGqlClient: this.refreshGqlClient,
+      uncredentialedGqlClient: this.uncredentialedGqlClient,
+    });
     this.event.unauthenticated.fire(me);
   }
 

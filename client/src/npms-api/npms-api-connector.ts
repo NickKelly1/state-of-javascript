@@ -1,5 +1,6 @@
 import { PublicEnv } from "../env/public-env.helper";
 import { Debug } from "../debug/debug";
+import { isoFetch } from "../iso-fetch";
 
 export class NpmsApiConnector {
   protected readonly url = 'https://api.npms.io';
@@ -23,7 +24,7 @@ export class NpmsApiConnector {
       };
       Debug.NpmsConnector(`[${this.json.name}] "${info.url}"`);
     }
-    const response = await fetch(info, init);
+    const response = await isoFetch(info, init);
     const json: T = await response.json();
     if (!response.ok) throw json;
     return json;

@@ -17,32 +17,6 @@ export class ApiConnector {
   }
 
 
-  // /**
-  //  * Send a json request
-  //  * outdated
-  //  *
-  //  * @param input
-  //  * @param init
-  //  */
-  // async json<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  //   let info: RequestInfo;
-  //   if (typeof input === 'string') {
-  //     info = `${this.publicEnv.API_URL}${input}`;
-  //     Debug.BackendApiConnector(`[${this.json.name}] "${info}"`);
-  //   } else {
-  //     info = {
-  //       ...input,
-  //       url: `${this.publicEnv.API_URL}${input.url}`,
-  //     };
-  //     Debug.BackendApiConnector(`[${this.json.name}] "${info.url}"`);
-  //   }
-  //   const response = await fetch(info, init);
-  //   const json: T = await response.json();
-  //   if (!response.ok) throw json;
-  //   return json;
-  // }
-
-
   /**
    * Make a GraphQL request using the current credentials
    *

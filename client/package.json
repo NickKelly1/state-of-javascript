@@ -22,6 +22,7 @@
     "debug": "^4.2.0",
     "graphql": "^15.3.0",
     "graphql-request": "^3.2.0",
+    "gray-matter": "^4.0.2",
     "immer": "^7.0.14",
     "isomorphic-fetch": "^3.0.0",
     "nanoid": "^3.1.16",
@@ -35,12 +36,13 @@
     "react-dom": "16.13.1",
     "react-ga": "^3.3.0",
     "react-json-tree": "^0.13.0",
-    "react-json-view": "^1.19.1",
     "react-markdown": "^4.3.1",
     "react-query": "^2.23.1",
     "react-swipeable-views": "^0.13.9",
     "react-table": "^7.6.0",
     "recharts": "^1.8.5",
+    "remark": "^13.0.0",
+    "remark-html": "^13.0.1",
     "seed-random": "^2.2.0"
   },
   "devDependencies": {

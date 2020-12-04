@@ -15,7 +15,7 @@ import { QueryRunner } from '../../app/db/query-runner';
 import { BaseContext } from './base.context';
 import { ExecutionContext } from '../classes/execution.context';
 import { RequestAuth } from '../classes/request-auth';
-import { shad_id } from '../constants/shad.const';
+import { h_shadow_id } from '../constants/shad.const';
 import { OrNull } from '../types/or-null.type';
 
 export class GqlContext extends BaseContext implements IRequestContext {

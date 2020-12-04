@@ -72,7 +72,7 @@ export default function MyApp(props: IMyAppProps) {
   return (
     <React.Fragment>
       <Head>
-        <title>The State of JavaScript</title>
+        <title>Nick Kelly</title>
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
       <ThemeProvider theme={theme}>
