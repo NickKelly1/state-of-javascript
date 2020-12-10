@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  nk_api:
+    container_name: nk_api
+    image: nick3141/nickkelly.dev-api:latest
+    restart: unless-stopped
+    ports:
+      - 4000:4000
+    env_file:
+      .env.api
+    networks:
+      - nk
+
+networks:
+  nk:
+    driver: bridge

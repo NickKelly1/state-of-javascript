@@ -63,7 +63,7 @@ export class NpmsDashboardPolicy {
     }
 
     // is Published & Requester is a Viewer
-    if (model.isPublished() && this.ctx.hasPermission(Permission.NewsArticles.Viewer)) {
+    if (model.isPublished() && this.ctx.hasPermission(Permission.NpmsDashboards.Viewer)) {
       return true;
     }
 

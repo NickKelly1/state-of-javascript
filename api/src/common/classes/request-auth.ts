@@ -5,7 +5,7 @@ import { IAccessToken } from "../../app/auth/token/access.token.gql";
 import { UserModel } from "../../circle";
 import { ist } from "../helpers/ist.helper";
 import { OrNull } from "../types/or-null.type";
-import { shad_id } from "../constants/shad.const";
+import { h_shadow_id } from "../constants/shad.const";
 import { OrNullable } from "../types/or-nullable.type";
 import { Permission } from "../../app/permission/permission.const";
 
