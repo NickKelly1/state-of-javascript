@@ -1,11 +1,13 @@
 {
-  "name": "server2",
-  "version": "0.0.0",
+  "name": "nickkelly.dev-api",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "cross-env ENV_FILE=.env.prod node ./dist/scripts/www.js",
     "build": "rimraf ./dist && tsc",
-    "dev": "ts-node-dev --notify false --respawn src/scripts/www.ts",
+    "dev": "ts-node-dev --notify false --respawn --debug src/scripts/www.ts",
+    "dev:2:watch": "tsc -w --preserveWatchOutput",
+    "dev:2:run": "nodemon -w dist dist/scripts/www.js",
     "dev:debug": "ts-node-dev --inspect --notify false --respawn src/scripts/www.ts",
     "migration:up": "ts-node src/scripts/migration.up.script.ts --script migration_up",
     "migration:down": "ts-node src/scripts/migration.down.script.ts --script migration_down",

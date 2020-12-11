@@ -1,9 +1,10 @@
 import * as overrides from './custom';
+import fs from 'fs/promises';
 import { GqlSchema } from './gql.schema';
 import * as cron from 'cron';
 import Bull, { DoneCallback, Job, ProcessCallbackFunction, ProcessPromiseFunction } from 'bull';
 import express, { Handler, Request, Response } from 'express';
-import path from 'path';
+import path, { join } from 'path';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import cors from 'cors';
@@ -40,6 +41,7 @@ import { Printable } from './common/types/printable.type';
 import { CronTickHandlerFactory, ICronTickHandlerFnArg } from './common/helpers/cron-tick-handler.helper';
 import { Op } from 'sequelize/types';
 import { NpmsPackageField } from './app/npms-package/npms-package.attributes';
+import { ROOT_DIR } from './root';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
@@ -119,10 +121,16 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(ROOT_DIR, './public')));
+
+  // custom graphiql (interface for graphql) endpoint
+  const indexHtml = await fs.readFile(join(ROOT_DIR, './public/index.html')).then(String);
+  app.root.get('/', (req, res) => res.status(200).contentType('text/html').send(indexHtml));
+
   app.use(servicesMw({ universal }));
   app.use(passportMw());
 
+  // TODO: clean this up & make errors nicer...
   const gqlMiddleware = graphqlHTTP(mwGql(async (ctx): Promise<OptionsData> => {
     const { req, res } = ctx;
     const gql = GqlContext.createFromHttp({ req, res, });
@@ -169,7 +177,7 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
       },
       schema: GqlSchema,
       context: gql,
-      graphiql: true,
+      graphiql: false,
     };
     return data;
   }));
@@ -182,6 +190,13 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
 
   app.use(Routes({ app }));
   app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
+
+  // health check
+  app.root.get('_/health-check', (req, res) => res.status(200).json({
+    message: 'Okay :)',
+    date: new Date().toISOString(),
+  }));
+
   app.use(errorHandlerMw());
 
   return app;

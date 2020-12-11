@@ -292,9 +292,9 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
                                 <Grid key={pkg.key} item xs={12}>
                                   <Draggable draggableId={pkg.key} index={i} >
                                     {(provided, snapshot) => (
-                                      <div ref={provided.innerRef} {...provided.draggableProps}>
+                                      <div ref={provided.innerRef} {...provided.draggableProps} tabIndex={-1}>
                                         <div className="centered">
-                                          <Box className="centered" mr={1} {...provided.dragHandleProps}>
+                                          <Box className="centered" mr={1} {...provided.dragHandleProps} tabIndex={-1}>
                                             <Box className="centered" border={0} borderColor={snapshot.isDragging ? 'primary' : 'grey.500'} borderRadius={4}>
                                               <DragIndicatorIcon color={snapshot.isDragging ? 'primary' : 'inherit'} />
                                             </Box>

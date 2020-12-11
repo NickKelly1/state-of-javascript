@@ -119,8 +119,9 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
               <MUILink underline="none" color="inherit">
                 <Typography noWrap component="h1" variant="h3">
                   <Box display="flex" justifyContent="flex-start" alignItems="center">
-                    <img style={{ height: '1em' }} src="/favicon.svg" />
-                    &nbsp;
+                    <Box className="centered" mr={2}>
+                      <img style={{ height: '1em' }} src="/favicon.ico" />
+                    </Box>
                     <span>
                       Nick Kelly
                     </span>

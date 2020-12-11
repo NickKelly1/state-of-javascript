@@ -2,8 +2,8 @@ FROM node:14-alpine
 
 WORKDIR /usr/src/app
 
-# # Install app dependencies
-# # Get both package.json & package-lock.json
+# Install app dependencies
+# Get both package.json & package-lock.json
 COPY package*.json ./
 
 # Install deps
@@ -14,7 +14,5 @@ COPY . .
 
 # Build in container
 RUN npm run build
-
-EXPOSE 4000
 
 CMD npm run start
