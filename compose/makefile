@@ -82,4 +82,4 @@ client-down:
 # rm
 client-rm:
 	docker-compose -f client.yml rm
-	docker image rm nick3141/nickkelly.dev-frontend
+	docker image rm nick3141/nickkelly.dev-client

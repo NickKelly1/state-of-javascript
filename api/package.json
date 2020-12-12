@@ -1,6 +1,6 @@
 {
   "name": "nickkelly.dev-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "scripts": {
     "start": "cross-env ENV_FILE=.env.prod node ./dist/scripts/www.js",

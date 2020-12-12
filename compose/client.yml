@@ -3,7 +3,7 @@ version: "3"
 services:
   nk_client:
     container_name: nk_client
-    image: nick3141/nickkelly.dev-frontend:latest
+    image: nick3141/nickkelly.dev-client:latest
     restart: unless-stopped
     ports:
       - 3000:3000
