@@ -44,6 +44,7 @@ export class EnvService {
   public readonly LOG_DIR = to.string('LOG_DIR');
   public readonly LOG_MAX_SIZE = to.string('LOG_MAX_SIZE');
   public readonly LOG_ROTATION_MAX_AGE = to.string('LOG_ROTATION_MAX_AGE');
+  public readonly LOG_HTTP_HEADERS = to.bool('LOG_HTTP_HEADERS');
   public readonly JWT_SECRET = to.string('JWT_SECRET');
   public readonly ACCESS_TOKEN_EXPIRES_IN_MS = to.int('ACCESS_TOKEN_EXPIRES_IN_MS');
   public readonly REFRESH_TOKEN_EXPIRES_IN_MS = to.int('REFRESH_TOKEN_EXPIRES_IN_MS');

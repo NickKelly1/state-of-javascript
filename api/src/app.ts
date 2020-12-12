@@ -113,19 +113,33 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   app.use(cors((req, done) => done(null, ({
     credentials: true,
     origin: req.headers.origin,
+    // allowedHeaders: req.headers.allow,
   }))));
-  app.use(handler(async (req, res, next) => {
-    if (env.DELAY) await delay(env.DELAY);
-    next();
-  }));
+
+  if (env.DELAY) {
+    app.use(handler(async (req, res, next) => {
+      if (env.DELAY) await delay(env.DELAY);
+      next();
+    }));
+  }
+
   // https://www.npmjs.com/package/morgan
   // app.use(morgan('dev', { stream: loggerStream }));
   morgan.token('user_id', (req: Request, res: Response) => req.__locals__?.auth?.user_id?.toString() ?? '_');
   morgan.token('shadow_id', (req: Request, res: Response) => req.__locals__?.auth?.shadow_id ?? '_');
-  app.use(morgan(
-    `:remote-addr :method :url :status :response-time ms - :res[content-length] - user_id=:user_id - shadow_id=:shadow_id`,
-    { stream: loggerStream }),
-  );
+  if (env.LOG_HTTP_HEADERS) {
+    morgan.token('headers', (req: Request, res: Response) => prettyQ(req.headers));
+    app.use(morgan(
+      `:remote-addr :method :url :status :response-time ms - :res[content-length] - user_id=:user_id - shadow_id=:shadow_id - headers=:headers`,
+      { stream: loggerStream }),
+    );
+  } else {
+    morgan.token('headers', (req: Request, res: Response) => prettyQ(req.headers));
+    app.use(morgan(
+      `:remote-addr :method :url :status :response-time ms - :res[content-length] - user_id=:user_id - shadow_id=:shadow_id`,
+      { stream: loggerStream }),
+    );
+  }
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
