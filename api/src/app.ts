@@ -113,7 +113,7 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   app.use(cors((req, done) => done(null, ({
     credentials: true,
     origin: req.headers.origin,
-    allowedHeaders: req.headers.allow,
+    // allowedHeaders: req.headers.allow,
   }))));
 
   if (env.DELAY) {

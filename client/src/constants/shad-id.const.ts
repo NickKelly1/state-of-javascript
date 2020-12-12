@@ -8,8 +8,8 @@
 export type _ls_shad_id_key = 'lshad_id';
 export const _ls_shad_id_key: _ls_shad_id_key = 'lshad_id';
 
-export type _header_shad_id_key = 'shad_id';
-export const _header_shad_id_key: _header_shad_id_key = 'shad_id';
+export type _header_shad_id_key = 'shad-id';
+export const _header_shad_id_key: _header_shad_id_key = 'shad-id';
 
-export type _cookie_shad_id_key = 'shad_id';
-export const _cookie_shad_id_key: _cookie_shad_id_key = 'shad_id';
+export type _cookie_shad_id_key = 'shad-id';
+export const _cookie_shad_id_key: _cookie_shad_id_key = 'shad-id';
