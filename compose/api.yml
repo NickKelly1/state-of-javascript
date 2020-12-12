@@ -9,6 +9,8 @@ services:
       - 4000:4000
     env_file:
       .env.api
+    volumes:
+      - ./_v_api_logs:/usr/src/app/storage/logs
     networks:
       - nk
 

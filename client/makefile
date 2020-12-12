@@ -12,21 +12,18 @@ echo-tag:
 	echo ${TAG}
 
 build:
-	@docker build -t ${IMG} .
-	@docker tag ${IMG} ${LATEST}
+	docker build -t ${IMG} .
+	docker tag ${IMG} ${LATEST}
 
 build-no-cache:
-	@docker build --no-cache=true -t ${IMG} .
-	@docker tag ${IMG} ${LATEST}
+	docker build --no-cache=true -t ${IMG} .
+	docker tag ${IMG} ${LATEST}
 
 push:
-	@docker push ${NAME}
+	docker push ${NAME}
 
 pull:
-	@docker pull ${NAME}
+	docker pull ${NAME}
 
 login:
-	@docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}
-
-production-up:
-	@docker-compose --env-file .env.prod up -d
+	docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}

@@ -11,6 +11,8 @@ services:
     ports:
       - "${REDIS_PORT}:6379"
     command: redis-server --requirepass ${REDIS_PSW}
+    volumes:
+      - './_v_redis_data:/data'
 
   nk_pg_dev:
     container_name: nk_pg_dev
@@ -22,3 +24,5 @@ services:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PSW}
       POSTGRES_DB: ${PG_DB}
+    volumes:
+      - './_v_pg_data:/var/lib/postgresql/data'

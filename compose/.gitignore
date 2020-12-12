@@ -1,3 +1,5 @@
 .env
 .env.api
-
+_v_api_logs
+_v_pg_data
+_v_redis_data

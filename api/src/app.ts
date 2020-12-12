@@ -42,6 +42,7 @@ import { CronTickHandlerFactory, ICronTickHandlerFnArg } from './common/helpers/
 import { Op } from 'sequelize/types';
 import { NpmsPackageField } from './app/npms-package/npms-package.attributes';
 import { ROOT_DIR } from './root';
+import { h_shadow_id } from './common/constants/shad.const';
 
 export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
   const { env } = arg;
@@ -117,7 +118,14 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
     if (env.DELAY) await delay(env.DELAY);
     next();
   }));
-  app.use(morgan('dev', { stream: loggerStream }));
+  // https://www.npmjs.com/package/morgan
+  // app.use(morgan('dev', { stream: loggerStream }));
+  morgan.token('user_id', (req: Request, res: Response) => req.__locals__?.auth?.user_id?.toString() ?? '_');
+  morgan.token('shadow_id', (req: Request, res: Response) => req.__locals__?.auth?.shadow_id ?? '_');
+  app.use(morgan(
+    `:remote-addr :method :url :status :response-time ms - :res[content-length] - user_id=:user_id - shadow_id=:shadow_id`,
+    { stream: loggerStream }),
+  );
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());

@@ -70,8 +70,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
 
       // require authentication...
       const owner_id = ctx.auth.user_id;
-      // convert empty string to null...
-      const shadow_id = ctx.auth.shadow_id || null;
+      const shadow_id = ctx.auth.shadow_id;
 
       if (ist.nullable(owner_id) && ist.nullable(shadow_id)) {
         const message = ctx.lang(NpmsLang.NoAuthentication);

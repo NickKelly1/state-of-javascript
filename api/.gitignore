@@ -2,3 +2,5 @@
 .env.prod
 node_modules
 dist
+_v_pg_data
+_v_redis_data
