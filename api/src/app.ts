@@ -211,13 +211,15 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   app.use('/refresh/v1/gql', gqlMiddleware);
 
   app.use(Routes({ app }));
-  app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
 
   // health check
-  app.root.get('_/health-check', (req, res) => res.status(200).json({
+  app.root.get('/_health', (req, res) => res.status(200).json({
     message: 'Okay :)',
     date: new Date().toISOString(),
   }));
+
+  // not found...
+  app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
 
   app.use(errorHandlerMw());
 
