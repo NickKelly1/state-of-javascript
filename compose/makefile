@@ -83,3 +83,20 @@ client-down:
 client-rm:
 	docker-compose -f client.yml rm
 	docker image rm nick3141/nickkelly.dev-client
+
+# deploy
+deploy-docker:
+	make api-build
+	make client-build
+	make api-push
+	make client-push
+
+# reload
+reload:
+	docker stop nk_api
+	docker stop nk_client
+	docker image rm nick3141/nickkelly.dev-api
+	docker image rm nick3141/nickkelly.dev-client
+	make api-up-d
+	make client-up-d
+
