@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "private": true,
   "scripts": {
-    "start": "cross-env ENV_FILE=.env.prod node ./dist/scripts/www.js",
+    "start": "cross-env NODE_ENV=production ENV_FILE=.env.prod node ./dist/scripts/www.js",
     "build": "rimraf ./dist && tsc",
     "dev": "ts-node-dev --notify false --respawn --debug src/scripts/www.ts",
     "dev:2:watch": "tsc -w --preserveWatchOutput",
