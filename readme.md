@@ -1,7 +1,6 @@
 # Api status
 
-![https://health.nickkelly.dev/check?size=xl&url=https://api.nickkelly.dev/_health]
+![api status](https://health.nickkelly.dev/check?size=xl&url=https://api.nickkelly.dev/_health)
 
 # Client status:
-
-![https://health.nickkelly.dev/check?size=xl&url=https://nickkelly.dev/_health]
+![client status](https://health.nickkelly.dev/check?size=xl&url=https://nickkelly.dev/api/_health)
