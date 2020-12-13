@@ -19,6 +19,9 @@ build-no-cache:
 	docker build --no-cache=true -t ${IMG} .
 	docker tag ${IMG} ${LATEST}
 
+rm-image:
+	docker image rm ${NAME}
+
 push:
 	docker push ${NAME}
 

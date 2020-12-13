@@ -47,9 +47,8 @@ api-down:
 	docker-compose -f api.yml down
 
 # rm
-api-rm:
-	docker-compose -f api.yml rm
-	docker image rm nick3141/nickkelly.dev-api
+api-rm-image:
+	cd ../api && make rm-image
 
 # ----------
 # client
@@ -80,9 +79,8 @@ client-down:
 	docker-compose -f client.yml down
 
 # rm
-client-rm:
-	docker-compose -f client.yml rm
-	docker image rm nick3141/nickkelly.dev-client
+client-rm-image:
+	cd ../client && make rm-image
 
 # deploy
 deploy-docker:
@@ -95,8 +93,7 @@ deploy-docker:
 reload:
 	docker stop nk_api
 	docker stop nk_client
-	docker image rm nick3141/nickkelly.dev-api
-	docker image rm nick3141/nickkelly.dev-client
+	make api-rm-image
+	make client-rm-image
 	make api-up-d
 	make client-up-d
-
