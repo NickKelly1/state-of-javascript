@@ -95,5 +95,7 @@ reload:
 	docker stop nk_client
 	make api-rm-image
 	make client-rm-image
+	docker rm nk_api
+	docker rm nk_client
 	make api-up-d
 	make client-up-d
