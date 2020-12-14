@@ -20,6 +20,7 @@ import {
   Toolbar,
   Typography
 } from "@material-ui/core";
+import WarningIcon from '@material-ui/icons/WarningOutlined';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 // import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import PersonAddIcon from '@material-ui/icons/PersonAddOutlined';
@@ -130,8 +131,16 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
               </MUILink>
             </NextLink>
           </ListItem>
+          <ListItem><NextLink href="/blog" passHref><MUILink color="inherit">Blog</MUILink></NextLink></ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <WarningIcon />
+            </ListItemIcon>
+            <ListItemText>
+              Under Construction
+            </ListItemText>
+          </ListItem>
           {/* <ListItem><NextLink href="/hire-me" passHref><MUILink color="inherit">Hire me</MUILink></NextLink></ListItem> */}
-          {/* <ListItem><NextLink href="/blog" passHref><MUILink color="inherit">Blog</MUILink></NextLink></ListItem> */}
           {me.can?.newsArticles.show && (
             <ListItem><NextLink href="/news" passHref><MUILink color="inherit">News</MUILink></NextLink></ListItem>
           )}
