@@ -6,31 +6,19 @@ import {
   DialogTitle,
   FormHelperText,
   Grid,
-  InputLabel,
-  makeStyles,
-  Modal,
-  Paper,
   TextField,
-  Typography,
 } from '@material-ui/core';
-import clsx from 'clsx';
 import { gql } from 'graphql-request';
 import React, {
-  FormEventHandler,
   useCallback,
-  useContext,
-  useRef,
   useState
 } from 'react';
 import { useMutation } from 'react-query';
-import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
-import { ApiContext } from '../../components-contexts/api.context';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dialog/with-dialog';
 import { CreateNpmsPackageFormMutation, CreateNpmsPackageFormMutationVariables } from '../../generated/graphql';
 import { change } from '../../helpers/change.helper';
-import { pretty } from '../../helpers/pretty.helper';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 
 const createNpmsPackageQuery = gql`

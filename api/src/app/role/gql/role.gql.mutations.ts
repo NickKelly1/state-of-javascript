@@ -1,19 +1,15 @@
 import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
-import { Op } from "sequelize";
-import { RoleModel, UserModel } from "../../../circle";
+import { RoleModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { ForbiddenException } from "../../../common/exceptions/types/forbidden.exception";
 import { NotFoundException } from "../../../common/exceptions/types/not-found.exception";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { ist } from "../../../common/helpers/ist.helper";
-import { prettyQ } from "../../../common/helpers/pretty.helper";
 import { PermissionLang } from "../../../common/i18n/packs/permission.lang";
 import { RoleLang } from "../../../common/i18n/packs/role.lang";
 import { logger } from "../../../common/logger/logger";
 import { QueryRunner } from "../../db/query-runner";
 import { PermissionId } from "../../permission/permission-id.type";
-import { PermissionField } from "../../permission/permission.attributes";
-import { Permission } from "../../permission/permission.const";
 import { PermissionModel } from "../../permission/permission.model";
 import { RolePermissionModel } from "../../role-permission/role-permission.model";
 import { IRoleServiceUpdateRoleDto } from "../dto/role-service-update-role.dto";
@@ -175,7 +171,8 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
     else notFoundPermissionIds.push(permission_id);
   });
   if (notFoundPermissionIds.length) {
-    throw ctx.except(NotFoundException({ message: ctx.lang(PermissionLang.NotFound({ ids: notFoundPermissionIds })) }));
+    const message = ctx.lang(PermissionLang.NotFound({ ids: notFoundPermissionIds }))
+    throw new NotFoundException(message);
   }
 
   // find missing & unexpected permissions from the role
@@ -197,12 +194,11 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
     .canCreate({ permission, role }));
 
   if (forbiddenFromCreating.length) {
-    throw ctx.except(ForbiddenException({
-      message: ctx.lang(RoleLang.ForbiddenAddingPermissions({
-        roleName: role.name,
-        permisionNames: forbiddenFromCreating.map(perm => perm.name),
-      })),
+    const message = ctx.lang(RoleLang.ForbiddenAddingPermissions({
+      roleName: role.name,
+      permisionNames: forbiddenFromCreating.map(perm => perm.name),
     }));
+    throw new ForbiddenException(message);
   }
 
   // verify unexpected permissions can be deleted
@@ -216,12 +212,11 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
     }));
 
   if (forbiddenFromDeleting.length) {
-    throw ctx.except(ForbiddenException({
-      message: ctx.lang(RoleLang.ForbiddenDeletingPermissions({
-        roleName: role.name,
-        permisionNames: forbiddenFromDeleting.map(rolePermission => assertDefined(allPermissionsMap.get(rolePermission.permission_id)).name),
-      })),
+    const message = ctx.lang(RoleLang.ForbiddenDeletingPermissions({
+      roleName: role.name,
+      permisionNames: forbiddenFromDeleting.map(rolePermission => assertDefined(allPermissionsMap.get(rolePermission.permission_id)).name),
     }));
+    throw new ForbiddenException(message);
   }
 
   // do create

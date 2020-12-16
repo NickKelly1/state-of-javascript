@@ -53,7 +53,6 @@ export class AuthSerivce {
 
     if (this.ctx.services.jwtService.isExpired(access)) {
       logger.warn(`Expired access_token for user "${access.user_id}"`);
-      // throw ctx.except(LoginExpiredException());
       // don't throw - let route handler throw if required...
       return E.left(this.ctx.lang(AuthLang.AccessExpired({ key: 'access_token' })));
     }

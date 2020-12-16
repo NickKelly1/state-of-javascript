@@ -2,6 +2,7 @@ import { FindOptions, Identifier, Model, ModelCtor, Op, Order, OrderItem, WhereO
 import { QueryRunner } from "../../app/db/query-runner";
 import { NotFoundException } from "../exceptions/types/not-found.exception";
 import { ist } from "../helpers/ist.helper";
+import { ExceptionLang } from "../i18n/packs/exception.lang";
 import { IRequestContext } from "../interfaces/request-context.interface";
 import { IRowsWithCount } from "../interfaces/rows-with-count.interface";
 import { OrNull } from "../types/or-null.type";
@@ -225,7 +226,10 @@ export abstract class BaseRepository<M extends Model<any, any>> {
     unscoped?: boolean;
   }): Promise<M> {
     const result = await this.findOne(arg);
-    if (!result) throw this.ctx.except(NotFoundException());
+    if (!result) {
+      const message = this.ctx.lang(ExceptionLang.NotFound);
+      throw new NotFoundException(message);
+    }
     return result;
   }
 }

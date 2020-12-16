@@ -1,25 +1,17 @@
 import { isLeft } from "fp-ts/lib/Either";
-import { Thunk, GraphQLFieldConfigMap, GraphQLNonNull, GraphQLBoolean } from "graphql";
-import { UserModel } from "../../circle";
+import { Thunk, GraphQLFieldConfigMap, GraphQLNonNull } from "graphql";
 import { GqlContext } from "../../common/context/gql.context";
 import { BadRequestException } from "../../common/exceptions/types/bad-request.exception";
 import { LoginExpiredException } from "../../common/exceptions/types/login-expired.exception";
-import { GqlNever } from "../../common/gql/gql.ever";
 import { assertDefined } from "../../common/helpers/assert-defined.helper";
 import { ist } from "../../common/helpers/ist.helper";
 import { toId } from "../../common/helpers/to-id.helper";
 import { ExceptionLang } from "../../common/i18n/packs/exception.lang";
 import { OrUndefined } from "../../common/types/or-undefined.type";
-import { ActionsGqlNode, IActionsGqlNodeSource } from "../actions/actions.gql.node";
 import { RoleAssociation } from "../role/role.associations";
-import { ICreateUserPasswordDto } from "../user-password/dtos/create-user-password.dto";
-import { IUserServiceCreateUserDto } from "../user/service-dto/user-service.create-user.dto";
 import { UserAssociation } from "../user/user.associations";
-import { AuthenticationGqlNode, IAuthenticationGqlNodeSource, IAuthorisationRo } from "./gql-input/authorisation.gql";
-import { LoginGqlInput, LoginGqlInputValidator } from "./gql-input/login.gql.input";
-import { ILogoutGqlNodeSource, LogoutGqlNode } from "./gql/logout.gql.node";
+import { AuthenticationGqlNode, IAuthenticationGqlNodeSource, } from "./gql-input/authorisation.gql";
 import { RefreshGqlInput, RefreshGqlInputValidator } from "./gql-input/refresh.gql.input";
-import { RegisterGqlInput, RegisterGqlInputValidator } from "./gql-input/register.gql.input";
 
 
 /**
@@ -52,7 +44,7 @@ export const AuthRefreshGqlMutation: Thunk<GraphQLFieldConfigMap<unknown, GqlCon
       }
 
       // from header
-      else if (!!ctx.http?.req.header('refresh_token')) {
+      else if (ctx.http?.req.header('refresh_token')) {
         maybeIncomingRefresh = ctx.http.req.header('refresh_token');
       }
 
@@ -65,7 +57,8 @@ export const AuthRefreshGqlMutation: Thunk<GraphQLFieldConfigMap<unknown, GqlCon
 
       // no token
       if (!maybeIncomingRefresh) {
-        throw ctx.except(BadRequestException({ message: ctx.lang(ExceptionLang.NoRefreshToken) }));
+        const message = ctx.lang(ExceptionLang.NoRefreshToken);
+        throw new BadRequestException(message);
       }
 
       // decode
@@ -75,7 +68,8 @@ export const AuthRefreshGqlMutation: Thunk<GraphQLFieldConfigMap<unknown, GqlCon
 
       // check expiry
       if (ctx.services.jwtService.isExpired(receivedRefresh)) {
-        throw ctx.except(LoginExpiredException());
+        const message = ctx.lang(ExceptionLang.LoginExpired);
+        throw new LoginExpiredException(message);
       }
 
       // success - do refresh

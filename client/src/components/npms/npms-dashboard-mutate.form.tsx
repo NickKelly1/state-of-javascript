@@ -34,10 +34,6 @@ import {
   Draggable,
   OnDragEndResponder } from 'react-beautiful-dnd';
 import { useMutation } from 'react-query';
-import {
-  normaliseApiException,
-  rethrow,
-} from '../../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { ApiContext } from '../../components-contexts/api.context';
 import {

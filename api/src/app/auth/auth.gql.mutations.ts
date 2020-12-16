@@ -1,27 +1,19 @@
-import { isLeft } from "fp-ts/lib/Either";
-import { Thunk, GraphQLFieldConfigMap, GraphQLNonNull, GraphQLBoolean } from "graphql";
-import { UserModel } from "../../circle";
+import { Thunk, GraphQLFieldConfigMap, GraphQLNonNull } from "graphql";
 import { GqlContext } from "../../common/context/gql.context";
 import { BadRequestException } from "../../common/exceptions/types/bad-request.exception";
-import { LoginExpiredException } from "../../common/exceptions/types/login-expired.exception";
 import { GqlNever } from "../../common/gql/gql.ever";
 import { assertDefined } from "../../common/helpers/assert-defined.helper";
-import { ist } from "../../common/helpers/ist.helper";
 import { toId } from "../../common/helpers/to-id.helper";
 import { ExceptionLang } from "../../common/i18n/packs/exception.lang";
-import { OrUndefined } from "../../common/types/or-undefined.type";
-import { ActionsGqlNode, IActionsGqlNodeSource } from "../actions/actions.gql.node";
 import { RoleAssociation } from "../role/role.associations";
 import { ICreateUserPasswordDto } from "../user-password/dtos/create-user-password.dto";
 import { IUserServiceCreateUserDto } from "../user/service-dto/user-service.create-user.dto";
 import { UserAssociation } from "../user/user.associations";
 import { AuthRefreshGqlMutation } from "./auth-refresh.gql.mutation";
-import { AuthenticationGqlNode, IAuthenticationGqlNodeSource, IAuthorisationRo } from "./gql-input/authorisation.gql";
+import { AuthenticationGqlNode, IAuthenticationGqlNodeSource } from "./gql-input/authorisation.gql";
 import { LoginGqlInput, LoginGqlInputValidator } from "./gql-input/login.gql.input";
 import { ILogoutGqlNodeSource, LogoutGqlNode } from "./gql/logout.gql.node";
-import { RefreshGqlInput, RefreshGqlInputValidator } from "./gql-input/refresh.gql.input";
 import { RegisterGqlInput, RegisterGqlInputValidator } from "./gql-input/register.gql.input";
-import { IMeGqlNodeSource, MeGqlNode } from "./gql-input/me.gql";
 
 
 export const AuthGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = {
@@ -85,7 +77,7 @@ export const AuthGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
     args: { dto: { type: LoginGqlInput } },
     resolve: async (parent, args, ctx): Promise<IAuthenticationGqlNodeSource> => {
       // verify can log in at all
-      ctx.authorize(ctx.services.userPolicy.canLogin());
+      ctx.authorize(ctx.services.userPolicy.canLogin(), ExceptionLang.CannotLogIn);
       const dto = ctx.validate(LoginGqlInputValidator, args.dto);
 
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
@@ -109,7 +101,7 @@ export const AuthGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         // user not matched
         if (!user) {
           const message = ctx.lang(ExceptionLang.FailedLogInUserNotFound);
-          throw ctx.except(BadRequestException({ message, data: { name_or_email: [message] } }));
+          throw new BadRequestException(message, { name_or_email: [message] });
         }
 
         // verify can log in as user
@@ -121,21 +113,21 @@ export const AuthGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         // user is deactivated
         if (user.isDeactivated()) {
           const message = ctx.lang(ExceptionLang.FailedLogInAccountDeactivated);
-          throw ctx.except(BadRequestException({ message, }));
+          throw new BadRequestException(message);
         }
 
         // user has no password (can't log in)
         const password = user.password;
         if (!password) {
           const message = ctx.lang(ExceptionLang.FailedLogInUserCannotLogIn);
-          throw ctx.except(BadRequestException({ message, }));
+          throw new BadRequestException(message);
         }
 
         // password didn't match
         const same = await ctx.services.userPasswordService.compare({ password, raw: dto.password, });
         if (!same) {
           const message = ctx.lang(ExceptionLang.FailedLogInIncorrectPassword);
-          throw ctx.except(BadRequestException({ message, }));
+          throw new BadRequestException(message);
         }
 
         // grant permissions...

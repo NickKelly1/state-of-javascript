@@ -1,4 +1,4 @@
-import { left, right, Left, Right, Either } from 'fp-ts/lib/Either';
+import { left, right, Either } from 'fp-ts/lib/Either';
 import Joi from 'joi';
 import { IExceptionData } from '../interfaces/exception-data.interface';
 import { logger } from '../logger/logger';

@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express"
+import { Handler, NextFunction, Request, Response } from "express"
 import { Sequelize } from "sequelize";
 import { HttpContext } from "../context/http.context";
 import { RequestAuth } from "../classes/request-auth";
@@ -11,7 +11,7 @@ import { c_shadow_id, h_shadow_id } from "../constants/shad.const";
 
 export const servicesMw = (arg: {
   universal: IUniversalServices,
-}) => handler(async (req: Request, res: Response, next: NextFunction) => {
+}): Handler => handler(async (req: Request, res: Response, next: NextFunction) => {
   const { universal } = arg;
   // initialise req locals
   const ctx = HttpContext.ensure({ req, res });

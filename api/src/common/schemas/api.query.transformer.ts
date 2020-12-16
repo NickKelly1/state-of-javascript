@@ -6,10 +6,8 @@ import { QueryLang } from "../i18n/packs/query.lang";
 import { IPaginateInput } from "../interfaces/pageinate-input.interface";
 import { IRequestContext } from "../interfaces/request-context.interface";
 import { logger } from "../logger/logger";
-import { K2K } from "../types/k2k.type";
 import { OrUndefined } from "../types/or-undefined.type";
 import {
-  ApiOp,
   ApiConditionAnd,
   ApiConditionAttributes,
   ApiConditionOr,
@@ -19,7 +17,6 @@ import {
   ApiFilterAttributes,
   ApiFilterOperators,
   ApiFilterOperatorsTypes,
-  ApiFilterRange,
   _and,
   _attr,
   _or,
@@ -27,7 +24,6 @@ import {
   ApiSorts,
   ApiDir,
   ApiQuery,
-  ApiSort,
 } from './api.query.types';
 
 
@@ -364,9 +360,8 @@ const transformApiSorts = (ctx: IRequestContext) => (fromQs: ApiSorts): Order =>
     const numDir = Number(dir);
     if (numDir === ApiDir.Asc) return order.push([field, 'ASC']);
     if (numDir === ApiDir.Desc) return order.push([field, 'DESC']);
-    throw ctx.except(BadRequestException({
-      message: ctx.lang(QueryLang.InvalidSortDirection({ dir: String(numDir) })),
-    }));
+    const message = ctx.lang(QueryLang.InvalidSortDirection({ dir: String(numDir) }))
+    throw new BadRequestException(message);
   });
   return order;
 }

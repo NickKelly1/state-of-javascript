@@ -1,6 +1,12 @@
 import { Language } from "../consts/language.enum";
+import { LangSwitch } from "../helpers/lange-match.helper";
 
 export const ExceptionLang = {
+  CannotLogIn: {
+    [Language.En]: `You cannot log in`,
+    [Language.Ger]: '__TODO__',
+  },
+
   BadTokenType: {
     [Language.En]: `Bad UserTokenType`,
     [Language.Ger]: '__TODO__',
@@ -45,6 +51,11 @@ export const ExceptionLang = {
     [Language.En]: 'no refresh_token',
     [Language.Ger]: '__TODO__',
   },
+
+  PathNotFound: (arg: { path: string }): LangSwitch => ({
+    [Language.En]: `${arg.path} not found`,
+    [Language.Ger]: '__TODO__',
+  }),
 
   NotFound: {
     [Language.En]: 'not found',

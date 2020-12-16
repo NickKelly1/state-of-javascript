@@ -1,6 +1,5 @@
 // import * as remember from '../../custom.d.ts';
 import ThumbDownIcon from '@material-ui/icons/ThumbDownOutlined';
-import CheckIcon from '@material-ui/icons/CheckOutlined';
 import PublishIcon from '@material-ui/icons/PublishOutlined';
 import RemoveCircleOutlineIcon from '@material-ui/icons/RemoveCircleOutline';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDownOutlined';
@@ -37,10 +36,6 @@ import {
   SoftDeleteNpmsDashboardMutation,
   SoftDeleteNpmsDashboardMutationVariables,
 } from '../../generated/graphql';
-import {
-  normaliseApiException,
-  rethrow,
-} from '../../backend-api/normalise-api-exception.helper';
 import { useRandomDashColours } from '../../hooks/use-random-dash-colors.hook';
 import { Legend } from '../legend/legend';
 import { PieChartDatum } from '../../types/pie-chart-datum.type';
@@ -48,23 +43,12 @@ import { MultiDimensionDataDefinition } from '../../types/multi-dimensional-data
 import {
   NpmsDashboardMutateForm,
 } from './npms-dashboard-mutate.form';
-import { ApiContext } from '../../components-contexts/api.context';
 import { Id } from '../../types/id.type';
-import { JsonPretty } from '../json-pretty/json-pretty';
-import { JsonDownloadButton } from '../json-download-button/json-download-button';
-import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { FittedBarChart } from '../../components-charts/fitted-bar-chart/fitted-bar-chart';
 import { FittedPieChart } from '../../components-charts/fitted-pie-chart/fitted-pie-chart';
-import { IWithDialogueProps } from '../../components-hoc/with-dialog/with-dialog';
 import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
 import { FittedAreaChart } from '../../components-charts/fitted-area-chart/fitted-area-chart';
-import withStyles, {
-  ClassNameMap,
-  Styles,
-} from '@material-ui/core/styles/withStyles';
-import { $DANGER } from '../../types/$danger.type';
-import clsx from 'clsx';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { OrNull } from '../../types/or-null.type';
 import { useMutation } from 'react-query';

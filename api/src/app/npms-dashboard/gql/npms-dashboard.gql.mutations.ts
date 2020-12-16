@@ -1,5 +1,5 @@
 import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
-import { Op, or } from "sequelize";
+import { Op } from "sequelize";
 import { NpmsDashboardItemModel, NpmsDashboardModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
@@ -17,10 +17,8 @@ import { INpmsDashboardServiceUpdateNpmsDashboardDto } from "../dto/npms-dashboa
 import { NpmsDashboardStatus } from "../../npms-dashboard-status/npms-dashboard-status.const";
 import { SubmitNpmsDashboardGqlInput, SubmitNpmsDashboardGqlInputValidator } from "../gql-input/submit-npms-dashboard.gql";
 import { RejectNpmsDashboardGqlInput, RejectNpmsDashboardGqlInputValidator } from "../gql-input/reject-npms-dashboard.gql";
-import { ApproveNpmsDashboardGqlInput, ApproveNpmsDashboardGqlInputValidator } from "../gql-input/approve-npms-dashboard.gql";
 import { UnpublishNpmsDashboardGqlInput, UnpublishNpmsDashboardGqlInputValidator } from "../gql-input/unpublish-npms-dashboard.gql";
 import { PublishNpmsDashboardGqlInput, PublishNpmsDashboardGqlInputValidator } from "../gql-input/publish-npms-dashboard.gql";
-import { UnauthenticatedException } from "../../../common/exceptions/types/unauthenticated.exception";
 import { ist } from "../../../common/helpers/ist.helper";
 import { orWhere } from "../../../common/helpers/or-where.helper.ts";
 import { NpmsPackageModel } from "../../npms-package/npms-package.model";
@@ -35,7 +33,7 @@ import { OrUndefined } from "../../../common/types/or-undefined.type";
 import { Combinator } from "../../../common/helpers/combinator.helper";
 import { InternalServerException } from "../../../common/exceptions/types/internal-server.exception";
 import { NpmsDashboardItemAssociation } from "../../npms-dashboard-item/npms-dashboard-item.associations";
-import { toMap } from "fp-ts/lib/ReadonlyMap";
+import { ExceptionLang } from "../../../common/i18n/packs/exception.lang";
 
 /**
  * NpmsDashboard Mutations
@@ -74,7 +72,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
 
       if (ist.nullable(owner_id) && ist.nullable(shadow_id)) {
         const message = ctx.lang(NpmsLang.NoAuthentication);
-        throw ctx.except(BadRequestException({ message }));
+        throw new BadRequestException(message);
       }
 
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
@@ -179,7 +177,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(GraphQLBoolean),
     resolve: async (parent, args, ctx): Promise<boolean> => {
       const dto = ctx.validate(SoftDeleteNpmsDashboardGqlInputValidator, args.dto);
-      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+      await ctx.services.universal.db.transact(async ({ runner }) => {
         const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
           runner,
         });
@@ -200,7 +198,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(GraphQLBoolean),
     resolve: async (parent, args, ctx): Promise<boolean> => {
       const dto = ctx.validate(SoftDeleteNpmsDashboardGqlInputValidator, args.dto);
-      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+      await ctx.services.universal.db.transact(async ({ runner }) => {
         const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
@@ -337,7 +335,7 @@ async function findOrCreateNpmsPackages(arg: {
   findIds?: OrNullable<{ key: string; values: OrNullable<NpmsPackageId[]> }>;
   runner: QueryRunner;
 }): Promise<OrUndefined<NpmsPackageModel[]>> {
-  const { ctx, findNames, findIds, runner, dashboard, } = arg;
+  const { ctx, findNames, findIds, runner, } = arg;
 
   const _findNames = findNames?.values || [];
   const _findIds = findIds?.values || [];
@@ -381,10 +379,7 @@ async function findOrCreateNpmsPackages(arg: {
   // validate all ids matched
   if (missedIds.length) {
     const message = ctx.lang(NpmsLang.NpmsIdsNotFound({ ids: missedIds }));
-    throw ctx.except(BadRequestException({
-      message,
-      ...(findIds?.key ? { data: { [findIds?.key]: [message], } } : {}),
-    }))
+    throw new BadRequestException(message, findIds?.key ? { [findIds?.key]: [message], } : undefined);
   }
 
   // query npms for missing names
@@ -407,10 +402,7 @@ async function findOrCreateNpmsPackages(arg: {
     // validate all names were eventually found
     if (doubleMissedNames.length) {
       const message = ctx.lang(NpmsLang.NpmsNamesNotFound({ names: doubleMissedNames }));
-      throw ctx.except(BadRequestException({
-        message,
-      ...(findNames?.key ? { data: { [findNames.key]: [message], } } : {}),
-      }))
+      throw new BadRequestException(message, findNames?.key ? { [findNames.key]: [message], } : undefined );
     }
   }
 
@@ -434,7 +426,6 @@ async function syncItems(arg: {
   nextPackages: NpmsPackageModel[];
 }): Promise<NpmsDashboardItemModel[]> {
   const { runner, ctx, dashboard, prevDashboardItems, nextPackages, prevNpmsPackages } = arg;
-  const { transaction } = runner;
 
   const combinator = new Combinator({
     // a => previous items
@@ -471,7 +462,7 @@ async function syncItems(arg: {
   }
 
   // synchronise items
-  const [_, createdLinkages] = await Promise.all([
+  const [, createdLinkages] = await Promise.all([
     // destroy unexpected
     unexpected.length ?
       ctx.services.npmsDashboardItemService.hardDelete({
@@ -504,7 +495,8 @@ async function syncItems(arg: {
     match = normal.get(nextPackage.id);
     if (match) { return newOrder.push(match); }
     // something went wrong in our logic?
-    throw ctx.except(InternalServerException());
+    const message = ctx.lang(ExceptionLang.InternalException);
+    throw new InternalServerException(message);
   });
 
   // synchronise the desired order

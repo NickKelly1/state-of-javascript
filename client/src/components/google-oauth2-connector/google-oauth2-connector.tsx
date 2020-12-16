@@ -16,16 +16,12 @@ import {
   Typography,
 } from "@material-ui/core";
 import FileCopyIcon from '@material-ui/icons/FileCopy';
-import { Code } from "@material-ui/icons";
 import { gql } from "graphql-request";
 import { useSnackbar } from "notistack";
 import React, { MouseEventHandler, useCallback, useContext, useRef, useState } from "react";
 import { useMutation, useQuery } from "react-query";
-import { ApiConnector } from "../../backend-api/api.connector";
 import { ApiException } from "../../backend-api/api.exception";
-import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { ApiContext } from "../../components-contexts/api.context";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 import { WithoutSsr } from "../../components-hoc/without-first-load/without-ssr";
@@ -289,7 +285,6 @@ const InitialiseIntegrationFormDialog = WithDialogue<IInitialiseIntegrationFormD
         throw ApiException({
           code: -1,
           name: 'bad request',
-          error: 'bad request',
           message: 'bad request',
           data: { init: ['init must be valid json'],},
         });

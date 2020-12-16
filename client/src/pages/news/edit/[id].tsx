@@ -1,20 +1,13 @@
 import { Box, Button, ButtonGroup, Grid, Input, InputLabel, ListItem, makeStyles, Paper, TextField, Typography } from "@material-ui/core";
-import NextLink from 'next/link';
-import MUILink from '@material-ui/core/Link';
 import { gql } from "graphql-request";
-import React, { useCallback, useContext, } from "react";
-import { ApiContext } from "../../../components-contexts/api.context";
+import React, { useCallback, } from "react";
 import { EditNewsArticlePageQuery, UpdateNewsArticle, UpdateNewsArticleMutationVariables, ViewNewsArticlePageQuery, ViewNewsArticlePageQueryVariables } from "../../../generated/graphql";
 import { ist } from "../../../helpers/ist.helper";
 import { Api } from "../../../backend-api/api";
 import { serverSidePropsHandler } from "../../../helpers/server-side-props-handler.helper";
-import { Markdown } from "../../../components/markdown/markdown";
 import { OrNull } from "../../../types/or-null.type";
-import { GetServerSidePropsResult } from "next";
 import { useMutation } from "react-query";
 import { INewsArticleFormData, NewsArticleForm } from "../../../components/news/news-article.form";
-import { IApiException } from "../../../backend-api/types/api.exception.interface";
-import { normaliseApiException, rethrow } from "../../../backend-api/normalise-api-exception.helper";
 import { ApiException } from "../../../backend-api/api.exception";
 import { WithApi } from "../../../components-hoc/with-api/with-api.hoc";
 

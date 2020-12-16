@@ -53,7 +53,7 @@ export const UserGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = (
       });
       if (userToken.isExpired()) {
         const message = ctx.lang(UserTokenLang.TokenExpired);
-        throw ctx.except(BadRequestException({ message }));
+        throw new BadRequestException(message);
       }
       const user = assertDefined(userToken.user);
       return user;

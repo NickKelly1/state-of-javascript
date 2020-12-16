@@ -4,7 +4,6 @@ import { IApiExceptionData } from "./api.exception-data.interface";
 export interface IApiException {
   name: string;
   code: number;
-  error: string;
   message: string;
   data?: IApiExceptionData;
   stack?: string;
@@ -14,7 +13,6 @@ export interface IApiException {
 export interface IPartialApiException {
   name?: OrUndefined<string>;
   code: number;
-  error?: OrUndefined<string>;
   message?: OrUndefined<string>;
   data?: IApiExceptionData;
   stack?: string;

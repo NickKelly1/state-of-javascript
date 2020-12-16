@@ -1,19 +1,16 @@
 import { Button, CircularProgress, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
-import MailOutlineIcon from '@material-ui/icons/MailOutline';
 import { fail } from 'assert';
 import { gql } from 'graphql-request';
 import { useRouter } from 'next/router';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { Api } from '../backend-api/api';
-import { IApiCredentialsConsumeUserWelcomeArg } from '../backend-api/api.credentials';
 import { ApiException } from '../backend-api/api.exception';
-import { normaliseApiException, rethrow } from '../backend-api/normalise-api-exception.helper';
+import { normaliseApiException, } from '../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../backend-api/types/api.exception.interface';
 import { WithApi } from '../components-hoc/with-api/with-api.hoc';
 import { WithLoadable } from '../components-hoc/with-loadable/with-loadable';
-import { FilledCircularProgress } from '../components/filled-circular-progress/filled-circular-progress';
 import {
   WelcomePageDataQueryVariables,
   WelcomePageDataQuery,
@@ -258,12 +255,7 @@ export const getServerSideProps = serverSidePropsHandler(async ({ api, cms, ctx,
     const error = 'BadRequestException';
     props = {
       token: null,
-      pageData: fail(ApiException({
-        code: -1,
-        message,
-        error,
-        name: message,
-      })),
+      pageData: fail(ApiException({ code: -1, message, name: message, })),
     };
   } else {
     const _token = Array.isArray(token) ? token[0] : token;

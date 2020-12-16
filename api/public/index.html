@@ -11,6 +11,7 @@
   <head>
     <style>
       body {
+        /* min-height: 100%; */
         height: 100%;
         margin: 0;
         width: 100%;
@@ -27,8 +28,8 @@
     GraphiQL itself depends on React DOM.
     If you do not want to rely on a CDN, you can host these files locally or
     include them directly in your favored resource bunder. -->
-    <script src="/scripts/react.development.js" ></script>
-    <script src="/scripts/react-dom.development.js" ></script>
+    <script src="/scripts/react.js" ></script>
+    <script src="/scripts/react-dom.js" ></script>
 
     <!-- These two files can be found in the npm module, however you may wish to
     copy them directly into your environment, or perhaps include them in your
@@ -36,7 +37,7 @@
     <link rel="stylesheet" href="/stylesheets/graphiql.min.css" />
 
     <!-- custom -->
-    <title>nickkelly.dev Api</title>
+    <title>Api</title>
     <meta name="theme-color" content="#007acc" />
     <!-- generated with https://realfavicongenerator.net/ -->
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -50,7 +51,6 @@
   <body>
     <div id="graphiql">Loading...</div>
     <script src="/scripts/graphiql.min.js" type="application/javascript"></script>
-    <!-- <script src="/renderExample.js" type="application/javascript"></script> -->
     <script>
       function graphQLFetcher(graphQLParams) {
         const origin = window.location.origin;
@@ -63,7 +63,7 @@
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(graphQLParams),
-            credentials: 'omit',
+            credentials: 'include',
           },
         ).then(function (response) {
           return response

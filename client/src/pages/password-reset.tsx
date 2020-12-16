@@ -7,9 +7,8 @@ import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { Api } from '../backend-api/api';
 import { ApiException } from '../backend-api/api.exception';
-import { normaliseApiException, rethrow } from '../backend-api/normalise-api-exception.helper';
+import { normaliseApiException, } from '../backend-api/normalise-api-exception.helper';
 import { IApiException } from '../backend-api/types/api.exception.interface';
-import { ApiContext } from '../components-contexts/api.context';
 import { WithApi } from '../components-hoc/with-api/with-api.hoc';
 import { WithLoadable } from '../components-hoc/with-loadable/with-loadable';
 import {

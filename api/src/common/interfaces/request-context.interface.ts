@@ -9,14 +9,8 @@ import { OrNull } from "../types/or-null.type";
 import { OrNullable } from "../types/or-nullable.type";
 import { IJson } from "./json.interface";
 import { IRequestServices } from "./request.services.interface";
-import { IUniversalServices } from "./universal.services.interface";
-
-export interface IThrowable {
-  (ctx: IRequestContext): Exception;
-}
 
 export interface IRequestContext {
-  except(throwable: IThrowable): Exception;
   // duck-type some RequestAuth methods
   isSuperAdmin(): boolean;
   isMe(user?: OrNullable<UserModel>): boolean;

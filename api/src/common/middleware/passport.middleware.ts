@@ -1,17 +1,11 @@
 import { Handler, Request } from "express";
 import * as E from 'fp-ts/Either';
-import { isLeft } from "fp-ts/lib/Either";
-import { ExtractJwt } from "passport-jwt";
-import { LoginExpiredException } from "../exceptions/types/login-expired.exception";
 import { UnauthenticatedException } from "../exceptions/types/unauthenticated.exception";
 import { ist } from "../helpers/ist.helper";
 import { mw } from "../helpers/mw.helper";
-import { prettyQ } from "../helpers/pretty.helper";
 import { toId } from "../helpers/to-id.helper";
-import { logger } from "../logger/logger";
 import { OrNull } from "../types/or-null.type";
 import { OrNullable } from "../types/or-nullable.type";
-import { OrUndefined } from "../types/or-undefined.type";
 
 function authTokenCookieExtractor(req: Request): OrNull<string> {
   // req.signedCookies.access_token
@@ -32,7 +26,7 @@ export const passportMw = (): Handler => mw(async (ctx, next) => {
   if (E.isLeft(eAccess)) {
     // unset the access token so they don't get stuck trying to log-out if they're sending it on log-out route...
     ctx.services.authService.unsetAccess({ res: ctx.res, });
-    throw ctx.except(UnauthenticatedException({ message: eAccess.left }));
+    throw new UnauthenticatedException(eAccess.left);
   }
 
   // token is valid or doesn't exist

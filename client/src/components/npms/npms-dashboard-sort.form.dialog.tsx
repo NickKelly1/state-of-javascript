@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -15,10 +14,7 @@ import RestoreIcon from '@material-ui/icons/Restore';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { gql } from 'graphql-request';
 import React, {
-  FormEventHandler,
   useCallback,
-  useContext,
-  useMemo,
   useState,
 } from 'react';
 import {
@@ -28,12 +24,7 @@ import {
   OnDragEndResponder,
 } from 'react-beautiful-dnd';
 import { useMutation, useQuery } from 'react-query';
-import { Api } from '../../backend-api/api';
 import { ApiException } from '../../backend-api/api.exception';
-import { IMeHash } from '../../backend-api/api.me';
-import { normaliseApiException, rethrow } from '../../backend-api/normalise-api-exception.helper';
-import { ApiContext } from '../../components-contexts/api.context';
-import { DebugModeContext } from '../../components-contexts/debug-mode.context';
 import {
   NpmsDashbortSortFormQuery,
   NpmsDashbortSortFormQueryVariables,

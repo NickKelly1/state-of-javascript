@@ -1,7 +1,6 @@
 import { isLeft } from "fp-ts/lib/Either";
 import Joi from "joi";
 import { UserId } from "../../app/user/user.id.type";
-import { Exception } from "../exceptions/exception";
 import { BadRequestException } from "../exceptions/types/bad-request.exception";
 import { ForbiddenException } from "../exceptions/types/forbidden.exception";
 import { UnauthenticatedException } from "../exceptions/types/unauthenticated.exception";
@@ -10,7 +9,7 @@ import { validate } from "../helpers/validate.helper";
 import { LangSwitch } from "../i18n/helpers/lange-match.helper";
 import { ExceptionLang } from "../i18n/packs/exception.lang";
 import { IJson } from "../interfaces/json.interface";
-import { IRequestContext, IThrowable } from "../interfaces/request-context.interface";
+import { IRequestContext } from "../interfaces/request-context.interface";
 import { IRequestServices } from "../interfaces/request.services.interface";
 import { Loader } from "../classes/loader";
 import { RequestAuth } from "../classes/request-auth";
@@ -72,13 +71,12 @@ export abstract class BaseContext implements IRequestContext {
    *
    * @param can
    */
-  authorize(can: boolean): void | never {
+  authorize(can: boolean, message?: string | LangSwitch): void | never {
     if (!can) {
-      // TODO: not required any more? remove...
-      // // 401 if not authenticated (allows front-end to logout the user)
-      // if (!this.auth.isAuthenticatedAsUser()) { throw this.except(UnauthenticatedException()) }
-      // 403 if authenticated
-      throw this.except(ForbiddenException())
+      let msg = undefined;
+      if (typeof message === 'string') msg = message;
+      else if (typeof message === 'object' && msg) msg = this.lang(message);
+      throw new ForbiddenException(msg);
     };
   }
 
@@ -87,29 +85,18 @@ export abstract class BaseContext implements IRequestContext {
    *
    * @param arg
    */
-  assertFound<T>(arg: OrNullable<T>): T {
-    if (!arg) throw this.except(NotFoundException());
+  assertFound<T>(arg: OrNullable<T>, message?: string | LangSwitch): T {
+    if (!arg) {
+      let msg = undefined;
+      if (typeof message === 'string') msg = message;
+      else if (typeof message === 'object' && msg) msg = this.lang(message);
+      throw new NotFoundException(msg);
+    }
     return arg;
   }
 
   /**
-   * Create an Exception
-   *
-   * @param throwable
-   */
-  except(throwable: IThrowable): Exception {
-    const exception = throwable(this);
-    exception.shiftTrace(2);
-    // if 403 but unauthenticated, switch to 401... (naughty but lets us notify frontend of expired creds)
-    if (!this.auth.isLoggedIn() && exception.code === 403) {
-      exception.switchCodeTo(401);
-    }
-    return exception;
-  }
-
-  /**
    * Validate an object
-   * Throw 401 BadRequestException otherwise
    *
    * @param validator
    * @param obj
@@ -117,10 +104,8 @@ export abstract class BaseContext implements IRequestContext {
   validate<T>(validator: Joi.ObjectSchema<T>, obj: unknown): T {
     const validation = validate(validator, obj);
     if (isLeft(validation)) {
-      throw this.except(BadRequestException({
-        error: this.lang(ExceptionLang.BadRequest),
-        data: validation.left,
-      }));
+      const message = this.lang(ExceptionLang.BadRequest);
+      throw new BadRequestException(message, validation.left);
     }
     return validation.right;
   }
@@ -131,7 +116,8 @@ export abstract class BaseContext implements IRequestContext {
   assertAuthentication(): UserId {
     const user_id = this.auth.user_id;
     if (ist.nullable(user_id)) {
-      throw this.except(UnauthenticatedException());
+      const message = this.lang(ExceptionLang.BadRequest);
+      throw new UnauthenticatedException(message);
     }
     return user_id;
   }

@@ -1,17 +1,13 @@
-import { IExceptionArg } from '../interfaces/exception-arg.interface';
-import { Exception } from '../exception';
-import { ExceptionLang } from '../../i18n/packs/exception.lang';
-import { IThrowable } from '../../interfaces/request-context.interface';
+import httpErrors from 'http-errors';
 import { HttpCode } from '../../constants/http-code.const';
 
+export class LoginExpiredException extends httpErrors.HttpError {
+  status = HttpCode.UNAUTHORIZED;
+  statusCode = HttpCode.UNAUTHORIZED;
 
-export const LoginExpiredException = (arg?: Partial<IExceptionArg>): IThrowable => (ctx) => {
-  return new Exception({
-    code: HttpCode.LOGIN_EXPIRED,
-    name: 'LoginExpiredException',
-    ctx,
-    ...arg,
-    error: arg?.error ?? ctx.lang(ExceptionLang.LoginExpired),
-    message: arg?.message ?? arg?.error ?? ctx.lang(ExceptionLang.LoginExpired),
-  });
+  constructor(
+    msg: string
+  ) {
+    super(msg);
+  }
 }

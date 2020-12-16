@@ -29,7 +29,7 @@ export class UserRoleService {
     runner: QueryRunner
     dataKey?: string;
     pairs: { user_id: UserId; role_id: RoleId; }[],
-  }) {
+  }): Promise<void> {
     const { runner, pairs, dataKey } = arg;
 
     // find constraint violations
@@ -50,16 +50,14 @@ export class UserRoleService {
 
     // throw if violated
     if (existing.length) {
-      const message = existing
+      const messages = existing
         .map(exist => {
           const user = assertDefined(exist.user);
           const role = assertDefined(exist.role);
           return this.ctx.lang(UserRoleLang.AlreadyExists({ role: role.name, user: user.name }));
         });
-      throw this.ctx.except(BadRequestException({
-        message: message.join('\n'),
-        data: dataKey ? { [dataKey]: message } : undefined,
-      }));
+      const message  = messages.join('\n');
+      throw new BadRequestException(message, dataKey ? { [dataKey]: messages } : undefined);
     }
   }
 
@@ -76,20 +74,6 @@ export class UserRoleService {
   }): Promise<UserRoleModel> {
     const { runner, user, role } = arg;
     const { transaction } = runner;
-
-    // TODO: move check elsewhere...
-    // const existing = await UserRoleModel.findOne({ where: {
-    //   [Op.and]: {
-    //     [UserRoleField.user_id]: user.id,
-    //     [UserRoleField.role_id]: role.id,
-    //   }
-    // }, transaction });
-    // if (existing) {
-    //   const nameViolation = this.ctx.except(BadRequestException({
-    //     message: this.ctx.lang(UserRoleLang.AlreadyExists({ role, user, }))
-    //   }));
-    //   throw nameViolation
-    // }
 
     const userRole = UserRoleModel.build({
       role_id: role.id,

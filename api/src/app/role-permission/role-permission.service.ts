@@ -31,7 +31,7 @@ export class RolePermissionService {
     runner: QueryRunner
     dataKey?: string;
     pairs: { role_id: RoleId; permission_id: PermissionId; }[],
-  }) {
+  }): Promise<void> {
     const { runner, pairs, dataKey } = arg;
 
     // find constraint violations
@@ -52,16 +52,14 @@ export class RolePermissionService {
 
     // throw if violated
     if (existing.length) {
-      const message = existing
+      const messages = existing
         .map(exist => {
           const role = assertDefined(exist.role);
           const permission = assertDefined(exist.permission);
           return this.ctx.lang(RolePermissionLang.AlreadyExists({ role: role.name, permission: permission.name }));
-        });
-      throw this.ctx.except(BadRequestException({
-        message: message.join('\n'),
-        data: dataKey ? { [dataKey]: message } : undefined,
-      }));
+        })
+      const message = messages.join('\n');
+      throw new BadRequestException(message, dataKey ? { [dataKey]: messages } : undefined,);
     }
   }
 

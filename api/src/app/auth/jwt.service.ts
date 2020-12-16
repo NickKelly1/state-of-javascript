@@ -8,8 +8,7 @@ import { isLeft } from "fp-ts/lib/Either";
 import { BadRequestException } from "../../common/exceptions/types/bad-request.exception";
 import { ExceptionLang } from "../../common/i18n/packs/exception.lang";
 import { AccessTokenValidator, IAccessToken, IAccessTokenData } from "./token/access.token.gql";
-import { logger } from "../../common/logger/logger";
-import { prettyQ } from "../../common/helpers/pretty.helper";
+import httpErrors from 'http-errors';
 
 export class JwtService {
   constructor(
@@ -46,24 +45,21 @@ export class JwtService {
    *
    * @param arg
    */
-  decodeAccessToken(arg: { token: string }): Either<Exception, IAccessToken> {
+  decodeAccessToken(arg: { token: string }): Either<httpErrors.HttpError, IAccessToken> {
     const { token } = arg;
 
     // decode
     const obj = jsonwebtoken.decode(token);
     if (!obj) {
-      return left(this.ctx.except(BadRequestException({
-        message: this.ctx.lang(ExceptionLang.InvalidAccessToken),
-      })))
+      const message = this.ctx.lang(ExceptionLang.InvalidAccessToken);
+      return left(new BadRequestException(message));
     }
 
     // validate
     const validation = validate(AccessTokenValidator, obj);
     if (isLeft(validation)) {
-      return left(this.ctx.except(BadRequestException({
-        message: this.ctx.lang(ExceptionLang.InvalidAccessToken),
-        data: validation.left,
-      })));
+      const message = this.ctx.lang(ExceptionLang.InvalidAccessToken);
+      return left(new BadRequestException(message, validation.left));
     }
 
     return validation;
@@ -75,24 +71,21 @@ export class JwtService {
    *
    * @param arg
    */
-  decodeRefreshToken(arg: { token: string }): Either<Exception, IRefreshToken> {
+  decodeRefreshToken(arg: { token: string }): Either<httpErrors.HttpError, IRefreshToken> {
     const { token } = arg;
 
     // decode
     const obj = jsonwebtoken.decode(token);
     if (!obj) {
-      return left(this.ctx.except(BadRequestException({
-        message: this.ctx.lang(ExceptionLang.InvalidRefreshToken),
-      })))
+      const message = this.ctx.lang(ExceptionLang.InvalidRefreshToken);
+      return left(new BadRequestException(message));
     }
 
     // validate
     const validation = validate(RefreshTokenValidator, obj);
     if (isLeft(validation)) {
-      return left(this.ctx.except(BadRequestException({
-        message: this.ctx.lang(ExceptionLang.InvalidRefreshToken),
-        data: validation.left,
-      })));
+      const message = this.ctx.lang(ExceptionLang.InvalidRefreshToken);
+      return left(new BadRequestException(message, validation.left));
     }
 
     return validation;

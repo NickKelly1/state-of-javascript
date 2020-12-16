@@ -50,7 +50,7 @@ export class ApiConnector {
     } catch (error1) {
       // 1: fail
       // GraphQLError is thrown with a .request and .response
-      const exception1 = normaliseApiException(error1.response);
+      const exception1 = normaliseApiException(error1);
       Debug.ApiConnector(`[${ident}] 1: fail...`);
 
       // 2: case 440 - login hard expired - logout

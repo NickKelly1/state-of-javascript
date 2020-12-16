@@ -28,6 +28,7 @@ import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 import { RegisterMutation } from "../../generated/graphql";
 import { useSnackbar } from "notistack";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
+import { FormException } from "../form-error/form-exception.helper";
 
 
 export interface IRegisterFormDialogProps extends IWithDialogueProps {
@@ -107,9 +108,7 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
             </Grid>
             {error && (
               <Grid className="centered col" item xs={12}>
-                <FormHelperText error>
-                  {error.message}
-                </FormHelperText>
+                <FormException exception={error} />
               </Grid>
             )}
             {isDisabled && (

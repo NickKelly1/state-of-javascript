@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { constTrue } from 'fp-ts/lib/function';
+import { toMap } from 'fp-ts/lib/ReadonlyMap';
 import path from 'path';
 import { ROOT_DIR, SRC_DIR } from '../../root';
 import { Extractor } from '../helpers/extractor.helper';
@@ -40,17 +41,37 @@ export class EnvService {
   public readonly REDIS_HOST: string;
   public readonly REDIS_PORT: number;
 
-  public readonly PSW_SALT_ROUNDS = to.int('PSW_SALT_ROUNDS');
-  public readonly LOG_DIR = to.string('LOG_DIR');
-  public readonly LOG_MAX_SIZE = to.string('LOG_MAX_SIZE');
-  public readonly LOG_ROTATION_MAX_AGE = to.string('LOG_ROTATION_MAX_AGE');
-  public readonly LOG_HTTP_HEADERS = to.bool('LOG_HTTP_HEADERS');
-  public readonly JWT_SECRET = to.string('JWT_SECRET');
-  public readonly ACCESS_TOKEN_EXPIRES_IN_MS = to.int('ACCESS_TOKEN_EXPIRES_IN_MS');
-  public readonly REFRESH_TOKEN_EXPIRES_IN_MS = to.int('REFRESH_TOKEN_EXPIRES_IN_MS');
-  public readonly DELAY = to.int('DELAY');
+  // default: 10
+  public readonly PSW_SALT_ROUNDS = to.optional(() => to.int('PSW_SALT_ROUNDS')) ?? 10;
 
-  public readonly DELAY = to.int('DELAY');
+  // default: ./storage/logs
+  public readonly LOG_DIR = to.optional(() => to.string('LOG_DIR')) ?? './storage/logs';
+
+  // default: 20m
+  public readonly LOG_MAX_SIZE = to.optional(() => to.string('LOG_MAX_SIZE')) ?? '20m';
+
+  // default: 7d
+  public readonly LOG_ROTATION_MAX_AGE = to.optional(() => to.string('LOG_ROTATION_MAX_AGE')) ?? '7d';
+
+  // default: false
+  public readonly LOG_HTTP_HEADERS = to.optional(() => to.bool('LOG_HTTP_HEADERS')) ?? false;
+
+  public readonly JWT_SECRET = to.string('JWT_SECRET');
+
+  // default: 5 min
+  public readonly ACCESS_TOKEN_EXPIRES_IN_MS = to.optional(() => to.int('ACCESS_TOKEN_EXPIRES_IN_MS')) ?? 1000 * 60 * 5;
+
+  // default: 30d
+  public readonly REFRESH_TOKEN_EXPIRES_IN_MS = to.optional(() => to.int('REFRESH_TOKEN_EXPIRES_IN_MS')) ?? 1000 * 60 * 60 * 24 * 30;
+
+  // default: 0
+  public readonly DELAY = to.optional(() => to.int('DELAY')) ?? 0;
+
+  // default: 1 min
+  public readonly RATE_LIMIT_WINDOW_MS = to.optional(() => to.int('REFRESH_TOKEN_EXPIRES_IN_MS')) ?? 1000 * 60;
+
+  // default: 300
+  public readonly RATE_LIMIT_MAX = to.optional(() => to.int('DELAY')) ?? 500;
 
   public readonly SECRET = to.string('SECRET');
 
@@ -72,43 +93,6 @@ export class EnvService {
     this.PG_DB = to.string('PG_DB');
     this.PG_PORT = to.int('PG_PORT');
     this.PG_HOST = to.string('PG_HOST');
-
-    // if (this.is_testing()) {
-    //   this.PG_USER = to.string('TEST_PG_USER');
-    //   this.PG_PSW = to.string('TEST_PG_PSW');
-    //   this.PG_DB = to.string('TEST_PG_DB');
-    //   this.PG_PORT = to.int('TEST_PG_PORT');
-    //   this.PG_HOST = to.string('TEST_PG_HOST');
-    //   this.REDIS_PSW = to.string('TEST_REDIS_PSW');
-    //   this.REDIS_HOST = to.string('TEST_REDIS_HOST');
-    //   this.REDIS_PORT = to.int('TEST_REDIS_PORT');
-    // }
-
-    // else if (this.is_dev()) {
-    //   this.PG_USER = to.string('DEV_PG_USER');
-    //   this.PG_PSW = to.string('DEV_PG_PSW');
-    //   this.PG_DB = to.string('DEV_PG_DB');
-    //   this.PG_PORT = to.int('DEV_PG_PORT');
-    //   this.PG_HOST = to.string('DEV_PG_HOST');
-    //   this.REDIS_PSW = to.string('DEV_REDIS_PSW');
-    //   this.REDIS_HOST = to.string('DEV_REDIS_HOST');
-    //   this.REDIS_PORT = to.int('DEV_REDIS_PORT');
-    // }
-
-    // else if (this.is_prod()) {
-    //   this.PG_USER = to.string('PROD_PG_USER');
-    //   this.PG_PSW = to.string('PROD_PG_PSW');
-    //   this.PG_DB = to.string('PROD_PG_DB');
-    //   this.PG_PORT = to.int('PROD_PG_PORT');
-    //   this.PG_HOST = to.string('PROD_PG_HOST');
-    //   this.REDIS_PSW = to.string('PROD_REDIS_PSW');
-    //   this.REDIS_HOST = to.string('PROD_REDIS_HOST');
-    //   this.REDIS_PORT = to.int('PROD_REDIS_PORT');
-    // }
-
-    // else {
-    //   throw new Error(`unhandled environment "${this.NODE_ENV}"`);
-    // }
   }
 }
 

@@ -5,30 +5,21 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormHelperText,
   Grid,
   IconButton,
-  InputLabel,
   Switch,
   TextField,
   Typography
 } from "@material-ui/core";
 import { gql } from "graphql-request";
-import produce from "immer";
 import React, {
-  ChangeEventHandler,
-  FormEventHandler,
-  MouseEventHandler,
   useCallback,
-  useContext,
   useMemo,
   useState,
 } from "react";
 import { useMutation } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
-import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
-import { ApiContext } from "../../components-contexts/api.context";
 import {
   UserMutateFormUpdateMutation,
   UserMutateFormUpdateMutationVariables,
@@ -38,9 +29,7 @@ import {
 } from "../../generated/graphql";
 import { change } from "../../helpers/change.helper";
 import { ist } from "../../helpers/ist.helper";
-import { useFormStyles } from "../../hooks/use-form-styles.hook";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
-import { useUpdate } from "../../hooks/use-update.hook";
 import { Id } from "../../types/id.type";
 import { OrNullable } from "../../types/or-nullable.type";
 import { OrNull } from "../../types/or-null.type";
@@ -49,7 +38,6 @@ import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 import BugReportIcon from "@material-ui/icons/BugReportOutlined";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
-import { verify } from "crypto";
 import { FormException } from "../form-error/form-exception.helper";
 
 

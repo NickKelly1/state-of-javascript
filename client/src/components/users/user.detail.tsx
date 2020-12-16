@@ -1,10 +1,6 @@
 import {
-  CircularProgress,
   Grid,
   Typography,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Box,
   Button,
   IconButton,
@@ -13,13 +9,10 @@ import MailOutlineIcon from '@material-ui/icons/MailOutline';
 import LockOpenIcon from '@material-ui/icons/LockOpen';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import EditIcon from '@material-ui/icons/EditOutlined';
-import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import { gql } from "graphql-request";
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
-import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
-import { ApiContext } from "../../components-contexts/api.context";
 import {
   UserDetailDataQuery,
   UserDetailDataQueryVariables,
@@ -30,8 +23,6 @@ import {
 } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
 import { Id } from "../../types/id.type";
-import { DebugException } from "../debug-exception/debug-exception";
-import { NotFound } from "../not-found/not-found";
 import { IUserMutateFormRole, UserMutateFormDialog } from "./user-mutate.form.dialog";
 import { IIdentityFn } from "../../types/identity-fn.type";
 import { useDialog } from "../../hooks/use-dialog.hook";

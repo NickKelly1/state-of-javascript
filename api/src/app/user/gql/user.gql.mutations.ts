@@ -5,7 +5,6 @@ import { GqlContext } from "../../../common/context/gql.context";
 import { BadRequestException } from "../../../common/exceptions/types/bad-request.exception";
 import { ForbiddenException } from "../../../common/exceptions/types/forbidden.exception";
 import { NotFoundException } from "../../../common/exceptions/types/not-found.exception";
-import { GqlJsonObjectScalar } from "../../../common/gql/gql.json.scalar";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { ist } from "../../../common/helpers/ist.helper";
 import { toId } from "../../../common/helpers/to-id.helper";
@@ -14,10 +13,8 @@ import { ExceptionLang } from "../../../common/i18n/packs/exception.lang";
 import { RoleLang } from "../../../common/i18n/packs/role.lang";
 import { UserTokenLang } from "../../../common/i18n/packs/user-token.lang";
 import { UserLang } from "../../../common/i18n/packs/user.lang";
-import { IJson } from "../../../common/interfaces/json.interface";
 import { logger } from "../../../common/logger/logger";
-import { AuthenticationGqlNode, IAuthenticationGqlNodeSource, IAuthorisationRo } from "../../auth/gql-input/authorisation.gql";
-import { AccessTokenGqlNode, IAccessTokenGqlNodeSource } from "../../auth/gql/access-token.gql.node";
+import { AuthenticationGqlNode, IAuthenticationGqlNodeSource } from "../../auth/gql-input/authorisation.gql";
 import { QueryRunner } from "../../db/query-runner";
 import { RoleAssociation } from "../../role/role.associations";
 import { RoleId } from "../../role/role.id.type";
@@ -179,7 +176,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
     args: { dto: { type: GraphQLNonNull(DeleteUserGqlInput), }, },
     resolve: async (parent, args, ctx): Promise<boolean> => {
       const dto = ctx.validate(DeleteUserValidator, args.dto);
-      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+      await ctx.services.universal.db.transact(async ({ runner }) => {
         const user = await ctx.services.userRepository.findByPkOrfail(dto.id, { runner, });
         ctx.authorize(ctx.services.userPolicy.canSoftDelete({ model: user }));
         await ctx.services.userService.delete({ model: user, runner });
@@ -198,7 +195,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
     args: { dto: { type: GraphQLNonNull(DeleteUserGqlInput), }, },
     resolve: async (parent, args, ctx): Promise<boolean> => {
       const dto = ctx.validate(DeleteUserValidator, args.dto);
-      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+      await ctx.services.universal.db.transact(async ({ runner }) => {
         const user = await ctx.services.userRepository.findByPkOrfail(dto.id, { runner, });
         ctx.authorize(ctx.services.userPolicy.canSoftDelete({ model: user }));
         await ctx.services.userService.delete({ model: user, runner });
@@ -226,7 +223,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         if (!ctx.services.userPolicy.canRequestForgottenPasswordReset({ model: user })) {
           logger.warn(`Failed to reset password for user id: "${user.id}", email: "${user.email}", name: "${user.name}"`);
           return false;
-        };
+        }
         await ctx.services.userService.sendPasswordResetEmail({ model: user, runner });
       });
       return true;
@@ -259,13 +256,13 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         // correct token type?
         if (!token.isForgottenPasswordReset()) {
           const message = ctx.lang(ExceptionLang.BadTokenType);
-          throw ctx.except(BadRequestException({ message }));
+          throw new BadRequestException(message);
         }
 
         // expired?
         if (token.isExpired()) {
           const message = ctx.lang(UserTokenLang.TokenExpired);
-          throw ctx.except(BadRequestException({ message }));
+          throw new BadRequestException(message);
         }
 
         const user = assertDefined(token.user);
@@ -356,13 +353,13 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         // correct token type?
         if (!token.isWelcome()) {
           const message = ctx.lang(ExceptionLang.BadTokenType);
-          throw ctx.except(BadRequestException({ message }));
+          throw new BadRequestException(message);
         }
 
         // expired?
         if (token.isExpired()) {
           const message = ctx.lang(UserTokenLang.TokenExpired);
-          throw ctx.except(BadRequestException({ message }));
+          throw new BadRequestException(message);
         }
 
         // authorize
@@ -444,13 +441,13 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         // correct token type?
         if (!token.isVerifyEmail()) {
           const message = ctx.lang(ExceptionLang.BadTokenType);
-          throw ctx.except(BadRequestException({ message }));
+          throw new BadRequestException(message);
         }
 
         // expired?
         if (token.isExpired()) {
           const message = ctx.lang(UserTokenLang.TokenExpired);
-          throw ctx.except(BadRequestException({ message }));
+          throw new BadRequestException(message);
         }
 
         // authorize
@@ -507,7 +504,7 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         });
         if (ist.defined(exists)) {
           const message = ctx.lang(UserLang.EmailTaken({ email: dto.email }));
-          throw ctx.except(BadRequestException({ message, data: { email: [message] } }))
+          throw new BadRequestException(message, { email: [message] });
         }
         ctx.authorize(ctx.services.userPolicy.canRequestEmailChange({ model: user }));
         const serviceDto: IUserServiceSendVerifyEmailChangeEmailDto = {
@@ -556,13 +553,13 @@ export const UserGqlMutations: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>>
         // correct token type?
         if (!token.isVerifyEmailChange()) {
           const message = ctx.lang(ExceptionLang.BadTokenType);
-          throw ctx.except(BadRequestException({ message }));
+          throw new BadRequestException(message);
         }
 
         // expired?
         if (token.isExpired()) {
           const message = ctx.lang(UserTokenLang.TokenExpired);
-          throw ctx.except(BadRequestException({ message }));
+          throw new BadRequestException(message);
         }
 
         // authorize
@@ -628,7 +625,8 @@ async function authorizeAndSyncrhoniseUserRoles(arg: {
     else notFoundRoleIds.push(role_id);
   });
   if (notFoundRoleIds.length) {
-    throw ctx.except(NotFoundException({ message: ctx.lang(RoleLang.NotFound({ ids: notFoundRoleIds })) }));
+    const message = ctx.lang(RoleLang.NotFound({ ids: notFoundRoleIds }));
+    throw new NotFoundException(message);
   }
 
   // find missing & unexpected permissions from the role
@@ -650,12 +648,11 @@ async function authorizeAndSyncrhoniseUserRoles(arg: {
     .canCreate({ role, user }));
 
   if (forbiddenFromCreating.length) {
-    throw ctx.except(ForbiddenException({
-      message: ctx.lang(UserLang.ForbiddenAddingRoles({
-        userName: user.name,
-        roleNames: forbiddenFromCreating.map(perm => perm.name),
-      })),
+    const message = ctx.lang(UserLang.ForbiddenAddingRoles({
+      userName: user.name,
+      roleNames: forbiddenFromCreating.map(perm => perm.name),
     }));
+    throw new ForbiddenException(message);
   }
 
   // verify unexpected permissions can be deleted
@@ -669,12 +666,11 @@ async function authorizeAndSyncrhoniseUserRoles(arg: {
     }));
 
   if (forbiddenFromDeleting.length) {
-    throw ctx.except(ForbiddenException({
-      message: ctx.lang(UserLang.ForbiddenDeletingRoles({
-        userName: user.name,
-        roleNames: forbiddenFromDeleting.map(userRole => assertDefined(allRolesMap.get(userRole.role_id)).name),
-      })),
+    const message = ctx.lang(UserLang.ForbiddenDeletingRoles({
+      userName: user.name,
+      roleNames: forbiddenFromDeleting.map(userRole => assertDefined(allRolesMap.get(userRole.role_id)).name),
     }));
+    throw new ForbiddenException(message);
   }
 
   // do create

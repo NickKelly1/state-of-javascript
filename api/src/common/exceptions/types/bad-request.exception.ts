@@ -1,16 +1,11 @@
-import { IExceptionArg } from '../interfaces/exception-arg.interface';
-import { Exception } from '../exception';
-import { ExceptionLang } from '../../i18n/packs/exception.lang';
-import { IThrowable } from '../../interfaces/request-context.interface';
-import { HttpCode } from '../../constants/http-code.const';
+import httpErrors from 'http-errors';
+import { IExceptionData } from '../../interfaces/exception-data.interface';
 
-export const BadRequestException = (arg?: Partial<IExceptionArg>): IThrowable => (ctx) => {
-  return new Exception({
-    code: HttpCode.BAD_REQUEST,
-    name: 'BadRequestException',
-    ctx,
-    ...arg,
-    error: arg?.error ?? ctx.lang(ExceptionLang.BadRequest),
-    message: arg?.message ?? arg?.error ?? ctx.lang(ExceptionLang.BadRequest),
-  });
+export class BadRequestException extends httpErrors.BadRequest {
+  constructor(
+    msg: string,
+    public readonly data?: IExceptionData
+  ) {
+    super(msg)
+  }
 }

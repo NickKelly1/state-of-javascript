@@ -3,28 +3,30 @@
  */
 
 import http from 'http';
+import express, { Express } from 'express';
 import { bootApp } from '../app';
-import { ExpressContext } from '../common/classes/express-context';
 import { $TS_FIX_ME } from '../common/types/$ts-fix-me.type';
 import { EnvService, EnvServiceSingleton } from '../common/environment/env';
 import { logger } from '../common/logger/logger';
+import { prettyQ } from '../common/helpers/pretty.helper';
 
 async function bootServer(arg: { env: EnvService }) {
   const { env } = arg;
-  const app: ExpressContext = await bootApp({ env });
+  const app = express();
+  await bootApp({ env, app });
 
   /**
    * Get port from environment and store in Express.
    */
 
-  var port = normalizePort(env.PORT);
-  app.root.set('port', port);
+  const port = normalizePort(env.PORT);
+  app.set('port', port);
 
   /**
    * Create HTTP server.
    */
 
-  var server = http.createServer(app.root);
+  const server = http.createServer(app);
 
   /**
    * Listen on provided port, on all network interfaces.
@@ -39,7 +41,7 @@ async function bootServer(arg: { env: EnvService }) {
    */
 
   function normalizePort(val: $TS_FIX_ME<any>) {
-    var port = parseInt(val, 10);
+    const port = parseInt(val, 10);
 
     if (isNaN(port)) {
       // named pipe
@@ -63,7 +65,7 @@ async function bootServer(arg: { env: EnvService }) {
       throw error;
     }
 
-    var bind = typeof port === 'string'
+    const bind = typeof port === 'string'
       ? 'Pipe ' + port
       : 'Port ' + port;
 
@@ -87,12 +89,20 @@ async function bootServer(arg: { env: EnvService }) {
    */
 
   function onListening() {
-    var addr: $TS_FIX_ME<any> = server.address();
-    var bind = typeof addr === 'string'
+    const addr: $TS_FIX_ME<any> = server.address();
+    const bind = typeof addr === 'string'
       ? 'pipe ' + addr
       : 'port ' + addr.port;
     logger.debug('Listening on ' + bind);
   }
 }
 
-bootServer({ env: EnvServiceSingleton });
+bootServer({ env: EnvServiceSingleton })
+  .catch(error => {
+    // failed to boot properly...
+    logger.error(`Errored while booting: ${prettyQ(error)}`);
+    process.exit(1);
+  })
+  .catch(doubleError => {
+    process.exit(1);
+  });

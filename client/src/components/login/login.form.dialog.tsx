@@ -3,25 +3,19 @@ import {
   Grid,
   makeStyles,
   TextField,
-  FormHelperText,
   DialogTitle,
   DialogContent,
   DialogActions,
-  DialogContentText,
   IconButton,
 } from "@material-ui/core";
-import React, { MouseEventHandler, useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import LockOpenIcon from '@material-ui/icons/LockOpen';
 import { useMutation } from "react-query";
-import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
-import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { ApiContext } from "../../components-contexts/api.context";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { change } from "../../helpers/change.helper";
 import { ApiException } from "../../backend-api/api.exception";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
-import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import BugReportIcon from "@material-ui/icons/BugReportOutlined";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
@@ -29,6 +23,7 @@ import { useDialog } from "../../hooks/use-dialog.hook";
 import { ForgottenPasswordDialog } from "../forgotten-password-reset-dialog/forgotten-password-reset-dialog";
 import { LoginMutation } from "../../generated/graphql";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
+import { FormException } from "../form-error/form-exception.helper";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -45,7 +40,7 @@ interface IILoginFormContentProps extends IWithDialogueProps {
 export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth: true })(WithApi((props) => {
   const { onSuccess, dialog, api, me, } = props;
 
-  interface IFormState { name_or_email: string; password: string; };
+  interface IFormState { name_or_email: string; password: string; }
   const [ formState, setFormState ] = useState<IFormState>({ name_or_email: '', password: '', });
   const [ doSubmit, submitState ] = useMutation<LoginMutation, ApiException>(
     async (): Promise<LoginMutation> => {
@@ -108,9 +103,7 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
             </Grid>
             {error && (
               <Grid className="centered col" item xs={12}>
-                <FormHelperText error>
-                  {error.message}
-                </FormHelperText>
+                <FormException exception={error} />
               </Grid>
             )}
             {isDisabled && (

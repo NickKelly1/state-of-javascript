@@ -75,10 +75,8 @@ export class UserService {
 
     const existing = await UserModel.findOne({ where: { [UserField.name]: dto.name }, transaction });
     if (existing) {
-      const nameViolation = this.ctx.except(BadRequestException({
-        data: { [UserField.name]: [this.ctx.lang(UserLang.AlreadyExists({ name: dto.name }))] }
-      }));
-      throw nameViolation
+      const message = this.ctx.lang(UserLang.AlreadyExists({ name: dto.name }));
+      throw new BadRequestException( message, { [UserField.name]: [message] },);
     }
 
     const user = UserModel.build({

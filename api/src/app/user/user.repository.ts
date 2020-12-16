@@ -1,3 +1,4 @@
+/* eslint-disable no-cond-assign */
 import { FindOptions, Model, ModelCtor, Op, Order } from "sequelize";
 import { BaseRepository } from "../../common/classes/repository.base";
 import { InternalServerException } from "../../common/exceptions/types/internal-server.exception";
@@ -42,7 +43,7 @@ export class UserRepository extends BaseRepository<UserModel> {
     const result = await this.findOneFromNameEmail(arg);
     if (!result) {
       const message = this.ctx.lang(UserLang.NotFound);
-      throw this.ctx.except(NotFoundException({ message, }));
+      throw new NotFoundException(message);
     }
     return result;
   }
@@ -92,6 +93,7 @@ export class UserRepository extends BaseRepository<UserModel> {
     // match name
     else if (match = users.find(usr => usr.name === nameOrEmail)) return match;
     // no match js match, but yes sql match...?
-    throw this.ctx.except(InternalServerException({ message: this.ctx.lang(InternalServerExceptionLang.FailedToFindUser), }))
+    const message = this.ctx.lang(InternalServerExceptionLang.FailedToFindUser);
+    throw new InternalServerException(message);
   }
 }

@@ -1,16 +1,21 @@
-import { Button, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField } from "@material-ui/core";
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  TextField,
+} from "@material-ui/core";
 import { BugReport, MailOutline } from "@material-ui/icons";
 import { gql } from "graphql-request";
 import { useSnackbar } from "notistack";
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useMutation } from "react-query";
-import { ApiException } from "../../backend-api/api.exception";
-import { rethrow, normaliseApiException } from "../../backend-api/normalise-api-exception.helper";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { ApiContext } from "../../components-contexts/api.context";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
-import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
+import { WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import {
   RequestForgottenUserPasswordResetMutation,
   RequestForgottenUserPasswordResetMutationVariables,
@@ -19,7 +24,6 @@ import { change } from "../../helpers/change.helper";
 import { isEmail } from "../../helpers/is-email.helper";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
-import { IIdentityFn } from "../../types/identity-fn.type";
 import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
 
 const requestForgottenUserPasswordResetMutation = gql`

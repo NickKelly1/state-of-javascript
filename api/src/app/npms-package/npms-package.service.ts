@@ -1,7 +1,6 @@
 import { Op } from 'sequelize';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
 import { ist } from '../../common/helpers/ist.helper';
-import { toMapBy } from '../../common/helpers/to-id-map.helper';
 import { NpmsLang } from '../../common/i18n/packs/npms.lang';
 import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { logger } from '../../common/logger/logger';
@@ -32,11 +31,10 @@ export class NpmsPackageService {
     const existing = await NpmsPackageModel.findAll({ where: { [NpmsPackageField.name]: { [Op.in]: names} }, transaction });
     if (existing.length) {
       const message = this.ctx.lang(NpmsLang.AlreadyExists({ names: existing.map(ex => ex.name) }));
-      const nameViolation = this.ctx.except(BadRequestException({
+      throw new BadRequestException(
         message,
-        data: ist.notUndefined(dataKey) ? { [NpmsPackageField.name]: [message] } : undefined,
-      }));
-      throw nameViolation;
+        ist.notUndefined(dataKey) ? { [NpmsPackageField.name]: [message] } : undefined,
+      );
     }
   }
 

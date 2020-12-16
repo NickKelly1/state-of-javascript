@@ -1,15 +1,13 @@
 import * as overrides from './custom';
-import fs from 'fs/promises';
+import rateLimit from 'express-rate-limit';
 import { GqlSchema } from './gql.schema';
 import * as cron from 'cron';
-import Bull, { DoneCallback, Job, ProcessCallbackFunction, ProcessPromiseFunction } from 'bull';
-import express, { Handler, Request, Response } from 'express';
-import path, { join } from 'path';
+import express, { Request, Response, Express } from 'express';
+import path from 'path';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import cors from 'cors';
 import { Routes } from './routes';
-import { ExpressContext } from './common/classes/express-context';
 import { mw } from './common/helpers/mw.helper';
 import { EnvService } from './common/environment/env';
 import { createSequelize, } from './app/db/create-sequelize';
@@ -21,10 +19,7 @@ import { initialiseDb } from './initialise-db';
 import { passportMw } from './common/middleware/passport.middleware';
 import { handler } from './common/helpers/handler.helper';
 import { delay } from './common/helpers/delay.helper';
-import { ExecutionResult, graphql, GraphQLError, } from 'graphql';
-import { graphqlHTTP, OptionsData } from 'express-graphql';
-import { mwGql } from './common/helpers/mw-gql.helper';
-import { makeException } from './common/helpers/make-exception.helper';
+import { graphqlHTTP } from 'express-graphql';
 import { ScriptGuard } from './script-guard';
 import { prettyQ } from './common/helpers/pretty.helper';
 import { universalServiceContainerFactory } from './common/containers/universal.service.container.factory';
@@ -32,20 +27,16 @@ import { GqlContext } from './common/context/gql.context';
 import { IGoogleIntegrationServiceSendEmailDto } from './app/google/dtos/google.service.send-email-dto';
 import { Integration } from './app/integration/integration.const';
 import { JobRunnerFactory } from './common/helpers/jb.helper';
-import { ist } from './common/helpers/ist.helper';
-import { InternalServerException } from './common/exceptions/types/internal-server.exception';
-import { BadRequestException } from './common/exceptions/types/bad-request.exception';
-import { Exception, IApiException } from './common/exceptions/exception';
-import { IExceptionData } from './common/interfaces/exception-data.interface';
-import { Printable } from './common/types/printable.type';
 import { CronTickHandlerFactory, ICronTickHandlerFnArg } from './common/helpers/cron-tick-handler.helper';
-import { Op } from 'sequelize/types';
-import { NpmsPackageField } from './app/npms-package/npms-package.attributes';
 import { ROOT_DIR } from './root';
-import { h_shadow_id } from './common/constants/shad.const';
+import compression from 'compression';
+import { ExceptionLang } from './common/i18n/packs/exception.lang';
+import httpErrors from 'http-errors';
+import { GraphQLError } from 'graphql';
+import { exceptionToJson } from './common/helpers/exception-to-json.helper';
 
-export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext> {
-  const { env } = arg;
+export async function bootApp(arg: { env: EnvService, app: Express }): Promise<Express> {
+  const { env, app } = arg;
   logger.info('booting...');
 
   const sequelize = createSequelize({ env });
@@ -107,22 +98,6 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
     job.start();
   }
 
-  const app = new ExpressContext({ root: express() });
-
-  // TODO: only allow cors @ specific origins...
-  app.use(cors((req, done) => done(null, ({
-    credentials: true,
-    origin: req.headers.origin,
-    // allowedHeaders: req.headers.allow,
-  }))));
-
-  if (env.DELAY) {
-    app.use(handler(async (req, res, next) => {
-      if (env.DELAY) await delay(env.DELAY);
-      next();
-    }));
-  }
-
   // https://www.npmjs.com/package/morgan
   // app.use(morgan('dev', { stream: loggerStream }));
   morgan.token('user_id', (req: Request, res: Response) => req.__locals__?.auth?.user_id?.toString() ?? '_');
@@ -140,69 +115,125 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
       { stream: loggerStream }),
     );
   }
+  // TODO: restrict cors...
+  // TODO: only allow cors @ specific origins...
+  app.use(cors((req, done) => done(null, ({ credentials: true, origin: req.headers.origin, }))));
+  if (env.DELAY) {
+    app.use(handler(async (req, res, next) => {
+      if (env.DELAY) await delay(env.DELAY);
+      next();
+    }));
+  }
+  // rate limit
+  app.use(rateLimit({ windowMs: env.RATE_LIMIT_WINDOW_MS, max: env.RATE_LIMIT_MAX, }));
+  // gzip
+  app.use(compression());
+  // parse json
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+  // parse cookies
   app.use(cookieParser());
-  app.use(express.static(path.join(ROOT_DIR, './public')));
-
-  // custom graphiql (interface for graphql) endpoint
-  const indexHtml = await fs.readFile(join(ROOT_DIR, './public/index.html')).then(String);
-  app.root.get('/', (req, res) => res.status(200).contentType('text/html').send(indexHtml));
+  // serve static from public
+  // don't require .html
+  app.use(express.static(path.join(ROOT_DIR, './public'), { extensions: ['html']}));
 
   app.use(servicesMw({ universal }));
   app.use(passportMw());
 
-  // TODO: clean this up & make errors nicer...
-  const gqlMiddleware = graphqlHTTP(mwGql(async (ctx): Promise<OptionsData> => {
-    const { req, res } = ctx;
-    const gql = GqlContext.createFromHttp({ req, res, });
-    const data: OptionsData = {
-      customFormatErrorFn: (err) => {
-        logger.error(`Error in GraphQL: ${prettyQ(err)}`);
-        let exception: Exception;
+  // // TODO: clean this up & make errors nicer...
+  // const gqlMiddleware = graphqlHTTP(mwGql(async (ctx): Promise<OptionsData> => {
+  //   const { req, res } = ctx;
+  //   const gql = GqlContext.createFromHttp({ req, res, });
+  //   const data: OptionsData = {
+  //     customFormatErrorFn: (err) => {
+  //       logger.error(`Error in GraphQL: ${prettyQ(err)}`);
+  //       let exception: Exception;
 
-        if (ist.nullable(err.originalError)) {
-          // probably a GraphQL error
-          const message: string = String(err.message);
-          const error = 'GraphQLError';
-          const data: IExceptionData = {
-            locations: err.locations ? err.locations.map(loc => `line: ${loc.line}, column: ${loc.column}`) : undefined,
-            positions: err.positions ? err.positions.map(String) : undefined,
-            path: err.path ? err.path.map(String) : undefined,
-          };
-          const debug: Printable = {
-            source: err.source,
-            name: err.name,
-          }
-          exception = ctx.except(BadRequestException({
-            error,
-            message,
-            data,
-            debug,
-          }));
-        } else {
-          exception = makeException(ctx, err.originalError);
-          if (exception.code === 500) { logger.error(exception.name, exception.toJsonDev()); }
-          else { logger.warn(exception.name, exception.toJsonDev()); }
-        }
+  //       if (ist.nullable(err.originalError)) {
+  //         // probably a GraphQL error
+  //         const message: string = String(err.message);
+  //         const error = 'GraphQLError';
+  //         const data: IExceptionData = {
+  //           locations: err.locations ? err.locations.map(loc => `line: ${loc.line}, column: ${loc.column}`) : undefined,
+  //           positions: err.positions ? err.positions.map(String) : undefined,
+  //           path: err.path ? err.path.map(String) : undefined,
+  //         };
+  //         const debug: Printable = {
+  //           source: err.source,
+  //           name: err.name,
+  //         }
+  //         exception = ctx.except(BadRequestException({
+  //           error,
+  //           message,
+  //           data,
+  //           debug,
+  //         }));
+  //       } else {
+  //         exception = makeException(ctx, err.originalError);
+  //         if (exception.code === 500) { logger.error(exception.name, exception.toJsonDev()); }
+  //         else { logger.warn(exception.name, exception.toJsonDev()); }
+  //       }
 
-        const modifiedError = new GraphQLError(
-          err.message,
-          err.nodes,
-          err.source,
-          err.positions,
-          err.path,
-          err.originalError,
-          { ...err.extensions, exception: exception.toJson() },
-        );
-        return modifiedError;
-      },
+  //       const modifiedError = new GraphQLError(
+  //         err.message,
+  //         err.nodes,
+  //         err.source,
+  //         err.positions,
+  //         err.path,
+  //         err.originalError,
+  //         { ...err.extensions, exception: exception.toJson() },
+  //       );
+  //       return modifiedError;
+  //     },
+  //     schema: GqlSchema,
+  //     context: gql,
+  //     graphiql: false,
+  //   };
+  //   return data;
+  // }));
+  const gqlMiddleware = graphqlHTTP((req, res) => {
+    const ctx = GqlContext.createFromHttp({ req: req as Request, res: res as Response, });
+    return {
       schema: GqlSchema,
-      context: gql,
-      graphiql: false,
+      context: ctx,
+
+      // extensions...
+      async extensions(info) {
+        const result = {
+          date: new Date(),
+          ...info.result.extensions,
+          exception: info.result.extensions?.exception
+            ? exceptionToJson(info.result.extensions.exception)
+            : undefined,
+        };
+        return result;
+      },
+
+      // error formatting...
+      customFormatErrorFn(originalGraphQLError): GraphQLError {
+        const original = originalGraphQLError.originalError;
+        if (!original) return originalGraphQLError;
+        logger.error(`GraphQL Error (original): ${prettyQ(original)}`);
+        let exception: httpErrors.HttpError;
+        if (original instanceof httpErrors.HttpError) { exception = original; }
+        else { exception = new httpErrors.InternalServerError(); }
+        // clone the GraphQL error but add the exception as an extension...
+        const updatedGraphQLError = new GraphQLError(
+          originalGraphQLError.message,
+          originalGraphQLError.nodes,
+          originalGraphQLError.source,
+          originalGraphQLError.positions,
+          originalGraphQLError.path,
+          originalGraphQLError.originalError,
+          {
+            ...originalGraphQLError.extensions,
+            exception: exceptionToJson(exception),
+          },
+        );
+        return updatedGraphQLError;
+      },
     };
-    return data;
-  }));
+  });
 
   // serve graphql on the primary gql route
   app.use('/v1/gql', gqlMiddleware);
@@ -213,13 +244,13 @@ export async function bootApp(arg: { env: EnvService }): Promise<ExpressContext>
   app.use(Routes({ app }));
 
   // health check
-  app.root.get('/_health', (req, res) => res.status(200).json({
+  app.get('/_health', (req, res) => res.status(200).json({
     message: 'Okay :)',
     date: new Date().toISOString(),
   }));
 
   // not found...
-  app.use(mw(async (ctx) => { throw ctx.except(NotFoundException()); }));
+  app.use(mw(async (ctx, next) => next(new NotFoundException(ctx.lang(ExceptionLang.PathNotFound({ path: ctx.req.path }))))));
 
   app.use(errorHandlerMw());
 

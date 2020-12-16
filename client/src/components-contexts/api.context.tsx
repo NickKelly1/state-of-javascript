@@ -2,24 +2,10 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { Api } from '../backend-api/api';
 import { apiMeFns, IApiMe } from '../backend-api/api.me';
 import { ApiFactory } from '../backend-api/api.factory';
-import { OrNull } from '../types/or-null.type';
 import { PublicEnvContext } from './public-env.context';
 import { IApiMeSerialized } from '../types/api-me-serialized.hinterface';
-import { WithLoadable } from '../components-hoc/with-loadable/with-loadable';
-import { ApiException } from '../backend-api/api.exception';
-import { attemptAsync, fail, isFail } from '../helpers/attempted.helper';
-import { normaliseApiException, rethrow } from '../backend-api/normalise-api-exception.helper';
-import { IUnsubscribe } from '../helpers/ts-event';
-import { DebugException } from '../components/debug-exception/debug-exception';
-import { CircularProgress } from '@material-ui/core';
 import { invoke } from '../helpers/invoke.helper';
-import { ApiConnector } from '../backend-api/api.connector';
-import { useAsync } from '../hooks/use-async.hook';
-import { IApiException } from '../backend-api/types/api.exception.interface';
-import { OrUndefined } from '../types/or-undefined.type';
-import { IAsyncState } from '../types/async.types';
-import { useUpdate } from '../hooks/use-update.hook';
-import { useMutation, useQuery } from 'react-query';
+import { IUnsubscribe } from '../helpers/ts-event';
 
 export interface IApiContext { me: IApiMe; api: Api; }
 export const ApiContext = createContext<IApiContext>(null!);
@@ -36,7 +22,7 @@ export function ApiProvider(props: IApiProviderProps) {
   const { publicEnv } = useContext(PublicEnvContext);
 
   const [ctx, setCtx] = useState(() => {
-    const me = !!initialMe
+    const me = initialMe
       ? apiMeFns.deserialise(initialMe)
       : apiMeFns.defaultInitialMe({ ss: !process.browser });
     const api = ApiFactory({ me, publicEnv });

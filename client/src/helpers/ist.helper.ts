@@ -73,4 +73,8 @@ export const ist = {
   oneOf: <T>(fns: ((arg: unknown) => arg is T)[]) => (unk: unknown): unk is T => {
     return fns.some(fn => fn(unk));
   },
+  instanceOf: <T>(arg: T) => (unk: unknown): unk is T => {
+    try { return unk instanceof (arg as any); }
+    catch { return false; }
+  },
 }

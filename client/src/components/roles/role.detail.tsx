@@ -1,36 +1,21 @@
 import {
-  CircularProgress,
   Grid,
   Typography,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Box,
-  Button,
   IconButton,
 } from "@material-ui/core";
-import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import EditIcon from '@material-ui/icons/EditOutlined';
-import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import { gql } from "graphql-request";
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useQuery } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
-import { normaliseApiException, rethrow } from "../../backend-api/normalise-api-exception.helper";
-import { ApiContext } from "../../components-contexts/api.context";
 import { RoleDetailDataQuery, RoleDetailDataQueryVariables } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
 import { Id } from "../../types/id.type";
-import { DebugException } from "../debug-exception/debug-exception";
-import { NotFound } from "../not-found/not-found";
 import { IRoleMutateFormRole, RoleMutateFormDialog } from "./role-mutate.form.dialog";
 import { IIdentityFn } from "../../types/identity-fn.type";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { flsx } from "../../helpers/flsx.helper";
-import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { OrNull } from "../../types/or-null.type";
-import { OrNullable } from "../../types/or-nullable.type";
-import { INodeable, nodeify } from "../../helpers/nodeify.helper";
 import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 

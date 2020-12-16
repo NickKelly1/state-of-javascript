@@ -1,7 +1,7 @@
-import { IJson } from "../interfaces/json.interface";
-import { $TS_DANGER } from "../types/$ts-danger.type";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-types */
 import { $TS_FIX_ME } from "../types/$ts-fix-me.type";
-import { Primitive } from "../types/primitive.type";
 import { Printable } from "../types/printable.type";
 
 export function pretty(json: Printable | $TS_FIX_ME<any>): string {
@@ -19,6 +19,13 @@ export function pretty(json: Printable | $TS_FIX_ME<any>): string {
  * https://codereview.stackexchange.com/questions/214947/pretty-print-an-object-javascript
  */
 export function prettyQ(obj: Printable | $TS_FIX_ME<any>): string {
+  if (obj && obj instanceof Error) {
+    const plainError: Record<any, any> = {};
+    Object.getOwnPropertyNames(obj).forEach(p => { plainError[p] = (obj as any)[p]; });
+    Object.getOwnPropertySymbols(obj).forEach(s => { plainError[s as any] = (obj as any)[s]; });
+    return prettyQ(plainError);
+  }
+
   const printed: Set<any> = new Set();
 
   // if object has already been printed, show [Circular...] instead
