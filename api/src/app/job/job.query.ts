@@ -1,18 +1,16 @@
-import { GraphQLEnumType, GraphQLFieldConfigMap, GraphQLFloat, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLString, Thunk } from "graphql";
+import { GraphQLFieldConfigMap, GraphQLFloat, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLString, Thunk } from "graphql";
 import { GqlContext } from "../../common/context/gql.context";
 import { GqlJsonObjectScalar } from "../../common/gql/gql.json.scalar";
 import { IJson } from "../../common/interfaces/json.interface";
 import { Job, JobOptions, JobStatus } from 'bull';
-import Joi from "joi";
 import { IJobOptionsGqlInput, JobOptionsGqlInput, JobOptionsGqlInputValidator } from "./gql/job-options.gql.input";
 import { OrNullable } from "../../common/types/or-nullable.type";
 import { ist } from "../../common/helpers/ist.helper";
 import { JobStatusGqlEnum } from "../../common/gql/job-status.gql.enum";
 import { OrNull } from "../../common/types/or-null.type";
-import { ABullJobStatus, BullJobStatus } from "../../common/constants/job-status.const";
+import { BullJobStatus } from "../../common/constants/job-status.const";
 import { IGmailJob } from "../google/gmail.job.interface";
 import { OrUndefined } from "../../common/types/or-undefined.type";
-import { Printable } from "../../common/types/printable.type";
 
 
 // TODO: separate files...

@@ -41,7 +41,7 @@ import { useDialog } from "../../hooks/use-dialog.hook";
 import { useMenu } from "../../hooks/use-menu.hook";
 import { flsx } from "../../helpers/flsx.helper";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
-import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { JsonDialog } from "../debug-json-dialog/json-dialog";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 import { apiMeFns } from "../../backend-api/api.me";
 
@@ -110,7 +110,7 @@ export const TopBar = WithApi<ITopBarProps>((props) => {
 
   return (
     <>
-      <DebugJsonDialog title="Me" dialog={meDebugDialog} data={meDebugData} />
+      <JsonDialog title="Me" dialog={meDebugDialog} data={meDebugData} />
       <LoginFormDialog dialog={loginDialog} onSuccess={loginDialog.doClose} />
       <RegisterFormDialog dialog={registerDialog} onSuccess={registerDialog.doClose} />
       <Box className={classes.root}>

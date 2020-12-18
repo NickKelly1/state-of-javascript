@@ -39,7 +39,7 @@ import {
 } from "../list-builder/list-builder";
 import { NotFound } from "../not-found/not-found";
 import { useUpdate } from "../../hooks/use-update.hook";
-import { DebugException } from "../debug-exception/debug-exception";
+import { ExceptionDetail } from "../exception/exception-detail";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { IOnErrorFn } from "../../types/on-error-fn.type";
 import { useSnackbar } from "notistack";
@@ -213,7 +213,7 @@ export const RoleRolePermissionForm = WithApi<IRoleRolePermissionFormProps>((pro
     <Grid container spacing={2}>
       {error && (
         <Grid item xs={12}>
-          <DebugException centered always exception={error} />
+          <ExceptionDetail centered always exception={error} />
         </Grid>
       )}
       {isLoading && (
@@ -404,7 +404,7 @@ const RoleRolePermissionFormContent = WithApi<IRoleRolePermissionFormContentProp
                 </FormHelperText>
               </Grid>
             )}
-            <DebugException centered exception={error} />
+            <ExceptionDetail centered exception={error} />
           </Grid>
         </form>
       </Grid>

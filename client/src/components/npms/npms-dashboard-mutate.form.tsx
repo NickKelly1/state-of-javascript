@@ -55,13 +55,13 @@ import { useDialog } from '../../hooks/use-dialog.hook';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dialog/with-dialog';
 import { change } from '../../helpers/change.helper';
-import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { JsonDialog } from '../debug-json-dialog/json-dialog';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { OrNullable } from '../../types/or-nullable.type';
 import { not } from '../../helpers/not.helper';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
-import { FormException } from '../form-error/form-exception.helper';
+import { ExceptionButton } from '../exception-button/exception-button.helper';
 import { useHasMounted } from '../../hooks/use-has-mounted.hook';
 
 // TODO: updating vs creating...
@@ -251,7 +251,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
 
   return (
     <>
-      <DebugJsonDialog title="form" data={debugData} dialog={debugDialog} />
+      <JsonDialog title="form" data={debugData} dialog={debugDialog} />
       {/* <NpmsPackageCreateForm dialog={createNpmsPackageDialog} onSuccess={handleNpmsPackageCreated} /> */}
       <DialogTitle>{`${initial?.id ? 'Edit' : 'Create'} Npms Dashbard`}</DialogTitle>
       <form onSubmit={handleSubmit}>
@@ -342,7 +342,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
             )}
             {error && (
               <Grid className="centered" item xs={12}>
-                <FormException className="centered" exception={error} />
+                <ExceptionButton className="centered" exception={error} />
               </Grid>
             )}
             {isDisabled && (

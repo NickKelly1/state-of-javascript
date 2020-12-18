@@ -14,10 +14,10 @@ export const isu = {
   },
 
   apiPartialExceptionShape: (unk: unknown): unk is IPartialApiException => {
-    if (!ist.obj(unk)) return false;
-    if (!ist.num(unk.code)) return false;
-    if (!ist.oneOf([ist.undefined, ist.str])(unk.name)) return false;
-    if (!ist.oneOf([ist.undefined, ist.str])(unk.message)) return false;
+    if (!ist.oneOf([ist.obj])(unk)) return false;
+    if (!ist.oneOf([ist.num])(unk.code)) return false;
+    if (!ist.oneOf([ist.str])(unk.name)) return false;
+    if (!ist.oneOf([ist.str])(unk.message)) return false;
     if (!ist.oneOf([ist.undefined, isu.apiExceptionData])(unk.data)) return false;
     if (!ist.oneOf([ist.undefined, ist.arrOf(ist.str)])(unk.trace)) return false;
     if (!ist.oneOf([ist.undefined, ist.str])(unk.stack)) return false;

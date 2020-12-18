@@ -18,12 +18,12 @@ import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import BugReportIcon from "@material-ui/icons/BugReportOutlined";
-import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { JsonDialog } from "../debug-json-dialog/json-dialog";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { ForgottenPasswordDialog } from "../forgotten-password-reset-dialog/forgotten-password-reset-dialog";
 import { LoginMutation } from "../../generated/graphql";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
-import { FormException } from "../form-error/form-exception.helper";
+import { ExceptionButton } from "../exception-button/exception-button.helper";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -62,7 +62,7 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
 
   return (
     <>
-      <DebugJsonDialog title="Login Form" dialog={debugDialog} data={formState} />
+      <JsonDialog title="Login Form" dialog={debugDialog} data={formState} />
       <ForgottenPasswordDialog onSuccess={forgottenPasswordDialog.doClose} initialEmail={formState.name_or_email} dialog={forgottenPasswordDialog} />
       <DialogTitle>Login</DialogTitle>
       <form onSubmit={handleSubmit}>
@@ -103,7 +103,7 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
             </Grid>
             {error && (
               <Grid className="centered col" item xs={12}>
-                <FormException exception={error} />
+                <ExceptionButton exception={error} />
               </Grid>
             )}
             {isDisabled && (

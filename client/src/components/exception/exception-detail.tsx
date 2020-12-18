@@ -1,11 +1,8 @@
-import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { Grid, makeStyles, Typography } from '@material-ui/core';
-import React, { useContext } from 'react';
+import React from 'react';
 import { ApiException } from "../../backend-api/api.exception";
-import { DebugModeContext } from '../../components-contexts/debug-mode.context';
 import { OrNullable } from '../../types/or-nullable.type';
 import { JsonPretty } from '../json-pretty/json-pretty';
-import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) => ({
@@ -15,24 +12,20 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-interface IDebugExceptionProps {
+interface IExceptionDetailProps {
   className?: OrNullable<string>
   exception?: OrNullable<ApiException>;
   centered?: boolean;
-  always?: boolean;
 }
 
-export function DebugException(props: IDebugExceptionProps) {
-  const { exception, always, className, centered, } = props;
+export function ExceptionDetail(props: IExceptionDetailProps): null | JSX.Element {
+  const { exception, className, centered, } = props;
   const classes = useStyles();
-  const debugMode = useContext(DebugModeContext);
 
   if (!exception) return null;
-  if (!(debugMode.isOn || always)) return null;
 
   const {
     name,
-    error,
     message,
     code,
     data,
@@ -41,33 +34,21 @@ export function DebugException(props: IDebugExceptionProps) {
     ...other
   } = exception;
 
-  const itemClassName = !!centered ? 'centered col' : undefined;
+  const itemClassName = centered ? 'centered col' : undefined;
 
   return (
     <>
       <Grid className={clsx(classes.root, className)} container spacing={2}>
         <Grid className={itemClassName} item xs={12}>
-          <Typography>
-            Error debug info:
-          </Typography>
+          {/* nothing... */}
         </Grid>
-        {name && (
+        {code && (
           <Grid className={itemClassName} item xs={12}>
             <Typography variant="body2">
-              Name:
+              Code:
             </Typography>
             <Typography variant="body2" color="error">
-              {name}
-            </Typography>
-          </Grid>
-        )}
-        {error && (
-          <Grid className={itemClassName} item xs={12}>
-            <Typography variant="body2">
-              Error;
-            </Typography>
-            <Typography variant="body2" color="error">
-              {error}
+              {code}
             </Typography>
           </Grid>
         )}
@@ -78,16 +59,6 @@ export function DebugException(props: IDebugExceptionProps) {
             </Typography>
             <Typography variant="body2" color="error">
               {message}
-            </Typography>
-          </Grid>
-        )}
-        {code && (
-          <Grid className={itemClassName} item xs={12}>
-            <Typography variant="body2">
-              Code:
-            </Typography>
-            <Typography variant="body2" color="error">
-              {code}
             </Typography>
           </Grid>
         )}

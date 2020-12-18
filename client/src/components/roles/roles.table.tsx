@@ -44,16 +44,20 @@ import { useMutation, useQuery } from 'react-query';
 import clsx from 'clsx';
 import { formatRelative } from 'date-fns';
 import { RoleTabs } from './role.tabs';
-import { DebugException } from '../../components/debug-exception/debug-exception';
+import { ExceptionDetail } from '../exception/exception-detail';
 import { IUseDialogReturn, useDialog } from '../../hooks/use-dialog.hook';
 import { RoleMutateFormDialog } from '../../components/roles/role-mutate.form.dialog';
 import { IIdentityFn } from '../../types/identity-fn.type';
 import { WithMemo } from '../../components-hoc/with-memo/with-memo';
 import { flsx } from '../../helpers/flsx.helper';
-import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { JsonDialog } from '../debug-json-dialog/json-dialog';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { hidex } from '../../helpers/hidden.helper';
+import { ExceptionButton } from '../exception-button/exception-button.helper';
+import { UserDetail } from '../users/user.detail';
+import { useSnackbar } from 'notistack';
+import { WithLoadable } from '../../components-hoc/with-loadable/with-loadable';
 
 const RolesTableDataQueryName = 'RolesTableDataQuery'
 const rolesTableDataQuery = gql`
@@ -160,26 +164,14 @@ export const RolesTable = WithApi<IRolesTableProps>((props) => {
 
 
   return (
-    <Grid container spacing={2}>
-      {error && (
-        <Grid item xs={12}>
-          <DebugException centered always exception={error} />
-        </Grid>
+    <WithLoadable isLoading={isLoading} error={error} data={data}>
+      {(data) => (
+        <RolesTableContent
+          refetch={refetch}
+          queryData={data}
+        />
       )}
-      {isLoading && (
-        <Grid className="centered" item xs={12}>
-          <CircularProgress />
-        </Grid>
-      )}
-      {data && (
-        <Grid item xs={12}>
-          <RolesTableContent
-            refetch={refetch}
-            queryData={data}
-          />
-        </Grid>
-      )}
-    </Grid>
+    </WithLoadable>
   );
 });
 
@@ -200,6 +192,7 @@ const RolesTableContent = WithApi<IRolesTableContentProps>((props) => {
   const { queryData, refetch, api, me, } = props;
   const classes = useRolesTableContentStyles();
   const router: NextRouter = useRouter();
+  const { enqueueSnackbar } = useSnackbar();
   const handleChangeRowsPerPage: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = useCallback((evt) => {
     const nextLimit = evt.target.value;
     router.push({ query: { ...router.query, limit: encodeURI(nextLimit), } });
@@ -240,16 +233,23 @@ const RolesTableContent = WithApi<IRolesTableContentProps>((props) => {
       });
   }, [queryData]);
 
-  const handleDeleteCb = useCallback(async (vars: RoleTableDeleteMutationVariables): Promise<RoleTableDeleteMutation> => {
-    const result = await api.gql<RoleTableDeleteMutation, RoleTableDeleteMutationVariables>(
-      roleTableDeleteMutation,
-      vars,
-    );
-    return result;
-  }, [api, me,]);
   const [doDelete, doDeleteState] = useMutation<RoleTableDeleteMutation, ApiException, RoleTableDeleteMutationVariables>(
-    handleDeleteCb,
-    { onSuccess: refetch }
+    async (vars: RoleTableDeleteMutationVariables): Promise<RoleTableDeleteMutation> => {
+      const result = await api.gql<RoleTableDeleteMutation, RoleTableDeleteMutationVariables>(
+        roleTableDeleteMutation,
+        vars,
+      );
+      return result;
+    },
+    {
+      onSuccess: (val) => {
+        enqueueSnackbar('Deleted role', { variant: 'success' });
+        refetch?.();
+      },
+      onError: () => {
+        enqueueSnackbar('Failed to delete role', { variant: 'error' });
+      },
+    }
   );
 
   const columns = useMemo<Column<IRoleRow>[]>(() => {
@@ -307,7 +307,7 @@ const RolesTableContent = WithApi<IRolesTableContentProps>((props) => {
 
   return (
     <>
-      <DebugJsonDialog title="Roles" dialog={debugDialog} data={debugData} />
+      <JsonDialog title="Roles" dialog={debugDialog} data={debugData} />
       <RoleMutateFormDialog dialog={createDialog} onSuccess={handleCreated} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -318,7 +318,7 @@ const RolesTableContent = WithApi<IRolesTableContentProps>((props) => {
               </Typography>
             </Box>
             <Box className={hidex(!me.can?.roles.create)}>
-              <Box mr={1}>
+              <Box pr={1}>
                 <IconButton color="primary" onClick={createDialog.doOpen}>
                   <AddIcon />
                 </IconButton>
@@ -331,6 +331,21 @@ const RolesTableContent = WithApi<IRolesTableContentProps>((props) => {
                 </IconButton>
               </Box>
             </WhenDebugMode>
+            {doDeleteState.error && (
+              // delete errored
+              <Box pr={1} className="centered">
+                <ExceptionButton
+                  message={`Errored deleting role: ${doDeleteState.error.message}`}
+                  exception={doDeleteState.error}
+                />
+              </Box>
+            )}
+            {doDeleteState.isLoading && (
+              // delete loading
+              <Box pr={1} className="centered">
+                <CircularProgress />
+              </Box>
+            )}
           </Box>
         </Grid>
         <Grid item xs={12}>
@@ -403,14 +418,6 @@ const RolesTableContent = WithApi<IRolesTableContentProps>((props) => {
                     />
                   )}
                 </WithMemo>
-              </Grid>
-              {doDeleteState.isLoading && (
-                <Grid className="centered" item xs={12}>
-                  <CircularProgress />
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <DebugException centered always exception={doDeleteState.error} />
               </Grid>
             </Grid>
           </Paper>

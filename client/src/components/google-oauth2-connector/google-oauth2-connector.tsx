@@ -1,9 +1,6 @@
 import {
-  Badge,
   Box,
   Button,
-  ButtonGroup,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -131,6 +128,7 @@ mutation InitialiseIntegrationForm(
 `;
 
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IGoogleOAuth2ConnectorProps {
   //
 }

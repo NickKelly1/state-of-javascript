@@ -47,7 +47,7 @@ import { Id } from '../../types/id.type';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { FittedBarChart } from '../../components-charts/fitted-bar-chart/fitted-bar-chart';
 import { FittedPieChart } from '../../components-charts/fitted-pie-chart/fitted-pie-chart';
-import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { JsonDialog } from '../debug-json-dialog/json-dialog';
 import { FittedAreaChart } from '../../components-charts/fitted-area-chart/fitted-area-chart';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { OrNull } from '../../types/or-null.type';
@@ -449,7 +449,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
         onSuccess={handleNpmsDialogCreated}
       />
       {/* debug */}
-      <DebugJsonDialog dialog={debugDialog} title={dashboard.original.name} data={dashboard} />
+      <JsonDialog dialog={debugDialog} title={dashboard.original.name} data={dashboard} />
       <Grid className="text-center" container spacing={2}>
         <Grid item xs={12}>
           <Box position="relative" className="centered" mb={1}>
@@ -496,7 +496,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
                 {hasExtraActions && (
                   <>
                     <Button
-                      startIcon={!!menuAnchor ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+                      startIcon={menuAnchor ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
                       variant="outlined"
                       color="primary"
                       onClick={handleMenuClick}

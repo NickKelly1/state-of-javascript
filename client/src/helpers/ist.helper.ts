@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { OrNullable } from '../types/or-nullable.type';
 
 // type guards...
@@ -5,7 +6,7 @@ export const ist = {
   truthy: (arg: any) => !!arg,
   falsy: (arg: any) => !arg,
   keyof: <T>(obj: T, key: unknown): key is keyof T => {
-    return ist.obj(obj) && ist.propertyKey(key) && Object.prototype.hasOwnProperty.call(obj, key);
+    return ist.obj(obj) && ist.propertyKey(key) && (Object.prototype.hasOwnProperty.call(obj, key) || key in obj);
   },
   propertyKey: (arg: unknown): arg is PropertyKey => {
     return typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'symbol';

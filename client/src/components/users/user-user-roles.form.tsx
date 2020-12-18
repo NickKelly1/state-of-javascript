@@ -4,23 +4,16 @@ import {
   CircularProgress,
   FormHelperText,
   Grid,
-  Typography,
 } from "@material-ui/core";
-import BugReportIcon from '@material-ui/icons/BugReportOutlined';
-import EditIcon from '@material-ui/icons/EditOutlined';
-import DeleteIcon from '@material-ui/icons/DeleteOutline';
 import {
   gql,
 } from "graphql-request";
 import React, {
-  FormEventHandler,
   useCallback,
-  useContext,
   useMemo,
   useState,
 } from "react";
 import {
-  TypedQueryFunction,
   useMutation,
   useQuery,
 } from "react-query";
@@ -28,50 +21,32 @@ import {
   ApiException,
 } from "../../backend-api/api.exception";
 import {
-  normaliseApiException,
-  rethrow,
-} from "../../backend-api/normalise-api-exception.helper";
-import {
-  ApiContext,
-} from "../../components-contexts/api.context";
-import {
   UserUserRolesFormUpdateMutation,
   UserUserRolesFormUpdateMutationVariables,
   UserUserRolesFormDataQuery,
   UserUserRolesFormDataQueryVariables,
 } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
-import FourZeroFourPage from "../../pages/404";
 import {
   Id,
 } from "../../types/id.type";
 import {
-  JsonPretty,
-} from "../json-pretty/json-pretty";
-import {
   IListBuilderItem,
   IListBuilderLists,
   IListBuilderOnChangeFn,
-  IListBuilderProps,
   IListBuilderConfig,
   ListBuilder,
-  IListBuilderOnChangeFnArg,
 } from "../list-builder/list-builder";
 import { NotFound } from "../not-found/not-found";
 import { useUpdate } from "../../hooks/use-update.hook";
-import { DebugException } from "../debug-exception/debug-exception";
-import { ring } from "../../helpers/ring.helper";
-import { DashColours } from "../../dashboard-theme";
+import { ExceptionDetail } from "../exception/exception-detail";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
-import { Api } from "../../backend-api/api";
-import { IMeHash } from "../../backend-api/api.me";
-import { IConstructor } from "../../types/constructor.interface";
-import { IIdentityFn } from "../../types/identity-fn.type";
 import { useSnackbar } from "notistack";
-import { flsx } from "../../helpers/flsx.helper";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { IOnErrorFn } from "../../types/on-error-fn.type";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
+import { ExceptionButton } from "../exception-button/exception-button.helper";
+import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 
 
 const UserUserRolesFormDataQueryName = (id: Id) => `UserUserRolesFormDataQuery_${id}`;
@@ -215,35 +190,20 @@ export const UserUserRolesForm = WithApi<IUserUserRolesFormProps>((props) => {
 
   const users = useMemo(() => data?.users.nodes.filter(ist.notNullable), [data?.users]);
   const roles = useMemo(() => data?.roles.nodes.filter(ist.notNullable), [data?.roles]);
+  const user = users?.[0];
+  const contentData = useMemo(() => (user && roles?.length) ? ({ user, roles }) : undefined, [user, roles]);
 
   return (
-    <Grid container spacing={2}>
-      {error && (
-        <Grid item xs={12}>
-          <DebugException centered always exception={error} />
-        </Grid>
+    <WithLoadable error={error} isLoading={isLoading} data={contentData}>
+      {(defContentData) => (
+        <UserUserRolesFormContent
+          user={defContentData.user}
+          roles={defContentData.roles}
+          onError={onError}
+          onSuccess={onSuccess}
+        />
       )}
-      {isLoading && (
-        <Grid className="centered" item xs={12}>
-          <CircularProgress />
-        </Grid>
-      )}
-      {users?.length === 0 && (
-        <Grid item xs={12}>
-          <NotFound message={`Role "${user_id}" not found`} />
-        </Grid>
-      )}
-      {roles && users?.length === 1 && (
-        <Grid item xs={12}>
-          <UserUserRolesFormContent
-            user={users[0]}
-            roles={roles}
-            onError={onError}
-            onSuccess={onSuccess}
-          />
-        </Grid>
-      )}
-    </Grid>
+    </WithLoadable>
   );
 });
 
@@ -391,12 +351,9 @@ const UserUserRolesFormContent = WithApi<IUserUserRolesFormContentProps>((props)
             </Grid>
             {error && (
               <Grid className="centered col" item xs={12} sm={12}>
-                <FormHelperText error>
-                  {error.message}
-                </FormHelperText>
+                <ExceptionButton exception={error} />
               </Grid>
             )}
-            <DebugException centered exception={error} />
           </Grid>
         </form>
       </Grid>

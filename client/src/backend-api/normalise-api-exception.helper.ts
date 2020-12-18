@@ -1,37 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GraphQLError, FormattedExecutionResult, graphql, GraphQLFormattedError } from "graphql";
+import { GraphQLError, FormattedExecutionResult, } from "graphql";
 import { ist } from "../helpers/ist.helper";
 import { isu } from "../helpers/isu.helper";
-import { OrUndefined } from "../types/or-undefined.type";
 import { ApiException } from "./api.exception";
-
-// function normaliseGraphQLApiException(caught: any) {
-//   try {
-//     const errors = (caught.response.errors as GraphQLError[]);
-//     const error = errors[0];
-//     if (error.extensions?.exception) {
-//       return ApiException({
-//         code: error.extensions.exception.code,
-//         name: error.extensions.exception.name,
-//         message: error.extensions.exception.message,
-//         stack: error.extensions.exception.stack,
-//         trace: error.extensions.exception.trace,
-//         data: error.extensions.exception.data,
-//       });
-//     }
-//     return ApiException({
-//       code: -1,
-//       name: error.name,
-//       message: error.message,
-//       stack: error.stack,
-//     });
-//   } catch (error2) {
-//     return ApiException({ code: -1, });
-//   }
-// }
-
-// export const normaliseGqlApiException = normaliseGraphQLApiException;
-
 
 const _pipe = {
   // 1
@@ -72,13 +43,40 @@ const _pipe = {
 };
 
 
-export function normaliseApiException(unk: unknown): ApiException {
-  if (isu.apiPartialExceptionShape(unk)) return ApiException(unk);
-  const _1 = _pipe._1_catchToExecutionResult(unk);
-  const _2 = _pipe._2_executionResultToGraphQLError(_1 ?? unk);
-  const _3 = _pipe._3_graphQLErrorToExtensionException(_2 ?? unk);
-  const _4 = _pipe._4_anyToApiException(_3 ?? unk);
-  return _4;
+/**
+ * Catch errors from the API
+ *
+ * Typically from the graphql endpoint/s
+ */
+export function normaliseApiException(error: unknown): ApiException {
+  //  - if the error originated within the GraphQL executor, then
+  //    the response will be a well-formed GraphQL error
+  //  - if the error came before the GraphQL executor, such as
+  //    401 or 440, then expect .response to be a json object representing
+  //    an error
+
+  // already is api exception
+  if (isu.apiPartialExceptionShape(error)) return ApiException(error);
+
+  // unknown api exception
+  if (!ist.obj(error)) return ApiException({ code: -1 });
+
+  // use either .response the plain object
+  let response = error.response;
+  if (!response) response = error;
+
+  // response is api exception
+  if (isu.apiPartialExceptionShape(response)) return ApiException(response);
+
+  // check the graphql server-formatted error
+  const formattedError = response.errors?.[0];
+  
+  // check for an extension.exception
+  const extendedError = formattedError?.extensions?.exception ?? formattedError;
+  if (isu.apiPartialExceptionShape(extendedError)) return ApiException(extendedError);
+
+  // totally unknown...
+  return ApiException({ code: -1 });
 }
 
 

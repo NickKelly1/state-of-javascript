@@ -24,7 +24,7 @@ import { change } from "../../helpers/change.helper";
 import { isEmail } from "../../helpers/is-email.helper";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
-import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { JsonDialog } from "../debug-json-dialog/json-dialog";
 
 const requestForgottenUserPasswordResetMutation = gql`
 mutation RequestForgottenUserPasswordReset(
@@ -50,12 +50,12 @@ export const ForgottenPasswordDialog = WithDialogue<IForgottenPasswordDialogProp
   const { dialog, initialEmail, onSuccess, api, me } = props;
   const { enqueueSnackbar, } = useSnackbar();
 
-  interface IFormState { email: string };
+  interface IFormState { email: string }
   const [formState, setFormState] = useState<IFormState>(() => ({ email: isEmail(initialEmail) ? initialEmail : '' }));
 
   // Send PasswordReset Email: error
   const handleError = useCallback((exception: IApiException) => {
-    enqueueSnackbar(`Failed to Reset Password: ${exception.error}`, { variant: 'error' });
+    enqueueSnackbar(`Failed to Reset Password: ${exception.message}`, { variant: 'error' });
   }, []);
 
   // Send PasswordReset Email: (maybe) success
@@ -91,7 +91,7 @@ export const ForgottenPasswordDialog = WithDialogue<IForgottenPasswordDialogProp
 
   return (
     <>
-      <DebugJsonDialog title="Password Reset Form" dialog={debugDialog} data={formState} />
+      <JsonDialog title="Password Reset Form" dialog={debugDialog} data={formState} />
       <DialogTitle>
         Reset Password
       </DialogTitle>

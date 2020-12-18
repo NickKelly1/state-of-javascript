@@ -3,12 +3,15 @@
  */
 
 import http from 'http';
-import express, { Express } from 'express';
+import express from 'express';
 import { bootApp } from '../app';
 import { $TS_FIX_ME } from '../common/types/$ts-fix-me.type';
 import { EnvService, EnvServiceSingleton } from '../common/environment/env';
 import { logger } from '../common/logger/logger';
 import { prettyQ } from '../common/helpers/pretty.helper';
+import { OrUndefined } from '../common/types/or-undefined.type';
+
+let _server: OrUndefined<http.Server>;
 
 async function bootServer(arg: { env: EnvService }) {
   const { env } = arg;
@@ -27,6 +30,7 @@ async function bootServer(arg: { env: EnvService }) {
    */
 
   const server = http.createServer(app);
+  _server = server;
 
   /**
    * Listen on provided port, on all network interfaces.
@@ -101,8 +105,11 @@ bootServer({ env: EnvServiceSingleton })
   .catch(error => {
     // failed to boot properly...
     logger.error(`Errored while booting: ${prettyQ(error)}`);
+    logger.info('Closing server...');
+    // close server
+    if (_server) { _server.close(() => logger.info('Server closed')); }
+    // exit program
     process.exit(1);
   })
-  .catch(doubleError => {
-    process.exit(1);
-  });
+  // double errored... just quit
+  .catch(() => { process.exit(1); });

@@ -8,7 +8,7 @@ import { ist } from "../../helpers/ist.helper";
 import { Box, CircularProgress, IconButton } from "@material-ui/core";
 import { nodeify } from "../../helpers/nodeify.helper";
 import { useDialog } from "../../hooks/use-dialog.hook";
-import { DebugJsonDialog } from "../../components/debug-json-dialog/debug-json-dialog";
+import { JsonDialog } from "../../components/debug-json-dialog/json-dialog";
 
 type IWithApiProvidedProps = IApiContext;
 

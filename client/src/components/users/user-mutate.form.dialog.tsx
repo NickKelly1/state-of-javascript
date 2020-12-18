@@ -34,11 +34,11 @@ import { Id } from "../../types/id.type";
 import { OrNullable } from "../../types/or-nullable.type";
 import { OrNull } from "../../types/or-null.type";
 import { useDialog } from "../../hooks/use-dialog.hook";
-import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { JsonDialog } from "../debug-json-dialog/json-dialog";
 import BugReportIcon from "@material-ui/icons/BugReportOutlined";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
-import { FormException } from "../form-error/form-exception.helper";
+import { ExceptionButton } from "../exception-button/exception-button.helper";
 
 
 const userMutateFormCreateMutation = gql`
@@ -217,7 +217,7 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
 
   return (
     <>
-      <DebugJsonDialog title="User Mutate Form" dialog={debugDialog} data={formState} />
+      <JsonDialog title="User Mutate Form" dialog={debugDialog} data={formState} />
       <DialogTitle>
         {ist.defined(user) ? 'Edit user' : 'Create user'}
       </DialogTitle>
@@ -303,7 +303,7 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
             )}
             {error && (
               <Grid className="centered col" item xs={12}>
-                <FormException exception={error} />
+                <ExceptionButton exception={error} />
               </Grid>
             )}
             {isDisabled && (

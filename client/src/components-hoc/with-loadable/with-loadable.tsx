@@ -1,7 +1,7 @@
 import { Grid, CircularProgress } from "@material-ui/core";
 import React from "react";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
-import { DebugException } from "../../components/debug-exception/debug-exception";
+import { ExceptionButton } from "../../components/exception-button/exception-button.helper";
 import { NotFound } from "../../components/not-found/not-found";
 import { INodeable, nodeify } from "../../helpers/nodeify.helper";
 import { OrNullable } from "../../types/or-nullable.type";
@@ -10,31 +10,37 @@ export interface IWithLoadableProps<T> {
   isLoading: boolean;
   error?: OrNullable<IApiException>;
   data?: OrNullable<T>;
+  renderError?: (error: IApiException) => INodeable;
+  renderLoading?: () => INodeable;
   children: (data: T) => INodeable,
 }
 
-export function WithLoadable<T>(props: IWithLoadableProps<T>) {
+export function WithLoadable<T>(props: IWithLoadableProps<T>): JSX.Element {
   const {
     children,
     isLoading,
     data,
     error,
+    renderError,
+    renderLoading,
   } = props;
 
   const _isLoading = isLoading && (
     <Grid className="centered" item xs={12}>
-      <CircularProgress />
+      {renderLoading && nodeify(renderLoading)}
+      {!renderLoading && <CircularProgress />}
     </Grid>
   );
 
   const _error = error && (
-    <Grid item xs={12}>
-      <DebugException centered always exception={error} />
+    <Grid className="centered" item xs={12}>
+      {renderError && nodeify(renderError)}
+      {!renderError && <ExceptionButton exception={error} />}
     </Grid>
   );
 
   const _data = data && (
-    <Grid item xs={12}>
+    <Grid className="centered" item xs={12}>
       {nodeify(children(data))}
     </Grid>
   );
@@ -47,9 +53,9 @@ export function WithLoadable<T>(props: IWithLoadableProps<T>) {
 
   return (
     <Grid container spacing={2}>
-      {_isLoading}
-      {_error}
       {_data}
+      {_error}
+      {_isLoading}
       {_notFound}
     </Grid>
   );

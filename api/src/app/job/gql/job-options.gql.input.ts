@@ -1,6 +1,6 @@
 import { GraphQLBoolean, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull } from "graphql";
 import Joi from "joi";
-import { AJobStatusGqlEnum, JobStatusGqlEnum, JobStatusGqlEnums, JobStatusGqlEnumType } from "../../../common/gql/job-status.gql.enum";
+import { AJobStatusGqlEnum, JobStatusGqlEnums, JobStatusGqlEnumType } from "../../../common/gql/job-status.gql.enum";
 import { OrNullable } from "../../../common/types/or-nullable.type";
 
 export interface IJobOptionsGqlInput {

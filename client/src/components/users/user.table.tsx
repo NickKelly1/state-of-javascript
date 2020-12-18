@@ -43,17 +43,18 @@ import { NextRouter, useRouter } from 'next/router';
 import { useMutation, useQuery } from 'react-query';
 import clsx from 'clsx';
 import { formatRelative } from 'date-fns';
-import { DebugException } from '../debug-exception/debug-exception';
 import { IUseDialogReturn, useDialog } from '../../hooks/use-dialog.hook';
 import { IIdentityFn } from '../../types/identity-fn.type';
 import { WithMemo } from '../../components-hoc/with-memo/with-memo';
 import { flsx } from '../../helpers/flsx.helper';
 import { UserMutateFormDialog } from './user-mutate.form.dialog';
 import { UserTabs } from './user.tabs';
-import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { JsonDialog } from '../debug-json-dialog/json-dialog';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { hidex } from '../../helpers/hidden.helper';
+import { WithLoadable } from '../../components-hoc/with-loadable/with-loadable';
+import { ExceptionButton } from '../exception-button/exception-button.helper';
 
 const UsersTableDataQueryName = 'UsersTableDataQuery'
 const usersTableDataQuery = gql`
@@ -160,26 +161,14 @@ export const UsersTable = WithApi<IUsersTableProps>((props) => {
   );
 
   return (
-    <Grid container spacing={2}>
-      {error && (
-        <Grid item xs={12}>
-          <DebugException centered always exception={error} />
-        </Grid>
+    <WithLoadable isLoading={isLoading} error={error} data={data}>
+      {(data) => (
+        <UsersTableContent
+          queryData={data}
+          refetch={refetch}
+        />
       )}
-      {isLoading && (
-        <Grid className="centered" item xs={12}>
-          <CircularProgress />
-        </Grid>
-      )}
-      {data && (
-        <Grid item xs={12}>
-          <UsersTableContent
-            queryData={data}
-            refetch={refetch}
-          />
-        </Grid>
-      )}
-    </Grid>
+    </WithLoadable>
   );
 });
 
@@ -306,7 +295,7 @@ const UsersTableContent = WithApi<IUsersTableContentProps>((props) => {
 
   return (
     <>
-      <DebugJsonDialog title="Users" dialog={debugDialog} data={debugData} />
+      <JsonDialog title="Users" dialog={debugDialog} data={debugData} />
       <UserMutateFormDialog dialog={createDialog} onSuccess={handleCreated} />
       {/* create user dialog */}
       <Grid container spacing={2}>
@@ -318,19 +307,32 @@ const UsersTableContent = WithApi<IUsersTableContentProps>((props) => {
               </Typography>
             </Box>
             <Box className={hidex(!queryData.users.can.create)}>
-              <Box mr={1}>
+              <Box pr={1}>
                 <IconButton color="primary" onClick={createDialog.doOpen}>
                   <AddIcon />
                 </IconButton>
               </Box>
             </Box>
             <WhenDebugMode>
-              <Box mr={1}>
+              <Box pr={1}>
                 <IconButton color="primary" onClick={debugDialog.doOpen}>
                   <BugReportIcon />
                 </IconButton>
               </Box>
             </WhenDebugMode>
+            {doDeleteState.isLoading && (
+              <Box pr={1} className="centered">
+                <CircularProgress />
+              </Box>
+            )}
+            {doDeleteState.error && (
+              <Box pr={1} className="centered">
+                <ExceptionButton
+                  message={`Errored deleting user: ${doDeleteState.error.message}`}
+                  exception={doDeleteState.error}
+                />
+              </Box>
+            )}
           </Box>
         </Grid>
         <Grid item xs={12}>
@@ -403,14 +405,6 @@ const UsersTableContent = WithApi<IUsersTableContentProps>((props) => {
                     />
                   )}
                 </WithMemo>
-              </Grid>
-              {doDeleteState.isLoading && (
-                <Grid className="centered" item xs={12}>
-                  <CircularProgress />
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <DebugException centered always exception={doDeleteState.error} />
               </Grid>
             </Grid>
           </Paper>

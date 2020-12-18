@@ -1,4 +1,8 @@
 import httpErrors from 'http-errors';
+import { EnvServiceSingleton } from '../environment/env';
+
+const ignoreAlways = new Set([ 'name', 'message', 'statusCode', ]);
+const ignoreProduction = new Set([ 'stack', 'trace', ]);
 
 /**
  * Transform an exception to a plain json object
@@ -7,14 +11,17 @@ export function exceptionToJson(exception: httpErrors.HttpError, touched?: Set<a
   const _touched = touched ?? new Set();
   const names = Object.getOwnPropertyNames(exception);
   const json: Record<string, any> = {};
-  json.message = exception.message;
-  json.statusCode = exception.statusCode;
   json.name = exception.name;
+  json.message = exception.message;
+  json.code = exception.statusCode;
   names.forEach(name => {
+    if (ignoreAlways.has(name)) return;
+    if (EnvServiceSingleton.is_prod() && ignoreProduction.has(name)) return;
     const property = exception[name];
     const next = $mapProperty(_touched)(property);
     if (next !== undefined) json[name] = next;
   });
+  delete json.statusCode;
   return json;
 }
 

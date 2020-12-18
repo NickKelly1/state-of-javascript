@@ -1,9 +1,7 @@
 import React, {
   useCallback,
-  useContext,
   useMemo,
-  useState } from 'react';
-import { NextPageContext } from 'next';
+} from 'react';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
@@ -39,8 +37,8 @@ import { useDialog } from '../../hooks/use-dialog.hook';
 import { NpmsDashboardSortForm } from '../../components/npms/npms-dashboard-sort.form.dialog';
 import { flsx } from '../../helpers/flsx.helper';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
-import { DebugJsonDialog } from '../../components/debug-json-dialog/debug-json-dialog';
-import { hidex, hidey } from '../../helpers/hidden.helper';
+import { JsonDialog } from '../../components/debug-json-dialog/json-dialog';
+import { hidex } from '../../helpers/hidden.helper';
 import { isValidDate } from '../../helpers/is-valid-date.helper';
 import { OrNullable } from '../../types/or-nullable.type';
 import { msToDay, msToWeek } from '../../helpers/ms-to.helper';
@@ -591,7 +589,7 @@ const JavaScriptPageContent = WithoutSsr(WithApi<IJavaScriptPageContentProps>((p
 
   return (
     <>
-      <DebugJsonDialog title="Npm Stats" dialog={debugDialog} data={queryData} />
+      <JsonDialog title="Npm Stats" dialog={debugDialog} data={queryData} />
       <NpmsDashboardMutateForm dialog={createDashboardDialog} onSuccess={handleNpmsDashboardCreated} />
       <NpmsDashboardSortForm dialog={sortDashboardsDialog} onSuccess={handleNpmsDashboardSorted} />
       <Grid container spacing={2} className="text-center">

@@ -11,7 +11,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
 import { ApiException } from '../backend-api/api.exception';
 import { WithApi } from '../components-hoc/with-api/with-api.hoc';
-import { DebugException } from '../components/debug-exception/debug-exception';
+import { ExceptionButton } from '../components/exception-button/exception-button.helper';
+import { ExceptionDetail } from '../components/exception/exception-detail';
 import { ConsumeEmailVerificationMutation } from '../generated/graphql';
 import { $DANGER } from '../types/$danger.type';
 
@@ -100,7 +101,7 @@ const VerifyEmailPage = WithApi<IVerifyEmailPageProps>((props) => {
             )}
             {error && (
               <Grid item xs={12}>
-                <DebugException centered exception={error} />
+                <ExceptionButton exception={error} />
               </Grid>
             )}
           </Grid>

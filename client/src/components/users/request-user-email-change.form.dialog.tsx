@@ -12,7 +12,7 @@ import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 import { change } from '../../helpers/change.helper';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
-import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { JsonDialog } from '../debug-json-dialog/json-dialog';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
@@ -80,7 +80,7 @@ export const RequestUserEmailChangeFormDialog = WithDialogue<IRequestUserEmailCh
 
   return (
     <>
-      <DebugJsonDialog title="Request User Email Change Form" dialog={debugDialog} data={formState} />
+      <JsonDialog title="Request User Email Change Form" dialog={debugDialog} data={formState} />
       <DialogTitle>
         Request Email change
       </DialogTitle>

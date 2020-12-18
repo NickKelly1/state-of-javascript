@@ -34,14 +34,16 @@ import {
 import { ist } from '../../helpers/ist.helper';
 import { useUpdate } from '../../hooks/use-update.hook';
 import { Id } from '../../types/id.type';
-import { DebugException } from '../debug-exception/debug-exception';
+import { ExceptionDetail } from '../exception/exception-detail';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { WithRandomId } from '../../components-hoc/with-random-id/with-random-id';
 import { IWithDialogueProps, WithDialogue } from '../../components-hoc/with-dialog/with-dialog';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
 import { useDialog } from '../../hooks/use-dialog.hook';
-import { DebugJsonDialog } from '../debug-json-dialog/debug-json-dialog';
+import { JsonDialog } from '../debug-json-dialog/json-dialog';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
+import { WithLoadable } from '../../components-hoc/with-loadable/with-loadable';
+import { ExceptionButton } from '../exception-button/exception-button.helper';
 
 const NpmsDashbortSortFormQueryName = 'NpmsDashbortSortFormQuery';
 const npmsDashboardSortFormQuery = gql`
@@ -139,23 +141,29 @@ export const NpmsDashboardSortForm = WithDialogue<INpmsDashboardSortFormProps>({
       <DialogTitle>
         Sort Dashboards
       </DialogTitle>
-      {!data && (
-        <DialogContent className="centered col">
-          <CircularProgress />
-        </DialogContent>
-      )}
-      {error && (
-        <DialogContent className="centered col">
-          <DebugException centered always exception={error} />
-        </DialogContent>
-      )}
-      {data && (
-        <NpmsDashboardSortFormContent
-          dialog={dialog}
-          onSuccess={onSuccess}
-          source={data}
-        />
-      )}
+      <WithLoadable
+        data={data}
+        isLoading={isLoading}
+        error={error}
+        renderLoading={() => (
+          <DialogContent className="centered col">
+            <CircularProgress />
+          </DialogContent>
+        )}
+        renderError={(error) => (
+          <DialogContent className="centered col">
+            <ExceptionButton exception={error} />
+          </DialogContent>
+        )}
+      >
+        {(data) => (
+          <NpmsDashboardSortFormContent
+            dialog={dialog}
+            onSuccess={onSuccess}
+            source={data}
+          />
+        )}
+      </WithLoadable>
     </>
   );
 }));
@@ -177,7 +185,7 @@ function npmsDashboardSortFormQueryToFormState(input: NpmsDashbortSortFormQuery)
     .map(node => ({ id: node.data.id, name: node.data.name }));
   const state: INpmsDashboardSortFormState = { dashboards };
   return state;
-};
+}
 
 const NpmsDashboardSortFormContent = WithApi<INpmsDashboardSortFormContentProps>((props) => {
   const { source, onSuccess, dialog, api, me } = props;
@@ -193,7 +201,7 @@ const NpmsDashboardSortFormContent = WithApi<INpmsDashboardSortFormContentProps>
   useUpdate(() => {
     const next = npmsDashboardSortFormQueryToFormState(source);
     // did the source in an important way?
-    let changed = next.dashboards.length !== formState.dashboards.length;
+    const changed = next.dashboards.length !== formState.dashboards.length;
     if (changed) { return void setIsStale(true); }
     for (let i = 0; i < next.dashboards.length; i += 1) {
       if (next.dashboards[i] !== formState.dashboards[i]) return void setIsStale(true);
@@ -241,7 +249,7 @@ const NpmsDashboardSortFormContent = WithApi<INpmsDashboardSortFormContentProps>
 
   return (
     <>
-      <DebugJsonDialog title="Source" data={source} dialog={debugDialog} />
+      <JsonDialog title="Source" data={source} dialog={debugDialog} />
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
           <Grid container spacing={2}>

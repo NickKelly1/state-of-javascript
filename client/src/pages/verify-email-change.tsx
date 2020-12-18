@@ -1,12 +1,11 @@
-import { CircularProgress, FormHelperText, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core';
+import { CircularProgress, Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import { useRouter } from 'next/router';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
 import { ApiException } from '../backend-api/api.exception';
-import { ApiContext } from '../components-contexts/api.context';
 import { WithApi } from '../components-hoc/with-api/with-api.hoc';
-import { DebugException } from '../components/debug-exception/debug-exception';
+import { ExceptionButton } from '../components/exception-button/exception-button.helper';
 import { ConsumeEmailChangeVerificationMutation, } from '../generated/graphql';
 import { $DANGER } from '../types/$danger.type';
 
@@ -17,6 +16,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IVerifyEmailChangePageProps {
   //
 }
@@ -32,7 +32,8 @@ const VerifyEmailChangePage = WithApi<IVerifyEmailChangePageProps>((props) => {
   const router = useRouter();
   const { enqueueSnackbar, } = useSnackbar();
 
-  interface IState {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface IState {}
   const [state, setState] = useState<IState>({});
 
   const handleSuccess = useCallback((result: ConsumeEmailChangeVerificationMutation) => {
@@ -93,7 +94,7 @@ const VerifyEmailChangePage = WithApi<IVerifyEmailChangePageProps>((props) => {
             )}
             {error && (
               <Grid item xs={12}>
-                <DebugException centered exception={error} />
+                <ExceptionButton exception={error} />
               </Grid>
             )}
           </Grid>

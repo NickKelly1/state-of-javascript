@@ -24,11 +24,11 @@ import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { OrPromise } from "../../types/or-promise.type";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { useDialog } from "../../hooks/use-dialog.hook";
-import { DebugJsonDialog } from "../debug-json-dialog/debug-json-dialog";
+import { JsonDialog } from "../debug-json-dialog/json-dialog";
 import { RegisterMutation } from "../../generated/graphql";
 import { useSnackbar } from "notistack";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
-import { FormException } from "../form-error/form-exception.helper";
+import { ExceptionButton } from "../exception-button/exception-button.helper";
 
 
 export interface IRegisterFormDialogProps extends IWithDialogueProps {
@@ -63,7 +63,7 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
 
   return (
     <>
-      <DebugJsonDialog title="Register Form" dialog={debugDialog} data={formState} />
+      <JsonDialog title="Register Form" dialog={debugDialog} data={formState} />
       <DialogTitle>Register</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
@@ -108,7 +108,7 @@ export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullW
             </Grid>
             {error && (
               <Grid className="centered col" item xs={12}>
-                <FormException exception={error} />
+                <ExceptionButton exception={error} />
               </Grid>
             )}
             {isDisabled && (
