@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  CircularProgress,
   FormHelperText,
   Grid,
 } from "@material-ui/core";
@@ -37,14 +36,14 @@ import {
   IListBuilderConfig,
   ListBuilder,
 } from "../list-builder/list-builder";
-import { NotFound } from "../not-found/not-found";
 import { useUpdate } from "../../hooks/use-update.hook";
-import { ExceptionDetail } from "../exception/exception-detail";
 import { FilledCircularProgress } from "../filled-circular-progress/filled-circular-progress";
 import { IOnErrorFn } from "../../types/on-error-fn.type";
 import { useSnackbar } from "notistack";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
+import { ExceptionButton } from "../exception-button/exception-button.helper";
+import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
 
 
 const RoleRolePermissionsFormDataQueryName = (id: Id) => `RoleRolePermissionsFormDataQuery_${id}`;
@@ -208,34 +207,19 @@ export const RoleRolePermissionForm = WithApi<IRoleRolePermissionFormProps>((pro
 
   const roles = useMemo(() => data?.roles.nodes.filter(ist.notNullable), [data?.roles]);
   const permissions = useMemo(() => data?.permissions.nodes.filter(ist.notNullable), [data?.permissions]);
+  const _role = roles?.[0];
+  const contentData = useMemo(() => (_role && permissions?.length) ? ({ _role, permissions }) : undefined, [_role, permissions]);
 
   return (
-    <Grid container spacing={2}>
-      {error && (
-        <Grid item xs={12}>
-          <ExceptionDetail centered always exception={error} />
-        </Grid>
+    <WithLoadable error={error} isLoading={isLoading} data={contentData}>
+      {(defContentData) => (
+        <RoleRolePermissionFormContent
+          role={defContentData._role}
+          permissions={defContentData.permissions}
+          onSuccess={onSuccess}
+        />
       )}
-      {isLoading && (
-        <Grid className="centered" item xs={12}>
-          <CircularProgress />
-        </Grid>
-      )}
-      {roles?.length === 0 && (
-        <Grid item xs={12}>
-          <NotFound message={`Role "${role_id}" not found`} />
-        </Grid>
-      )}
-      {permissions && roles?.length === 1 && (
-        <Grid item xs={12}>
-          <RoleRolePermissionFormContent
-            role={roles[0]}
-            permissions={permissions}
-            onSuccess={onSuccess}
-          />
-        </Grid>
-      )}
-    </Grid>
+    </WithLoadable>
   );
 });
 
@@ -261,7 +245,7 @@ const RoleRolePermissionFormContent = WithApi<IRoleRolePermissionFormContentProp
   }, [enqueueSnackbar, onSuccess]);
 
   const handleError: IOnErrorFn = useCallback((arg) => {
-    enqueueSnackbar(`Failed to update role "${arg.name}"`, { variant: 'error' });
+    enqueueSnackbar(`Failed to Update Role "${arg.message}"`, { variant: 'error' });
     onError?.(arg);
   }, [onError, role]);
 
@@ -286,7 +270,7 @@ const RoleRolePermissionFormContent = WithApi<IRoleRolePermissionFormContentProp
     },
   );
 
-  interface IRolePermissionListItem { id: number; name: string, category: { id: number; name: string; colour: string; } };
+  interface IRolePermissionListItem { id: number; name: string, category: { id: number; name: string; colour: string; } }
   const sortList = useCallback((a: IListBuilderItem<IRolePermissionListItem>, b: IListBuilderItem<IRolePermissionListItem>): number => {
     const byCategory = a.data.category.id - b.data.category.id;
     if (byCategory !== 0) return byCategory;
@@ -313,7 +297,7 @@ const RoleRolePermissionFormContent = WithApi<IRoleRolePermissionFormContentProp
             },
           },
         }))
-        .sort((a, b) => sortList(a, b));
+        .sort(sortList);
       const currentIds = new Set(current.map(itm => itm.data.id));
       const available: IListBuilderItem<IRolePermissionListItem>[] = permissions
         .filter(permission => !currentIds.has(permission.data.id))
@@ -399,12 +383,9 @@ const RoleRolePermissionFormContent = WithApi<IRoleRolePermissionFormContentProp
             </Grid>
             {error && (
               <Grid className="centered col" item xs={12} sm={12}>
-                <FormHelperText error>
-                  {error.message}
-                </FormHelperText>
+                <ExceptionButton exception={error} />
               </Grid>
             )}
-            <ExceptionDetail centered exception={error} />
           </Grid>
         </form>
       </Grid>

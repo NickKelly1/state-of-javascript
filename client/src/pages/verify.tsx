@@ -7,13 +7,12 @@ import {
 } from '@material-ui/core';
 import { useRouter } from 'next/router';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, } from 'react';
 import { useMutation } from 'react-query';
 import { ApiException } from '../backend-api/api.exception';
 import { WithApi } from '../components-hoc/with-api/with-api.hoc';
 import { ExceptionButton } from '../components/exception-button/exception-button.helper';
-import { ExceptionDetail } from '../components/exception/exception-detail';
-import { ConsumeEmailVerificationMutation } from '../generated/graphql';
+import { ConsumeVerificationTokenMutation } from '../generated/graphql';
 import { $DANGER } from '../types/$danger.type';
 
 
@@ -23,6 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IVerifyEmailPageProps {
   //
 }
@@ -32,30 +32,24 @@ interface IVerifyEmailPageProps {
  *
  * @param props
  */
-const VerifyEmailPage = WithApi<IVerifyEmailPageProps>((props) => {
+const VerifyPage = WithApi<IVerifyEmailPageProps>((props) => {
   const { api, me } = props;
   const classes = useStyles();
   const router = useRouter();
   const { enqueueSnackbar, } = useSnackbar();
 
-  interface IState {};
-  const [state, setState] = useState<IState>({});
-
-  const handleSuccess = useCallback((result: ConsumeEmailVerificationMutation) => {
-    enqueueSnackbar(`Your account has been verified`, { variant: 'success' });
-    router.replace('/');
-  }, []);
-  const handleError = useCallback((exception: ApiException) => {
-    enqueueSnackbar(`Errored: ${exception.message}`, { variant: 'error' });
-  }, []);
-
-  const [doSubmit, submitState] = useMutation<ConsumeEmailVerificationMutation, ApiException>(
+  const [doSubmit, submitState] = useMutation<ConsumeVerificationTokenMutation, ApiException>(
     async () => {
-      const result = await api.consumeEmailVerification({ token: router.query['token'] as $DANGER<string> });
+      const result = await api.consumeVerificationToken({ token: router.query['token'] as $DANGER<string> });
       return result;
     }, {
-      onSuccess: handleSuccess,
-      onError: handleError,
+      onError: (reason) => {
+        enqueueSnackbar(`Errored: ${reason.message}`, { variant: 'error' });
+      },
+      onSuccess: () => {
+        enqueueSnackbar(`Your account has been verified`, { variant: 'success' });
+        router.replace('/');
+      },
     }
   );
 
@@ -111,4 +105,4 @@ const VerifyEmailPage = WithApi<IVerifyEmailPageProps>((props) => {
   );
 });
 
-export default VerifyEmailPage;
+export default VerifyPage;

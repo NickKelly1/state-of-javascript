@@ -1,6 +1,5 @@
 import {
   Box,
-  Dialog,
   DialogContent,
   DialogTitle,
   DialogActions,
@@ -8,25 +7,16 @@ import {
   CircularProgress,
   FormHelperText,
   Grid,
-  InputLabel,
-  makeStyles,
-  Modal,
-  Paper,
   TextField,
-  Typography, 
   IconButton
 } from '@material-ui/core';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
-import clsx from 'clsx';
 import { gql } from 'graphql-request';
 import React, {
-  FormEventHandler,
   useCallback,
-  useContext,
   useMemo,
-  useRef,
   useState } from 'react';
 import {
   DragDropContext,
@@ -35,7 +25,6 @@ import {
   OnDragEndResponder } from 'react-beautiful-dnd';
 import { useMutation } from 'react-query';
 import { IApiException } from '../../backend-api/types/api.exception.interface';
-import { ApiContext } from '../../components-contexts/api.context';
 import {
   CreateNpmsDashboardFormMutation,
   CreateNpmsDashboardFormMutationVariables,
@@ -45,11 +34,6 @@ import {
 import { ist } from '../../helpers/ist.helper';
 import { useSequence } from '../../hooks/use-sequence.hook';
 import { Id } from '../../types/id.type';
-import { OrNull } from '../../types/or-null.type';
-import {
-  NpmsPackageCreateForm,
-  INpmsPackageCreateFormOnSuccessFn,
-} from './npms-package-create.form';
 import { WithRandomId } from '../../components-hoc/with-random-id/with-random-id';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
@@ -59,7 +43,6 @@ import { JsonDialog } from '../debug-json-dialog/json-dialog';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-mode';
 import { OrNullable } from '../../types/or-nullable.type';
-import { not } from '../../helpers/not.helper';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { ExceptionButton } from '../exception-button/exception-button.helper';
 import { useHasMounted } from '../../hooks/use-has-mounted.hook';
@@ -120,7 +103,7 @@ mutation UpdateNpmsDashboardForm(
 `;
 
 
-export interface INpmsDashboardMutateFormOnSuccessFnArg { id: Id; name: string; };
+export interface INpmsDashboardMutateFormOnSuccessFnArg { id: Id; name: string; }
 export interface INpmsDashboardMutateFormOnSuccessFn {
   (result: INpmsDashboardMutateFormOnSuccessFnArg): any;
 }
@@ -142,7 +125,7 @@ export const NpmsDashboardMutateForm = WithDialogue<INpmsDashboardMutateFormProp
   const seq = useSequence();
 
   const _initial = useMemo(() => initial, []);
-  interface IFormState { name: string; npmsPackages: IDashboardPackageOption[] };
+  interface IFormState { name: string; npmsPackages: IDashboardPackageOption[] }
   const [formState, setFormState] = useState<IFormState>(() => ({
     name: _initial?.name ?? '',
     npmsPackages: [

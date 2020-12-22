@@ -54,9 +54,9 @@ export function WithLoadable<T>(props: IWithLoadableProps<T>): JSX.Element {
   return (
     <Grid container spacing={2}>
       {_data}
+      {_notFound}
       {_error}
       {_isLoading}
-      {_notFound}
     </Grid>
   );
 }

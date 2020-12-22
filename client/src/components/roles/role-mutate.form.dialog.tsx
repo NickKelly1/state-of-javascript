@@ -68,9 +68,9 @@ mutation MutateRoleFormUpdate(
 }
 `;
 
-export interface IRoleMutateFormOnSuccessFnArg { id: Id; name: string };
+export interface IRoleMutateFormOnSuccessFnArg { id: Id; name: string }
 export interface IRoleMutateFormOnSuccessFn { (arg: IRoleMutateFormOnSuccessFnArg): any }
-export interface IRoleMutateFormRole { id: Id; name: string; };
+export interface IRoleMutateFormRole { id: Id; name: string; }
 export interface IRoleMutateFormProps extends IWithDialogueProps {
   role?: OrNullable<IRoleMutateFormRole>;
   onSuccess?: IRoleMutateFormOnSuccessFn;
@@ -79,7 +79,7 @@ export interface IRoleMutateFormProps extends IWithDialogueProps {
 export const RoleMutateFormDialog = WithDialogue<IRoleMutateFormProps>({ fullWidth: true })(WithApi((props) => {
   const { role, onSuccess, dialog, api, me } = props;
 
-  interface IFormState { name: string; };
+  interface IFormState { name: string; }
   const [formState, setFormState] = useState<IFormState>(() => ({ name: role?.name ?? '', }));
   const [doSubmit, submitState] = useMutation<IRoleMutateFormOnSuccessFnArg, ApiException>(
     async () => {

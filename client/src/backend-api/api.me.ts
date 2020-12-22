@@ -2,26 +2,20 @@ import * as cookie from 'cookie';
 import { ist } from "../helpers/ist.helper";
 import { nanoid } from 'nanoid';
 import { Id } from "../types/id.type";
-import { AuthenticationFieldsFragment, AuthorisedActionsFieldsFragment, LoginMutation } from '../generated/graphql';
+import { AuthenticationFieldsFragment, AuthorisedActionsFieldsFragment, } from '../generated/graphql';
 import objectHash from 'object-hash';
 import { OrNull } from "../types/or-null.type";
 import { IApiMeSerialized } from "../types/api-me-serialized.hinterface";
 import { IJson } from "../types/json.interface";
 import { _ls } from "../helpers/_ls.helper";
 import { $FIXME } from "../types/$fix-me.type";
-import { TsEvent } from "../helpers/ts-event";
-import { Action, configureStore, createEntityAdapter, createSelector, createSlice, PayloadAction, PayloadActionCreator,  } from "@reduxjs/toolkit";
-import { WritableDraft } from "immer/dist/internal";
-import { useMemo, useRef, useState } from "react";
-import { Mutex } from "async-mutex";
-import { useRowSelect } from "react-table";
-import { _cookie_shad_id_key, _ls_shad_id_key } from "../constants/shad-id.const";
+import { _cookie_aid_key, _ls_aid_key } from "../constants/aid.const";
 
 
-export interface IMeUserData { id: number; name: string; access_token: string; refresh_token: string; };
+export interface IMeUserData { id: number; name: string; access_token: string; refresh_token: string; }
 export interface IMeHash { id?: Id; permissions: number[]; }
 export interface IApiMe {
-  shadow_id: string,
+  aid: string,
   user: OrNull<IMeUserData>,
   permissions: number[];
   permissions_set: Set<number>;
@@ -62,13 +56,13 @@ export const apiMeFns = {
    * @param arg
    */
   createHash(arg: {
-    shadow_id: string;
+    aid: string;
     permissions: number[];
     can: OrNull<AuthorisedActionsFieldsFragment>;
   }): string {
-    const { shadow_id, permissions, can } = arg;
+    const { aid, permissions, can } = arg;
     return objectHash({
-      shadow_id,
+      aid,
       permissions,
       can,
     });
@@ -85,7 +79,7 @@ export const apiMeFns = {
     const permissions: number[] = Array.from(authentication.access_token_object.data.permissions).sort(apiMeFns.sortPermissions);
     const permissions_set: Set<number> = new Set(permissions);
     const can: AuthorisedActionsFieldsFragment = authentication.can;
-    const shadow_id: string = apiMeFns.findShadowId();
+    const aid: string = apiMeFns.findAId();
     const next: IApiMe = {
       can,
       permissions,
@@ -96,11 +90,11 @@ export const apiMeFns = {
         refresh_token: authentication.refresh_token,
       },
       permissions_set,
-      shadow_id,
+      aid,
       ss,
       isAuthenticated: true,
       hash: apiMeFns.createHash({
-        shadow_id,
+        aid: aid,
         can,
         permissions,
       }),
@@ -115,21 +109,21 @@ export const apiMeFns = {
   unauthenticate: (arg: {
     can: OrNull<AuthorisedActionsFieldsFragment>;
     ss: boolean;
-  }) => {
+  }): IApiMe => {
     const { can, ss } = arg;
     const permissions: number[] = [];
     const permissions_set: Set<number> = new Set(permissions);
-    const shadow_id: string = apiMeFns.findShadowId();
+    const aid: string = apiMeFns.findAId();
     const next: IApiMe = {
       can,
       permissions,
       user: null,
       permissions_set,
-      shadow_id,
+      aid,
       ss,
       isAuthenticated: false,
       hash: apiMeFns.createHash({
-        shadow_id,
+        aid,
         can,
         permissions,
       }),
@@ -139,20 +133,20 @@ export const apiMeFns = {
 
 
   /**
-   * Find a shadow_id
+   * Find a aid
    */
-  findShadowId(): string {
+  findAId(): string {
     // browser?
     // server
-    let shadow_id = _ls?.getItem(_ls_shad_id_key);
-    if (!shadow_id) {
-      shadow_id = nanoid();
-      _ls?.setItem(_ls_shad_id_key, shadow_id);
+    let aid = _ls?.getItem(_ls_aid_key);
+    if (!aid) {
+      aid = nanoid();
+      _ls?.setItem(_ls_aid_key, aid);
     }
     if (process.browser && typeof document !== 'undefined' && document.cookie) {
-      console.log('setting shad_id for browser..............', shadow_id);
-      // set shadow_id for frontend-server
-      document.cookie = cookie.serialize(_cookie_shad_id_key, shadow_id, {
+      console.log('setting aid for browser...', aid);
+      // set aid for frontend-server
+      document.cookie = cookie.serialize(_cookie_aid_key, aid, {
         // domain: document.domain,
         // 1 year
         maxAge: 1_000 * 60 * 60 * 24 * 356,
@@ -160,7 +154,7 @@ export const apiMeFns = {
         sameSite: 'strict',
       });
     }
-    return shadow_id;
+    return aid;
   },
 
 
@@ -190,20 +184,20 @@ export const apiMeFns = {
     const permissions_set: Set<number> = new Set(permissions);
     const can: OrNull<AuthorisedActionsFieldsFragment> = serialized.can;
     const user: OrNull<IMeUserData> = serialized.user;
-    const shadow_id: string = apiMeFns.findShadowId();
+    const aid: string = apiMeFns.findAId();
     const ss: boolean = serialized.ss;
     const me: IApiMe = {
       user: user,
       permissions,
       permissions_set,
       can,
-      shadow_id,
+      aid,
       ss,
       isAuthenticated: !!user,
       hash: apiMeFns.createHash({
         can,
         permissions,
-        shadow_id,
+        aid,
       }),
     };
     return me;
@@ -224,7 +218,7 @@ export const apiMeFns = {
   toJSON(me: IApiMe): IJson {
     return {
       user: me.user as $FIXME<unknown> as IJson,
-      shadow_id: me.shadow_id,
+      aid: me.aid,
       isAuthenticated: me.isAuthenticated,
       hash: me.hash,
       can: me.can,

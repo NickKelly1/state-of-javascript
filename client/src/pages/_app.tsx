@@ -35,6 +35,7 @@ Router.events.on('routeChangeError', (url) => {
 
 
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IMyAppProps extends AppProps {
   //
 }

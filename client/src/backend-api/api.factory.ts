@@ -1,12 +1,11 @@
 import { GraphQLClient } from "graphql-request";
-import { _header_shad_id_key, _ls_shad_id_key } from "../constants/shad-id.const";
 import { GA, GAEventCategory, PublicEnv } from "../env/public-env.helper";
 import { isoFetch } from "../iso-fetch";
 import { Api } from "./api";
 import { ApiConnector } from "./api.connector";
-import { ApiCredentials, ApiCredentialsFactory } from "./api.credentials";
-import { ApiEventsFactory, IApiEvents } from "./api.events";
-import { apiMeFns, IApiMe } from "./api.me";
+import { ApiCredentialsFactory } from "./api.credentials";
+import { ApiEventsFactory } from "./api.events";
+import { IApiMe } from "./api.me";
 
 type IApiFactoryArg = {
   me: IApiMe; publicEnv: PublicEnv;
@@ -58,13 +57,12 @@ export function ApiFactory(arg: IApiFactoryArg): Api {
     event.verify_email_change_fail.on(() => ga.event({ category: GAEventCategory.authentication, action: 'verify_email_change_fail' }))
     event.verify_email_change_start.on(() => ga.event({ category: GAEventCategory.authentication, action: 'verify_email_change_start' }))
     event.verify_email_change_success.on(() => ga.event({ category: GAEventCategory.authentication, action: 'verify_email_change_success' }))
-    event.verify_email_fail.on(() => ga.event({ category: GAEventCategory.authentication, action: 'verify_email_fail' }))
+    event.verify_fail.on(() => ga.event({ category: GAEventCategory.authentication, action: 'verify_email_fail' }))
     event.verify_email_change_start.on(() => ga.event({ category: GAEventCategory.authentication, action: 'verify_email_change_start' }))
-    event.verify_email_success.on(() => ga.event({ category: GAEventCategory.authentication, action: 'verify_email_success' }))
+    event.verify_success.on(() => ga.event({ category: GAEventCategory.authentication, action: 'verify_email_success' }))
   }
 
 
-  const shadow_id = me.shadow_id;
   const credentialedGqlClient = new GraphQLClient(`${arg.publicEnv.API_URL}/v1/gql`, {
     fetch: isoFetch,
     credentials: 'include',

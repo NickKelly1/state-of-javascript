@@ -1,24 +1,15 @@
 import {
-  Box,
   Button,
   Grid,
-  Input,
-  InputLabel,
-  makeStyles,
-  Paper,
   TextField,
-  Typography,
-  FormHelperText,
-  CircularProgress, 
   DialogTitle,
   DialogContent,
   DialogActions,
 } from "@material-ui/core";
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useMutation } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
-import { ApiContext } from "../../components-contexts/api.context";
 import { change } from "../../helpers/change.helper";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { OrPromise } from "../../types/or-promise.type";
@@ -32,13 +23,13 @@ import { ExceptionButton } from "../exception-button/exception-button.helper";
 
 
 export interface IRegisterFormDialogProps extends IWithDialogueProps {
-  onSuccess: (result: RegisterMutation) => OrPromise<any>;
+  onSuccess: (success: RegisterMutation) => OrPromise<any>;
 }
 
 export const RegisterFormDialog = WithDialogue<IRegisterFormDialogProps>({ fullWidth: true })(WithApi((props) => {
   const { dialog, onSuccess, api, me } = props;
   const { enqueueSnackbar } = useSnackbar();
-  interface IFormState { name: string; email: string; password: string; };
+  interface IFormState { name: string; email: string; password: string; }
   const [ formState, setFormState ] = useState<IFormState>({ name: '', email: '', password: '', });
   const handleSuccess = useCallback((arg: RegisterMutation) => {
     enqueueSnackbar('A verification request has been sent to your email address.', { variant: 'success' });

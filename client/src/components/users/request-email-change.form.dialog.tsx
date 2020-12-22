@@ -1,11 +1,14 @@
-import React, { useCallback, useState, useEffect, useContext, } from 'react';
+import React, { useCallback, useState, } from 'react';
 import MailOutlineIcon from '@material-ui/icons/MailOutline';
 import { Button, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField } from "@material-ui/core";
 import { IWithDialogueProps, WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import { IApiException } from '../../backend-api/types/api.exception.interface';
 import { ApiContext } from '../../components-contexts/api.context';
 import { useSnackbar } from 'notistack';
-import { RequestUserEmailChangeFormMutation, RequestUserEmailChangeFormMutationVariables, UserDetailRequestSendWelcomeEmailMutation, UserDetailRequestSendWelcomeEmailMutationVariables } from '../../generated/graphql';
+import {
+  RequestEmailChangeEmailMutation,
+  RequestEmailChangeEmailMutationVariables,
+} from '../../generated/graphql';
 import { gql } from 'graphql-request';
 import { useMutation } from 'react-query';
 import { useSubmitForm } from '../../hooks/use-submit-form.hook';
@@ -16,21 +19,8 @@ import { JsonDialog } from '../debug-json-dialog/json-dialog';
 import { useDialog } from '../../hooks/use-dialog.hook';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 
-const requestUserEmailChangeFormMutation = gql`
-mutation RequestUserEmailChangeForm(
-  $user_id:Int!
-  $email:String!
-){
-  requestEmailChange(
-    dto:{
-      user_id:$user_id
-      email:$email
-    }
-  )
-}
-`;
 
-export interface IRequestUserEmailChangeFormOnSuccessFn { (arg: RequestUserEmailChangeFormMutation): any }
+export interface IRequestUserEmailChangeFormOnSuccessFn { (arg: RequestEmailChangeEmailMutation): any }
 export interface IRequestUserEmailChangeFormDialogProps extends IWithDialogueProps {
   user_id: number;
   initialEmail: string;
@@ -41,33 +31,26 @@ export const RequestUserEmailChangeFormDialog = WithDialogue<IRequestUserEmailCh
   const { user_id, initialEmail, dialog, onSuccess, api, me, } = props;
   const { enqueueSnackbar, } = useSnackbar();
 
-  interface IFormState { email: string; };
+  interface IFormState { email: string; }
   const [formState, setFormState] = useState<IFormState>({ email: initialEmail });
 
-  const handleError = useCallback((exception: IApiException) => {
-    enqueueSnackbar(`Failed to request email change: ${exception.message}`, { variant: 'error' });
-  }, []);
-
-  const handleSuccess = useCallback((arg: RequestUserEmailChangeFormMutation) => {
-    enqueueSnackbar(`Visit your inbox to confirm email change`, { variant: 'success' });
-    onSuccess?.(arg);
-  }, [onSuccess]);
-
-  const [doSubmit, submitState] = useMutation<RequestUserEmailChangeFormMutation, IApiException>(
-    async (): Promise<RequestUserEmailChangeFormMutation> => {
-      const vars: RequestUserEmailChangeFormMutationVariables = {
+  const [doSubmit, submitState] = useMutation<RequestEmailChangeEmailMutation, IApiException>(
+    async (): Promise<RequestEmailChangeEmailMutation> => {
+      const vars: RequestEmailChangeEmailMutationVariables = {
         user_id,
         email: formState.email,
       };
-      const result = await api.gql<RequestUserEmailChangeFormMutation, RequestUserEmailChangeFormMutationVariables>(
-        requestUserEmailChangeFormMutation,
-        vars,
-      );
+      const result = await api.requestEmailChangeEmail(vars);
       return result;
     },
     {
-      onError: handleError,
-      onSuccess: handleSuccess,
+      onError: (reason) => {
+        enqueueSnackbar(`Failed to request email change: ${reason.message}`, { variant: 'error' });
+      },
+      onSuccess: (success) => {
+        enqueueSnackbar(`Visit your inbox to confirm email change`, { variant: 'success' });
+        onSuccess?.(success);
+      },
     },
   );
   const handleEmailChange = useCallback(change(setFormState, 'email'), [setFormState]);

@@ -3,7 +3,7 @@ import { fail } from 'assert';
 import { gql } from 'graphql-request';
 import { useRouter } from 'next/router';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { Api } from '../backend-api/api';
 import { ApiException } from '../backend-api/api.exception';
@@ -14,7 +14,7 @@ import { WithLoadable } from '../components-hoc/with-loadable/with-loadable';
 import {
   PasswordResetPageDataQueryVariables,
   PasswordResetPageDataQuery,
-  ConsumeResetPasswordMutation,
+  ConsumePasswordResetTokenMutation,
 } from '../generated/graphql';
 import { Attempt, attemptAsync, isFail, isSuccess } from '../helpers/attempted.helper';
 import { change } from '../helpers/change.helper';
@@ -24,7 +24,7 @@ import { useSubmitForm } from '../hooks/use-submit-form.hook';
 import { OrNull } from '../types/or-null.type';
 
 
-const PasswordResetPageDataQueryName = 'PasswordResetPageDataQuery';
+// const PasswordResetPageDataQueryName = 'PasswordResetPageDataQuery';
 const passwordResetPageDataQuery = gql`
 query PasswordResetPageData(
   $token:String!
@@ -36,7 +36,7 @@ query PasswordResetPageData(
   ){
     can{
       show
-      acceptWelcome
+      consumeWelcomeToken
     }
     data{
       id
@@ -69,7 +69,7 @@ interface IPasswordResetPageProps {
  *
  * @param props
  */
-function PasswordResetPage(props: IPasswordResetPageProps) {
+function PasswordResetPage(props: IPasswordResetPageProps): JSX.Element {
   const { token, pageData } = props;
   const classes = useStyles();
 
@@ -106,32 +106,28 @@ interface IPasswordResetPageContentsProps {
  * @param props
  */
 const WelcomePageContents = WithApi<IPasswordResetPageContentsProps>((props) => {
-  const { data, token, api, me  } = props;
+  const { data, token, api, me } = props;
   const { enqueueSnackbar } = useSnackbar();
   const router = useRouter();
 
   interface IFormState { name: string; password: string; }
   const [formState, setFormState] = useState<IFormState>({ name: data.userByToken.data.name, password: '', });
 
-  const handleError = useCallback((exception: IApiException) => {
-    enqueueSnackbar(`Error: ${exception.message}`, { variant: 'error' });
-  }, [enqueueSnackbar]);
-
-  const handleSuccess = useCallback((arg: ConsumeResetPasswordMutation) => {
-    // success & navigate home
-    const name = arg.consumeForgottenUserPasswordReset.user_name;
-    enqueueSnackbar(`Welcome, ${name ?? formState.name}. Your password has been updated.`, { variant: 'success' });
-    router.replace('/');
-  }, [enqueueSnackbar, router, formState]);
-
-  const [doSubmit, submitState] = useMutation<ConsumeResetPasswordMutation, IApiException>(
-    async (): Promise<ConsumeResetPasswordMutation> => {
-      const result = await api.consumeResetPassword({ token, password: formState.password, });
+  const [doSubmit, submitState] = useMutation<ConsumePasswordResetTokenMutation, ApiException>(
+    async (): Promise<ConsumePasswordResetTokenMutation> => {
+      const result = await api.consumePasswordResetToken({ token, password: formState.password, });
       return result;
     },
     {
-      onSuccess: handleSuccess,
-      onError: handleError,
+      onSuccess: (success) => {
+        // success & navigate home
+        const name = success.consumePasswordResetToken.user_name;
+        enqueueSnackbar(`Welcome, ${name ?? formState.name}. Your password has been updated.`, { variant: 'success' });
+        router.replace('/');
+      },
+      onError: (reason) => {
+        enqueueSnackbar(`Error: ${reason.message}`, { variant: 'error' });
+      },
     },
   );
 
@@ -228,20 +224,18 @@ async function getPageData(arg: { api: Api; vars: PasswordResetPageDataQueryVari
 /**
  * Get props from the server
  */
-export const getServerSideProps = serverSidePropsHandler(async ({ api, cms, ctx, npmsApi, publicEnv, }) => {
+export const getServerSideProps = serverSidePropsHandler(async ({ api, ctx, }) => {
   const token = ctx.query['token'];
 
   let props: IPasswordResetPageProps;
   if (ist.nullable(token)) {
     // no token - bad!
     const message = 'No token';
-    const error = 'BadRequestException';
     props = {
       token: null,
       pageData: fail(ApiException({
         code: -1,
         message,
-        error,
         name: message,
       })),
     };

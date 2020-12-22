@@ -44,7 +44,6 @@ import { useMutation, useQuery } from 'react-query';
 import clsx from 'clsx';
 import { formatRelative } from 'date-fns';
 import { RoleTabs } from './role.tabs';
-import { ExceptionDetail } from '../exception/exception-detail';
 import { IUseDialogReturn, useDialog } from '../../hooks/use-dialog.hook';
 import { RoleMutateFormDialog } from '../../components/roles/role-mutate.form.dialog';
 import { IIdentityFn } from '../../types/identity-fn.type';
@@ -55,7 +54,6 @@ import { WhenDebugMode } from '../../components-hoc/when-debug-mode/when-debug-m
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { hidex } from '../../helpers/hidden.helper';
 import { ExceptionButton } from '../exception-button/exception-button.helper';
-import { UserDetail } from '../users/user.detail';
 import { useSnackbar } from 'notistack';
 import { WithLoadable } from '../../components-hoc/with-loadable/with-loadable';
 
@@ -111,7 +109,11 @@ mutation RoleTableDelete(
     dto:{
       id:$id
 		}
-  )
+  ){
+    data{
+      id
+    }
+  }
 }
 `;
 

@@ -73,7 +73,7 @@ export function JsonCopyButton(props: IJsonCopyButtonProps) {
       window.getSelection()?.removeAllRanges();
       enqueueSnackbar(`Copied to clipboard: ${str.substring(0, 10)}...`, { variant: 'success' }, );
     } catch (error) {
-      enqueueSnackbar(`Failed to copy to clipboard: ${error.message}`, { variant: 'error' }, );
+      enqueueSnackbar(`Failed to Copy to Clipboard: ${error.message}`, { variant: 'error' }, );
     }
   }, [enqueueSnackbar, data]);
 

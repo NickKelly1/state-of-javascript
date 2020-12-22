@@ -1,7 +1,10 @@
 import { DependencyList, useEffect, useRef } from "react";
-import { IAnyFn } from "../types/any-fn.type";
 
 
+/**
+ * Runs after first mount...
+ * Therefore also runs after server-side render...
+ */
 export function useUpdate(fn: () => any, deps: DependencyList): void {
   const isFirst = useRef(true);
   useEffect(() => {

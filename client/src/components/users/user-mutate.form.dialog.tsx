@@ -109,7 +109,7 @@ mutation UserMutateFormUpdate(
 `;
 
 
-export interface IUserMutateFormOnSuccessFnArg { id: Id; name: string };
+export interface IUserMutateFormOnSuccessFnArg { id: Id; name: string }
 export interface IUserMutateFormOnSuccessFn { (arg: IUserMutateFormOnSuccessFnArg): any }
 export interface IUserMutateFormRole {
   id: Id;
@@ -122,7 +122,7 @@ export interface IUserMutateFormRole {
   canDeactivate: boolean; 
   canForceVerify: boolean;
   canForceUpdateEmail: boolean;
-};
+}
 export interface IUserMutateFormProps extends IWithDialogueProps {
   user?: OrNullable<IUserMutateFormRole>;
   onSuccess?: IUserMutateFormOnSuccessFn;
@@ -144,7 +144,7 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
     password: string;
     deactivated?: boolean;
     verified?: boolean;
-  };
+  }
   const [formState, setFormState] = useState<IFormState>((): IFormState => ({
     name: user?.name ?? '',
     email: user?.email ?? '',
@@ -224,38 +224,6 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            {canDeactivate && (
-              <Grid item xs={12}>
-                <Box display="flex" justifyContent="flex-start" alignItems="between" textAlign="center">
-                  <Typography className="centered" component="span" variant="body2">
-                    Deactivated
-                  </Typography>
-                  <Switch
-                    color="primary"
-                    checked={!!formState.deactivated}
-                    onChange={handleDeactivatedChanged}
-                    name="deactivated"
-                    inputProps={{ 'aria-label': 'auto save' }}
-                  />
-                </Box>
-              </Grid>
-            )}
-            {canForceVerify && (
-              <Grid item xs={12}>
-                <Box display="flex" justifyContent="flex-start" alignItems="between" textAlign="center">
-                  <Typography className="centered" component="span" variant="body2">
-                    Verified
-                  </Typography>
-                  <Switch
-                    color="primary"
-                    checked={!!formState.verified}
-                    onChange={handleVerifiedChanged}
-                    name="verified"
-                    inputProps={{ 'aria-label': 'auto save' }}
-                  />
-                </Box>
-              </Grid>
-            )}
             {(!user || canUpdate) && (
               <Grid item xs={12}>
                 <TextField
@@ -299,6 +267,38 @@ export const UserMutateFormDialog = WithDialogue<IUserMutateFormProps>({ fullWid
                   helperText={error?.data?.password?.join('\n')}
                   onChange={handlePasswordChange}
                 />
+              </Grid>
+            )}
+            {canDeactivate && (
+              <Grid item xs={12}>
+                <Box display="flex" justifyContent="flex-start" alignItems="between" textAlign="center">
+                  <Typography className="centered" component="span" variant="body2">
+                    Deactivated
+                  </Typography>
+                  <Switch
+                    color="primary"
+                    checked={!!formState.deactivated}
+                    onChange={handleDeactivatedChanged}
+                    name="deactivated"
+                    inputProps={{ 'aria-label': 'auto save' }}
+                  />
+                </Box>
+              </Grid>
+            )}
+            {canForceVerify && (
+              <Grid item xs={12}>
+                <Box display="flex" justifyContent="flex-start" alignItems="between" textAlign="center">
+                  <Typography className="centered" component="span" variant="body2">
+                    Verified
+                  </Typography>
+                  <Switch
+                    color="primary"
+                    checked={!!formState.verified}
+                    onChange={handleVerifiedChanged}
+                    name="verified"
+                    inputProps={{ 'aria-label': 'auto save' }}
+                  />
+                </Box>
               </Grid>
             )}
             {error && (

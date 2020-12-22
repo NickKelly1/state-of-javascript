@@ -20,7 +20,7 @@ import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-m
 import BugReportIcon from "@material-ui/icons/BugReportOutlined";
 import { JsonDialog } from "../debug-json-dialog/json-dialog";
 import { useDialog } from "../../hooks/use-dialog.hook";
-import { ForgottenPasswordDialog } from "../forgotten-password-reset-dialog/forgotten-password-reset-dialog";
+import { RequestPasswordResetDialog } from "../forgotten-password-reset-dialog/password-reset-dialog";
 import { LoginMutation } from "../../generated/graphql";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 import { ExceptionButton } from "../exception-button/exception-button.helper";
@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 interface IILoginFormContentProps extends IWithDialogueProps {
-  onSuccess: (result: LoginMutation) => any;
+  onSuccess: (success: LoginMutation) => any;
 }
 
 export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth: true })(WithApi((props) => {
@@ -63,7 +63,7 @@ export const LoginFormDialog = WithDialogue<IILoginFormContentProps>({ fullWidth
   return (
     <>
       <JsonDialog title="Login Form" dialog={debugDialog} data={formState} />
-      <ForgottenPasswordDialog onSuccess={forgottenPasswordDialog.doClose} initialEmail={formState.name_or_email} dialog={forgottenPasswordDialog} />
+      <RequestPasswordResetDialog onSuccess={forgottenPasswordDialog.doClose} initialEmail={formState.name_or_email} dialog={forgottenPasswordDialog} />
       <DialogTitle>Login</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>

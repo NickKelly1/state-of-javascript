@@ -17,15 +17,14 @@ import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import EditIcon from '@material-ui/icons/EditOutlined';
 import { gql } from "graphql-request";
 import React, { useCallback, useMemo, useState } from "react";
-import { MutationConfig, MutationResultPair, useMutation, useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { ApiException } from "../../backend-api/api.exception";
 import {
+  RequestPasswordResetEmailMutation,
+  RequestVerificationEmailMutation,
+  RequestVerificationEmailMutationVariables,
   UserDetailDataQuery,
   UserDetailDataQueryVariables,
-  UserDetailRequestForgottenUserPasswordResetMutation,
-  UserDetailRequestForgottenUserPasswordResetMutationVariables,
-  UserDetailRequestSendWelcomeEmailMutation,
-  UserDetailRequestSendWelcomeEmailMutationVariables,
 } from "../../generated/graphql";
 import { ist } from "../../helpers/ist.helper";
 import { Id } from "../../types/id.type";
@@ -39,9 +38,11 @@ import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { useSnackbar } from "notistack";
 import { LoadingDialog } from "../loading-dialog/loading-dialog";
 import { WithLoadable } from "../../components-hoc/with-loadable/with-loadable";
-import { RequestUserEmailChangeFormDialog } from "./request-user-email-change.form.dialog";
+import { RequestUserEmailChangeFormDialog } from "./request-email-change.form.dialog";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 import { useThemeColours } from "../../hooks/use-theme-colours.hook";
+import { OrNull } from "../../types/or-null.type";
+import { ExceptionButton } from "../exception-button/exception-button.helper";
 
 const UserDetailDataQueryName = (id: Id) => `UserDetailDataQuery_${id}`;
 const userDetailDataQuery = gql`
@@ -82,11 +83,11 @@ query UserDetailData(
         forceVerify
         forceUpdateEmail
         updatePassword
-        requestWelcome
-        acceptWelcome
+        requestWelcomeEmail
+        consumeWelcomeToken
         requestVerificationEmail
-        requestEmailChange
-        requestForgottenPasswordReset
+        requestEmailChangeEmail
+        requestPasswordResetEmail
       }
       data{
         id
@@ -102,31 +103,6 @@ query UserDetailData(
   }
 }
 `;
-
-const userDetailRequestSendWelcomeEmailMutation = gql`
-mutation UserDetailRequestSendWelcomeEmail(
-  $id:Int!
-){
-  requestUserWelcome(
-    dto:{
-      user_id:$id
-    }
-  )
-}
-`;
-
-const userDetailRequestForgottenUserPasswordResetMutation = gql`
-mutation UserDetailRequestForgottenUserPasswordReset(
-  $email:String!
-){
-  requestForgottenUserPasswordReset(
-    dto:{
-      email:$email
-    }
-  )
-}
-`;
-
 
 interface IUserDetailProps {
   user_id: Id;
@@ -192,28 +168,13 @@ const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
     [user],
   );
 
-  // welcome email
-  const resetPasswordDialog = useDialog();
+  // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+  let isLoading: boolean = false;
+  let error: OrNull<ApiException> = null;
+  const loadingDialog = useDialog();
 
-  // Send PasswordReset Email: starting...
-  const handleSendPasswordResetSending = useCallback(() => {
-    resetPasswordDialog.doOpen();
-  }, [resetPasswordDialog]);
-
-  // Send PasswordReset Email: error
-  const handleResetPasswordError = useCallback((exception: IApiException) => {
-    resetPasswordDialog.doClose();
-    enqueueSnackbar(`Failed to Reset Password: ${exception.message}`, { variant: 'error' });
-  }, [resetPasswordDialog]);
-
-  // Send PasswordReset Email: (maybe) success
-  const handleResetPasswordSuccess = useCallback((arg: UserDetailRequestForgottenUserPasswordResetMutation) => {
-    resetPasswordDialog.doClose();
-    enqueueSnackbar(`Password Reset email sent to "${user.data.email}"`, { variant: 'success' });
-  }, [resetPasswordDialog]);
-
-  const [resetPassword, resetPasswordState] = useMutation<UserDetailRequestForgottenUserPasswordResetMutation, IApiException>(
-    async (): Promise<UserDetailRequestForgottenUserPasswordResetMutation> => {
+  const [doRequestPasswordResetEmail, requestPasswordResetEmailState] = useMutation<RequestPasswordResetEmailMutation, ApiException>(
+    async (): Promise<RequestPasswordResetEmailMutation> => {
       if (!user.data.email) {
         throw ApiException({
           code: -1,
@@ -221,72 +182,63 @@ const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
           name: 'Client Error',
         });
       }
-      const vars: UserDetailRequestForgottenUserPasswordResetMutationVariables = {
-        email: user.data.email,
-      };
-      const result = await api.gql<UserDetailRequestForgottenUserPasswordResetMutation, UserDetailRequestForgottenUserPasswordResetMutationVariables>(
-        userDetailRequestForgottenUserPasswordResetMutation,
-        vars,
-      );
+      const result = await api.requestPasswordResetEmail({ email: user.data.email });
       return result;
     },
     {
-      onMutate: handleSendPasswordResetSending,
-      onError: handleResetPasswordError,
-      onSuccess: handleResetPasswordSuccess,
+      onMutate: loadingDialog.doOpen,
+      onError: (reason) => {
+        loadingDialog.doClose();
+        enqueueSnackbar(`Failed to Reset Password: ${reason.message}`, { variant: 'error' });
+      },
+      onSuccess: () => {
+        loadingDialog.doClose();
+        enqueueSnackbar(`Password Reset email sent to "${user.data.email}"`, { variant: 'success' });
+      },
     },
   );
-  const handleResetPasswordClicked = useCallback(() => resetPassword(), [resetPassword]);
+  isLoading = isLoading || requestPasswordResetEmailState.isLoading;
+  error = error || requestPasswordResetEmailState.error;
+  const handleRequestPasswordResetClicked = useCallback(() => doRequestPasswordResetEmail(), [doRequestPasswordResetEmail]);
 
   // ------------
-  // welcome email
+  // request welcome email
   // ------------
 
-  const welcomeEmailSendingDialog = useDialog();
-
-  // Send Welcome Email: starting...
-  const handleSendWelcomeEmailSending = useCallback(() => {
-    welcomeEmailSendingDialog.doOpen();
-  }, [welcomeEmailSendingDialog]);
-
-  // Send Welcome Email: error
-  const handleSendWelcomeEmailError = useCallback((exception: IApiException) => {
-    welcomeEmailSendingDialog.doClose();
-    enqueueSnackbar(`Failed to Send Welcome Email: ${exception.message}`, { variant: 'error' });
-  }, [welcomeEmailSendingDialog]);
-
-  // Send Welcome Email: (maybe) success
-  const handleSendWelcomeEmailSuccess = useCallback((arg: UserDetailRequestSendWelcomeEmailMutation) => {
-    welcomeEmailSendingDialog.doClose();
-    if (arg.requestUserWelcome) { enqueueSnackbar(`Welcome email sent to "${user.data.email}"`, { variant: 'success' }); }
-    else { enqueueSnackbar('Failed to send welcome email. Something went wrong', { variant: 'warning' }); }
-  }, [welcomeEmailSendingDialog]);
-
-  const [sendWelcomeEmail, sendWelcomeEmailState] = useMutation<UserDetailRequestSendWelcomeEmailMutation, IApiException>(
-    async (): Promise<UserDetailRequestSendWelcomeEmailMutation> => {
-      const vars: UserDetailRequestSendWelcomeEmailMutationVariables = {
+  const [doRequestWelcomeEmail, requestWelcomeEmailState] = useMutation<RequestVerificationEmailMutation, IApiException>(
+    async (): Promise<RequestVerificationEmailMutation> => {
+      const vars: RequestVerificationEmailMutationVariables = {
         id: Number(user.data.id),
       };
-      const result = await api.gql<UserDetailRequestSendWelcomeEmailMutation, UserDetailRequestSendWelcomeEmailMutationVariables>(
-        userDetailRequestSendWelcomeEmailMutation,
-        vars,
-      );
+      const result = await api.requestVerificationEmail(vars);
       return result;
     },
     {
-      onMutate: handleSendWelcomeEmailSending,
-      onError: handleSendWelcomeEmailError,
-      onSuccess: handleSendWelcomeEmailSuccess,
+      onMutate: loadingDialog.doOpen,
+      onError: (reason) => {
+        loadingDialog.doClose();
+        enqueueSnackbar(`Failed to Send Welcome Email: ${reason.message}`, { variant: 'error' });
+      },
+      onSuccess: (success: RequestVerificationEmailMutation) => {
+        loadingDialog.doClose();
+        if (success.requestVerificationEmail) {
+          enqueueSnackbar(`Welcome email sent to "${user.data.email}"`, { variant: 'success' });
+        }
+        else {
+          enqueueSnackbar('Failed to send welcome email. Something went wrong', { variant: 'warning' });
+        }
+      },
     },
   );
-  const handleSendWelcomeEmailClicked = useCallback(() => sendWelcomeEmail(), [sendWelcomeEmail]);
+  isLoading = isLoading || requestWelcomeEmailState.isLoading;
+  error = error || requestWelcomeEmailState.error;
+  const handleRequestWelcomeEmailClicked = useCallback(() => doRequestWelcomeEmail(), [doRequestWelcomeEmail]);
 
   // ------------
   // email change
   // ------------
 
-  const requestEmailChangeDialog = useDialog();
-
+  const requestEmailChangeEmailDialog = useDialog();
   const debugDialog = useDialog();
 
   /**
@@ -297,18 +249,19 @@ const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
   const handleMenuClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => { setMenuAnchor(evt.currentTarget); }, []);
   const handleMenuClose = useCallback(() => { setMenuAnchor(null); }, []);
 
+  const isDisabled = isLoading;
+
   return (
     <>
       <RequestUserEmailChangeFormDialog
-        dialog={requestEmailChangeDialog}
+        dialog={requestEmailChangeEmailDialog}
         initialEmail={user.data.email ?? ''}
-        onSuccess={requestEmailChangeDialog.doClose}
+        onSuccess={requestEmailChangeEmailDialog.doClose}
         user_id={user.data.id}
       />
       <UserMutateFormDialog dialog={editDialog} user={userFormData} onSuccess={handleRoleUpdated} />
       <JsonDialog title={userFormData.name} data={user} dialog={debugDialog} />
-      <LoadingDialog title="Sending Welcome Email..." dialog={welcomeEmailSendingDialog} />
-      <LoadingDialog title="Sending Password Reset Email..." dialog={resetPasswordDialog} />
+      <LoadingDialog title="Loading..." dialog={loadingDialog} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="flex-start" alignItems="center">
@@ -324,6 +277,11 @@ const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
                 </IconButton>
               </Box>
             </WhenDebugMode>
+            {error && (
+              <Box ml={2}>
+                <ExceptionButton exception={error}/>
+              </Box>
+            )}
             {/* TODO: clean up user updating... */}
             {(user.can.update || user.can.deactivate || user.can.forceUpdateEmail || user.can.forceVerify) && (
               <Box ml={1}>
@@ -338,6 +296,12 @@ const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
                 variant="outlined"
                 color="primary"
                 onClick={handleMenuClick}
+                disabled={!(
+                  user.can.requestWelcomeEmail
+                  || user.can.requestPasswordResetEmail
+                  || user.can.requestVerificationEmail
+                  || user.can.requestEmailChangeEmail
+                )}
               >
                 More Actions
               </Button>
@@ -349,29 +313,29 @@ const UserDetailContent = WithApi<IRoleDetailContentProps>((props) => {
               keepMounted
             >
               <>
-                {user.can.requestWelcome && (
-                  <MenuItem>
+                {user.can.requestWelcomeEmail && (
+                  <MenuItem disabled={isDisabled} onClick={handleRequestWelcomeEmailClicked}>
                     <ListItemIcon className={themeColours.primary}><MailOutlineIcon /></ListItemIcon>
                     {/* also verifies account... */}
                     <ListItemText className={themeColours.primary}>Send Welcome Email</ListItemText>
                   </MenuItem>
                 )}
-                {user.can.requestForgottenPasswordReset && ist.defined(user.data.email) && (
-                  <MenuItem>
+                {user.can.requestPasswordResetEmail && ist.defined(user.data.email) && (
+                  <MenuItem disabled={isDisabled} onClick={handleRequestPasswordResetClicked}>
                     <ListItemIcon className={themeColours.warning}><LockOpenIcon /></ListItemIcon>
                     <ListItemText className={themeColours.warning}>Send Reset Password Email</ListItemText>
                   </MenuItem>
                 )}
                 {user.can.requestVerificationEmail && (
-                  <MenuItem>
+                  <MenuItem disabled={isDisabled} onClick={undefined}>
                     <ListItemIcon className={themeColours.success}><MailOutlineIcon /></ListItemIcon>
                     <ListItemText className={themeColours.success}>Send Verification Email</ListItemText>
                   </MenuItem>
                 )}
-                {user.can.requestEmailChange && (
-                  <MenuItem>
+                {user.can.requestEmailChangeEmail && (
+                  <MenuItem disabled={isDisabled} onClick={requestEmailChangeEmailDialog.doToggle}>
                     <ListItemIcon className={themeColours.error}><MailOutlineIcon /></ListItemIcon>
-                    <ListItemText className={themeColours.error}>Request Email Change</ListItemText>
+                    <ListItemText className={themeColours.error}>Request Email Change Email</ListItemText>
                   </MenuItem>
                 )}
               </>

@@ -202,6 +202,7 @@ query JsPageDashboard(
 `
 
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IJavaScriptPageProps {
   // dashboards: Attempt<JsPageDashboardQuery, ApiException>;
 }
@@ -236,6 +237,9 @@ const JavaScriptPage = WithApi<IJavaScriptPageProps>((props) => {
       const result = await runPageDataQuery(api, defaultQueryVars);
       return result;
     },
+    {
+      keepPreviousData: true,
+    }
   );
 
   return (

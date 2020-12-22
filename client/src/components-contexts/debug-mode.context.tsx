@@ -58,8 +58,8 @@ export function DebugModeProvider(props: IDebugModeProviderProps) {
   }, [_ls, isOn]);
 
   useUpdate(() => {
-    if (isOn) { enqueueSnackbar('Debug mode enabled'); }
-    else { enqueueSnackbar('Debug mode disabled'); }
+    if (isOn) { enqueueSnackbar('Debug mode enabled', { variant: 'info', }); }
+    else { enqueueSnackbar('Debug mode disabled', { variant: 'warning', }); }
   }, [isOn])
 
   return (

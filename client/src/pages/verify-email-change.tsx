@@ -1,12 +1,12 @@
 import { CircularProgress, Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import { useRouter } from 'next/router';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, } from 'react';
 import { useMutation } from 'react-query';
 import { ApiException } from '../backend-api/api.exception';
 import { WithApi } from '../components-hoc/with-api/with-api.hoc';
 import { ExceptionButton } from '../components/exception-button/exception-button.helper';
-import { ConsumeEmailChangeVerificationMutation, } from '../generated/graphql';
+import { ConsumeEmailChangeTokenMutation } from '../generated/graphql';
 import { $DANGER } from '../types/$danger.type';
 
 
@@ -32,25 +32,18 @@ const VerifyEmailChangePage = WithApi<IVerifyEmailChangePageProps>((props) => {
   const router = useRouter();
   const { enqueueSnackbar, } = useSnackbar();
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface IState {}
-  const [state, setState] = useState<IState>({});
-
-  const handleSuccess = useCallback((result: ConsumeEmailChangeVerificationMutation) => {
-    enqueueSnackbar(`Your email has been updated`, { variant: 'success' });
-    router.replace('/');
-  }, []);
-  const handleError = useCallback((exception: ApiException) => {
-    enqueueSnackbar(`Errored: ${exception.message}`, { variant: 'error' });
-  }, []);
-
-  const [doSubmit, submitState] = useMutation<ConsumeEmailChangeVerificationMutation, ApiException>(
+  const [doSubmit, submitState] = useMutation<ConsumeEmailChangeTokenMutation, ApiException>(
     async () => {
-      const result = await api.consumeEmailChangeVerification({ token: router.query['token'] as $DANGER<string> });
+      const result = await api.consumeEmailChangeToken({ token: router.query['token'] as $DANGER<string> });
       return result;
     }, {
-      onSuccess: handleSuccess,
-      onError: handleError,
+      onSuccess: () => {
+        enqueueSnackbar(`Your email has been updated`, { variant: 'success' });
+        router.replace('/');
+      },
+      onError: (reaso) => {
+        enqueueSnackbar(`Errored: ${reaso.message}`, { variant: 'error' });
+      },
     }
   );
 

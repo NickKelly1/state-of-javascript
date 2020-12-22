@@ -1,12 +1,6 @@
 import {
-  AppBar,
   Box,
   Button,
-  colors,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   Link as MUILink,
   List,
@@ -14,10 +8,6 @@ import {
   ListItemIcon,
   ListItemText,
   makeStyles,
-  Menu,
-  MenuItem,
-  Paper,
-  Toolbar,
   Typography
 } from "@material-ui/core";
 import WarningIcon from '@material-ui/icons/WarningOutlined';
@@ -31,8 +21,7 @@ import { useRouter } from 'next/router';
 import NextLink from 'next/link';
 import clsx from 'clsx';
 import GitHubIcon from '@material-ui/icons/GitHub';
-import React, { useCallback, useContext, useMemo, useState } from "react";
-import { ApiContext } from "../../components-contexts/api.context";
+import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation } from "react-query";
 import { DebugModeContext } from "../../components-contexts/debug-mode.context";
 import { LoginFormDialog } from "../login/login.form.dialog";
@@ -40,11 +29,11 @@ import { RegisterFormDialog } from "../register/register.form.dialog";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { useMenu } from "../../hooks/use-menu.hook";
 import { flsx } from "../../helpers/flsx.helper";
-import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
-import { JsonDialog } from "../debug-json-dialog/json-dialog";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 import { apiMeFns } from "../../backend-api/api.me";
+import { JsonDialog } from "../debug-json-dialog/json-dialog";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ITopBarProps {
   //
 }

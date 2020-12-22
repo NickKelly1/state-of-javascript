@@ -8,7 +8,6 @@ import {
   TextField,
 } from "@material-ui/core";
 import { BugReport, MailOutline } from "@material-ui/icons";
-import { gql } from "graphql-request";
 import { useSnackbar } from "notistack";
 import React, { useCallback, useState } from "react";
 import { useMutation } from "react-query";
@@ -16,68 +15,43 @@ import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { WhenDebugMode } from "../../components-hoc/when-debug-mode/when-debug-mode";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 import { WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
-import {
-  RequestForgottenUserPasswordResetMutation,
-  RequestForgottenUserPasswordResetMutationVariables,
-} from "../../generated/graphql";
+import { RequestPasswordResetEmailMutation, RequestPasswordResetEmailMutationVariables } from "../../generated/graphql";
 import { change } from "../../helpers/change.helper";
 import { isEmail } from "../../helpers/is-email.helper";
 import { useDialog } from "../../hooks/use-dialog.hook";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
 import { JsonDialog } from "../debug-json-dialog/json-dialog";
 
-const requestForgottenUserPasswordResetMutation = gql`
-mutation RequestForgottenUserPasswordReset(
-  $email:String!
-){
-  requestForgottenUserPasswordReset(
-    dto:{
-      email:$email
-    }
-  )
-}
-`;
-
-
-export type IForgottenPasswordDialogOnSuccessFnArg = RequestForgottenUserPasswordResetMutation;
-export interface IForgottenPasswordDialogOnSuccessFn { (arg: IForgottenPasswordDialogOnSuccessFnArg):  any };
-export interface IForgottenPasswordDialogProps {
+export type IRequestPasswordResetDialogOnSuccessFnArg = RequestPasswordResetEmailMutation;
+export interface IRequestPasswordResetDialogOnSuccessFn { (arg: IRequestPasswordResetDialogOnSuccessFnArg):  any }
+export interface IRequestPasswordResetDialogProps {
   initialEmail: string;
-  onSuccess?: IForgottenPasswordDialogOnSuccessFn;
+  onSuccess?: IRequestPasswordResetDialogOnSuccessFn;
 }
 
-export const ForgottenPasswordDialog = WithDialogue<IForgottenPasswordDialogProps>({ fullWidth: true })(WithApi((props) => {
-  const { dialog, initialEmail, onSuccess, api, me } = props;
+export const RequestPasswordResetDialog = WithDialogue<IRequestPasswordResetDialogProps>({ fullWidth: true })(WithApi((props) => {
+  const { dialog, initialEmail, onSuccess, api, } = props;
   const { enqueueSnackbar, } = useSnackbar();
 
   interface IFormState { email: string }
   const [formState, setFormState] = useState<IFormState>(() => ({ email: isEmail(initialEmail) ? initialEmail : '' }));
 
-  // Send PasswordReset Email: error
-  const handleError = useCallback((exception: IApiException) => {
-    enqueueSnackbar(`Failed to Reset Password: ${exception.message}`, { variant: 'error' });
-  }, []);
-
-  // Send PasswordReset Email: (maybe) success
-  const handleResetPasswordSuccess = useCallback((arg: RequestForgottenUserPasswordResetMutation) => {
-    enqueueSnackbar(`A Password Reset has been sent to your email address`, { variant: 'success' });
-    onSuccess?.(arg);
-  }, [onSuccess, formState]);
-
-  const [doSubmit, submitState] = useMutation<RequestForgottenUserPasswordResetMutation, IApiException>(
-    async (): Promise<RequestForgottenUserPasswordResetMutation> => {
-      const vars: RequestForgottenUserPasswordResetMutationVariables = {
+  const [doSubmit, submitState] = useMutation<RequestPasswordResetEmailMutation, IApiException>(
+    async (): Promise<RequestPasswordResetEmailMutation> => {
+      const vars: RequestPasswordResetEmailMutationVariables = {
         email: formState.email,
       };
-      const result = await api.gql<RequestForgottenUserPasswordResetMutation, RequestForgottenUserPasswordResetMutationVariables>(
-        requestForgottenUserPasswordResetMutation,
-        vars,
-      )
+      const result = await api.requestPasswordResetEmail(vars);
       return result;
     },
     {
-      onError: handleError,
-      onSuccess: handleResetPasswordSuccess,
+      onError: (reason) => {
+        enqueueSnackbar(`Failed to Reset Password: ${reason.message}`, { variant: 'error' });
+      },
+      onSuccess: (success) => {
+        enqueueSnackbar(`A Password Reset has been sent to your email address`, { variant: 'success' });
+        onSuccess?.(success);
+      },
     },
   );
 

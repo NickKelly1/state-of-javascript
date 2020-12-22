@@ -253,7 +253,7 @@ const UserUserRolesFormContent = WithApi<IUserUserRolesFormContentProps>((props)
     }
   );
 
-  interface IUserRoleListItem { id: Id; name: string };
+  interface IUserRoleListItem { id: Id; name: string }
   const incomingPermissionsList = useMemo<IListBuilderLists<IUserRoleListItem>>(
     (): IListBuilderLists<IUserRoleListItem> => {
       const current: IListBuilderItem<IUserRoleListItem>[] = user

@@ -239,7 +239,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handleSubmitSuccess = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Submitted ${dashboard.original.name}`, { variant: 'success' });
+      enqueueSnackbar(`Submitted "${dashboard.original.name}"`, { variant: 'success' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -247,7 +247,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handleSubmitError = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Failed to Submit ${dashboard.original.name}`, { variant: 'error' });
+      enqueueSnackbar(`Failed to Submit Dashboard "${dashboard.original.name}"`, { variant: 'error' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -273,7 +273,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handleRejectSuccess = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Rejected ${dashboard.original.name}`, { variant: 'success' });
+      enqueueSnackbar(`Rejected "${dashboard.original.name}"`, { variant: 'success' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -281,7 +281,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handleRejectError = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Failed to Reject ${dashboard.original.name}`, { variant: 'error' });
+      enqueueSnackbar(`Failed to Reject Dashboard "${dashboard.original.name}"`, { variant: 'error' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -307,7 +307,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handlePublishSuccess = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Published ${dashboard.original.name}`, { variant: 'success' });
+      enqueueSnackbar(`Published "${dashboard.original.name}"`, { variant: 'success' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -315,7 +315,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handlePublishError = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Failed to Publish ${dashboard.original.name}`, { variant: 'error' });
+      enqueueSnackbar(`Failed to Publish "${dashboard.original.name}"`, { variant: 'error' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -341,7 +341,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handleUnpublishSuccess = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Unpublished ${dashboard.original.name}`, { variant: 'success' });
+      enqueueSnackbar(`Unpublished "${dashboard.original.name}"`, { variant: 'success' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -349,7 +349,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handleUnpublishError = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Failed to unpublish ${dashboard.original.name}`, { variant: 'error' });
+      enqueueSnackbar(`Failed to unpublish "${dashboard.original.name}"`, { variant: 'error' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -375,7 +375,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handleSoftDeleteSuccess = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Deleted ${dashboard.original.name}`, { variant: 'success' });
+      enqueueSnackbar(`Deleted "${dashboard.original.name}"`, { variant: 'success' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],
@@ -383,7 +383,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
   const handleSoftDeleteError = useCallback(
     () => {
       handleMenuClose();
-      enqueueSnackbar(`Failed to delete ${dashboard.original.name}`, { variant: 'error' });
+      enqueueSnackbar(`Failed to Delete Dashboard "${dashboard.original.name}"`, { variant: 'error' });
       onChange?.();
     },
     [handleMenuClose, enqueueSnackbar, onChange],

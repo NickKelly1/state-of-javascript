@@ -17,9 +17,9 @@ export interface IApiEvents {
   register_success: TsEvent<IApiMe>;
   register_fail: TsEvent<undefined>;
 
-  verify_email_start: TsEvent<undefined>;
-  verify_email_success: TsEvent<IApiMe>;
-  verify_email_fail: TsEvent<undefined>;
+  verify_start: TsEvent<undefined>;
+  verify_success: TsEvent<IApiMe>;
+  verify_fail: TsEvent<undefined>;
 
   reset_password_start: TsEvent<undefined>;
   reset_password_success: TsEvent<IApiMe>;
@@ -58,9 +58,9 @@ export const ApiEventsFactory = (): IApiEvents => ({
   register_success: new TsEvent<IApiMe>(),
   register_fail: new TsEvent<undefined>(),
 
-  verify_email_start: new TsEvent<undefined>(),
-  verify_email_success: new TsEvent<IApiMe>(),
-  verify_email_fail: new TsEvent<undefined>(),
+  verify_start: new TsEvent<undefined>(),
+  verify_success: new TsEvent<IApiMe>(),
+  verify_fail: new TsEvent<undefined>(),
 
   reset_password_start: new TsEvent<undefined>(),
   reset_password_success: new TsEvent<IApiMe>(),

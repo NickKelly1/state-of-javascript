@@ -65,9 +65,6 @@ export class PublicEnv {
   public readonly GA_ID = string('GA_ID');
   public readonly CMS_URL = string('CMS_URL');
   public readonly API_URL = string('API_URL');
-  public readonly API_AUTH_REFRESH_ATTEMPT_COUNT = integer('API_AUTH_REFRESH_ATTEMPT_COUNT');
-  public readonly API_AUTH_REFRESH_ATTEMPT_PAUSE_MS = integer('API_AUTH_REFRESH_ATTEMPT_PAUSE_MS');
-  public readonly API_AUTH_REFRESH_LEEWAY_MS = integer('API_AUTH_REFRESH_LEEWAY_MS');
   toJSON(): PublicEnv {
     return { ...this };
   }
@@ -77,7 +74,7 @@ export const PublicEnvSingleton = PublicEnv.create();
 
 // Google analytics
 const ga_id = PublicEnvSingleton.GA_ID;
-export let GA: OrUndefined<typeof ReactGA>;;
+export let GA: OrUndefined<typeof ReactGA>;
 if (ga_id) {
   GA = ReactGA;
   GA.initialize(ga_id);
@@ -86,4 +83,4 @@ if (ga_id) {
 export enum GAEventCategory {
   authentication = 'authentication',
   routing = 'routing',
-};
+}

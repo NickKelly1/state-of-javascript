@@ -15,7 +15,10 @@ export type Scalars = {
 
 export type RootQueryType = {
   __typename?: 'RootQueryType';
+  blogPosts: BlogPostCollectionNode;
+  blogPostStatuses: BlogPostStatusCollectionNode;
   newsArticles: NewsArticleCollectionNode;
+  newsArticleStatuses: NewsArticleStatusCollectionNode;
   permissions: PermissionCollectionNode;
   systemPermissions: SystemPermissionGqlNode;
   roles: RoleCollectionNode;
@@ -35,8 +38,23 @@ export type RootQueryType = {
 };
 
 
+export type RootQueryTypeBlogPostsArgs = {
+  query?: Maybe<BlogPostQuery>;
+};
+
+
+export type RootQueryTypeBlogPostStatusesArgs = {
+  query?: Maybe<BlogPostStatusQuery>;
+};
+
+
 export type RootQueryTypeNewsArticlesArgs = {
   query?: Maybe<NewsArticleQuery>;
+};
+
+
+export type RootQueryTypeNewsArticleStatusesArgs = {
+  query?: Maybe<NewsArticleStatusQuery>;
 };
 
 
@@ -99,23 +117,23 @@ export type RootQueryTypePermissionCategoryiesArgs = {
   query?: Maybe<PermissionCategoryQuery>;
 };
 
-export type NewsArticleCollectionNode = {
-  __typename?: 'NewsArticleCollectionNode';
-  nodes: Array<Maybe<NewsArticleNode>>;
-  can: NewsArticleCollectionActions;
+export type BlogPostCollectionNode = {
+  __typename?: 'BlogPostCollectionNode';
+  nodes: Array<Maybe<BlogPostNode>>;
+  can: BlogPostCollectionActions;
   pagination: Meta;
 };
 
-export type NewsArticleNode = {
-  __typename?: 'NewsArticleNode';
+export type BlogPostNode = {
+  __typename?: 'BlogPostNode';
   cursor: Scalars['String'];
-  data: NewsArticleData;
-  can: NewsArticleActions;
-  relations: NewsArticleRelations;
+  data: BlogPostData;
+  can: BlogPostActions;
+  relations: BlogPostRelations;
 };
 
-export type NewsArticleData = {
-  __typename?: 'NewsArticleData';
+export type BlogPostData = {
+  __typename?: 'BlogPostData';
   id: Scalars['Int'];
   title: Scalars['String'];
   teaser: Scalars['String'];
@@ -127,9 +145,11 @@ export type NewsArticleData = {
 };
 
 
-export type NewsArticleActions = {
-  __typename?: 'NewsArticleActions';
+export type BlogPostActions = {
+  __typename?: 'BlogPostActions';
   show: Scalars['Boolean'];
+  showComments: Scalars['Boolean'];
+  createComments: Scalars['Boolean'];
   update: Scalars['Boolean'];
   softDelete: Scalars['Boolean'];
   hardDelete: Scalars['Boolean'];
@@ -139,13 +159,18 @@ export type NewsArticleActions = {
   approve: Scalars['Boolean'];
   publish: Scalars['Boolean'];
   unpublish: Scalars['Boolean'];
-  schedule: Scalars['Boolean'];
 };
 
-export type NewsArticleRelations = {
-  __typename?: 'NewsArticleRelations';
+export type BlogPostRelations = {
+  __typename?: 'BlogPostRelations';
   author?: Maybe<UserNode>;
   status?: Maybe<UserNode>;
+  comments: BlogPostCommentCollectionNode;
+};
+
+
+export type BlogPostRelationsCommentsArgs = {
+  query?: Maybe<BlogPostCommentQuery>;
 };
 
 export type UserNode = {
@@ -182,14 +207,14 @@ export type UserActions = {
   updatePassword: Scalars['Boolean'];
   createUserRoles: Scalars['Boolean'];
   hardDeleteUserRoles: Scalars['Boolean'];
-  requestWelcome: Scalars['Boolean'];
-  acceptWelcome: Scalars['Boolean'];
+  requestWelcomeEmail: Scalars['Boolean'];
+  consumeWelcomeToken: Scalars['Boolean'];
   requestVerificationEmail: Scalars['Boolean'];
-  consumeVerificationEmail: Scalars['Boolean'];
-  requestEmailChange: Scalars['Boolean'];
-  consumeEmailChangeVerificationEmail: Scalars['Boolean'];
-  requestForgottenPasswordReset: Scalars['Boolean'];
-  consumeForgottenPasswordReset: Scalars['Boolean'];
+  consumeVerificationToken: Scalars['Boolean'];
+  requestEmailChangeEmail: Scalars['Boolean'];
+  consumeEmailChangeToken: Scalars['Boolean'];
+  requestPasswordResetEmail: Scalars['Boolean'];
+  consumePasswordResetToken: Scalars['Boolean'];
 };
 
 export type UserRelations = {
@@ -198,6 +223,8 @@ export type UserRelations = {
   roles: RoleCollectionNode;
   permissions: PermissionCollectionNode;
   newsArticles: NewsArticleCollectionNode;
+  blogPosts: BlogPostCollectionNode;
+  blogPostComments: BlogPostCommentCollectionNode;
 };
 
 
@@ -218,6 +245,16 @@ export type UserRelationsPermissionsArgs = {
 
 export type UserRelationsNewsArticlesArgs = {
   query?: Maybe<NewsArticleQuery>;
+};
+
+
+export type UserRelationsBlogPostsArgs = {
+  query?: Maybe<BlogPostQuery>;
+};
+
+
+export type UserRelationsBlogPostCommentsArgs = {
+  query?: Maybe<BlogPostCommentQuery>;
 };
 
 export type UserRoleCollectionNode = {
@@ -678,6 +715,60 @@ export type UserRoleCollectionActions = {
   show: Scalars['Boolean'];
 };
 
+export type NewsArticleCollectionNode = {
+  __typename?: 'NewsArticleCollectionNode';
+  nodes: Array<Maybe<NewsArticleNode>>;
+  can: NewsArticleCollectionActions;
+  pagination: Meta;
+};
+
+export type NewsArticleNode = {
+  __typename?: 'NewsArticleNode';
+  cursor: Scalars['String'];
+  data: NewsArticleData;
+  can: NewsArticleActions;
+  relations: NewsArticleRelations;
+};
+
+export type NewsArticleData = {
+  __typename?: 'NewsArticleData';
+  id: Scalars['Int'];
+  title: Scalars['String'];
+  teaser: Scalars['String'];
+  body: Scalars['String'];
+  author_id: Scalars['Int'];
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+  deleted_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type NewsArticleActions = {
+  __typename?: 'NewsArticleActions';
+  show: Scalars['Boolean'];
+  update: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  restore: Scalars['Boolean'];
+  submit: Scalars['Boolean'];
+  reject: Scalars['Boolean'];
+  approve: Scalars['Boolean'];
+  publish: Scalars['Boolean'];
+  unpublish: Scalars['Boolean'];
+  schedule: Scalars['Boolean'];
+};
+
+export type NewsArticleRelations = {
+  __typename?: 'NewsArticleRelations';
+  author?: Maybe<UserNode>;
+  status?: Maybe<UserNode>;
+};
+
+export type NewsArticleCollectionActions = {
+  __typename?: 'NewsArticleCollectionActions';
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
+};
+
 export type NewsArticleQuery = {
   offset?: Maybe<Scalars['Int']>;
   limit?: Maybe<Scalars['Int']>;
@@ -702,10 +793,248 @@ export type NewsArticleQueryFilterFilterAttributes = {
   deleted_at?: Maybe<FilterFieldDateTime>;
 };
 
-export type NewsArticleCollectionActions = {
-  __typename?: 'NewsArticleCollectionActions';
+export type BlogPostQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<BlogPostQueryFilterFilterConditionGroup>>;
+};
+
+export type BlogPostQueryFilterFilterConditionGroup = {
+  attr?: Maybe<BlogPostQueryFilterFilterAttributes>;
+  or?: Maybe<Array<BlogPostQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<BlogPostQueryFilterFilterConditionGroup>>;
+};
+
+export type BlogPostQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  author_id?: Maybe<FilterFieldNumber>;
+  status_id?: Maybe<FilterFieldNumber>;
+  title?: Maybe<FilterFieldString>;
+  teaser?: Maybe<FilterFieldString>;
+  body?: Maybe<FilterFieldString>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+  deleted_at?: Maybe<FilterFieldDateTime>;
+};
+
+export type BlogPostCommentCollectionNode = {
+  __typename?: 'BlogPostCommentCollectionNode';
+  nodes: Array<Maybe<BlogPostCommentNode>>;
+  can: BlogPostCommentCollectionActions;
+  pagination: Meta;
+};
+
+export type BlogPostCommentNode = {
+  __typename?: 'BlogPostCommentNode';
+  cursor: Scalars['String'];
+  data: BlogPostCommentData;
+  can: BlogPostCommentActions;
+  relations: BlogPostCommentRelations;
+};
+
+export type BlogPostCommentData = {
+  __typename?: 'BlogPostCommentData';
+  id: Scalars['Float'];
+  author_id: Scalars['Float'];
+  post_id: Scalars['Float'];
+  body: Scalars['String'];
+  hidden: Scalars['Boolean'];
+  visible: Scalars['Boolean'];
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+  deleted_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type BlogPostCommentActions = {
+  __typename?: 'BlogPostCommentActions';
+  show: Scalars['Boolean'];
+  update: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  restore: Scalars['Boolean'];
+  vanish: Scalars['Boolean'];
+  hide: Scalars['Boolean'];
+};
+
+export type BlogPostCommentRelations = {
+  __typename?: 'BlogPostCommentRelations';
+  author?: Maybe<UserNode>;
+  post?: Maybe<BlogPostNode>;
+};
+
+export type BlogPostCommentCollectionActions = {
+  __typename?: 'BlogPostCommentCollectionActions';
   show: Scalars['Boolean'];
   create: Scalars['Boolean'];
+};
+
+export type BlogPostCommentQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<BlogPostCommentQueryFilterFilterConditionGroup>>;
+};
+
+export type BlogPostCommentQueryFilterFilterConditionGroup = {
+  attr?: Maybe<BlogPostCommentQueryFilterFilterAttributes>;
+  or?: Maybe<Array<BlogPostCommentQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<BlogPostCommentQueryFilterFilterConditionGroup>>;
+};
+
+export type BlogPostCommentQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  body?: Maybe<FilterFieldString>;
+  hidden?: Maybe<FilterFieldDate>;
+  visible?: Maybe<FilterFieldDate>;
+  author_id?: Maybe<FilterFieldNumber>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+  deleted_at?: Maybe<FilterFieldDateTime>;
+};
+
+export type FilterFieldDate = {
+  eq?: Maybe<Scalars['Boolean']>;
+  neq?: Maybe<Scalars['Boolean']>;
+  null?: Maybe<Scalars['DateTime']>;
+};
+
+export type BlogPostCollectionActions = {
+  __typename?: 'BlogPostCollectionActions';
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
+};
+
+export type BlogPostStatusCollectionNode = {
+  __typename?: 'BlogPostStatusCollectionNode';
+  nodes: Array<Maybe<BlogPostStatusNode>>;
+  can: BlogPostStatusCollectionActions;
+  pagination: Meta;
+};
+
+export type BlogPostStatusNode = {
+  __typename?: 'BlogPostStatusNode';
+  cursor: Scalars['String'];
+  data: BlogPostStatusData;
+  can: BlogPostStatusActions;
+  relations: BlogPostStatusRelations;
+};
+
+export type BlogPostStatusData = {
+  __typename?: 'BlogPostStatusData';
+  id: Scalars['Int'];
+  name: Scalars['String'];
+  colour: Scalars['String'];
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+};
+
+export type BlogPostStatusActions = {
+  __typename?: 'BlogPostStatusActions';
+  show: Scalars['Boolean'];
+};
+
+export type BlogPostStatusRelations = {
+  __typename?: 'BlogPostStatusRelations';
+  posts: BlogPostCollectionNode;
+};
+
+
+export type BlogPostStatusRelationsPostsArgs = {
+  query?: Maybe<BlogPostQuery>;
+};
+
+export type BlogPostStatusCollectionActions = {
+  __typename?: 'BlogPostStatusCollectionActions';
+  show: Scalars['Boolean'];
+};
+
+export type BlogPostStatusQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<BlogPostStatusQueryFilterFilterConditionGroup>>;
+};
+
+export type BlogPostStatusQueryFilterFilterConditionGroup = {
+  attr?: Maybe<BlogPostStatusQueryFilterFilterAttributes>;
+  or?: Maybe<Array<BlogPostStatusQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<BlogPostStatusQueryFilterFilterConditionGroup>>;
+};
+
+export type BlogPostStatusQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  name?: Maybe<FilterFieldString>;
+  colour?: Maybe<FilterFieldString>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+  deleted_at?: Maybe<FilterFieldDateTime>;
+};
+
+export type NewsArticleStatusCollectionNode = {
+  __typename?: 'NewsArticleStatusCollectionNode';
+  nodes: Array<Maybe<NewsArticleStatusNode>>;
+  can: NewsArticleStatusCollectionActions;
+  pagination: Meta;
+};
+
+export type NewsArticleStatusNode = {
+  __typename?: 'NewsArticleStatusNode';
+  cursor: Scalars['String'];
+  data: NewsArticleStatusData;
+  can: NewsArticleStatusActions;
+  relations: NewsArticleStatusRelations;
+};
+
+export type NewsArticleStatusData = {
+  __typename?: 'NewsArticleStatusData';
+  id: Scalars['Int'];
+  name: Scalars['String'];
+  colour: Scalars['String'];
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+};
+
+export type NewsArticleStatusActions = {
+  __typename?: 'NewsArticleStatusActions';
+  show: Scalars['Boolean'];
+};
+
+export type NewsArticleStatusRelations = {
+  __typename?: 'NewsArticleStatusRelations';
+  newsArticles: NewsArticleCollectionNode;
+};
+
+
+export type NewsArticleStatusRelationsNewsArticlesArgs = {
+  query?: Maybe<NewsArticleQuery>;
+};
+
+export type NewsArticleStatusCollectionActions = {
+  __typename?: 'NewsArticleStatusCollectionActions';
+  show: Scalars['Boolean'];
+};
+
+export type NewsArticleStatusQuery = {
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  sorts?: Maybe<Array<QuerySort>>;
+  filter?: Maybe<Array<NewsArticleStatusQueryFilterFilterConditionGroup>>;
+};
+
+export type NewsArticleStatusQueryFilterFilterConditionGroup = {
+  attr?: Maybe<NewsArticleStatusQueryFilterFilterAttributes>;
+  or?: Maybe<Array<NewsArticleStatusQueryFilterFilterConditionGroup>>;
+  and?: Maybe<Array<NewsArticleStatusQueryFilterFilterConditionGroup>>;
+};
+
+export type NewsArticleStatusQueryFilterFilterAttributes = {
+  id?: Maybe<FilterFieldNumber>;
+  name?: Maybe<FilterFieldString>;
+  colour?: Maybe<FilterFieldString>;
+  created_at?: Maybe<FilterFieldDateTime>;
+  updated_at?: Maybe<FilterFieldDateTime>;
+  deleted_at?: Maybe<FilterFieldDateTime>;
 };
 
 export type SystemPermissionGqlNode = {
@@ -1291,16 +1620,14 @@ export type ActionsNode = {
   npmsPackages: NpmsPackageCollectionActions;
   npmsDashboards: NpmsDashboardCollectionActions;
   npmsDashboardItems: NpmsDashboardItemCollectionActions;
+  blogPosts: BlogPostCollectionActions;
+  blogPostComments: BlogPostCommentCollectionActions;
+  blogPostStatuses: BlogPostStatusCollectionActions;
   newsArticles: NewsArticleCollectionActions;
   newsArticleStatuses: NewsArticleStatusCollectionActions;
   jobs: JobCollectionActions;
   logs: LogCollectionActions;
   integrations: IntegrationCollectionActions;
-};
-
-export type NewsArticleStatusCollectionActions = {
-  __typename?: 'NewsArticleStatusCollectionActions';
-  show: Scalars['Boolean'];
 };
 
 export type JobCollectionActions = {
@@ -1349,9 +1676,25 @@ export type PermissionCategoryQueryFilterFilterAttributes = {
 
 export type RootMutationType = {
   __typename?: 'RootMutationType';
+  createBlogPost: BlogPostNode;
+  updateBlogPost: BlogPostNode;
+  softDeleteBlogPost: BlogPostNode;
+  hardDeleteBlogPost: BlogPostNode;
+  restoreBlogPost: BlogPostNode;
+  submitBlogPost: BlogPostNode;
+  rejectBlogPost: BlogPostNode;
+  approveBlogPost: BlogPostNode;
+  publishBlogPost: BlogPostNode;
+  unpublishBlogPost: BlogPostNode;
+  createBlogPostComment: BlogPostCommentNode;
+  updateBlogPostComment: BlogPostCommentNode;
+  softDeleteBlogPostComment: BlogPostCommentNode;
+  hardDeleteBlogPostComment: BlogPostCommentNode;
+  restoreBlogPostComment: BlogPostCommentNode;
   createNewsArticle: NewsArticleNode;
   updateNewsArticle: NewsArticleNode;
-  deleteNewsArticle: NewsArticleNode;
+  softDeleteNewsArticle: NewsArticleNode;
+  hardDeleteNewsArticle: Scalars['Boolean'];
   createNpmsPackage: NpmsPackageNode;
   sortNpmsDashboards: Scalars['Boolean'];
   createNpmsDashboard: NpmsDashboardNode;
@@ -1366,22 +1709,24 @@ export type RootMutationType = {
   createNpmsDashboardItem: NpmsDashboardItemNode;
   hardDeleteNpmsDashboardItem: NpmsDashboardItemNode;
   createRolePermission: RolePermissionNode;
-  deleteRolePermission: Scalars['Boolean'];
+  hardDeleteRolePermission: Scalars['Boolean'];
   createRole: RoleNode;
   updateRole: RoleNode;
-  softDeleteRole: Scalars['Boolean'];
-  restoreRole: Scalars['Boolean'];
+  softDeleteRole: RoleNode;
+  hardDeleteRole: Scalars['Boolean'];
+  restoreRole: RoleNode;
   createUser: UserNode;
   updateUser: UserNode;
   softDeleteUser: Scalars['Boolean'];
   hardDeleteUser: Scalars['Boolean'];
-  requestForgottenUserPasswordReset: Scalars['Boolean'];
-  consumeForgottenUserPasswordReset: AuthenticationNode;
-  requestUserWelcome: Scalars['Boolean'];
-  consumeUserWelcome: AuthenticationNode;
-  consumeEmailVerification: AuthenticationNode;
-  requestEmailChange: Scalars['Boolean'];
-  consumeEmailChangeVerification: AuthenticationNode;
+  requestPasswordResetEmail: Scalars['Boolean'];
+  consumePasswordResetToken: AuthenticationNode;
+  requestWelcomeEmail: Scalars['Boolean'];
+  consumeWelcomeToken: AuthenticationNode;
+  requestVerificationEmail: Scalars['Boolean'];
+  consumeVerificationToken: AuthenticationNode;
+  requestEmailChangeEmail: Scalars['Boolean'];
+  consumeEmailChangeToken: AuthenticationNode;
   initialiseIntegration: IntegrationNode;
   googleOAuth2HandleCode: GoogleNode;
   googleSendEmail: Scalars['JsonObject'];
@@ -1389,6 +1734,81 @@ export type RootMutationType = {
   register: AuthenticationNode;
   login: AuthenticationNode;
   logout: LogoutNode;
+};
+
+
+export type RootMutationTypeCreateBlogPostArgs = {
+  dto: CreateBlogPost;
+};
+
+
+export type RootMutationTypeUpdateBlogPostArgs = {
+  dto: UpdateBlogPost;
+};
+
+
+export type RootMutationTypeSoftDeleteBlogPostArgs = {
+  dto: DeleteBlogPost;
+};
+
+
+export type RootMutationTypeHardDeleteBlogPostArgs = {
+  dto: DeleteBlogPost;
+};
+
+
+export type RootMutationTypeRestoreBlogPostArgs = {
+  dto: DeleteBlogPost;
+};
+
+
+export type RootMutationTypeSubmitBlogPostArgs = {
+  dto: DeleteBlogPost;
+};
+
+
+export type RootMutationTypeRejectBlogPostArgs = {
+  dto: DeleteBlogPost;
+};
+
+
+export type RootMutationTypeApproveBlogPostArgs = {
+  dto: DeleteBlogPost;
+};
+
+
+export type RootMutationTypePublishBlogPostArgs = {
+  dto: DeleteBlogPost;
+};
+
+
+export type RootMutationTypeUnpublishBlogPostArgs = {
+  dto: DeleteBlogPost;
+};
+
+
+export type RootMutationTypeCreateBlogPostCommentArgs = {
+  dto: CreateBlogPostComment;
+};
+
+
+export type RootMutationTypeUpdateBlogPostCommentArgs = {
+  dto: UpdateBlogPostComment;
+};
+
+
+export type RootMutationTypeSoftDeleteBlogPostCommentArgs = {
+  dto: TargetBlogPostComment;
+};
+
+
+export type RootMutationTypeHardDeleteBlogPostCommentArgs = {
+  dto: TargetBlogPostComment;
+};
+
+
+export type RootMutationTypeRestoreBlogPostCommentArgs = {
+  dto: TargetBlogPostComment;
 };
 
 
@@ -1402,7 +1822,12 @@ export type RootMutationTypeUpdateNewsArticleArgs = {
 };
 
 
-export type RootMutationTypeDeleteNewsArticleArgs = {
+export type RootMutationTypeSoftDeleteNewsArticleArgs = {
+  dto: DeleteNewsArticle;
+};
+
+
+export type RootMutationTypeHardDeleteNewsArticleArgs = {
   dto: DeleteNewsArticle;
 };
 
@@ -1477,7 +1902,7 @@ export type RootMutationTypeCreateRolePermissionArgs = {
 };
 
 
-export type RootMutationTypeDeleteRolePermissionArgs = {
+export type RootMutationTypeHardDeleteRolePermissionArgs = {
   dto: DeleteRolePermission;
 };
 
@@ -1493,12 +1918,17 @@ export type RootMutationTypeUpdateRoleArgs = {
 
 
 export type RootMutationTypeSoftDeleteRoleArgs = {
-  dto: DeleteRole;
+  dto: TargetRole;
+};
+
+
+export type RootMutationTypeHardDeleteRoleArgs = {
+  dto: TargetRole;
 };
 
 
 export type RootMutationTypeRestoreRoleArgs = {
-  dto: DeleteRole;
+  dto: TargetRole;
 };
 
 
@@ -1522,38 +1952,43 @@ export type RootMutationTypeHardDeleteUserArgs = {
 };
 
 
-export type RootMutationTypeRequestForgottenUserPasswordResetArgs = {
-  dto: RequestResetForgottenUserPassword;
+export type RootMutationTypeRequestPasswordResetEmailArgs = {
+  dto: RequestPasswordResetEmail;
 };
 
 
-export type RootMutationTypeConsumeForgottenUserPasswordResetArgs = {
-  dto: ConsumeResetForgottenUserPassword;
+export type RootMutationTypeConsumePasswordResetTokenArgs = {
+  dto: ConsumeResetPasswordToken;
 };
 
 
-export type RootMutationTypeRequestUserWelcomeArgs = {
-  dto: RequestUserWelcome;
+export type RootMutationTypeRequestWelcomeEmailArgs = {
+  dto: RequestWelcomeEmail;
 };
 
 
-export type RootMutationTypeConsumeUserWelcomeArgs = {
-  dto: ConsumeUserWelcome;
+export type RootMutationTypeConsumeWelcomeTokenArgs = {
+  dto: ConsumeWelcomeToken;
 };
 
 
-export type RootMutationTypeConsumeEmailVerificationArgs = {
-  dto: ConsumeEmailVerification;
+export type RootMutationTypeRequestVerificationEmailArgs = {
+  dto: RequestVerificationEmail;
 };
 
 
-export type RootMutationTypeRequestEmailChangeArgs = {
-  dto: RequestEmailChange;
+export type RootMutationTypeConsumeVerificationTokenArgs = {
+  dto: ConsumeEmailVerificationToken;
 };
 
 
-export type RootMutationTypeConsumeEmailChangeVerificationArgs = {
-  dto: ConsumeVerifyEmailChange;
+export type RootMutationTypeRequestEmailChangeEmailArgs = {
+  dto: RequestEmailChangeEmail;
+};
+
+
+export type RootMutationTypeConsumeEmailChangeTokenArgs = {
+  dto: ConsumeEmailChangeToken;
 };
 
 
@@ -1584,6 +2019,39 @@ export type RootMutationTypeRegisterArgs = {
 
 export type RootMutationTypeLoginArgs = {
   dto?: Maybe<Login>;
+};
+
+export type CreateBlogPost = {
+  title: Scalars['String'];
+  teaser: Scalars['String'];
+  body: Scalars['String'];
+};
+
+export type UpdateBlogPost = {
+  id: Scalars['Int'];
+  title?: Maybe<Scalars['String']>;
+  teaser?: Maybe<Scalars['String']>;
+  body?: Maybe<Scalars['String']>;
+};
+
+export type DeleteBlogPost = {
+  id: Scalars['Int'];
+};
+
+export type CreateBlogPostComment = {
+  blog_post_id: Scalars['Float'];
+  body: Scalars['String'];
+};
+
+export type UpdateBlogPostComment = {
+  id: Scalars['Int'];
+  body?: Maybe<Scalars['String']>;
+  visible?: Maybe<Scalars['Boolean']>;
+  hidden?: Maybe<Scalars['Boolean']>;
+};
+
+export type TargetBlogPostComment = {
+  id: Scalars['Int'];
 };
 
 export type CreateNewsArticle = {
@@ -1681,7 +2149,7 @@ export type UpdateRole = {
   permission_ids?: Maybe<Array<Scalars['Int']>>;
 };
 
-export type DeleteRole = {
+export type TargetRole = {
   id: Scalars['Int'];
 };
 
@@ -1706,7 +2174,7 @@ export type DeleteUser = {
   id: Scalars['Int'];
 };
 
-export type RequestResetForgottenUserPassword = {
+export type RequestPasswordResetEmail = {
   email: Scalars['String'];
 };
 
@@ -1758,31 +2226,35 @@ export type RefreshTokenRelations = {
   user?: Maybe<UserNode>;
 };
 
-export type ConsumeResetForgottenUserPassword = {
+export type ConsumeResetPasswordToken = {
   token: Scalars['String'];
   password: Scalars['String'];
 };
 
-export type RequestUserWelcome = {
+export type RequestWelcomeEmail = {
   user_id: Scalars['Int'];
 };
 
-export type ConsumeUserWelcome = {
+export type ConsumeWelcomeToken = {
   token: Scalars['String'];
   name: Scalars['String'];
   password: Scalars['String'];
 };
 
-export type ConsumeEmailVerification = {
+export type RequestVerificationEmail = {
+  user_id: Scalars['Int'];
+};
+
+export type ConsumeEmailVerificationToken = {
   token: Scalars['String'];
 };
 
-export type RequestEmailChange = {
+export type RequestEmailChangeEmail = {
   user_id: Scalars['Int'];
   email: Scalars['String'];
 };
 
-export type ConsumeVerifyEmailChange = {
+export type ConsumeEmailChangeToken = {
   token: Scalars['String'];
 };
 
@@ -1944,69 +2416,100 @@ export type RegisterMutation = (
   ) }
 );
 
-export type ConsumeEmailVerificationMutationVariables = Exact<{
-  token: Scalars['String'];
-}>;
-
-
-export type ConsumeEmailVerificationMutation = (
-  { __typename?: 'RootMutationType' }
-  & { consumeEmailVerification: (
-    { __typename?: 'AuthenticationNode' }
-    & AuthenticationFieldsFragment
-  ) }
-);
-
-export type ConsumeResetPasswordMutationVariables = Exact<{
+export type ConsumePasswordResetTokenMutationVariables = Exact<{
   token: Scalars['String'];
   password: Scalars['String'];
 }>;
 
 
-export type ConsumeResetPasswordMutation = (
+export type ConsumePasswordResetTokenMutation = (
   { __typename?: 'RootMutationType' }
-  & { consumeForgottenUserPasswordReset: (
+  & { consumePasswordResetToken: (
     { __typename?: 'AuthenticationNode' }
     & AuthenticationFieldsFragment
   ) }
 );
 
-export type ConsumeUserWelcomeMutationVariables = Exact<{
+export type ConsumeWelcomeTokenMutationVariables = Exact<{
   token: Scalars['String'];
   name: Scalars['String'];
   password: Scalars['String'];
 }>;
 
 
-export type ConsumeUserWelcomeMutation = (
+export type ConsumeWelcomeTokenMutation = (
   { __typename?: 'RootMutationType' }
-  & { consumeUserWelcome: (
+  & { consumeWelcomeToken: (
     { __typename?: 'AuthenticationNode' }
     & AuthenticationFieldsFragment
   ) }
 );
 
-export type ConsumeEmailChangeVerificationMutationVariables = Exact<{
+export type ConsumeEmailChangeTokenMutationVariables = Exact<{
   token: Scalars['String'];
 }>;
 
 
-export type ConsumeEmailChangeVerificationMutation = (
+export type ConsumeEmailChangeTokenMutation = (
   { __typename?: 'RootMutationType' }
-  & { consumeEmailChangeVerification: (
+  & { consumeEmailChangeToken: (
     { __typename?: 'AuthenticationNode' }
     & AuthenticationFieldsFragment
   ) }
 );
 
-export type RequestForgottenUserPasswordResetMutationVariables = Exact<{
+export type ConsumeVerificationTokenMutationVariables = Exact<{
+  token: Scalars['String'];
+}>;
+
+
+export type ConsumeVerificationTokenMutation = (
+  { __typename?: 'RootMutationType' }
+  & { consumeVerificationToken: (
+    { __typename?: 'AuthenticationNode' }
+    & AuthenticationFieldsFragment
+  ) }
+);
+
+export type RequestPasswordResetEmailMutationVariables = Exact<{
   email: Scalars['String'];
 }>;
 
 
-export type RequestForgottenUserPasswordResetMutation = (
+export type RequestPasswordResetEmailMutation = (
   { __typename?: 'RootMutationType' }
-  & Pick<RootMutationType, 'requestForgottenUserPasswordReset'>
+  & Pick<RootMutationType, 'requestPasswordResetEmail'>
+);
+
+export type RequestVerificationEmailMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type RequestVerificationEmailMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'requestVerificationEmail'>
+);
+
+export type RequestWelcomeEmailMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type RequestWelcomeEmailMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'requestWelcomeEmail'>
+);
+
+export type RequestEmailChangeEmailMutationVariables = Exact<{
+  user_id: Scalars['Int'];
+  email: Scalars['String'];
+}>;
+
+
+export type RequestEmailChangeEmailMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'requestEmailChangeEmail'>
 );
 
 export type GoogleOAuth2ConnectorDataQueryVariables = Exact<{ [key: string]: never; }>;
@@ -2448,18 +2951,13 @@ export type RoleTableDeleteMutationVariables = Exact<{
 
 export type RoleTableDeleteMutation = (
   { __typename?: 'RootMutationType' }
-  & Pick<RootMutationType, 'softDeleteRole'>
-);
-
-export type RequestUserEmailChangeFormMutationVariables = Exact<{
-  user_id: Scalars['Int'];
-  email: Scalars['String'];
-}>;
-
-
-export type RequestUserEmailChangeFormMutation = (
-  { __typename?: 'RootMutationType' }
-  & Pick<RootMutationType, 'requestEmailChange'>
+  & { softDeleteRole: (
+    { __typename?: 'RoleNode' }
+    & { data: (
+      { __typename?: 'RoleData' }
+      & Pick<RoleData, 'id'>
+    ) }
+  ) }
 );
 
 export type UserMutateFormCreateMutationVariables = Exact<{
@@ -2600,33 +3098,13 @@ export type UserDetailDataQuery = (
       { __typename?: 'UserNode' }
       & { can: (
         { __typename?: 'UserActions' }
-        & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'deactivate' | 'forceVerify' | 'forceUpdateEmail' | 'updatePassword' | 'requestWelcome' | 'acceptWelcome' | 'requestVerificationEmail' | 'requestEmailChange' | 'requestForgottenPasswordReset'>
+        & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'deactivate' | 'forceVerify' | 'forceUpdateEmail' | 'updatePassword' | 'requestWelcomeEmail' | 'consumeWelcomeToken' | 'requestVerificationEmail' | 'requestEmailChangeEmail' | 'requestPasswordResetEmail'>
       ), data: (
         { __typename?: 'UserData' }
         & Pick<UserData, 'id' | 'name' | 'email' | 'verified' | 'deactivated' | 'created_at' | 'updated_at' | 'deleted_at'>
       ) }
     )>> }
   ) }
-);
-
-export type UserDetailRequestSendWelcomeEmailMutationVariables = Exact<{
-  id: Scalars['Int'];
-}>;
-
-
-export type UserDetailRequestSendWelcomeEmailMutation = (
-  { __typename?: 'RootMutationType' }
-  & Pick<RootMutationType, 'requestUserWelcome'>
-);
-
-export type UserDetailRequestForgottenUserPasswordResetMutationVariables = Exact<{
-  email: Scalars['String'];
-}>;
-
-
-export type UserDetailRequestForgottenUserPasswordResetMutation = (
-  { __typename?: 'RootMutationType' }
-  & Pick<RootMutationType, 'requestForgottenUserPasswordReset'>
 );
 
 export type UsersTableDataQueryVariables = Exact<{
@@ -2929,7 +3407,7 @@ export type PasswordResetPageDataQuery = (
     { __typename?: 'UserNode' }
     & { can: (
       { __typename?: 'UserActions' }
-      & Pick<UserActions, 'show' | 'acceptWelcome'>
+      & Pick<UserActions, 'show' | 'consumeWelcomeToken'>
     ), data: (
       { __typename?: 'UserData' }
       & Pick<UserData, 'id' | 'name' | 'deactivated' | 'email' | 'verified' | 'created_at' | 'updated_at' | 'deleted_at'>
@@ -2948,7 +3426,7 @@ export type WelcomePageDataQuery = (
     { __typename?: 'UserNode' }
     & { can: (
       { __typename?: 'UserActions' }
-      & Pick<UserActions, 'show' | 'acceptWelcome'>
+      & Pick<UserActions, 'show' | 'consumeWelcomeToken'>
     ), data: (
       { __typename?: 'UserData' }
       & Pick<UserData, 'id' | 'name' | 'deactivated' | 'email' | 'verified' | 'created_at' | 'updated_at' | 'deleted_at'>

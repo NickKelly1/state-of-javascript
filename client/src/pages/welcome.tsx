@@ -14,7 +14,7 @@ import { WithLoadable } from '../components-hoc/with-loadable/with-loadable';
 import {
   WelcomePageDataQueryVariables,
   WelcomePageDataQuery,
-  ConsumeUserWelcomeMutation,
+  ConsumeWelcomeTokenMutation,
 } from '../generated/graphql';
 import { Attempt, attemptAsync, isFail, isSuccess } from '../helpers/attempted.helper';
 import { change } from '../helpers/change.helper';
@@ -35,7 +35,7 @@ query WelcomePageData(
   ){
     can{
       show
-      acceptWelcome
+      consumeWelcomeToken
     }
     data{
       id
@@ -67,7 +67,7 @@ interface IWelcomePageProps {
  *
  * @param props
  */
-function WelcomePage(props: IWelcomePageProps) {
+function WelcomePage(props: IWelcomePageProps): JSX.Element {
   const { token, pageData } = props;
   const classes = useStyles();
 
@@ -115,17 +115,17 @@ const WelcomePageContents = WithApi<IWelcomePageContentsProps>((props) => {
     enqueueSnackbar(`Error: ${exception.message}`, { variant: 'error' });
   }, [enqueueSnackbar]);
 
-  const handleSuccess = useCallback((arg: ConsumeUserWelcomeMutation) => {
+  const handleSuccess = useCallback((arg: ConsumeWelcomeTokenMutation) => {
     // success & navigate home
-    const name = arg.consumeUserWelcome.user_name;
+    const name = arg.consumeWelcomeToken.user_name;
     enqueueSnackbar(`Welcome, ${name ?? formState.name}. Your account has been verified.`, { variant: 'success' });
     router.replace('/');
     // TODO: set authentication...
   }, [enqueueSnackbar, router, formState]);
 
-  const [doSubmit, submitState] = useMutation<ConsumeUserWelcomeMutation, IApiException>(
-    async (): Promise<ConsumeUserWelcomeMutation> => {
-      const result = await api.consumeUserWelcome({
+  const [doSubmit, submitState] = useMutation<ConsumeWelcomeTokenMutation, IApiException>(
+    async (): Promise<ConsumeWelcomeTokenMutation> => {
+      const result = await api.consumeWelcomeToken({
         token,
         name: formState.name,
         password: formState.password,
