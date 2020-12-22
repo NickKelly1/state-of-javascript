@@ -9,7 +9,6 @@ import { validate } from "../helpers/validate.helper";
 import { LangSwitch } from "../i18n/helpers/lange-match.helper";
 import { ExceptionLang } from "../i18n/packs/exception.lang";
 import { IJson } from "../interfaces/json.interface";
-import { IRequestContext } from "../interfaces/request-context.interface";
 import { IRequestServices } from "../interfaces/request.services.interface";
 import { Loader } from "../classes/loader";
 import { RequestAuth } from "../classes/request-auth";
@@ -18,7 +17,7 @@ import { NotFoundException } from "../exceptions/types/not-found.exception";
 import { UserModel } from "../../app/user/user.model";
 import { PermissionId } from "../../app/permission/permission-id.type";
 
-export abstract class BaseContext implements IRequestContext {
+export abstract class BaseContext {
   abstract readonly auth: RequestAuth;
   abstract readonly services: IRequestServices;
   abstract info(): IJson;
@@ -71,14 +70,14 @@ export abstract class BaseContext implements IRequestContext {
    *
    * @param can
    */
-  authorize(can: boolean, message?: string | LangSwitch): void | never {
+  authorize(can: boolean, message: LangSwitch): void | never {
     if (!can) {
       let msg = undefined;
-      if (typeof message === 'string') msg = message;
-      else if (typeof message === 'object' && msg) msg = this.lang(message);
+      msg = this.lang(message);
       throw new ForbiddenException(msg);
-    };
+    }
   }
+
 
   /**
    * Throw 404 if nullable

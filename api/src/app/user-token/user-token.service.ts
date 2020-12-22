@@ -1,15 +1,15 @@
-import { UserModel, UserPasswordModel } from '../../circle';
+import { UserModel, } from '../../circle';
 import { ist } from '../../common/helpers/ist.helper';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { IUserTokenServiceCreateUserTokenDto } from './dtos/user-token-service.create-user-token.dto';
 import { IUserTokenServiceUpdateUserTokenDto } from './dtos/user-token-service.update-user-token.dto';
 import { UserTokenModel } from './user-token.model';
 import cryptoRandomString from 'crypto-random-string';
+import { BaseContext } from '../../common/context/base.context';
 
 export class UserTokenService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -51,7 +51,7 @@ export class UserTokenService {
     runner: QueryRunner;
     model: UserTokenModel;
     dto: IUserTokenServiceUpdateUserTokenDto;
-  }) {
+  }): Promise<UserTokenModel> {
     const { model, dto, runner } = arg;
     const { transaction } = runner;
     if (ist.notUndefined(dto.data)) { model.data = dto.data; }

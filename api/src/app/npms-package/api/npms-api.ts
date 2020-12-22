@@ -1,20 +1,31 @@
-import { Request } from "node-fetch";
-import { EnvService } from "../../../common/environment/env";
 import { logger } from "../../../common/logger/logger";
 import { OrNullable } from "../../../common/types/or-nullable.type";
 import { NpmsApiConnector } from "./npms-api-connector";
 import { NpmsPackageInfo, NpmsPackageInfos } from "./npms-api.package-info.type";
+import { InitialisationException } from '../../../common/exceptions/types/initialisation-exception';
+import { IUniversalServices } from "../../../common/interfaces/universal.services.interface";
 
 /**
  * https://api-docs.npms.io/#api-_Package
  */
 export class NpmsApi {
+
   protected readonly version = '2';
 
   constructor(
-    protected readonly env: EnvService,
+    protected readonly universal: IUniversalServices,
     protected readonly connector: NpmsApiConnector,
   ) {}
+
+  /**
+   * Initialise the service
+   */
+  protected _initialised = false;
+  public async init(): Promise<void> {
+    if (this._initialised) throw new InitialisationException();
+    logger.info(`initialising ${this.constructor.name}...`);
+    this._initialised = true;
+  }
 
   /**
    * Get info of a package

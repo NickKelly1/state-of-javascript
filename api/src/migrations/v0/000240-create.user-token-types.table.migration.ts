@@ -1,6 +1,5 @@
-import { QueryInterface, Sequelize, DataTypes, Transaction, Op } from "sequelize";
+import { DataTypes, Op } from "sequelize";
 import { IMigration, IMigrationDownArg, IMigrationUpArg } from "../../common/migration/migration.interface";
-import { AutoIncrementingId } from "../../common/schemas/auto-incrementing-id.schema";
 
 function getData() {
   const now = new Date();
@@ -17,8 +16,8 @@ function getData() {
 export default class implements IMigration {
   tag = __filename;
 
-  up = async (arg: IMigrationUpArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  up = async (arg: IMigrationUpArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     const { types } = getData();
     await queryInterface.createTable('user_token_types', {
       id: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
@@ -33,8 +32,8 @@ export default class implements IMigration {
     );
   }
 
-  down = async (arg: IMigrationDownArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  down = async (arg: IMigrationDownArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     const { types } = getData();
     await queryInterface.bulkDelete(
       'user_token_types',
@@ -46,4 +45,4 @@ export default class implements IMigration {
       { transaction },
     );
   };
-};
+}

@@ -1,13 +1,12 @@
 import { NpmsDashboardItemModel } from '../../circle';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
+import { BaseContext } from '../../common/context/base.context';
 import { QueryRunner } from '../db/query-runner';
 import { NpmsDashboardModel } from '../npms-dashboard/npms-dashboard.model';
 import { NpmsPackageModel } from '../npms-package/npms-package.model';
-import { ICreateNpmsDashboardItemInput } from './dtos/create-npms-dashboard-item.gql';
 
 export class NpmsDashboardItemService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

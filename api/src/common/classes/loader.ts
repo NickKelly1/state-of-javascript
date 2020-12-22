@@ -1,6 +1,12 @@
 import DataLoader from 'dataloader';
-import Dataloader from 'dataloader';
+// import Dataloader from 'dataloader';
 import { Op } from 'sequelize';
+import { BlogPostCommentField } from '../../app/blog-post-comment/blog-post-comment.attributes';
+import { BlogPostCommentId } from '../../app/blog-post-comment/blog-post-comment.id.type';
+import { BlogPostStatusField } from '../../app/blog-post-status/blog-post-status.attributes';
+import { BlogPostStatusId } from '../../app/blog-post-status/blog-post-status.id.type';
+import { BlogPostField } from '../../app/blog-post/blog-post.attributes';
+import { BlogPostId } from '../../app/blog-post/blog-post.id.type';
 import { QueryRunner } from '../../app/db/query-runner';
 import { NewsArticleStatusId } from '../../app/news-article-status/news-article-status.id.type';
 import { NewsArticleField } from '../../app/news-article/news-article.attributes';
@@ -25,6 +31,9 @@ import { UserField } from '../../app/user/user.attributes';
 import { UserId } from '../../app/user/user.id.type';
 import { UserModel } from '../../app/user/user.model';
 import {
+  BlogPostCommentModel,
+  BlogPostModel,
+  BlogPostStatusModel,
   NewsArticleModel,
   NewsArticleStatusModel,
   NpmsDashboardItemModel,
@@ -36,28 +45,31 @@ import {
   RolePermissionModel,
   UserRoleModel,
 } from '../../circle';
-import { IRequestContext } from '../interfaces/request-context.interface';
+import { BaseContext } from '../context/base.context';
 import { OrNull } from '../types/or-null.type';
 
-export type IUserDataLoader = Dataloader<UserId, OrNull<UserModel>>;
-export type IUserRoleDataLoader = Dataloader<UserRoleId, OrNull<UserRoleModel>>;
-export type IRoleDataLoader = Dataloader<RoleId, OrNull<RoleModel>>;
-export type IRolePermissionDataLoader = Dataloader<RolePermissionId, OrNull<RolePermissionModel>>;
-export type IPermissionCategoryDataLoader = Dataloader<PermissionCategoryId, OrNull<PermissionCategoryModel>>;
-export type IPermissionDataLoader = Dataloader<PermissionId, OrNull<PermissionModel>>;
-export type INewsArticleDataLoader = Dataloader<NewsArticleId, OrNull<NewsArticleModel>>;
-export type INewsArticleStatusDataLoader = Dataloader<NewsArticleStatusId, OrNull<NewsArticleStatusModel>>;
-export type INpmsPackageDataLoader = Dataloader<NpmsPackageId, OrNull<NpmsPackageModel>>;
-export type INpmsDashboardDataLoader = Dataloader<NpmsDashboardId, OrNull<NpmsDashboardModel>>;
-export type INpmsDashboardStatusDataLoader = Dataloader<NpmsDashboardStatusId, OrNull<NpmsDashboardStatusModel>>;
-export type INpmsDashboardItemDataLoader = Dataloader<NpmsDashboardItemId, OrNull<NpmsDashboardItemModel>>;
+export type IUserDataLoader = DataLoader<UserId, OrNull<UserModel>>;
+export type IUserRoleDataLoader = DataLoader<UserRoleId, OrNull<UserRoleModel>>;
+export type IRoleDataLoader = DataLoader<RoleId, OrNull<RoleModel>>;
+export type IRolePermissionDataLoader = DataLoader<RolePermissionId, OrNull<RolePermissionModel>>;
+export type IPermissionCategoryDataLoader = DataLoader<PermissionCategoryId, OrNull<PermissionCategoryModel>>;
+export type IPermissionDataLoader = DataLoader<PermissionId, OrNull<PermissionModel>>;
+export type INewsArticleDataLoader = DataLoader<NewsArticleId, OrNull<NewsArticleModel>>;
+export type INewsArticleStatusDataLoader = DataLoader<NewsArticleStatusId, OrNull<NewsArticleStatusModel>>;
+export type IBlogPostDataLoader = DataLoader<BlogPostId, OrNull<BlogPostModel>>;
+export type IBlogPostCommentDataLoader = DataLoader<BlogPostCommentId, OrNull<BlogPostCommentModel>>;
+export type IBlogPostStatusDataLoader = DataLoader<BlogPostStatusId, OrNull<BlogPostStatusModel>>;
+export type INpmsPackageDataLoader = DataLoader<NpmsPackageId, OrNull<NpmsPackageModel>>;
+export type INpmsDashboardDataLoader = DataLoader<NpmsDashboardId, OrNull<NpmsDashboardModel>>;
+export type INpmsDashboardStatusDataLoader = DataLoader<NpmsDashboardStatusId, OrNull<NpmsDashboardStatusModel>>;
+export type INpmsDashboardItemDataLoader = DataLoader<NpmsDashboardItemId, OrNull<NpmsDashboardItemModel>>;
 
 export class Loader {
   protected readonly runner: OrNull<QueryRunner>;
-  protected readonly ctx: IRequestContext;
+  protected readonly ctx: BaseContext;
 
   constructor(arg: {
-    ctx: IRequestContext,
+    ctx: BaseContext,
     runner?: QueryRunner,
   }) {
     const { ctx, runner } = arg;
@@ -71,7 +83,7 @@ export class Loader {
   protected _users?: IUserDataLoader;
   public get users(): IUserDataLoader {
     if (this._users) return this._users;
-    this._users = new Dataloader(async (keys): Promise<(OrNull<UserModel>)[]> => {
+    this._users = new DataLoader(async (keys): Promise<(OrNull<UserModel>)[]> => {
       const { runner } = this;
       const models = await this.ctx.services.userRepository.findAll({
         runner,
@@ -90,7 +102,7 @@ export class Loader {
   protected _roles?: IRoleDataLoader;
   public get roles(): IRoleDataLoader {
     if (this._roles) return this._roles;
-    this._roles = new Dataloader(async (keys): Promise<(OrNull<RoleModel>)[]> => {
+    this._roles = new DataLoader(async (keys): Promise<(OrNull<RoleModel>)[]> => {
       const { runner } = this;
       const model = await this.ctx.services.roleRepository.findAll({
         runner,
@@ -109,7 +121,7 @@ export class Loader {
   protected _userRoles?: IUserRoleDataLoader;
   public get userRoles(): IUserRoleDataLoader {
     if (this._userRoles) return this._userRoles;
-    this._userRoles = new Dataloader(async (keys): Promise<(OrNull<UserRoleModel>)[]> => {
+    this._userRoles = new DataLoader(async (keys): Promise<(OrNull<UserRoleModel>)[]> => {
       const { runner } = this;
       const models = await this.ctx.services.userRoleRepository.findAll({
         runner,
@@ -128,7 +140,7 @@ export class Loader {
   protected _permissionCategories?: IPermissionCategoryDataLoader;
   public get permissionCategories(): IPermissionCategoryDataLoader {
     if (this._permissionCategories) return this._permissionCategories;
-    this._permissionCategories = new Dataloader(async (keys): Promise<(OrNull<PermissionCategoryModel>)[]> => {
+    this._permissionCategories = new DataLoader(async (keys): Promise<(OrNull<PermissionCategoryModel>)[]> => {
       const { runner } = this;
       const models = await this.ctx.services.permissionCategoryRepository.findAll({
         runner,
@@ -148,7 +160,7 @@ export class Loader {
   protected _permissions?: IPermissionDataLoader;
   public get permissions(): IPermissionDataLoader {
     if (this._permissions) return this._permissions;
-    this._permissions = new Dataloader(async (keys): Promise<(OrNull<PermissionModel>)[]> => {
+    this._permissions = new DataLoader(async (keys): Promise<(OrNull<PermissionModel>)[]> => {
       const { runner } = this;
       const models = await this.ctx.services.permissionRepository.findAll({
         runner,
@@ -167,7 +179,7 @@ export class Loader {
   protected _rolePermissions?: IRolePermissionDataLoader;
   public get rolePermissions(): IRolePermissionDataLoader {
     if (this._rolePermissions) return this._rolePermissions;
-    this._rolePermissions = new Dataloader(async (keys): Promise<(OrNull<RolePermissionModel>)[]> => {
+    this._rolePermissions = new DataLoader(async (keys): Promise<(OrNull<RolePermissionModel>)[]> => {
       const { runner } = this;
       const models = await this.ctx.services.rolePermissionRepository.findAll({
         runner,
@@ -216,6 +228,63 @@ export class Loader {
       return keys.map(key => map.get(key) ?? null);
     });
     return this._newsArticleStatuses;
+  }
+
+  // ======================
+  // ===== blog-post ======
+  // ======================
+  protected _blogPost?: IBlogPostDataLoader;
+  public get blogPosts(): IBlogPostDataLoader {
+    if (this._blogPost) return this._blogPost;
+    this._blogPost = new DataLoader(async (keys): Promise<(OrNull<BlogPostModel>)[]> => {
+      const { runner } = this;
+      const models = await this.ctx.services.blogPostRepository.findAll({
+          runner,
+          unscoped: true,
+        options: { where: { [BlogPostField.id]: { [Op.in]: keys as BlogPostId[] } } },
+      });
+      const map = new Map(models.map(model => [model.id, model]));
+      return keys.map(key => map.get(key) ?? null)
+    });
+    return this._blogPost;
+  }
+
+  // ==============================
+  // ===== blog-post-comment ======
+  // ==============================
+  protected _blogPostComment?: IBlogPostCommentDataLoader;
+  public get blogPostComments(): IBlogPostCommentDataLoader {
+    if (this._blogPostComment) return this._blogPostComment;
+    this._blogPostComment = new DataLoader(async (keys): Promise<(OrNull<BlogPostCommentModel>)[]> => {
+      const { runner } = this;
+      const models = await this.ctx.services.blogPostCommentRepository.findAll({
+          runner,
+          unscoped: true,
+        options: { where: { [BlogPostCommentField.id]: { [Op.in]: keys as BlogPostCommentId[] } } },
+      });
+      const map = new Map(models.map(model => [model.id, model]));
+      return keys.map(key => map.get(key) ?? null)
+    });
+    return this._blogPostComment;
+  }
+
+  // =============================
+  // ===== blog-post-status ======
+  // =============================
+  protected _blogPostStatus?: IBlogPostStatusDataLoader;
+  public get blogPostStatus(): IBlogPostStatusDataLoader {
+    if (this._blogPostStatus) return this._blogPostStatus;
+    this._blogPostStatus = new DataLoader(async (keys): Promise<(OrNull<BlogPostStatusModel>)[]> => {
+      const { runner } = this;
+      const models = await this.ctx.services.blogPostStatusRepository.findAll({
+          runner,
+          unscoped: true,
+        options: { where: { [BlogPostStatusField.id]: { [Op.in]: keys as BlogPostStatusId[] } } },
+      });
+      const map = new Map(models.map(model => [model.id, model]));
+      return keys.map(key => map.get(key) ?? null)
+    });
+    return this._blogPostStatus;
   }
 
   // =========================

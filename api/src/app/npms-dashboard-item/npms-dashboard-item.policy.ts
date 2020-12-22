@@ -1,14 +1,26 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { NpmsDashboardModel } from "../npms-dashboard/npms-dashboard.model";
 import { NpmsPackageModel } from "../npms-package/npms-package.model";
-import { Permission } from "../permission/permission.const";
 import { NpmsDashboardItemModel } from "./npms-dashboard-item.model";
 
 export class NpmsDashboardItemPolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
+  }
+
+
+  /**
+   * Can the requester Access NpmsDashboardItems?
+   *
+   * @param arg
+   */
+  canAccess(): boolean {
+
+    // Can find NpmsDashboard & NpmsPackages
+    return this.ctx.services.npmsDashboardPolicy.canFindMany()
+      && this.ctx.services.npmsPackagePolicy.canFindMany();
   }
 
 
@@ -18,6 +30,9 @@ export class NpmsDashboardItemPolicy {
    * @param arg
    */
   canFindMany(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Can find NpmsDashboard & NpmsPackages
     return this.ctx.services.npmsDashboardPolicy.canFindMany()
@@ -35,6 +50,9 @@ export class NpmsDashboardItemPolicy {
   }): boolean {
     const { dashboard } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // Dashboard must be Findable
     return this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard });
   }
@@ -49,6 +67,9 @@ export class NpmsDashboardItemPolicy {
     npmsPackage: NpmsPackageModel;
   }): boolean {
     const { npmsPackage } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Dashboard must be Findable
     return this.ctx.services.npmsPackagePolicy.canFindOne({ model: npmsPackage });
@@ -68,6 +89,9 @@ export class NpmsDashboardItemPolicy {
   }): boolean {
     const { model, dashboard, npmsPackage } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // NpmsDashboard and NpmsPackage must be Findable
     return this.canFindOneForDashboard({ dashboard })
       && this.canFindOneForPackage({ npmsPackage });
@@ -81,8 +105,11 @@ export class NpmsDashboardItemPolicy {
    */
   canCreateForDashboard(arg: {
     dashboard: NpmsDashboardModel;
-  }) {
+  }): boolean {
     const { dashboard } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Dashboard must be Findable and Updateable
     return this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })
@@ -97,8 +124,11 @@ export class NpmsDashboardItemPolicy {
    */
   canCreateForNpmsPackage(arg: {
     npmsPackage: NpmsPackageModel;
-  }) {
+  }): boolean {
     const { npmsPackage } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // NpmsPackage must be Findable
     return this.ctx.services.npmsPackagePolicy.canFindOne({ model: npmsPackage });
@@ -116,6 +146,9 @@ export class NpmsDashboardItemPolicy {
   }): boolean {
     const { dashboard, npmsPackage, } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // can Create for the Dashboard
     return this.canCreateForDashboard({ dashboard })
       && this.canCreateForNpmsPackage({ npmsPackage });
@@ -129,8 +162,11 @@ export class NpmsDashboardItemPolicy {
    */
   canHardDeleteForDashboard(arg: {
     dashboard: NpmsDashboardModel;
-  }) {
+  }): boolean {
     const { dashboard } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Dashboard must be Findable and Updateable
     return this.ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard })
@@ -145,8 +181,11 @@ export class NpmsDashboardItemPolicy {
    */
   canHardDeleteForNpmsPackage(arg: {
     npmsPackage: NpmsPackageModel;
-  }) {
+  }): boolean {
     const { npmsPackage } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // NpmsPackage must be Findable
     return this.ctx.services.npmsPackagePolicy.canFindOne({ model: npmsPackage });
@@ -164,6 +203,9 @@ export class NpmsDashboardItemPolicy {
     npmsPackage: NpmsPackageModel;
   }): boolean {
     const { model, dashboard, npmsPackage } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     return this.canHardDeleteForDashboard({ dashboard })
       && this.canHardDeleteForNpmsPackage({ npmsPackage });

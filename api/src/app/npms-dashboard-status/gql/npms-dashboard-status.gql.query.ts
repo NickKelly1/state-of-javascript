@@ -1,11 +1,24 @@
 import { GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
-import { NewsArticleModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
-import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
-import { collectionMeta } from "../../../common/responses/collection-meta";
-import { OrNull } from "../../../common/types/or-null.type";
+import { NpmsDashboardStatusLang } from "../npms-dashboard-status.lang";
+import { INpmsDashboardStatusCollectionGqlNodeSource, NpmsDashboardStatusCollectionGqlNode } from "./npms-dashboard-status.collection.gql.node";
+import { NpmsDashboardStatusCollectionOptionsGqlInput } from "./npms-dashboard-status.collection.gql.options";
 
 export const NpmsDashboardStatusGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = () => ({
-  //
+  npmsDashboardStatuses: {
+    type: GraphQLNonNull(NpmsDashboardStatusCollectionGqlNode),
+    args: gqlQueryArg(NpmsDashboardStatusCollectionOptionsGqlInput),
+    resolve: async (parent, args, ctx): Promise<INpmsDashboardStatusCollectionGqlNodeSource> => {
+      ctx.authorize(
+        ctx.services.npmsDashboardStatusPolicy.canFindMany(),
+        NpmsDashboardStatusLang.CannotFindMany,
+      );
+      const collection = await ctx.services.npmsDashboardStatusRepository.gqlCollection({
+        args,
+        runner: null,
+      });
+      return collection;
+    },
+  },
 });

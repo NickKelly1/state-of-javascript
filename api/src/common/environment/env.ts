@@ -1,10 +1,7 @@
 import dotenv from 'dotenv';
-import { constTrue } from 'fp-ts/lib/function';
-import { toMap } from 'fp-ts/lib/ReadonlyMap';
 import path from 'path';
 import { ROOT_DIR, SRC_DIR } from '../../root';
 import { Extractor } from '../helpers/extractor.helper';
-import { OrUndefined } from '../types/or-undefined.type';
 
 // optional ENV_FILE can be provided...
 dotenv.config({ path: process.env.ENV_FILE });
@@ -12,11 +9,11 @@ dotenv.config({ path: process.env.ENV_FILE });
 const to = Extractor({ fromObj: process.env, fromName: 'Environment variable' });
 
 export class EnvService {
-  is_master(): boolean { return this.MASTER === true; };
+  is_master(): boolean { return this.MASTER === true; }
 
-  is_dev(): boolean { return this.NODE_ENV === 'development'; };
-  is_testing(): boolean { return this.NODE_ENV === 'testing'; };
-  is_prod(): boolean { return this.NODE_ENV === 'production'; };
+  is_dev(): boolean { return this.NODE_ENV === 'development'; }
+  is_testing(): boolean { return this.NODE_ENV === 'testing'; }
+  is_prod(): boolean { return this.NODE_ENV === 'production'; }
 
 
   public readonly MASTER = to.bool('MASTER');
@@ -43,6 +40,9 @@ export class EnvService {
 
   // default: 10
   public readonly PSW_SALT_ROUNDS = to.optional(() => to.int('PSW_SALT_ROUNDS')) ?? 10;
+
+  // default: true
+  public readonly GZIP_LOGS = to.optional(() => to.bool('GZIP_LOGS')) ?? true;
 
   // default: ./storage/logs
   public readonly LOG_DIR = to.optional(() => to.string('LOG_DIR')) ?? './storage/logs';

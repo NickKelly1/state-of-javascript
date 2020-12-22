@@ -5,7 +5,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production ENV_FILE=.env.prod node ./dist/scripts/www.js",
     "build": "rimraf ./dist && tsc",
-    "dev": "ts-node-dev --notify false --respawn  src/scripts/www.ts",
+    "dev": "ts-node-dev --debug --notify false --respawn  src/scripts/www.ts",
     "dev:2:watch": "tsc -w --preserveWatchOutput",
     "dev:2:run": "nodemon -w dist dist/scripts/www.js",
     "dev:debug": "ts-node-dev --inspect --notify false --respawn src/scripts/www.ts",
@@ -38,6 +38,7 @@
     "http-errors": "^1.6.3",
     "http-status-codes": "^2.1.4",
     "io-ts": "^2.2.13",
+    "ioredis": "^4.19.4",
     "iterare": "^1.2.1",
     "joi": "^17.2.1",
     "jsonwebtoken": "^8.5.1",
@@ -53,6 +54,7 @@
     "pg-hstore": "^2.3.3",
     "qs": "^6.9.4",
     "sequelize": "^6.3.5",
+    "socket.io": "^3.0.4",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0",
     "yargs": "^16.1.0"

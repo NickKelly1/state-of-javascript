@@ -15,20 +15,19 @@ export const UserCollectionGqlActions = new GraphQLObjectType<IUserCollectionGql
     login: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canLogin();
+        return ctx.services.authPolicy.canLogin();
       },
     },
     register: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canRegister();
+        return ctx.services.authPolicy.canRegister();
       },
     },
-    // TODO: auth policy...
     logout: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canLogout();
+        return ctx.services.authPolicy.canLogout();
       },
     },
     create: {

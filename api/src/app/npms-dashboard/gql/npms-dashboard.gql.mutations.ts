@@ -22,11 +22,10 @@ import { PublishNpmsDashboardGqlInput, PublishNpmsDashboardGqlInputValidator } f
 import { ist } from "../../../common/helpers/ist.helper";
 import { orWhere } from "../../../common/helpers/or-where.helper.ts";
 import { NpmsPackageModel } from "../../npms-package/npms-package.model";
-import { NpmsLang } from "../../../common/i18n/packs/npms.lang";
+import { NpmsDashboardLang } from "../npms-dashboard.lang";
 import { BadRequestException } from "../../../common/exceptions/types/bad-request.exception";
 import { toMapBy } from "../../../common/helpers/to-id-map.helper";
 import { NpmsPackageId } from "../../npms-package/npms-package.id.type";
-import { IRequestContext } from "../../../common/interfaces/request-context.interface";
 import { OrNullable } from "../../../common/types/or-nullable.type";
 import { QueryRunner } from "../../db/query-runner";
 import { OrUndefined } from "../../../common/types/or-undefined.type";
@@ -34,6 +33,9 @@ import { Combinator } from "../../../common/helpers/combinator.helper";
 import { InternalServerException } from "../../../common/exceptions/types/internal-server.exception";
 import { NpmsDashboardItemAssociation } from "../../npms-dashboard-item/npms-dashboard-item.associations";
 import { ExceptionLang } from "../../../common/i18n/packs/exception.lang";
+import { NpmsPackageLang } from '../../npms-package/npms-package.lang';
+import { NpmsDashboardItemLang } from '../../npms-dashboard-item/npms-dashboard-item.lang';
+import { BaseContext } from "../../../common/context/base.context";
 
 /**
  * NpmsDashboard Mutations
@@ -46,9 +48,14 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(GraphQLBoolean),
     args: { dto: { type: GraphQLNonNull(SortNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<boolean> => {
-      ctx.authorize(ctx.services.npmsDashboardPolicy.canSort());
+      // can access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // can sort
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canSort(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(SortNpmsDashboardValidator, args.dto);
       await ctx.services.universal.db.transact(async ({ runner }) => {
+        // do sort
         await ctx.services.npmsDashboardService.sortDashboards({ runner, dto });
       });
       return true;
@@ -63,15 +70,18 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(CreateNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
-      ctx.authorize(ctx.services.npmsDashboardPolicy.canCreate());
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // authorise create
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canCreate(), NpmsDashboardLang.CannotCreate);
+      // validate
       const dto = ctx.validate(CreateNpmsDashboardValidator, args.dto);
 
       // require authentication...
       const owner_id = ctx.auth.user_id;
-      const shadow_id = ctx.auth.shadow_id;
-
-      if (ist.nullable(owner_id) && ist.nullable(shadow_id)) {
-        const message = ctx.lang(NpmsLang.NoAuthentication);
+      const aid = ctx.auth.aid;
+      if (ist.nullable(owner_id) && ist.nullable(aid)) {
+        const message = ctx.lang(NpmsDashboardLang.NoAuthentication);
         throw new BadRequestException(message);
       }
 
@@ -82,8 +92,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
         const serviceDto: INpmsDashboardServiceCreateNpmsDashboardDto = {
           name: dto.name,
           status_id: NpmsDashboardStatus.Draft,
-          shadow_id,
+          aid,
         };
+        // do create
         const dashboard = await ctx.services.npmsDashboardService.create({ runner, dto: serviceDto, owner });
         const nextPackages = await findOrCreateNpmsPackages({
           ctx,
@@ -124,6 +135,9 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(UpdateNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(UpdateNpmsDashboardValidator, args.dto);
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const dashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
@@ -137,12 +151,17 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
             }],
           }
         });
+        // authorise view
+        ctx.services.npmsDashboardRepository._404Unless(ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard }));
+        // authorise update
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canUpdate({ model: dashboard }), NpmsDashboardLang.CannotUpdate({ model: dashboard }));
+
         const prevDashboardItems = assertDefined(dashboard.items);
         const prevNpmsPackages = new Map(prevDashboardItems.map(item => [item.npms_package_id, assertDefined(item.npmsPackage)]));
         const serviceDto: INpmsDashboardServiceUpdateNpmsDashboardDto = {
           name: dto.name,
         };
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canUpdate({ model: dashboard }));
+        // do update
         await ctx.services.npmsDashboardService.update({ runner, dto: serviceDto, model: dashboard });
         const nextPackages = await findOrCreateNpmsPackages({
           ctx,
@@ -176,14 +195,20 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     args: { dto: { type: GraphQLNonNull(SoftDeleteNpmsDashboardGqlInput) } },
     type: GraphQLNonNull(GraphQLBoolean),
     resolve: async (parent, args, ctx): Promise<boolean> => {
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(SoftDeleteNpmsDashboardGqlInputValidator, args.dto);
       await ctx.services.universal.db.transact(async ({ runner }) => {
-        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
-          runner,
-        });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canSoftDelete({ model: npmsDashboard }));
-        await ctx.services.npmsDashboardService.softDelete({ runner, model: npmsDashboard });
-        return npmsDashboard;
+        // find
+        const dashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, { runner, });
+        // authorise view
+        ctx.services.npmsDashboardRepository._404Unless(ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard }));
+        // authorise soft-delete
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canSoftDelete({ model: dashboard }), NpmsDashboardLang.CannotSoftDelete({ model: dashboard, }));
+        // do soft-delete
+        await ctx.services.npmsDashboardService.softDelete({ runner, model: dashboard });
+        return dashboard;
       });
       return true;
     },
@@ -197,18 +222,26 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     args: { dto: { type: GraphQLNonNull(HardDeleteNpmsDashboardGqlInput) } },
     type: GraphQLNonNull(GraphQLBoolean),
     resolve: async (parent, args, ctx): Promise<boolean> => {
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(SoftDeleteNpmsDashboardGqlInputValidator, args.dto);
       await ctx.services.universal.db.transact(async ({ runner }) => {
-        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
+        // find
+        const dashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
             include: [{ association: NpmsDashboardAssociation.items, }],
           }
         });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canHardDelete({ model: npmsDashboard }));
-        const items = assertDefined(npmsDashboard.items);
-        await ctx.services.npmsDashboardService.hardDelete({ runner, model: npmsDashboard, items });
-        return npmsDashboard;
+        // authorise view
+        ctx.services.npmsDashboardRepository._404Unless(ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard }));
+        // authorise hard-delete
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canHardDelete({ model: dashboard }), NpmsDashboardLang.CannotHardDelete({ model: dashboard }));
+        const items = assertDefined(dashboard.items);
+        // do hard-delete
+        await ctx.services.npmsDashboardService.hardDelete({ runner, model: dashboard, items });
+        return dashboard;
       });
       return true;
     },
@@ -222,14 +255,20 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(RestoreNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(RestoreNpmsDashboardGqlInputValidator, args.dto);
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
-          runner,
-        });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canRestore({ model: npmsDashboard }));
-        await ctx.services.npmsDashboardService.restore({ runner, model: npmsDashboard });
-        return npmsDashboard;
+        // find
+        const dashboard = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, { runner, });
+        // authorise view
+        ctx.services.npmsDashboardRepository._404Unless(ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard }));
+        // authorise restore
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canRestore({ model: dashboard }), NpmsDashboardLang.CannotRestore({ model: dashboard }));
+        // do restore
+        await ctx.services.npmsDashboardService.restore({ runner, model: dashboard });
+        return dashboard;
       });
       return final;
     },
@@ -243,14 +282,20 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(SubmitNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(SubmitNpmsDashboardGqlInputValidator, args.dto);
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
-          runner,
-        });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canSubmit({ model: npmsDashboard }));
-        await ctx.services.npmsDashboardService.submit({ runner, model: npmsDashboard });
-        return npmsDashboard;
+        // find
+        const dashboard = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, { runner, });
+        // authorise view
+        ctx.services.npmsDashboardRepository._404Unless(ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard }));
+        // authorise submit
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canSubmit({ model: dashboard }), NpmsDashboardLang.CannotSubmit({ model: dashboard }));
+        // do submit
+        await ctx.services.npmsDashboardService.submit({ runner, model: dashboard });
+        return dashboard;
       });
       return final;
     },
@@ -264,14 +309,20 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(RejectNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(RejectNpmsDashboardGqlInputValidator, args.dto);
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
-          runner,
-        });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canReject({ model: npmsDashboard }));
-        await ctx.services.npmsDashboardService.reject({ runner, model: npmsDashboard });
-        return npmsDashboard;
+        // find
+        const dashboard = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, { runner, });
+        // authorise view
+        ctx.services.npmsDashboardRepository._404Unless(ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard }));
+        // authorise reject
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canReject({ model: dashboard }), NpmsDashboardLang.CannotReject({ model: dashboard }));
+        // do reject
+        await ctx.services.npmsDashboardService.reject({ runner, model: dashboard });
+        return dashboard;
       });
       return final;
     },
@@ -285,14 +336,20 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(PublishNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(PublishNpmsDashboardGqlInputValidator, args.dto);
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
-          runner,
-        });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canPublish({ model: npmsDashboard }));
-        await ctx.services.npmsDashboardService.publish({ runner, model: npmsDashboard });
-        return npmsDashboard;
+        // find
+        const dashboard = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, { runner, });
+        // authorise view
+        ctx.services.npmsDashboardRepository._404Unless(ctx.services.npmsDashboardPolicy.canFindOne({ model: dashboard }));
+        // authorise publish
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canPublish({ model: dashboard }), NpmsDashboardLang.CannotPublish({ model: dashboard }));
+        // do publish
+        await ctx.services.npmsDashboardService.publish({ runner, model: dashboard });
+        return dashboard;
       });
       return final;
     },
@@ -306,14 +363,19 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
     type: GraphQLNonNull(NpmsDashboardGqlNode),
     args: { dto: { type: GraphQLNonNull(UnpublishNpmsDashboardGqlInput) } },
     resolve: async (parent, args, ctx): Promise<INpmsDashboardGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.npmsDashboardPolicy.canAccess(), NpmsDashboardLang.CannotSort);
+      // validate
       const dto = ctx.validate(UnpublishNpmsDashboardGqlInputValidator, args.dto);
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
-        const npmsDashboard: NpmsDashboardModel = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, {
-          runner,
-        });
-        ctx.authorize(ctx.services.npmsDashboardPolicy.canUnpublish({ model: npmsDashboard }));
-        await ctx.services.npmsDashboardService.unpublish({ runner, model: npmsDashboard });
-        return npmsDashboard;
+        // find
+        const dashboard = await ctx.services.npmsDashboardRepository.findByPkOrfail(dto.id, { runner, });
+        // authorise view
+        ctx.authorize(ctx.services.npmsDashboardPolicy.canUnpublish({ model: dashboard }), NpmsDashboardLang.CannotUnpublish({ model: dashboard }));
+        // authorise unpublish
+        await ctx.services.npmsDashboardService.unpublish({ runner, model: dashboard });
+        // do unpublish
+        return dashboard;
       });
       return final;
     },
@@ -329,7 +391,7 @@ export const NpmsDashboardGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, G
  * @param arg
  */
 async function findOrCreateNpmsPackages(arg: {
-  ctx: IRequestContext;
+  ctx: BaseContext;
   dashboard: NpmsDashboardModel;
   findNames?: OrNullable<{ key: string; values: OrNullable<string[]>; }>;
   findIds?: OrNullable<{ key: string; values: OrNullable<NpmsPackageId[]> }>;
@@ -378,13 +440,14 @@ async function findOrCreateNpmsPackages(arg: {
 
   // validate all ids matched
   if (missedIds.length) {
-    const message = ctx.lang(NpmsLang.NpmsIdsNotFound({ ids: missedIds }));
+    const message = ctx.lang(NpmsDashboardLang.NpmsIdsNotFound({ ids: missedIds }));
     throw new BadRequestException(message, findIds?.key ? { [findIds?.key]: [message], } : undefined);
   }
 
   // query npms for missing names
   if (missedNames.length) {
-    ctx.authorize(ctx.services.npmsPackagePolicy.canCreate());
+    // authorise create
+    ctx.authorize(ctx.services.npmsPackagePolicy.canCreate(), NpmsPackageLang.CannotCreate);
     const newPackages = await ctx
       .services
       .npmsPackageService
@@ -401,7 +464,7 @@ async function findOrCreateNpmsPackages(arg: {
 
     // validate all names were eventually found
     if (doubleMissedNames.length) {
-      const message = ctx.lang(NpmsLang.NpmsNamesNotFound({ names: doubleMissedNames }));
+      const message = ctx.lang(NpmsDashboardLang.NpmsNamesNotFound({ names: doubleMissedNames }));
       throw new BadRequestException(message, findNames?.key ? { [findNames.key]: [message], } : undefined );
     }
   }
@@ -418,7 +481,7 @@ async function findOrCreateNpmsPackages(arg: {
  * @param arg
  */
 async function syncItems(arg: {
-  ctx: IRequestContext,
+  ctx: BaseContext,
   runner: QueryRunner;
   dashboard: NpmsDashboardModel;
   prevDashboardItems: NpmsDashboardItemModel[];
@@ -443,22 +506,21 @@ async function syncItems(arg: {
 
   if (missing.length) {
     // authorise creation
-    missing.forEach(npmsPackage => ctx.authorize(ctx
-      .services
-      .npmsDashboardItemPolicy
-      .canCreate({ dashboard, npmsPackage })));
+    missing.forEach(npmsPackage => ctx.authorize(
+      ctx.services.npmsDashboardItemPolicy.canCreate({ dashboard, npmsPackage }),
+      NpmsDashboardItemLang.CannotCreate({ dashboard, npmsPackage })
+    ));
   }
 
   if (unexpected.length) {
     // authorise deletion
-    unexpected.forEach(model => ctx.authorize(ctx
-      .services
-      .npmsDashboardItemPolicy
-      .canHardDelete({
-        dashboard,
-        model,
-        npmsPackage: assertDefined(prevNpmsPackages.get(model.npms_package_id)),
-      })));
+    unexpected.forEach(model => {
+      const npmsPackage = assertDefined(prevNpmsPackages.get(model.npms_package_id));
+      ctx.authorize(
+        ctx.services.npmsDashboardItemPolicy.canHardDelete({ dashboard, model, npmsPackage, }),
+        NpmsDashboardItemLang.CannotHardDelete({ dashboard, npmsPackage, }),
+      );
+    })
   }
 
   // synchronise items

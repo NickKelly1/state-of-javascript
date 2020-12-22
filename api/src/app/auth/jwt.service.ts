@@ -1,18 +1,17 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
 import jsonwebtoken from 'jsonwebtoken';
 import { IRefreshTokenData, IRefreshToken, RefreshTokenValidator } from "./token/refresh.token.gql";
-import { Either, left, right } from "fp-ts/lib/Either";
-import { Exception } from "../../common/exceptions/exception";
+import { Either, left } from "fp-ts/lib/Either";
 import { validate } from "../../common/helpers/validate.helper";
 import { isLeft } from "fp-ts/lib/Either";
 import { BadRequestException } from "../../common/exceptions/types/bad-request.exception";
 import { ExceptionLang } from "../../common/i18n/packs/exception.lang";
 import { AccessTokenValidator, IAccessToken, IAccessTokenData } from "./token/access.token.gql";
 import httpErrors from 'http-errors';
+import { BaseContext } from '../../common/context/base.context';
 
 export class JwtService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

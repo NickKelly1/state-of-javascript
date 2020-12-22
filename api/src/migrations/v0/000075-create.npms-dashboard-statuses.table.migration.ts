@@ -1,6 +1,5 @@
-import { QueryInterface, Sequelize, DataTypes, Transaction, Op } from "sequelize";
+import { DataTypes, Op } from "sequelize";
 import { IMigration, IMigrationDownArg, IMigrationUpArg } from "../../common/migration/migration.interface";
-import { AutoIncrementingId } from "../../common/schemas/auto-incrementing-id.schema";
 
 function getData() {
   const now = new Date();
@@ -18,8 +17,8 @@ function getData() {
 export default class implements IMigration {
   tag = __filename;
 
-  up = async (arg: IMigrationUpArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  up = async (arg: IMigrationUpArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     const { statuses } = getData();
     await queryInterface.createTable('npms_dashboard_statuses', {
       id: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
@@ -35,8 +34,8 @@ export default class implements IMigration {
     );
   }
 
-  down = async (arg: IMigrationDownArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  down = async (arg: IMigrationDownArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     const { statuses } = getData();
     await queryInterface.bulkDelete(
       'npms_dashboard_statuses',
@@ -48,4 +47,4 @@ export default class implements IMigration {
       { transaction },
     );
   };
-};
+}

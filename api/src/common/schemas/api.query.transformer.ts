@@ -1,10 +1,10 @@
 import { Op, Order, WhereAttributeHash, WhereOptions, WhereValue } from "sequelize";
+import { BaseContext } from "../context/base.context";
 import { BadRequestException } from "../exceptions/types/bad-request.exception";
 import { ist } from "../helpers/ist.helper";
 import { pretty } from "../helpers/pretty.helper";
 import { QueryLang } from "../i18n/packs/query.lang";
 import { IPaginateInput } from "../interfaces/pageinate-input.interface";
-import { IRequestContext } from "../interfaces/request-context.interface";
 import { logger } from "../logger/logger";
 import { OrUndefined } from "../types/or-undefined.type";
 import {
@@ -26,6 +26,7 @@ import {
   ApiQuery,
 } from './api.query.types';
 
+// TODO: deprecated...
 
 const isq = {
   and<T>(arg: unknown | ApiConditionAnd<T>): arg is ApiConditionAnd<T> { return (ist.keyof(arg, _and)); },
@@ -354,7 +355,7 @@ export const transformApiFilter = matchFilter<WhereOptions>({
   },
 })
 
-const transformApiSorts = (ctx: IRequestContext) => (fromQs: ApiSorts): Order => {
+const transformApiSorts = (ctx: BaseContext) => (fromQs: ApiSorts): Order => {
   const order: Order = [];
   fromQs.forEach(({ field, dir }) => {
     const numDir = Number(dir);
@@ -376,7 +377,7 @@ export interface IParsedQuery {
   }
 }
 
-export function transformApiQuery(ctx: IRequestContext, qsVal: ApiQuery): IParsedQuery {
+export function transformApiQuery(ctx: BaseContext, qsVal: ApiQuery): IParsedQuery {
   let where: OrUndefined<WhereOptions>;
   if (qsVal.filter) {
     try {

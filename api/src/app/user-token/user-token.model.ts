@@ -1,4 +1,4 @@
-import { Model, DataTypes, BelongsToGetAssociationMixin } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
 import { AuditableSchema } from '../../common/schemas/auditable.schema';
 import { UserTokenId } from './user-token.id.type';
 import { AutoIncrementingId } from '../../common/schemas/auto-incrementing-id.schema';
@@ -39,10 +39,10 @@ export class UserTokenModel extends Model<IUserTokenAttributes, IUserTokenCreati
   // associations
   //
 
-  isWelcome() { return this[UserTokenField.type_id] === UserTokenType.AcceptWelcome; }
-  isForgottenPasswordReset() { return this[UserTokenField.type_id] === UserTokenType.ForgottenPasswordReset; }
-  isVerifyEmail() { return this[UserTokenField.type_id] === UserTokenType.VerifyEmail; }
-  isVerifyEmailChange() { return this[UserTokenField.type_id] === UserTokenType.VerifyEmailChange; }
+  isWelcome(): boolean { return this[UserTokenField.type_id] === UserTokenType.AcceptWelcome; }
+  isForgottenPasswordReset(): boolean { return this[UserTokenField.type_id] === UserTokenType.ForgottenPasswordReset; }
+  isVerifyEmail(): boolean { return this[UserTokenField.type_id] === UserTokenType.VerifyEmail; }
+  isVerifyEmailChange(): boolean { return this[UserTokenField.type_id] === UserTokenType.VerifyEmailChange; }
 
   /**
    * Is the token expired?

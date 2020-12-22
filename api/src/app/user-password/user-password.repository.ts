@@ -1,6 +1,6 @@
 import { Model, ModelCtor } from "sequelize";
 import { UserPasswordModel } from "../../circle";
-import { BaseRepository } from "../../common/classes/repository.base";
+import { BaseRepository } from "../../common/classes/base.repository";
 
 
 

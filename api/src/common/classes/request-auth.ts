@@ -5,44 +5,44 @@ import { IAccessToken } from "../../app/auth/token/access.token.gql";
 import { UserModel } from "../../circle";
 import { ist } from "../helpers/ist.helper";
 import { OrNull } from "../types/or-null.type";
-import { h_shadow_id } from "../constants/shad.const";
 import { OrNullable } from "../types/or-nullable.type";
 import { Permission } from "../../app/permission/permission.const";
+import { IJson } from "../interfaces/json.interface";
 
 export class RequestAuth {
   protected _permissions: Set<PermissionId>;
 
   protected _user_id: OrUndefined<UserId>;
 
-  get permissions(): Set<PermissionId> { return this._permissions; };
+  get permissions(): Set<PermissionId> { return this._permissions; }
 
-  get user_id(): OrUndefined<PermissionId> { return this._user_id; };
+  get user_id(): OrUndefined<PermissionId> { return this._user_id; }
 
-  readonly shadow_id: OrNull<string> = null;
+  readonly aid: OrNull<string> = null;
 
   constructor(
     permissions: PermissionId[],
     user_id?: UserId,
-    shad_id?: OrNull<string>,
+    aid?: OrNull<string>,
   ) {
     this._permissions = new Set(permissions);
     this._user_id = user_id;
-    // null out an empty string shadow_id
-    this.shadow_id = shad_id || null;
+    // null out an empty string aid
+    this.aid = aid || null;
   }
 
   /**
    * Is the Request authenticated as either User or Shadow?
    */
   isAuthenticatedAsAny(): boolean {
-    return this.isLoggedIn() || this.isAuthenticatedAsShadow();
+    return this.isLoggedIn() || this.isAuthenticatedAsAnonymous();
   }
 
   /**
    * Is the Request authenticated as a Shadow?
    */
-  isAuthenticatedAsShadow(): boolean {
-    return ist.defined(this.shadow_id);
+  isAuthenticatedAsAnonymous(): boolean {
+    return ist.defined(this.aid);
   }
 
   /**
@@ -78,15 +78,15 @@ export class RequestAuth {
 
 
   /**
-   * Does a given ShadowId belong to the Requester?
+   * Does a given AId belong to the Requester?
    *
    * @param id
    */
-  isMeByShadowId(shadow_id: OrNullable<string>): boolean {
-    // if shadow id === empty string -> kill
-    if (!shadow_id) return false;
-    if (ist.nullable(this.shadow_id)) return false;
-    return this.shadow_id === shadow_id;
+  isMeByAId(aid: OrNullable<string>): boolean {
+    // if aid === empty string -> kill
+    if (!aid) return false;
+    if (ist.nullable(this.aid)) return false;
+    return this.aid === aid;
   }
 
 
@@ -130,7 +130,7 @@ export class RequestAuth {
    *
    * @param arg
    */
-  addAccess(arg: { access: IAccessToken }) {
+  addAccess(arg: { access: IAccessToken }): void {
     const { access } = arg;
     this._user_id = access.user_id;
     access.permissions.forEach(perm => this.permissions.add(perm));
@@ -142,7 +142,7 @@ export class RequestAuth {
    *
    * @param arg
    */
-  addPermissions(arg: { permissions: PermissionId[] }) {
+  addPermissions(arg: { permissions: PermissionId[] }): void {
     const { permissions } = arg;
     permissions.forEach(this._permissions.add.bind(this._permissions));
   }
@@ -151,15 +151,15 @@ export class RequestAuth {
   /**
    * to JSON
    */
-  toJSON() {
+  toJSON(): IJson {
     const {
       user_id,
-      shadow_id,
+      aid,
       permissions,
     } = this;
     return {
       user_id,
-      shadow_id,
+      aid,
       permissions: Array.from(permissions),
     };
   }

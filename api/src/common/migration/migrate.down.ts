@@ -1,5 +1,4 @@
 import { createSequelize } from "../../app/db/create-sequelize";
-import { ScriptGuard } from "../../script-guard";
 import { EnvServiceSingleton } from "../environment/env";
 import { prettyQ } from "../helpers/pretty.helper";
 import { logger } from "../logger/logger";
@@ -10,10 +9,7 @@ const scriptName = 'migration::down';
 export async function migrateDown(arg?: {
   step?: number,
   by?: 'batch' | 'number',
-}) {
-  // check we can execute scripts...
-  ScriptGuard.check();
-
+}): Promise<void> {
   const { step, by } = arg ?? {};
   const env = EnvServiceSingleton;
   const sequelize = createSequelize({ env });
@@ -22,7 +18,7 @@ export async function migrateDown(arg?: {
   await sequelize.transaction(async (transaction) => {
     try {
       const queryInterface = sequelize.getQueryInterface();
-      queryInterface.startTransaction(transaction);
+      await queryInterface.startTransaction(transaction);
       const runner = new MigrationRunner({
         env,
         queryInterface,

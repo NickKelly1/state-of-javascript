@@ -1,4 +1,3 @@
-import iterare from 'iterare';
 import { DataTypes, Model, QueryInterface, Sequelize, Transaction } from "sequelize";
 import { EnvService } from "../environment/env";
 import { logger } from "../logger/logger";
@@ -6,8 +5,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { ist } from "../helpers/ist.helper";
 import { prettyQ } from "../helpers/pretty.helper";
-import { created_at } from "../schemas/constants/created_at.const";
-import { updated_at } from "../schemas/constants/updated_at.const";
 import { Arr } from "../helpers/arr.helper";
 import { assertDefined } from "../helpers/assert-defined.helper";
 import { _migrations } from './_migration.const';
@@ -241,7 +238,7 @@ export class MigrationRunner {
    */
   async up(arg?: {
     step?: number;
-  }) {
+  }): Promise<void> {
     const { step } = arg ?? {};
     await this._ensureMigrationTable();
     const { nextBatch, pending } = await this._findPendingMigrations();
@@ -275,7 +272,7 @@ export class MigrationRunner {
   async down(arg?: {
     step?: number;
     by?: 'batch' | 'number';
-  }) {
+  }): Promise<void> {
     const { step, by: _by } = arg ?? {};
     const by: 'batch' | 'number' = _by || 'batch';
     await this._ensureMigrationTable();

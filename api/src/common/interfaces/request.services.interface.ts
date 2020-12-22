@@ -53,13 +53,30 @@ import { LogPolicy } from "../../app/log/log.policy";
 import { PermissionCategoryPolicy } from "../../app/permission-category/permission-category.policy";
 import { PermissionCategoryRepository } from "../../app/permission-category/permission-category.repository";
 import { PermissionCategoryService } from "../../app/permission-category/permission-category.service";
+import { BlogPostService } from '../../app/blog-post/blog-post.service';
+import { BlogPostRepository } from '../../app/blog-post/blog-post.repository';
+import { BlogPostPolicy } from '../../app/blog-post/blog-post.policy';
+
+import { BlogPostCommentService } from '../../app/blog-post-comment/blog-post-comment.service';
+import { BlogPostCommentRepository } from '../../app/blog-post-comment/blog-post-comment.repository';
+import { BlogPostCommentPolicy } from '../../app/blog-post-comment/blog-post-comment.policy';
+
+import { BlogPostStatusService } from '../../app/blog-post-status/blog-post-status.service';
+import { BlogPostStatusRepository } from '../../app/blog-post-status/blog-post-status.repository';
+import { BlogPostStatusPolicy } from '../../app/blog-post-status/blog-post-status.policy';
+import { AuthPolicy } from '../../app/user/auth.policy';
+import { UserEmailPolicy } from '../../app/user/user-email.policy';
+import { UserEmailService } from '../../app/user/user-email.service';
 
 export interface IRequestServices {
   universal: IUniversalServices;
 
   userService: UserService;
+  userEmailService: UserEmailService;
   userRepository: UserRepository;
   userPolicy: UserPolicy;
+  authPolicy: AuthPolicy;
+  userEmailPolicy: UserEmailPolicy;
 
   roleService: RoleService;
   roleRepository: RoleRepository;
@@ -80,6 +97,18 @@ export interface IRequestServices {
   rolePermissionService: RolePermissionService;
   rolePermissionRepository: RolePermissionRepository;
   rolePermissionPolicy: RolePermissionPolicy;
+
+  blogPostService: BlogPostService;
+  blogPostRepository: BlogPostRepository;
+  blogPostPolicy: BlogPostPolicy;
+
+  blogPostCommentService: BlogPostCommentService;
+  blogPostCommentRepository: BlogPostCommentRepository;
+  blogPostCommentPolicy: BlogPostCommentPolicy;
+
+  blogPostStatusService: BlogPostStatusService;
+  blogPostStatusRepository: BlogPostStatusRepository;
+  blogPostStatusPolicy: BlogPostStatusPolicy;
 
   newsArticleService: NewsArticleService;
   newsArticleRepository: NewsArticleRepository;

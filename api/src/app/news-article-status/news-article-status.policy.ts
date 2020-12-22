@@ -1,21 +1,33 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
-import { OrNull } from "../../common/types/or-null.type";
-import { OrNullable } from "../../common/types/or-nullable.type";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
-import { UserModel } from "../user/user.model";
 import { NewsArticleStatusModel } from "./news-article-status.model";
 
 export class NewsArticleStatusPolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
 
   /**
-   * Can the Requester find NewsArticleStatuses?
+   * Can the Requester Access NewsArticleStatuses?
+   */
+  canAccess(): boolean {
+    return this.ctx.auth.hasPermission(
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.NewsArticleStatuses.Viewer,
+    );
+  }
+
+
+  /**
+   * Can the Requester FindMany NewsArticleStatuses?
    */
   canFindMany(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
+
     return this.ctx.auth.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
       Permission.NewsArticleStatuses.Viewer,
@@ -23,7 +35,7 @@ export class NewsArticleStatusPolicy {
   }
 
   /**
-   * Can the Requester find this NewsArticleStatus?
+   * Can the Requester Find this NewsArticleStatus?
    *
    * @param arg
    */
@@ -31,6 +43,9 @@ export class NewsArticleStatusPolicy {
     model: NewsArticleStatusModel;
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // has NewsArticleStatusViewer
     return this.ctx.auth.hasPermission(Permission.NewsArticleStatuses.Viewer);

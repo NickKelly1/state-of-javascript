@@ -1,22 +1,17 @@
-import iterare from 'iterare';
-import { DataTypes, Model, QueryInterface, Sequelize, Transaction } from "sequelize";
+import { QueryInterface, Sequelize, Transaction } from "sequelize";
 import { EnvService } from "../environment/env";
 import { logger } from "../logger/logger";
 import fs from 'fs/promises';
 import path from 'path';
 import { ist } from "../helpers/ist.helper";
 import { prettyQ } from "../helpers/pretty.helper";
-import { created_at } from "../schemas/constants/created_at.const";
-import { updated_at } from "../schemas/constants/updated_at.const";
-import { Arr } from "../helpers/arr.helper";
-import { assertDefined } from "../helpers/assert-defined.helper";
 import { IFsSeederDescriptor } from './fs-seeder-descriptor.interface';
 import { Str } from '../helpers/str.helper';
-import { IRequestContext } from '../interfaces/request-context.interface';
+import { BaseContext } from "../context/base.context";
 
 
 export class SeedRunner {
-  protected readonly ctx: IRequestContext;
+  protected readonly ctx: BaseContext;
   protected readonly sequelize: Sequelize;
   protected readonly transaction: Transaction;
   protected readonly queryInterface :QueryInterface;
@@ -24,7 +19,7 @@ export class SeedRunner {
 
 
   constructor(arg: {
-    ctx: IRequestContext,
+    ctx: BaseContext,
     sequelize: Sequelize;
     transaction: Transaction;
     queryInterface :QueryInterface;

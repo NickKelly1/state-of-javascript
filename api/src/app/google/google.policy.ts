@@ -1,10 +1,10 @@
 import { IntegrationModel, } from "../../circle";
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 
 export class GooglePolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

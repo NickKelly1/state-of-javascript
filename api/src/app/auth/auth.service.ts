@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
 import * as E from 'fp-ts/Either';
 import { isLeft } from "fp-ts/lib/Either";
-import { PathReporter, failure } from "io-ts/lib/PathReporter";
 import { ExtractJwt } from "passport-jwt";
-import { Exception } from "../../common/exceptions/exception";
+import { BaseContext } from "../../common/context/base.context";
 import { ist } from "../../common/helpers/ist.helper";
 import { prettyQ } from "../../common/helpers/pretty.helper";
 import { AuthLang } from "../../common/i18n/packs/auth.lang";
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
 import { logger } from "../../common/logger/logger";
 import { OrNull } from "../../common/types/or-null.type";
 import { PermissionId } from "../permission/permission-id.type";
@@ -17,7 +15,7 @@ import { IAccessToken } from "./token/access.token.gql";
 
 export class AuthSerivce {
   constructor(
-    protected readonly ctx: IRequestContext
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

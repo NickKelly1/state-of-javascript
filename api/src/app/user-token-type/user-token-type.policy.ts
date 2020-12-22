@@ -1,13 +1,10 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
-import { OrNull } from "../../common/types/or-null.type";
-import { OrNullable } from "../../common/types/or-nullable.type";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
-import { UserModel } from "../user/user.model";
 import { UserTokenTypeModel } from "./user-token-type.model";
 
 export class UserLinkTypePolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

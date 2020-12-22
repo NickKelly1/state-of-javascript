@@ -61,9 +61,24 @@ export const Permission = {
     Admin: 1640,
   },
   Integrations: {
+    Viewer: 1700,
+    ViewSecrets: 1701,
+    Manage: 1720,
+  },
+  BlogPostStatuses: {
     Viewer: 1800,
-    ViewSecrets: 1801,
-    Manage: 1820,
+  },
+  BlogPosts: {
+    Viewer: 1900,
+    Writer: 1910,
+    Manager: 1920,
+    Admin: 1930,
+  },
+  BlogPostComments: {
+    Viewer: 2000,
+    Writer: 2010,
+    Manager: 2020,
+    Admin: 2030,
   },
   // BlogCategories: {
   //   Show: 1900,

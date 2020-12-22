@@ -1,15 +1,12 @@
 import { GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
-import { UserModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { BadRequestException } from "../../../common/exceptions/types/bad-request.exception";
 import { gqlQueryArg } from "../../../common/gql/gql.query.arg";
-import { transformGqlQuery } from "../../../common/gql/gql.query.transform";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { UserTokenLang } from "../../../common/i18n/packs/user-token.lang";
-import { collectionMeta } from "../../../common/responses/collection-meta";
-import { OrNull } from "../../../common/types/or-null.type";
 import { UserTokenAssociation } from "../../user-token/user-token.associations";
 import { UserByTokenGqlInput, UserByTokenGqlInputValidator } from "../gql-input/user-by-token.gql";
+import { UserLang } from "../user.lang";
 import { IUserCollectionGqlNodeSource, UserCollectionGqlNode } from "./user.collection.gql.node";
 import { UserCollectionOptionsGqlInput } from "./user.collection.gql.options";
 import { IUserGqlNodeSource, UserGqlNode } from "./user.gql.node";
@@ -19,22 +16,16 @@ export const UserGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = (
     type: GraphQLNonNull(UserCollectionGqlNode),
     args: gqlQueryArg(UserCollectionOptionsGqlInput),
     resolve: async (parent, args, ctx): Promise<IUserCollectionGqlNodeSource> => {
-      ctx.authorize(ctx.services.userPolicy.canFindMany());
-      const { page, options } = transformGqlQuery(args);
-      const { rows, count } = await ctx.services.userRepository.findAllAndCount({
+      // authorise access
+      ctx.authorize(ctx.services.userPolicy.canAccess(), UserLang.CannotAccess);
+      // authorise find-many
+      ctx.authorize(ctx.services.userPolicy.canFindMany(), UserLang.CannotFindMany);
+      // find
+      const collection = await ctx.services.userRepository.gqlCollection({
         runner: null,
-        options: { ...options },
+        args,
       });
-      const pagination = collectionMeta({ data: rows, total: count, page });
-      const connection: IUserCollectionGqlNodeSource = {
-        models: rows.map((model): OrNull<UserModel> =>
-          ctx.services.userPolicy.canFindOne({ model })
-            ? model
-            : null
-          ),
-        pagination,
-      };
-      return connection;
+      return collection;
     },
   },
 

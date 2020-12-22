@@ -21,10 +21,10 @@ export const isCacheResult = {
 
 export class InvalidatingCache<T> {
   protected _last: OrUndefined<number>;
-  get last() { return this._last; }
+  get last(): OrUndefined<number> { return this._last; }
 
   protected _durationMs: number;
-  get durationMs() { return this._durationMs; }
+  get durationMs(): number { return this._durationMs; }
 
   protected _value: OrUndefined<T>;
 
@@ -39,25 +39,38 @@ export class InvalidatingCache<T> {
     const now = Date.now();
     const expiredBy = now - (this._last + this._durationMs);
     const isValid = expiredBy < 0;
-    // logger.warn(`CHECKING VALIDITY.... ${prettyQ({
-    //   now,
-    //   isValid,
-    //   _durationMs: this._durationMs,
-    //   _last: this._last,
-    //   expiredBy,
-    // })}`)
     return isValid;
   }
 
+  /**
+   * Get the caches value
+   */
   get(): ICacheResult<T> {
-    if (ist.nullable(this._last)) return { state: CacheState.Uninitialised, value: undefined };
-    if (!this.isValid()) return { state: CacheState.Invalidated, value: undefined };
-    return { state: CacheState.Valid, value: this._value! };
+    let result: ICacheResult<T>;
+    if (ist.nullable(this._last)) { result = { state: CacheState.Uninitialised, value: undefined }; }
+    else if (!this.isValid()) { result = { state: CacheState.Invalidated, value: undefined }; }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    else { result = { state: CacheState.Valid, value: this._value! }; }
+    logger.debug(`[${this.constructor.name}::get] Retrieved: ${CacheState[result.state]}......`)
+    return result;
   }
 
-  set(value: T) {
+  /**
+   * Set the caches value
+   */
+  set(value: T): void {
+    logger.debug(`[${this.constructor.name}::set] Setting...`);
     const now = Date.now();
     this._last = now;
     this._value = value;
+  }
+
+  /**
+   * Invalidate the cache
+   * (make it think it's never been fetched...)
+   */
+  invalidate(): void {
+    logger.debug(`[${this.constructor.name}::invalidate] Force invalidating...`)
+    this._last = undefined;
   }
 }

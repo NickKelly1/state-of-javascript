@@ -1,4 +1,4 @@
-import { GraphQLNonNull, GraphQLObjectType } from "graphql";
+import { GraphQLObjectType } from "graphql";
 import { NpmsDashboardItemModel } from "../npms-dashboard-item.model";
 import { OrNull } from "../../../common/types/or-null.type";
 import { GqlContext } from "../../../common/context/gql.context";

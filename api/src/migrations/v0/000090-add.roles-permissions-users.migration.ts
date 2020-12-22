@@ -1,4 +1,4 @@
-import { QueryInterface, Sequelize, DataTypes, Transaction, Op } from "sequelize";
+import { Op } from "sequelize";
 import { IMigration, IMigrationDownArg, IMigrationUpArg } from "../../common/migration/migration.interface";
 import bcryptjs from 'bcryptjs';
 
@@ -69,13 +69,6 @@ function getData() {
     { id: 1500, name: 'npms-dashboard-statuses', colour: '#F2B6FA', created_at: now, updated_at: now, deleted_at: null, },
     { id: 1600, name: 'npms-dashboards', colour: '#BBFDF3', created_at: now, updated_at: now, deleted_at: null, },
     { id: 1700, name: 'integrations', colour: '#C6FAD5', created_at: now, updated_at: now, deleted_at: null, },
-    // { id: 1900, name: 'blog-categories', colour: '#A8E3A8', created_at: now, updated_at: now, deleted_at: null, },
-    // { id: 2000, name: 'blog-posts', colour: '#D2FDBB', created_at: now, updated_at: now, deleted_at: null, },
-    // { id: 2100, name: 'blog-post-images', colour: '#C5FAF3', created_at: now, updated_at: now, deleted_at: null, },
-    // { id: 2200, name: 'blog-post-comments', colour: '#E6FAD2', created_at: now, updated_at: now, deleted_at: null, },
-    // { id: 2300, name: 'blog-post-votes', colour: '#B8C1FA', created_at: now, updated_at: now, deleted_at: null, },
-    // { id: 2400, name: 'blog-post-comment-votes', colour: '#FABBA0', created_at: now, updated_at: now, deleted_at: null, },
-    // { id: 2500, name: 'blog-post-tags', colour: '#ED91FA', created_at: now, updated_at: now, deleted_at: null, },
   ];
 
   // TODO: update policies & gql actions & permission const names (keys)...
@@ -235,7 +228,7 @@ function getData() {
 export default class implements IMigration {
   tag = __filename;
 
-  up = async (arg: IMigrationUpArg) => {
+  up = async (arg: IMigrationUpArg): Promise<void> => {
     const { env, queryInterface, sequelize, transaction } = arg;
     const { categories, permissions, rolePermissions, roles, userRoles, users } = getData();
     await queryInterface.bulkInsert('permission_categories', categories, { transaction });
@@ -263,9 +256,9 @@ export default class implements IMigration {
 
   }
 
-  down = async (arg: IMigrationDownArg) => {
-    const { env, queryInterface, sequelize, transaction, } = arg;
-    const { permissions, rolePermissions, roles, userRoles, users } = getData();
+  down = async (arg: IMigrationDownArg): Promise<void> => {
+    const { queryInterface, transaction, } = arg;
+    const { permissions, rolePermissions, roles, userRoles, users, categories } = getData();
     await queryInterface.bulkDelete(
       'user_passwords',
       { user_id: 1, },
@@ -274,65 +267,44 @@ export default class implements IMigration {
 
     await queryInterface.bulkDelete(
       'user_roles',
-      {
-        [Op.or]: userRoles.map(ur => ({
-          [Op.and]: [
-            { user_id: ur.user_id },
-            { role_id: ur.role_id },
-          ],
-        })),
-      },
+      { [Op.or]: userRoles.map(ur => ({ [Op.and]: [
+        { user_id: ur.user_id },
+        { role_id: ur.role_id },
+      ], })), },
       { transaction },
     );
 
     await queryInterface.bulkDelete(
       'users',
-      {
-        [Op.or]: users.map(user => ({
-          [Op.and]: [
-            { id: user.id },
-          ],
-        })),
-      },
+      { [Op.or]: users.map(user => ({ [Op.and]: [ { id: user.id }, ], })), },
       { transaction },
     );
 
     await queryInterface.bulkDelete(
       'role_permissions',
-      {
-        [Op.or]: rolePermissions.map(rp => ({
-          [Op.and]: [
-            { role_id: rp.role_id },
-            { permission_id: rp.permission_id },
-          ],
-        })),
-      },
+      { [Op.or]: rolePermissions.map(rp => ({ [Op.and]: [
+        { role_id: rp.role_id },
+        { permission_id: rp.permission_id },
+      ], })), },
       { transaction },
     );
 
     await queryInterface.bulkDelete(
       'roles',
-      {
-        [Op.or]: roles.map(role => ({
-          [Op.and]: [
-            { id: role.id },
-          ],
-        })),
-      },
+      { [Op.or]: roles.map(role => ({ [Op.and]: [ { id: role.id }, ], })), },
       { transaction },
     );
 
     await queryInterface.bulkDelete(
       'permissions',
-      {
-        [Op.or]: permissions.map(permission => ({
-          [Op.and]: [
-            { id: permission.id },
-          ],
-        })),
-      },
+      { [Op.or]: permissions.map(permission => ({ [Op.and]: [ { id: permission.id }, ], })), },
       { transaction },
     );
 
+    await queryInterface.bulkDelete(
+      'permission_categories',
+      { [Op.or]: categories.map(category => ({ [Op.and]: [ { id: category.id }, ], })), },
+      { transaction },
+    );
   };
-};
+}

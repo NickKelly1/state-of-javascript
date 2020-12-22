@@ -1,9 +1,9 @@
 import { QueryInterface, Sequelize, Transaction } from "sequelize";
+import { BaseContext } from "../context/base.context";
 import { EnvService } from "../environment/env";
-import { IRequestContext } from "../interfaces/request-context.interface";
 
 export interface ISeederArg {
-  ctx: IRequestContext,
+  ctx: BaseContext;
   queryInterface: QueryInterface;
   transaction: Transaction;
   sequelize: Sequelize;

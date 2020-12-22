@@ -7,7 +7,7 @@ export interface NpmsPackageAssociations {
   [index: string]: Association;
   dashboard_items: Association<NpmsPackageModel, NpmsDashboardItemModel>;
   dashboards: Association<NpmsPackageModel, NpmsDashboardModel>;
-};
+}
 
 export const NpmsPackageAssociation: K2K<NpmsPackageAssociations> = {
   dashboard_items: 'dashboard_items',

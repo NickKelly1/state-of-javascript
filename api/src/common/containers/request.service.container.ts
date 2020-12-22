@@ -23,7 +23,6 @@ import { UserRoleService } from "../../app/user-role/user-role.service";
 import { UserPolicy } from "../../app/user/user.policy";
 import { UserRepository } from "../../app/user/user.repository";
 import { UserService } from "../../app/user/user.service";
-import { IRequestContext } from "../interfaces/request-context.interface";
 import { IRequestServices } from "../interfaces/request.services.interface";
 import { OrUndefined } from "../types/or-undefined.type";
 import { IUniversalServices } from "../interfaces/universal.services.interface";
@@ -56,10 +55,23 @@ import { LogPolicy } from "../../app/log/log.policy";
 import { PermissionCategoryPolicy } from "../../app/permission-category/permission-category.policy";
 import { PermissionCategoryRepository } from "../../app/permission-category/permission-category.repository";
 import { PermissionCategoryService } from "../../app/permission-category/permission-category.service";
+import { BlogPostCommentPolicy } from "../../app/blog-post-comment/blog-post-comment.policy";
+import { BlogPostCommentRepository } from "../../app/blog-post-comment/blog-post-comment.repository";
+import { BlogPostCommentService } from "../../app/blog-post-comment/blog-post-comment.service";
+import { BlogPostStatusPolicy } from "../../app/blog-post-status/blog-post-status.policy";
+import { BlogPostStatusRepository } from "../../app/blog-post-status/blog-post-status.repository";
+import { BlogPostStatusService } from "../../app/blog-post-status/blog-post-status.service";
+import { BlogPostPolicy } from "../../app/blog-post/blog-post.policy";
+import { BlogPostRepository } from "../../app/blog-post/blog-post.repository";
+import { BlogPostService } from "../../app/blog-post/blog-post.service";
+import { BaseContext } from "../context/base.context";
+import { AuthPolicy } from '../../app/user/auth.policy';
+import { UserEmailPolicy } from '../../app/user/user-email.policy';
+import { UserEmailService } from "../../app/user/user-email.service";
 
 export class RequestSerivceContainer implements IRequestServices {
   constructor(
-    protected readonly _ctx: IRequestContext,
+    protected readonly _ctx: BaseContext,
     public readonly universal: IUniversalServices,
   ) {
     //
@@ -93,6 +105,13 @@ export class RequestSerivceContainer implements IRequestServices {
     return this._userService;
   }
 
+  protected _userEmailService: OrUndefined<UserEmailService>;
+  get userEmailService(): UserEmailService {
+    if (this._userEmailService) return this._userEmailService;
+    this._userEmailService = new UserEmailService(this._ctx);
+    return this._userEmailService;
+  }
+
   protected _userRepository: OrUndefined<UserRepository>;
   get userRepository(): UserRepository {
     if (this._userRepository) return this._userRepository;
@@ -100,11 +119,25 @@ export class RequestSerivceContainer implements IRequestServices {
     return this._userRepository;
   }
 
+  protected _authPolicy: OrUndefined<AuthPolicy>;
+  get authPolicy(): AuthPolicy {
+    if (this._authPolicy) return this._authPolicy;
+    this._authPolicy = new AuthPolicy(this._ctx);
+    return this._authPolicy;
+  }
+
   protected _userPolicy: OrUndefined<UserPolicy>;
   get userPolicy(): UserPolicy {
     if (this._userPolicy) return this._userPolicy;
     this._userPolicy = new UserPolicy(this._ctx);
     return this._userPolicy;
+  }
+
+  protected _userEmailPolicy: OrUndefined<UserEmailPolicy>;
+  get userEmailPolicy(): UserEmailPolicy {
+    if (this._userEmailPolicy) return this._userEmailPolicy;
+    this._userEmailPolicy = new UserEmailPolicy(this._ctx);
+    return this._userEmailPolicy;
   }
 
   protected _roleService: OrUndefined<RoleService>;
@@ -210,6 +243,69 @@ export class RequestSerivceContainer implements IRequestServices {
     if (this._rolePermissionPolicy) return this._rolePermissionPolicy;
     this._rolePermissionPolicy = new RolePermissionPolicy(this._ctx);
     return this._rolePermissionPolicy;
+  }
+
+  protected _blogPostService: OrUndefined<BlogPostService>
+  get blogPostService(): BlogPostService {
+    if (this._blogPostService) return this._blogPostService;
+    this._blogPostService = new BlogPostService(this._ctx);
+    return this._blogPostService;
+  }
+
+  protected _blogPostRepository: OrUndefined<BlogPostRepository>
+  get blogPostRepository(): BlogPostRepository {
+    if (this._blogPostRepository) return this._blogPostRepository;
+    this._blogPostRepository = new BlogPostRepository(this._ctx);
+    return this._blogPostRepository;
+  }
+
+  protected _blogPostPolicy: OrUndefined<BlogPostPolicy>
+  get blogPostPolicy(): BlogPostPolicy {
+    if (this._blogPostPolicy) return this._blogPostPolicy;
+    this._blogPostPolicy = new BlogPostPolicy(this._ctx);
+    return this._blogPostPolicy;
+  }
+
+  protected _blogPostCommentService: OrUndefined<BlogPostCommentService>
+  get blogPostCommentService(): BlogPostCommentService {
+    if (this._blogPostCommentService) return this._blogPostCommentService;
+    this._blogPostCommentService = new BlogPostCommentService(this._ctx);
+    return this._blogPostCommentService;
+  }
+
+  protected _blogPostCommentRepository: OrUndefined<BlogPostCommentRepository>
+  get blogPostCommentRepository(): BlogPostCommentRepository {
+    if (this._blogPostCommentRepository) return this._blogPostCommentRepository;
+    this._blogPostCommentRepository = new BlogPostCommentRepository(this._ctx);
+    return this._blogPostCommentRepository;
+  }
+
+  protected _blogPostCommentPolicy: OrUndefined<BlogPostCommentPolicy>
+  get blogPostCommentPolicy(): BlogPostCommentPolicy {
+    if (this._blogPostCommentPolicy) return this._blogPostCommentPolicy;
+    this._blogPostCommentPolicy = new BlogPostCommentPolicy(this._ctx);
+    return this._blogPostCommentPolicy;
+  }
+
+  protected _blogPostStatusService: OrUndefined<BlogPostStatusService>
+  get blogPostStatusService(): BlogPostStatusService {
+    if (this._blogPostStatusService) return this._blogPostStatusService;
+    this._blogPostStatusService = new BlogPostStatusService(this._ctx);
+    return this._blogPostStatusService;
+  }
+
+  protected _blogPostStatusRepository: OrUndefined<BlogPostStatusRepository>
+  get blogPostStatusRepository(): BlogPostStatusRepository {
+    if (this._blogPostStatusRepository) return this._blogPostStatusRepository;
+    this._blogPostStatusRepository = new BlogPostStatusRepository(this._ctx);
+    return this._blogPostStatusRepository;
+  }
+
+  protected _blogPostStatusPolicy: OrUndefined<BlogPostStatusPolicy>
+  get blogPostStatusPolicy(): BlogPostStatusPolicy {
+    if (this._blogPostStatusPolicy) return this._blogPostStatusPolicy;
+    this._blogPostStatusPolicy = new BlogPostStatusPolicy(this._ctx);
+    return this._blogPostStatusPolicy;
   }
 
   protected _newsArticleService: OrUndefined<NewsArticleService>

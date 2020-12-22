@@ -1,22 +1,25 @@
 import { Op } from 'sequelize';
 import { RolePermissionModel } from '../../circle';
+import { BaseContext } from '../../common/context/base.context';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
 import { assertDefined } from '../../common/helpers/assert-defined.helper';
-import { auditableRo } from '../../common/helpers/auditable-ro.helper';
-import { RolePermissionLang } from '../../common/i18n/packs/role-permission.lang';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
+import { RolePermissionLang } from './role-permission.lang';
 import { QueryRunner } from '../db/query-runner';
+import { PubsubMessageAwaiter } from '../db/pubsub-message-awaiter';
 import { PermissionId } from '../permission/permission-id.type';
 import { PermissionModel } from '../permission/permission.model';
 import { RoleId } from '../role/role.id.type';
 import { RoleModel } from '../role/role.model';
-import { IRolePermissionRo } from './dtos/role-permission.ro';
 import { RolePermissionAssociation } from './role-permission.associations';
 import { RolePermissionField } from './role-permission.attributes';
+import { Role } from '../role/role.const';
+import { RedisChannel } from '../db/redis.channel.const';
+import { SocketMessageType } from '../socket/socket.message';
+import { SocketMessageAwaiter } from '../socket/socket-message-awaiter';
 
 export class RolePermissionService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -77,13 +80,31 @@ export class RolePermissionService {
     const { runner, role, permission } = arg;
     const { transaction } = runner;
 
-    const RolePermission = RolePermissionModel.build({
+    const model = RolePermissionModel.build({
       role_id: role.id,
       permission_id: permission.id,
     });
 
-    await RolePermission.save({ transaction });
-    return RolePermission;
+    await model.save({ transaction });
+
+    if (model.role_id === Role.Admin
+      || model.role_id == Role.Authenticated
+      || model.role_id === Role.Public
+    ) {
+      // publish redis
+      runner.addUniqueAwaiter(new PubsubMessageAwaiter({
+        type: RedisChannel.sys_permissions.name,
+        message: RedisChannel.sys_permissions.messages.updated,
+      }));
+    }
+
+    // notify sockets
+    runner.addUniqueAwaiter(new SocketMessageAwaiter({
+      type: SocketMessageType.permissions_updated,
+      payload: undefined,
+    }));
+
+    return model;
   }
 
 
@@ -92,13 +113,31 @@ export class RolePermissionService {
    *
    * @param arg
    */
-  async delete(arg: {
+  async hardDelete(arg: {
     model: RolePermissionModel;
     runner: QueryRunner;
   }): Promise<RolePermissionModel> {
     const { model, runner } = arg;
     const { transaction } = runner;
     await model.destroy({ transaction });
+
+    if (model.role_id === Role.Admin
+      || model.role_id == Role.Authenticated
+      || model.role_id === Role.Public
+    ) {
+      // publish redis
+      runner.addUniqueAwaiter(new PubsubMessageAwaiter({
+        type: RedisChannel.sys_permissions.name,
+        message: RedisChannel.sys_permissions.messages.updated,
+      }));
+    }
+
+    // notify sockets
+    runner.addUniqueAwaiter(new SocketMessageAwaiter({
+      type: SocketMessageType.permissions_updated,
+      payload: undefined,
+    }));
+
     return model;
   }
 }

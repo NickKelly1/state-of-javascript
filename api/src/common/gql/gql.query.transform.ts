@@ -1,46 +1,56 @@
-import { GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull } from "graphql";
-import { FindAndCountOptions, OrderItem, WhereOperators, WhereOptions } from "sequelize";
-import { IPaginateInput } from "../interfaces/pageinate-input.interface";
-import { OrNullable } from "../types/or-nullable.type";
-import { OrUndefined } from "../types/or-undefined.type";
-import { transformGqlFilter } from "./gql.filter.transformer";
-import { IGqlCollectionOptions } from "./gql.collection.options";
-import { IGqlQueryArg } from "./gql.query.arg";
-import { IGqlSortInput, GqlSortInput, GqlDirEnum } from "./gql.sort.enum";
+export {};
 
-export function transformGqlQuery(arg: { [_q: string]: any }): {
-  page: IPaginateInput;
-  options: FindAndCountOptions,
-} {
-  const options: Partial<IGqlCollectionOptions> = ((arg ?? {}) as Partial<IGqlQueryArg>)?.query ?? {};
+// import { FindAndCountOptions, OrderItem, WhereOptions } from "sequelize";
+// import { IPaginateInput } from "../interfaces/pageinate-input.interface";
+// import { OrUndefined } from "../types/or-undefined.type";
+// import { transformGqlFilter } from "./gql.filter.transformer";
+// import { CollectionOptionsValidator, IGqlCollectionOptions } from "./gql.collection.options";
+// import { IGqlQueryArg } from "./gql.query.arg";
+// import { GqlDirEnum } from "./gql.sort.enum";
+// import { BaseContext } from "../context/base.context";
 
-  const limit = options.limit ?? 15;
-  const offset = options.offset ?? 0;
-  let order: OrUndefined<OrderItem[]>;
-  let where: OrUndefined<WhereOptions>;
+// export interface ITransformGqlQueryArg {
+//   ctx: BaseContext;
+//   // args from GraphQL query
+//   args: { [_q: string]: any };
+// }
 
-  // transform filter
+// export interface ITransformGqlQueryReturn {
+//   page: IPaginateInput;
+//   options: FindAndCountOptions,
+// }
 
-  // transform sorts
-  if (options.sorts) {
-    order = options.sorts.map((sort): OrderItem => [
-      sort.field,
-      sort.dir === GqlDirEnum.Asc ? 'ASC' : 'DESC',
-    ]);
-  }
+// export function transformGqlQuery(arg: ITransformGqlQueryArg): ITransformGqlQueryReturn {
+//   const { args, ctx } = arg;
+//   const options: Partial<IGqlCollectionOptions> = ((args ?? {}) as Partial<IGqlQueryArg>)?.query ?? {};
+//   ctx.validate(CollectionOptionsValidator, options);
 
-  if (options.filter) {
-    where = transformGqlFilter(options.filter);
-  }
+//   const limit = options.limit ?? 15;
+//   const offset = options.offset ?? 0;
+//   let order: OrUndefined<OrderItem[]>;
+//   let where: OrUndefined<WhereOptions>;
 
-  const page: IPaginateInput=  { limit, offset };
-  return {
-    options: {
-      where,
-      order,
-      limit,
-      offset,
-    },
-    page,
-  };
-}
+//   // transform sorts
+//   if (options.sorts) {
+//     order = options.sorts.map((sort): OrderItem => [
+//       sort.field,
+//       sort.dir === GqlDirEnum.Asc ? 'ASC' : 'DESC',
+//     ]);
+//   }
+
+//   // transform filter
+//   if (options.filter) {
+//     where = transformGqlFilter(options.filter);
+//   }
+
+//   const page: IPaginateInput=  { limit, offset };
+//   return {
+//     options: {
+//       where,
+//       order,
+//       limit,
+//       offset,
+//     },
+//     page,
+//   };
+// }

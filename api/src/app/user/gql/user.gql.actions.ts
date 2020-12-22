@@ -62,7 +62,7 @@ export const UserGqlActions = new GraphQLObjectType<IUserGqlActionsSource, GqlCo
     login: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canLoginAs({ model: parent });
+        return ctx.services.authPolicy.canLoginAs({ model: parent });
       },
     },
     updatePassword: {
@@ -83,52 +83,52 @@ export const UserGqlActions = new GraphQLObjectType<IUserGqlActionsSource, GqlCo
         return ctx.services.userRolePolicy.canHardDeleteForUser({ user: parent });
       },
     },
-    requestWelcome: {
+    requestWelcomeEmail: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canRequestWelcome({ model: parent });
+        return ctx.services.userEmailPolicy.canRequestWelcomeEmail({ model: parent });
       },
     },
-    acceptWelcome: {
+    consumeWelcomeToken: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canAcceptWelcome({ model: parent });
+        return ctx.services.userEmailPolicy.canConsumeWelcomeToken({ model: parent });
       },
     },
     requestVerificationEmail: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canRequestVerificationEmail({ model: parent });
+        return ctx.services.userEmailPolicy.canRequestVerificationEmail({ model: parent });
       },
     },
-    consumeVerificationEmail: {
+    consumeVerificationToken: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canConsumeVerificationEmail({ model: parent });
+        return ctx.services.userEmailPolicy.canConsumeVerificationToken({ model: parent });
       },
     },
-    requestEmailChange: {
+    requestEmailChangeEmail: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canRequestEmailChange({ model: parent });
+        return ctx.services.userEmailPolicy.canRequestEmailChangeEmail({ model: parent });
       },
     },
-    consumeEmailChangeVerificationEmail: {
+    consumeEmailChangeToken: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canConsumeEmailChangeVerificationEmail({ model: parent });
+        return ctx.services.userEmailPolicy.canConsumeEmailChangeToken({ model: parent });
       },
     },
-    requestForgottenPasswordReset: {
+    requestPasswordResetEmail: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canRequestForgottenPasswordReset({ model: parent });
+        return ctx.services.userEmailPolicy.canRequestPasswordResetEmail({ model: parent });
       },
     },
-    consumeForgottenPasswordReset: {
+    consumePasswordResetToken: {
       type: GraphQLNonNull(GraphQLBoolean),
       resolve: (parent, args, ctx): boolean => {
-        return ctx.services.userPolicy.canAcceptForgottenPasswordReset({ model: parent });
+        return ctx.services.userEmailPolicy.canConsumePasswordResetToken({ model: parent });
       },
     },
   },

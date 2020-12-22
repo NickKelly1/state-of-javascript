@@ -1,8 +1,7 @@
 import { RoleModel } from '../../circle';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
 import { ist } from '../../common/helpers/ist.helper';
-import { RoleLang } from '../../common/i18n/packs/role.lang';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
+import { RoleLang } from './role.lang';
 import { QueryRunner } from '../db/query-runner';
 import { RoleField } from './role.attributes';
 import { RolePermissionModel } from '../role-permission/role-permission.model';
@@ -10,10 +9,13 @@ import { PermissionModel } from '../permission/permission.model';
 import { Combinator } from '../../common/helpers/combinator.helper';
 import { IRoleServiceCreateRoleDto } from './dto/role-service-create-role.dto';
 import { IRoleServiceUpdateRoleDto } from './dto/role-service-update-role.dto';
+import { BaseContext } from '../../common/context/base.context';
+import { SocketMessageType } from '../socket/socket.message';
+import { SocketMessageAwaiter } from '../socket/socket-message-awaiter';
 
 export class RoleService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -137,6 +139,10 @@ export class RoleService {
     const { transaction } = runner;
     if (ist.notUndefined(dto.name)) model.name = dto.name;
     await model.save({ transaction });
+    runner.addUniqueAwaiter(new SocketMessageAwaiter({
+      type: SocketMessageType.permissions_updated,
+      payload: undefined,
+    }));
     return model;
   }
 
@@ -152,6 +158,10 @@ export class RoleService {
     const { model, runner } = arg;
     const { transaction } = runner;
     await model.destroy({ transaction });
+    runner.addUniqueAwaiter(new SocketMessageAwaiter({
+      type: SocketMessageType.permissions_updated,
+      payload: undefined,
+    }));
     return model;
   }
 
@@ -170,6 +180,26 @@ export class RoleService {
     const { transaction } = runner;
     await Promise.all(rolePermissions.map(rp => rp.destroy({ transaction })));
     await model.destroy({ transaction, force: true });
+    runner.addUniqueAwaiter(new SocketMessageAwaiter({
+      type: SocketMessageType.permissions_updated,
+      payload: undefined,
+    }));
+    return model;
+  }
+
+
+  /**
+   * Restore delete a role
+   *
+   * @param arg
+   */
+  async restore(arg: {
+    model: RoleModel;
+    runner: QueryRunner;
+  }): Promise<RoleModel> {
+    const { model, runner, } = arg;
+    const { transaction } = runner;
+    await model.restore({ transaction, });
     return model;
   }
 }

@@ -1,8 +1,6 @@
-import { Transaction } from 'sequelize';
 import { UserModel, UserPasswordModel } from '../../circle';
-import { EnvService } from '../../common/environment/env';
+import { BaseContext } from '../../common/context/base.context';
 import { ist } from '../../common/helpers/ist.helper';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { ICreateUserPasswordDto } from './dtos/create-user-password.dto';
 import { IUpdateUserPasswordDto } from './dtos/update-user-password.dto';
@@ -10,7 +8,7 @@ import { IUpdateUserPasswordDto } from './dtos/update-user-password.dto';
 
 export class UserPasswordService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -27,7 +25,7 @@ export class UserPasswordService {
   }): Promise<boolean> {
     const { raw, password } = arg;
 
-    const comparison = await this.ctx.services.universal.encryption.bcryptCompare({
+    const comparison = await this.ctx.services.universal.encryptionService.bcryptCompare({
       raw: `${password.salt}${raw}`,
       hash: password.hash,
     })
@@ -46,12 +44,12 @@ export class UserPasswordService {
   }): Promise<{ salt: string, hash: string }> {
     const { raw } = arg;
 
-    const salt = await this.ctx.services.universal.encryption.bcryptHash({
+    const salt = await this.ctx.services.universal.encryptionService.bcryptHash({
       raw: Math.random().toString(),
       rounds: this.ctx.services.universal.env.PSW_SALT_ROUNDS,
     });
 
-    const hash = await this.ctx.services.universal.encryption.bcryptHash({
+    const hash = await this.ctx.services.universal.encryptionService.bcryptHash({
       raw: `${salt}${raw}`,
       rounds: this.ctx.services.universal.env.PSW_SALT_ROUNDS,
     });

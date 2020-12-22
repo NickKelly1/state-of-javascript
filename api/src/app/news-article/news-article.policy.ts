@@ -1,12 +1,25 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 import { NewsArticleModel } from "./news-article.model";
 
 export class NewsArticlePolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
+  }
+
+
+  /**
+   * Can the requester do something on NewsArticles?
+   */
+  canAccess(): boolean {
+    return this.ctx.hasPermission(
+      Permission.NewsArticles.Admin,
+      Permission.NewsArticles.Manager,
+      Permission.NewsArticles.Writer,
+      Permission.NewsArticles.Viewer,
+    );
   }
 
 
@@ -16,6 +29,9 @@ export class NewsArticlePolicy {
    * @param arg
    */
   canFindMany(): boolean {
+
+    // can access the domain
+    if (!this.canAccess()) return false;
 
     // is News Admin|Manager|Writer|Viewer
     return this.ctx.hasPermission(
@@ -36,6 +52,9 @@ export class NewsArticlePolicy {
     model: NewsArticleModel;
   }): boolean {
     const { model } = arg;
+
+    // can access the domain
+    if (!this.canAccess()) return false;
 
     // is NewsArticleAdmin
     if (this.ctx.hasPermission(Permission.NewsArticles.Admin)) return true;
@@ -72,9 +91,10 @@ export class NewsArticlePolicy {
    *
    * @param arg
    */
-  canCreate(arg?: {
-    //
-  }): boolean {
+  canCreate(): boolean {
+
+    // can access the domain
+    if (!this.canAccess()) return false;
 
     // is News Admin|Writer|Manager|Writer
     return this.ctx.hasPermission(
@@ -96,6 +116,9 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access the domain
+    if (!this.canAccess()) return false;
+
     // must be Findable
     if (!this.canFindOne({ model })) return false;
 
@@ -112,7 +135,7 @@ export class NewsArticlePolicy {
       && this.ctx.hasPermission(Permission.NewsArticles.Writer)
     ) {
       return true;
-    };
+    }
 
     // failed
     return false;
@@ -128,6 +151,9 @@ export class NewsArticlePolicy {
     model: NewsArticleModel;
   }): boolean {
     const { model } = arg;
+
+    // can access the domain
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -148,7 +174,7 @@ export class NewsArticlePolicy {
       && this.ctx.hasPermission(Permission.NewsArticles.Writer)
     ) {
       return true;
-    };
+    }
 
     // failed
     return false;
@@ -164,6 +190,9 @@ export class NewsArticlePolicy {
     model: NewsArticleModel
   }): boolean {
     const { model } = arg;
+
+    // can access the domain
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -182,6 +211,8 @@ export class NewsArticlePolicy {
     model: NewsArticleModel;
   }): boolean {
     const { model } = arg;
+
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -207,6 +238,9 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access the domain
+    if (!this.canAccess()) return false;
+
     // must be Findable
     if (!this.canFindOne({ model })) return false;
 
@@ -230,6 +264,9 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // can access the domain
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -258,6 +295,9 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access the domain
+    if (!this.canAccess()) return false;
+
     // must be Findable
     if (!this.canFindOne({ model })) return false;
 
@@ -284,6 +324,9 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // can access the domain
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -312,6 +355,9 @@ export class NewsArticlePolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access the domain
+    if (!this.canAccess()) return false;
+
     // must be Findable
     if (!this.canFindOne({ model })) return false;
 
@@ -338,6 +384,9 @@ export class NewsArticlePolicy {
     model: NewsArticleModel,
   }): boolean {
     const { model } = arg;
+
+    // can access the domain
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;

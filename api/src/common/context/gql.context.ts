@@ -1,24 +1,15 @@
 import { Request, Response } from 'express';
 import { ALanguage, Language } from '../i18n/consts/language.enum';
 import { OrUndefined } from '../types/or-undefined.type';
-import { IRequestContext } from '../interfaces/request-context.interface';
 import { langMatch } from '../i18n/helpers/lange-match.helper';
 import { IRequestServices } from '../interfaces/request.services.interface';
 import { IJson } from '../interfaces/json.interface';
-import {
-  _and,
-  _attr,
-  _or,
-  _val,
-} from '../schemas/api.query.types';
 import { QueryRunner } from '../../app/db/query-runner';
 import { BaseContext } from './base.context';
 import { ExecutionContext } from '../classes/execution.context';
 import { RequestAuth } from '../classes/request-auth';
-import { h_shadow_id } from '../constants/shad.const';
-import { OrNull } from '../types/or-null.type';
 
-export class GqlContext extends BaseContext implements IRequestContext {
+export class GqlContext extends BaseContext {
   public readonly execution: ExecutionContext;
   protected readonly _http?: { req: Request; res: Response };
   protected readonly _auth: RequestAuth;
@@ -92,7 +83,8 @@ export class GqlContext extends BaseContext implements IRequestContext {
    */
   lang(switcher: Record<ALanguage, OrUndefined<string>>): string {
     const languages = this.http?.req.acceptsLanguages() ?? [Language.En];
-    return langMatch(languages, switcher);
+    const match = langMatch(languages, switcher);
+    return match;
   }
 
 

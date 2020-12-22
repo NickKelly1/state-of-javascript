@@ -18,6 +18,8 @@ import { User } from './user.const';
 import { NpmsDashboardModel } from '../npms-dashboard/npms-dashboard.model';
 import { UserTokenModel } from '../user-token/user-token.model';
 import { RequestAuth } from '../../common/classes/request-auth';
+import { BlogPostModel } from '../blog-post/blog-post.model';
+import { BlogPostCommentModel } from '../blog-post-comment/blog-post-comment.model';
 
 
 export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> implements IUserAttributes {
@@ -41,21 +43,18 @@ export class UserModel extends Model<IUserAttributes, IUserCreationAttributes> i
   [UserAssociation.roles]?: RoleModel[];
   [UserAssociation.userRoles]?: UserRoleModel[];
   [UserAssociation.npmsDashboards]?: NpmsDashboardModel[];
+  [UserAssociation.blogPosts]?: BlogPostModel[];
+  [UserAssociation.blogPostComments]?: BlogPostCommentModel[];
 
   // associations
   //
-  // getNewsArticles!: HasManyGetAssociationsMixin<NewsArticleModel>;
-  // getPassword!: HasOneGetAssociationMixin<UserPasswordModel>;
-  // getRoles!: HasManyGetAssociationsMixin<UserPasswordModel>;
-  // getUserRoles!: HasManyGetAssociationsMixin<UserRoleModel>;
-  // getNpmsDashboards!: HasManyGetAssociationsMixin<NpmsDashboardModel>;
 
   // helpers
-  isVerified() { return this[UserField.id] === User.Admin; }
-  isDeactivated() { return this[UserField.deactivated] === true; }
-  isAdmin() { return this[UserField.id] === User.Admin; }
-  isAnonymous() { return this[UserField.id] === User.Anonymous; }
-  isSystem() { return this[UserField.id] === User.System; }
+  isVerified(): boolean { return this[UserField.id] === User.Admin; }
+  isDeactivated(): boolean { return this[UserField.deactivated] === true; }
+  isAdmin(): boolean { return this[UserField.id] === User.Admin; }
+  isAnonymous(): boolean { return this[UserField.id] === User.Anonymous; }
+  isSystem(): boolean { return this[UserField.id] === User.System; }
 }
 
 

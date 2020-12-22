@@ -1,18 +1,17 @@
-import { Job } from "bull";
-import { PermissionModel } from "../../circle";
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 
 export class LogPolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
 
-  canFindMany(arg?: {
-    //
-  }): boolean {
+  /**
+   * Can the Requester FindMany Logs?
+   */
+  canFindMany(): boolean {
     return this.ctx.hasPermission(Permission.Logs.Viewer);
   }
 }

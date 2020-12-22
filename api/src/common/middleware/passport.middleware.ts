@@ -41,7 +41,7 @@ export const passportMw = (): Handler => mw(async (ctx, next) => {
   ctx.auth.addAccess({ access });
 
   // add the "authenticated" permissions to the request
-  const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions();
+  const systemPermissions = await ctx.services.universal.systemPermissionsService.getPermissions();
   ctx.auth.addPermissions({ permissions: systemPermissions.authenticated.map(toId) });
 
   next();

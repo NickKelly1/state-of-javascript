@@ -1,6 +1,6 @@
 import { FindOptions, Model, ModelCtor, Op } from "sequelize";
 import { UserPasswordModel } from "../../circle";
-import { BaseRepository } from "../../common/classes/repository.base";
+import { BaseRepository } from "../../common/classes/base.repository";
 import { andWhere } from "../../common/helpers/and-where.helper.ts";
 import { OrNull } from "../../common/types/or-null.type";
 import { QueryRunner } from "../db/query-runner";

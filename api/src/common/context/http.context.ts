@@ -3,17 +3,12 @@ import qs from 'qs';
 import { Request, Response } from 'express';
 import { ALanguage } from '../i18n/consts/language.enum';
 import { OrUndefined } from '../types/or-undefined.type';
-import { IRequestContext } from '../interfaces/request-context.interface';
 import { langMatch } from '../i18n/helpers/lange-match.helper';
 import { IRequestServices } from '../interfaces/request.services.interface';
 import Joi from 'joi';
 import { IJson } from '../interfaces/json.interface';
 import {
   ApiQuery,
-  _and,
-  _attr,
-  _or,
-  _val,
 } from '../schemas/api.query.types';
 import { IParsedQuery, transformApiQuery } from '../schemas/api.query.transformer';
 import { logger } from '../logger/logger';
@@ -22,7 +17,7 @@ import { BaseContext } from './base.context';
 import { ExecutionContext } from '../classes/execution.context';
 import { RequestAuth } from '../classes/request-auth';
 
-export class HttpContext extends BaseContext implements IRequestContext {
+export class HttpContext extends BaseContext {
   public readonly execution: ExecutionContext;
   public readonly req: Request;
   public readonly res: Response;

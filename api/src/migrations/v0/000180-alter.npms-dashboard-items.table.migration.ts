@@ -5,8 +5,8 @@ import { IMigration, IMigrationDownArg, IMigrationUpArg } from "../../common/mig
 export default class implements IMigration {
   tag = __filename;
 
-  up = async (arg: IMigrationUpArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  up = async (arg: IMigrationUpArg): Promise<void> => {
+    const { queryInterface, sequelize, transaction } = arg;
 
     // create nullable col
     await queryInterface.addColumn(
@@ -28,7 +28,8 @@ export default class implements IMigration {
         "npms_package_id" ASC
         ,"id" ASC
     `, { transaction });
-    interface INpmsDashboardItem { id: number, order: number, npms_package_id: number, };
+
+    interface INpmsDashboardItem { id: number, order: number, npms_package_id: number, }
     // set the order of each item
     const items = results as INpmsDashboardItem[];
     const map: Map<number, INpmsDashboardItem[]> = new Map();
@@ -59,8 +60,8 @@ export default class implements IMigration {
     );
   }
 
-  down = async (arg: IMigrationDownArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  down = async (arg: IMigrationDownArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     await queryInterface.removeColumn('npms_dashboard_items', 'order', { transaction });
   };
-};
+}

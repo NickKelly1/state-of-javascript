@@ -6,7 +6,7 @@ import { LoginExpiredException } from "../../common/exceptions/types/login-expir
 import { assertDefined } from "../../common/helpers/assert-defined.helper";
 import { ist } from "../../common/helpers/ist.helper";
 import { toId } from "../../common/helpers/to-id.helper";
-import { ExceptionLang } from "../../common/i18n/packs/exception.lang";
+import { AuthLang } from "../../common/i18n/packs/auth.lang";
 import { OrUndefined } from "../../common/types/or-undefined.type";
 import { RoleAssociation } from "../role/role.associations";
 import { UserAssociation } from "../user/user.associations";
@@ -57,7 +57,7 @@ export const AuthRefreshGqlMutation: Thunk<GraphQLFieldConfigMap<unknown, GqlCon
 
       // no token
       if (!maybeIncomingRefresh) {
-        const message = ctx.lang(ExceptionLang.NoRefreshToken);
+        const message = ctx.lang(AuthLang.NoRefreshToken);
         throw new BadRequestException(message);
       }
 
@@ -68,7 +68,7 @@ export const AuthRefreshGqlMutation: Thunk<GraphQLFieldConfigMap<unknown, GqlCon
 
       // check expiry
       if (ctx.services.jwtService.isExpired(receivedRefresh)) {
-        const message = ctx.lang(ExceptionLang.LoginExpired);
+        const message = ctx.lang(AuthLang.LoginExpired);
         throw new LoginExpiredException(message);
       }
 
@@ -89,7 +89,7 @@ export const AuthRefreshGqlMutation: Thunk<GraphQLFieldConfigMap<unknown, GqlCon
         const permissions = assertDefined(roles.flatMap(role => assertDefined(role.permissions)));
 
         // grant public permissions...
-        const systemPermissions = await ctx.services.universal.systemPermissions.getPermissions();
+        const systemPermissions = await ctx.services.universal.systemPermissionsService.getPermissions();
         const auth = ctx.services.authService.authenticate({
           res: ctx.http?.res,
           permissions: permissions.map(toId)

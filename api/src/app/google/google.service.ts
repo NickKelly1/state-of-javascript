@@ -1,7 +1,4 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
 import * as PR from 'io-ts/PathReporter';
-import * as TS from 'io-ts';
-import * as OP from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
 import * as TE from 'fp-ts/TaskEither';
 import * as P from 'fp-ts/pipeable';
@@ -22,15 +19,14 @@ import { TGoogleInit } from "./types/google.init.type";
 import { TGoogleState } from "./types/google.state.type";
 import { TGoogleToken } from "./types/google.token.type";
 import { IGoogleIntegrationServiceSendEmailDto } from "./dtos/google.service.send-email-dto";
-import { IJson } from "../../common/interfaces/json.interface";
 import { IIntegrationServiceInitialiseIntegrationCredentialsDto } from "../integration/dtos/integration-service.initialise-integration-credentials.dto";
-import { TGoogleCredentials } from "./types/google.credentials.type";
 import { $TS_FIX_ME } from "../../common/types/$ts-fix-me.type";
+import { BaseContext } from "../../common/context/base.context";
 
 
 export class GoogleService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -45,7 +41,7 @@ export class GoogleService {
     model: IntegrationModel;
     runner: QueryRunner,
     err: string;
-  }) {
+  }): Promise<IntegrationModel> {
     const { model, runner, err, } = arg;
     // reboot - wiping the init
     const serviceDto: IIntegrationServiceResetIntegrationDto = {
@@ -70,7 +66,7 @@ export class GoogleService {
     model: IntegrationModel;
     runner: QueryRunner,
     err: string;
-  }) {
+  }): Promise<string> {
     const { model, runner, err, } = arg;
     // reboot - wiping the init
     const serviceDto: IIntegrationServiceUpdateIntegrationDto = {

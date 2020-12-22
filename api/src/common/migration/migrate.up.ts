@@ -1,5 +1,4 @@
 import { createSequelize } from "../../app/db/create-sequelize";
-import { ScriptGuard } from "../../script-guard";
 import { EnvServiceSingleton } from "../environment/env";
 import { prettyQ } from "../helpers/pretty.helper";
 import { logger } from "../logger/logger";
@@ -7,10 +6,7 @@ import { MigrationRunner } from "./migration.runner";
 
 const scriptName = 'migration::up';
 
-export async function migrateUp(arg?: { step?: number }) {
-  // check we can execute scripts...
-  ScriptGuard.check();
-
+export async function migrateUp(arg?: { step?: number, }): Promise<void> {
   const { step } = arg ?? {};
   const env = EnvServiceSingleton;
   const sequelize = createSequelize({ env });
@@ -19,7 +15,7 @@ export async function migrateUp(arg?: { step?: number }) {
   await sequelize.transaction(async (transaction) => {
     try {
       const queryInterface = sequelize.getQueryInterface();
-      queryInterface.startTransaction(transaction);
+      await queryInterface.startTransaction(transaction);
       const runner = new MigrationRunner({
         env,
         queryInterface,

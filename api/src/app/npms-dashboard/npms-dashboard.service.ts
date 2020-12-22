@@ -1,13 +1,11 @@
 import { NpmsDashboardModel, UserModel } from '../../circle';
-import { Combinator } from '../../common/helpers/combinator.helper';
+import { BaseContext } from '../../common/context/base.context';
 import { ist } from '../../common/helpers/ist.helper';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { OrNull } from '../../common/types/or-null.type';
 import { QueryRunner } from '../db/query-runner';
 import { NpmsDashboardItemField } from '../npms-dashboard-item/npms-dashboard-item.attributes';
 import { NpmsDashboardItemModel } from '../npms-dashboard-item/npms-dashboard-item.model';
 import { NpmsDashboardStatus } from '../npms-dashboard-status/npms-dashboard-status.const';
-import { NpmsPackageModel } from '../npms-package/npms-package.model';
 import { INpmsDashboardServiceCreateNpmsDashboardDto } from './dto/npms-dashboard-service.create-npms-dashboard.dto';
 import { INpmsDashboardServiceUpdateNpmsDashboardDto } from './dto/npms-dashboard-service.update-npms-dashboard.dto';
 import { ISortNpmsDashboardInput } from './gql-input/sort-npms-dashboard.gql';
@@ -15,7 +13,7 @@ import { NpmsDashboardField } from './npms-dashboard.attributes';
 
 export class NpmsDashboardService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -150,7 +148,7 @@ export class NpmsDashboardService {
     const NpmsDashboard = NpmsDashboardModel.build({
       name: dto.name,
       order: count - 1,
-      shadow_id: dto.shadow_id ?? null,
+      aid: dto.aid ?? null,
       owner_id: owner?.id ?? null,
       status_id: dto.status_id,
     });

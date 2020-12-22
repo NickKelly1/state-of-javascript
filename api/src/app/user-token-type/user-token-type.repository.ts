@@ -1,5 +1,5 @@
 import { Model, ModelCtor } from "sequelize";
-import { BaseRepository } from "../../common/classes/repository.base";
+import { BaseRepository } from "../../common/classes/base.repository";
 import { UserPasswordModel } from "../user-password/user-password.model";
 import { UserTokenTypeModel } from "./user-token-type.model";
 

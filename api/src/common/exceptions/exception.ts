@@ -1,6 +1,6 @@
+import { BaseContext } from "../context/base.context";
 import { IExceptionData } from "../interfaces/exception-data.interface";
 import { IJson } from "../interfaces/json.interface";
-import { IRequestContext } from "../interfaces/request-context.interface";
 import { Printable } from "../types/printable.type";
 import { IExceptionArg } from "./interfaces/exception-arg.interface";
 
@@ -21,7 +21,7 @@ export interface IExceptionCtorArg {
   message: string;
   data?: IExceptionData;
   debug?: Printable;
-  ctx: IRequestContext;
+  ctx: BaseContext;
 }
 
 export class Exception extends Error implements IApiException {
@@ -33,7 +33,7 @@ export class Exception extends Error implements IApiException {
   public readonly data?: IExceptionData;
   public readonly debug?: Printable;
   public trace?: string[];
-  protected readonly ctx: IRequestContext;
+  protected readonly ctx: BaseContext;
 
 
   switchCodeTo(to: number): void {

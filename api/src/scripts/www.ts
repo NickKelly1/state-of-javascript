@@ -4,19 +4,24 @@
 
 import http from 'http';
 import express from 'express';
-import { bootApp } from '../app';
+import { bootHttp } from '../boot.http';
 import { $TS_FIX_ME } from '../common/types/$ts-fix-me.type';
 import { EnvService, EnvServiceSingleton } from '../common/environment/env';
 import { logger } from '../common/logger/logger';
 import { prettyQ } from '../common/helpers/pretty.helper';
 import { OrUndefined } from '../common/types/or-undefined.type';
+import { bootServices } from '../boot.services';
+import SocketIO from 'socket.io';
+import { bootWs } from '../boot.ws';
 
 let _server: OrUndefined<http.Server>;
 
 async function bootServer(arg: { env: EnvService }) {
   const { env } = arg;
-  const app = express();
-  await bootApp({ env, app });
+  const universal = await bootServices({ env });
+  const { app, io, } = universal;
+  await bootHttp({ universal });
+  await bootWs({ universal });
 
   /**
    * Get port from environment and store in Express.
@@ -31,6 +36,7 @@ async function bootServer(arg: { env: EnvService }) {
 
   const server = http.createServer(app);
   _server = server;
+  io.attach(server);
 
   /**
    * Listen on provided port, on all network interfaces.

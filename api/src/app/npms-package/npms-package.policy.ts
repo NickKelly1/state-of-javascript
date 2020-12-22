@@ -1,12 +1,27 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 import { NpmsPackageModel } from "./npms-package.model";
 
 export class NpmsPackagePolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
+  }
+
+
+  /**
+   * Can the Access NpmsPackage's
+   *
+   * @param arg
+   */
+  canAccess(): boolean {
+
+    // is NpmsPackage Admin|Viewer
+    return this.ctx.hasPermission(
+      Permission.NpmsPackages.Admin,
+      Permission.NpmsPackages.Viewer,
+    );
   }
 
 
@@ -16,6 +31,9 @@ export class NpmsPackagePolicy {
    * @param arg
    */
   canFindMany(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // is NpmsPackage Admin|Viewer
     return this.ctx.hasPermission(
@@ -35,6 +53,9 @@ export class NpmsPackagePolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // is NpmsPackage Admin|Viewer
     return this.ctx.hasPermission(
       Permission.SuperAdmin.SuperAdmin,
@@ -48,9 +69,10 @@ export class NpmsPackagePolicy {
    *
    * @param arg
    */
-  canCreate(arg?: {
-    //
-  }): boolean {
+  canCreate(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // is Admin, Manager or Creator
     return this.ctx.hasPermission(
@@ -69,6 +91,9 @@ export class NpmsPackagePolicy {
     model: NpmsPackageModel;
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -91,6 +116,9 @@ export class NpmsPackagePolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // must be Findable
     if (!this.canFindOne({ model })) return false;
 
@@ -109,6 +137,9 @@ export class NpmsPackagePolicy {
     model: NpmsPackageModel;
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // must be SoftDeleted
     if (!model.isSoftDeleted()) return false;

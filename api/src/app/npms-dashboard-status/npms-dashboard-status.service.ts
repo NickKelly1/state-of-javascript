@@ -1,8 +1,8 @@
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
+import { BaseContext } from "../../common/context/base.context";
 
 export class NpmsDashboardStatusService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

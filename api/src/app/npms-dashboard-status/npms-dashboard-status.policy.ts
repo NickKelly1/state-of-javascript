@@ -1,14 +1,10 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
-import { OrNull } from "../../common/types/or-null.type";
-import { OrNullable } from "../../common/types/or-nullable.type";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
-import { UserModel } from "../user/user.model";
 import { NpmsDashboardStatusModel } from "./npms-dashboard-status.model";
 
 export class NpmsDashboardStatusPolicy {
-
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

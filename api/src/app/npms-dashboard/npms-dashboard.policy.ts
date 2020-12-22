@@ -1,13 +1,29 @@
-import { ist } from "../../common/helpers/ist.helper";
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 import { NpmsDashboardModel } from "./npms-dashboard.model";
 
 export class NpmsDashboardPolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
+  }
+
+
+  /**
+   * Can the Requester Access NpmsDashboards?
+   *
+   * @param arg
+   */
+  canAccess(): boolean {
+
+    // has any permission
+    return this.ctx.hasPermission(
+      Permission.NpmsDashboards.Admin,
+      Permission.NpmsDashboards.Manager,
+      Permission.NpmsDashboards.Creator,
+      Permission.NpmsDashboards.Viewer,
+    );
   }
 
 
@@ -16,9 +32,10 @@ export class NpmsDashboardPolicy {
    *
    * @param arg
    */
-  canFindMany(arg?: {
-    //
-  }): boolean {
+  canFindMany(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // is NpmsDashboard Admin|Manager|Creator|Viewer
     return this.ctx.hasPermission(
@@ -41,6 +58,9 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel;
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // is NpmsDashboardAdmin
     if (this.ctx.hasPermission(Permission.NpmsDashboards.Admin)) return true;
@@ -79,6 +99,9 @@ export class NpmsDashboardPolicy {
    */
   canSort(): boolean {
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // is NpmsDashboard Admin|Manager
     return this.ctx.hasPermission(
       Permission.NpmsDashboards.Admin,
@@ -93,6 +116,9 @@ export class NpmsDashboardPolicy {
    * @param arg
    */
   canCreate(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // is NpmsDashboard Admin|Manager|Creator
     return this.ctx.hasPermission(
@@ -112,6 +138,9 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel;
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -144,6 +173,9 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel;
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -178,6 +210,9 @@ export class NpmsDashboardPolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // must be Findable
     if (!this.canFindOne({ model })) return false;
 
@@ -199,6 +234,9 @@ export class NpmsDashboardPolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // must be Findable
     if (!this.canFindOne({ model })) return false;
 
@@ -219,6 +257,9 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel,
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -244,6 +285,9 @@ export class NpmsDashboardPolicy {
   }): boolean {
     const { model } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // must be Findable
     if (!this.canFindOne({ model })) return false;
 
@@ -256,7 +300,7 @@ export class NpmsDashboardPolicy {
     // can if NpmsDashboard Admin|Manager
     if (this.ctx.hasPermission(Permission.NpmsDashboards.Admin, Permission.NpmsDashboards.Manager)) {
       return true;
-    };
+    }
 
     // can if Owner & NpmsDashboardCreator
     if (model.isOwnedBy(this.ctx.auth) && this.ctx.hasPermission(Permission.NpmsDashboards.Creator)) {
@@ -277,6 +321,9 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel,
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;
@@ -304,6 +351,9 @@ export class NpmsDashboardPolicy {
     model: NpmsDashboardModel,
   }): boolean {
     const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // must be Findable
     if (!this.canFindOne({ model })) return false;

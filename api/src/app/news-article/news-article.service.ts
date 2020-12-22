@@ -1,6 +1,6 @@
 import { NewsArticleModel } from '../../circle';
+import { BaseContext } from '../../common/context/base.context';
 import { ist } from '../../common/helpers/ist.helper';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { NewsArticleStatus } from '../news-article-status/news-article-status.const';
 import { UserModel } from '../user/user.model';
@@ -9,7 +9,7 @@ import { IUpdateNewsArticleInput } from './dtos/update-news-article.gql';
 
 export class NewsArticleService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -64,11 +64,11 @@ export class NewsArticleService {
 
 
   /**
-   * Delete the NewsArticle
+   * SoftDelete the NewsArticle
    * 
    * @param arg
    */
-  async delete(arg: {
+  async softDelete(arg: {
     model: NewsArticleModel;
     author: UserModel,
     runner: QueryRunner;

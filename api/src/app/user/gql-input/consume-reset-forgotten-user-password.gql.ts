@@ -1,26 +1,25 @@
 import {
   GraphQLInputObjectType,
-  GraphQLInt,
   GraphQLNonNull,
   GraphQLString,
 } from 'graphql';
 import Joi from 'joi';
 import { UserPasswordDefinition } from '../../user-password/user-password.definition';
 
-export interface IConsumeResetForgottenUserPasswordGqlInput {
+export interface IConsumeResetPasswordTokenGqlInput {
   token: string;
   password: string;
 }
 
-export const ConsumeResetForgottenUserPasswordGqlInput = new GraphQLInputObjectType({
-  name: 'ConsumeResetForgottenUserPassword',
+export const ConsumeResetPasswordTokenGqlInput = new GraphQLInputObjectType({
+  name: 'ConsumeResetPasswordToken',
   fields: () => ({
     token: { type: GraphQLNonNull(GraphQLString), },
     password: { type: GraphQLNonNull(GraphQLString), },
   }),
 });
 
-export const ConsumeResetForgottenUserPasswordGqlInputValidator = Joi.object<IConsumeResetForgottenUserPasswordGqlInput>({
+export const ConsumeResetPasswordTokenGqlInputValidator = Joi.object<IConsumeResetPasswordTokenGqlInput>({
   token: Joi.string().required(),
   password: Joi.string().min(UserPasswordDefinition.password.min).max(UserPasswordDefinition.password.max).required(),
 });

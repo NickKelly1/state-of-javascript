@@ -1,60 +1,108 @@
-import Bull, { Queue } from "bull";
+import express, { Express } from 'express';
 import { Sequelize } from "sequelize";
 import { DbService } from "../../app/db/db.service";
 import { EncryptionService } from "../../app/encryption/encryption.service";
-import { IGmailJob } from "../../app/google/gmail.job.interface";
 import { NpmsApi } from "../../app/npms-package/api/npms-api";
-import { SystemPermissions } from "../classes/system-permissions";
+import { SystemPermissionsService } from "../classes/system-permissions.service";
 import { EnvService } from "../environment/env";
 import { IUniversalServices } from "../interfaces/universal.services.interface";
-import { OrNull } from "../types/or-null.type";
+import { QueueService } from '../../app/queue/queue.service';
+import { RedisService } from '../../app/db/redis.service';
+import { NpmsApiConnector } from '../../app/npms-package/api/npms-api-connector';
+import { InitialisationException } from '../exceptions/types/initialisation-exception';
+import { SocketGateway } from '../../app/socket/socket.gateway';
+import { SocketService } from '../../app/socket/socket.service';
+import SocketIO from 'socket.io';
 
 export class UniversalSerivceContainer implements IUniversalServices {
-  constructor(
-    public readonly env: EnvService,
-    public readonly sequelize: Sequelize,
-    public readonly systemPermissions: SystemPermissions,
-    public readonly npmsApi: NpmsApi,
-    public readonly db: DbService,
-  ) {
-    //
-  }
-
-
   /**
    * Encryption Service
    */
-  protected _encryption?: EncryptionService;
-  get encryption(): EncryptionService {
-    if (this._encryption) return this._encryption;
-    this._encryption = new EncryptionService(this);
-    return this._encryption;
-  }
+  public readonly encryptionService: EncryptionService;
 
 
   /**
-   * Gmail Queue
+   * Queue Service
    */
-  protected _gmailQueue?: Bull.Queue<IGmailJob>;
-  get gmailQueue(): Bull.Queue<IGmailJob> {
-    if (this._gmailQueue) return this._gmailQueue;
-    const queue = new Bull<IGmailJob>('gmail', {
-      defaultJobOptions: {
-        attempts: 2,
-        // 30 sec backoff
-        backoff: { type: 'fixed', delay: 30_000, },
-        // 5 sec delay
-        delay: 5_000,
-      },
-      prefix: '_gmail',
-      redis: {
-        password: this.env.REDIS_PSW,
-        host: this.env.REDIS_HOST,
-        port: this.env.REDIS_PORT,
+  public readonly queueService: QueueService;
+
+
+  /**
+   * Redis Service
+   */
+  public readonly redisService: RedisService;
+
+  /**
+   * System Permissions Service
+   */
+  public readonly systemPermissionsService: SystemPermissionsService;
+
+  /**
+   * Npms Api Service
+   */
+  public readonly npmsApi: NpmsApi;
+
+  /**
+   * The Express App
+   */
+  public readonly app: Express;
+
+  /**
+   * Socket Server
+   */
+  public readonly io: SocketIO.Server;
+
+  /**
+   * Db Service
+   */
+  public readonly db: DbService;
+
+  /**
+   * Socket Service
+   */
+  public readonly socketService: SocketService;
+
+  /**
+   * Socket Gateway
+   */
+  public readonly socketGateway: SocketGateway;
+
+  constructor(
+    public readonly env: EnvService,
+    public readonly sequelize: Sequelize,
+  ) {
+    this.app = express();
+    this.io = new SocketIO.Server({
+      cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+        credentials: true,
       },
     });
+    this.db = new DbService(this),
+    this.encryptionService = new EncryptionService(this);
+    this.redisService = new RedisService(this);
+    this.queueService = new QueueService(this);
+    this.npmsApi = new NpmsApi(this, new NpmsApiConnector(env)),
+    this.systemPermissionsService = new SystemPermissionsService(this);
+    this.socketService = new SocketService(this);
+    this.socketGateway = new SocketGateway(this);
+  }
 
-    this._gmailQueue = queue;
-    return queue;
+  /**
+   * Initialise the service
+   */
+  protected _initialised = false;
+  public async init(): Promise<void> {
+    if (this._initialised) throw new InitialisationException();
+    this._initialised = true;
+    await this.db.init();
+    await this.encryptionService.init();
+    await this.redisService.init();
+    await this.queueService.init();
+    await this.npmsApi.init();
+    await this.systemPermissionsService.init();
+    await this.socketService.init();
+    await this.socketGateway.init();
   }
 }

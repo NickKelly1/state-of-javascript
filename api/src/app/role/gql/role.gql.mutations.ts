@@ -5,16 +5,15 @@ import { ForbiddenException } from "../../../common/exceptions/types/forbidden.e
 import { NotFoundException } from "../../../common/exceptions/types/not-found.exception";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { ist } from "../../../common/helpers/ist.helper";
-import { PermissionLang } from "../../../common/i18n/packs/permission.lang";
-import { RoleLang } from "../../../common/i18n/packs/role.lang";
-import { logger } from "../../../common/logger/logger";
+import { PermissionLang } from "../../permission/permission.lang";
+import { RoleLang } from "../role.lang";
 import { QueryRunner } from "../../db/query-runner";
 import { PermissionId } from "../../permission/permission-id.type";
 import { PermissionModel } from "../../permission/permission.model";
 import { RolePermissionModel } from "../../role-permission/role-permission.model";
 import { IRoleServiceUpdateRoleDto } from "../dto/role-service-update-role.dto";
 import { CreateRoleGqlInput, CreateRoleValidator } from "../gql-input/create-role.gql";
-import { DeleteRoleGqlInput, DeleteRoleValidator } from "../gql-input/delete-role.gql";
+import { TargetRoleGqlInput, TargetRoleValidator } from "../gql-input/target-role.gql";
 import { UpdateRoleGqlInput, UpdateRoleValidator } from "../gql-input/update-role.gql";
 import { RoleAssociation } from "../role.associations";
 import { RoleGqlNode, IRoleGqlNodeSource } from "./role.gql.node";
@@ -28,7 +27,10 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
     type: GraphQLNonNull(RoleGqlNode),
     args: { dto: { type: GraphQLNonNull(CreateRoleGqlInput) } },
     resolve: async (parent, args, ctx): Promise<IRoleGqlNodeSource> => {
-      ctx.authorize(ctx.services.rolePolicy.canCreate());
+      // authorise access
+      ctx.authorize(ctx.services.rolePolicy.canAccess(), RoleLang.CannotAccess);
+      // authorise create
+      ctx.authorize(ctx.services.rolePolicy.canCreate(), RoleLang.CannotCreate);
       const dto = ctx.validate(CreateRoleValidator, args.dto);
       const model = await ctx.services.universal.db.transact(async ({ runner }) => {
         const model = await ctx.services.roleService.create({ runner, dto });
@@ -55,8 +57,12 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
     type: GraphQLNonNull(RoleGqlNode),
     args: { dto: { type: GraphQLNonNull(UpdateRoleGqlInput) } },
     resolve: async (parent, args, ctx): Promise<IRoleGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.rolePolicy.canAccess(), RoleLang.CannotAccess);
+      // validate
       const dto = ctx.validate(UpdateRoleValidator, args.dto);
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        //find
         const model: RoleModel = await ctx.services.roleRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
@@ -64,14 +70,20 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
           },
         });
         const currentRolePermissions = assertDefined(model.rolePermissions);
-
+        // authorise view
+        ctx.services.roleRepository._404Unless(ctx.services.rolePolicy.canFindOne({ model }));
+        // authorise update
         const serviceDto: IRoleServiceUpdateRoleDto = { name: dto.name, }
         if (Object.values(serviceDto).filter(ist.notUndefined).length > 0) {
           // only authorize "update" if actually updating...
-          ctx.authorize(ctx.services.rolePolicy.canUpdate({ model }));
+          ctx.authorize(
+            ctx.services.rolePolicy.canUpdate({ model }),
+            RoleLang.CannotUpdate({ role: model }),
+          );
+          // do update
           await ctx.services.roleService.update({ runner, dto: serviceDto, model });
         }
-
+        // synchronise
         if (ist.notNullable(dto.permission_ids)) {
           await authorizeAndSyncrhoniseRolePermissions({
             runner,
@@ -81,10 +93,6 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
             role: model,
           });
         }
-
-        // TODO: public security hole where user can "show" role by making no changes...
-        logger.warn('TODO: public security hole where user can "show" role by making no changes...');
-
         return model;
       });
 
@@ -97,19 +105,60 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
    * SoftDelete a Role
    */
   softDeleteRole: {
+    type: GraphQLNonNull(RoleGqlNode),
+    args: { dto: { type: GraphQLNonNull(TargetRoleGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<IRoleGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.rolePolicy.canAccess(), RoleLang.CannotAccess);
+      // validate
+      const dto = ctx.validate(TargetRoleValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        // find
+        const model: RoleModel = await ctx.services.roleRepository.findByPkOrfail(dto.id, { runner, });
+        // authorise view
+        ctx.services.roleRepository._404Unless(ctx.services.rolePolicy.canFindOne({ model }));
+        // authorise soft-delete
+        ctx.authorize(
+          ctx.services.rolePolicy.canSoftDelete({ model }),
+          RoleLang.CannotSoftDelete({ role: model }),
+        );
+        // do soft-delete
+        await ctx.services.roleService.softDelete({ runner, model, });
+        return model;
+      });
+      return final;
+    },
+  },
+
+
+  /**
+   * HardDelete a Role
+   */
+  hardDeleteRole: {
     type: GraphQLNonNull(GraphQLBoolean),
-    args: { dto: { type: GraphQLNonNull(DeleteRoleGqlInput) } },
+    args: { dto: { type: GraphQLNonNull(TargetRoleGqlInput) } },
     resolve: async (parent, args, ctx): Promise<boolean> => {
-      const dto = ctx.validate(DeleteRoleValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+      // authorise access
+      ctx.authorize(ctx.services.rolePolicy.canAccess(), RoleLang.CannotAccess);
+      // validate
+      const dto = ctx.validate(TargetRoleValidator, args.dto);
+      await ctx.services.universal.db.transact(async ({ runner }) => {
+        // find
         const model: RoleModel = await ctx.services.roleRepository.findByPkOrfail(dto.id, {
           runner,
           options: {
             include: [{ association: RoleAssociation.rolePermissions }]
           }
         });
-        ctx.authorize(ctx.services.rolePolicy.canSoftDelete({ model }));
+        // authorise view
+        ctx.services.roleRepository._404Unless(ctx.services.rolePolicy.canFindOne({ model }));
+        // authorise hard-delete
+        ctx.authorize(
+          ctx.services.rolePolicy.canHardDelete({ model }),
+          RoleLang.CannotHardDelete({ role: model }),
+        );
         const rolePermissions = assertDefined(model.rolePermissions);
+        // do hard-delete
         await ctx.services.roleService.hardDelete({ runner, model, rolePermissions, });
         return model;
       });
@@ -122,24 +171,31 @@ export const RoleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext
    * Restore a Role
    */
   restoreRole: {
-    type: GraphQLNonNull(GraphQLBoolean),
-    args: { dto: { type: GraphQLNonNull(DeleteRoleGqlInput) } },
-    resolve: async (parent, args, ctx): Promise<boolean> => {
-      const dto = ctx.validate(DeleteRoleValidator, args.dto);
-      const model = await ctx.services.universal.db.transact(async ({ runner }) => {
+    type: GraphQLNonNull(RoleGqlNode),
+    args: { dto: { type: GraphQLNonNull(TargetRoleGqlInput) } },
+    resolve: async (parent, args, ctx): Promise<IRoleGqlNodeSource> => {
+      // authorise access
+      ctx.authorize(ctx.services.rolePolicy.canAccess(), RoleLang.CannotAccess);
+      // validate
+      const dto = ctx.validate(TargetRoleValidator, args.dto);
+      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+        // find
         const model: RoleModel = await ctx.services.roleRepository.findByPkOrfail(dto.id, {
           runner,
-          options: {
-            paranoid: true,
-            include: [{ association: RoleAssociation.rolePermissions }]
-          }
+          options: { paranoid: true, }
         });
-        ctx.authorize(ctx.services.rolePolicy.canSoftDelete({ model }));
-        const rolePermissions = assertDefined(model.rolePermissions);
-        await ctx.services.roleService.hardDelete({ runner, model, rolePermissions, });
+        // authorise view
+        ctx.services.roleRepository._404Unless(ctx.services.rolePolicy.canFindOne({ model }));
+        // authorise restore
+        ctx.authorize(
+          ctx.services.rolePolicy.canRestore({ model }),
+          RoleLang.CannotRestore({ role: model }),
+        );
+        // do restore
+        await ctx.services.roleService.restore({ runner, model, });
         return model;
       });
-      return true;
+      return final;
     },
   },
 });
@@ -171,7 +227,7 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
     else notFoundPermissionIds.push(permission_id);
   });
   if (notFoundPermissionIds.length) {
-    const message = ctx.lang(PermissionLang.NotFound({ ids: notFoundPermissionIds }))
+    const message = ctx.lang(PermissionLang.IdsNotFound({ ids: notFoundPermissionIds }))
     throw new NotFoundException(message);
   }
 
@@ -229,5 +285,5 @@ async function authorizeAndSyncrhoniseRolePermissions(arg: {
   await Promise.all(unexpected.map((rolePermission) => ctx
     .services
     .rolePermissionService
-    .delete({ model: rolePermission, runner, })));
+    .hardDelete({ model: rolePermission, runner, })));
 }

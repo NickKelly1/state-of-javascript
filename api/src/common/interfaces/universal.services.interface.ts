@@ -1,18 +1,27 @@
-import Bull, { Queue } from "bull";
+import { Express } from 'express';
+import SocketIO from 'socket.io';
 import { Sequelize } from "sequelize";
 import { DbService } from "../../app/db/db.service";
 import { EncryptionService } from "../../app/encryption/encryption.service";
-import { IGmailJob } from "../../app/google/gmail.job.interface";
 import { NpmsApi } from "../../app/npms-package/api/npms-api";
-import { SystemPermissions } from "../classes/system-permissions";
+import { SystemPermissionsService } from "../classes/system-permissions.service";
 import { EnvService } from "../environment/env";
+import { QueueService } from '../../app/queue/queue.service';
+import { RedisService } from "../../app/db/redis.service";
+import { SocketGateway } from '../../app/socket/socket.gateway';
+import { SocketService } from '../../app/socket/socket.service';
 
 export interface IUniversalServices {
   env: EnvService;
   sequelize: Sequelize;
-  systemPermissions: SystemPermissions;
+  systemPermissionsService: SystemPermissionsService;
   npmsApi: NpmsApi;
-  encryption: EncryptionService;
+  encryptionService: EncryptionService;
+  redisService: RedisService;
+  queueService: QueueService;
   db: DbService;
-  gmailQueue: Bull.Queue<IGmailJob>;
+  app: Express;
+  io: SocketIO.Server;
+  socketService: SocketService;
+  socketGateway: SocketGateway;
 }

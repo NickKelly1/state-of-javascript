@@ -1,16 +1,26 @@
 import { UserRoleModel } from "../../circle";
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 import { RoleModel } from "../role/role.model";
 import { UserModel } from "../user/user.model";
 
 export class UserRolePolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
 
+  /**
+   * Can the Requester Access UserRoles?
+   *
+   * @param arg
+   */
+  canAccess(): boolean {
+
+    // user and roles must be accessible
+    return this.ctx.services.userPolicy.canAccess() && this.ctx.services.rolePolicy.canAccess();
+  }
 
   /**
    * Can the Requester FindMany UserRoles?
@@ -18,6 +28,9 @@ export class UserRolePolicy {
    * @param arg
    */
   canFindMany(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Can find Roles and Users
     return this.ctx.services.userPolicy.canFindMany() && this.ctx.services.rolePolicy.canFindMany();
@@ -29,8 +42,11 @@ export class UserRolePolicy {
    */
   canFindForRole(arg: {
     role: RoleModel;
-  }) {
+  }): boolean {
     const { role } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Role must be Findable
     return this.ctx.services.rolePolicy.canFindOne({ model: role });
@@ -42,8 +58,11 @@ export class UserRolePolicy {
    */
   canFindForUser(arg: {
     user: UserModel;
-  }) {
+  }): boolean {
     const { user } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // User must be Findable
     return this.ctx.services.userPolicy.canFindOne({ model: user });
@@ -62,6 +81,9 @@ export class UserRolePolicy {
   }): boolean {
     const { model, user, role } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // Role & User must be each visible
     return this.canFindForRole({ role }) && this.canFindForUser({ user });
   }
@@ -76,6 +98,9 @@ export class UserRolePolicy {
     user: UserModel;
   }): boolean {
     const { user } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // User must be Findable
     if (!this.ctx.services.userPolicy.canFindOne({ model: user })) return false;
@@ -106,6 +131,9 @@ export class UserRolePolicy {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Role must be Findable
     if (!this.ctx.services.rolePolicy.canFindOne({ model: role })) return false;
@@ -138,6 +166,9 @@ export class UserRolePolicy {
   }): boolean {
     const { user, role } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // Must be Creatable for User and Role
     return this.canCreateForUser({ user }) && this.canCreateForRole({ role });
   }
@@ -152,6 +183,9 @@ export class UserRolePolicy {
     user: UserModel;
   }): boolean {
     const { user } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // User be Findable
     if (!this.ctx.services.userPolicy.canFindOne({ model: user })) return false;
@@ -182,6 +216,9 @@ export class UserRolePolicy {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Role be Findable
     if (!this.ctx.services.rolePolicy.canFindOne({ model: role })) return false;
@@ -214,6 +251,9 @@ export class UserRolePolicy {
     role: RoleModel;
   }): boolean {
     const { model, user, role } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // must be HardDeleteable for User and Role
     return this.canHardDeleteForUser({ user }) && this.canHardDeleteForRole({ role });

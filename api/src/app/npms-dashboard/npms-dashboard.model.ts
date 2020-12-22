@@ -1,8 +1,6 @@
 import {
   Model,
   DataTypes,
-  HasManyGetAssociationsMixin,
-  BelongsToManyGetAssociationsMixin,
 } from 'sequelize';
 import { AuditableSchema } from '../../common/schemas/auditable.schema';
 import { AutoIncrementingId } from '../../common/schemas/auto-incrementing-id.schema';
@@ -20,9 +18,8 @@ import { NpmsDashboardStatus } from '../npms-dashboard-status/npms-dashboard-sta
 import { NpmsDashboardStatusField } from '../npms-dashboard-status/npms-dashboard-status.attributes';
 import { NpmsDashboardStatusModel } from '../npms-dashboard-status/npms-dashboard-status.model';
 import { OrNull } from '../../common/types/or-null.type';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
-import { Auth } from 'googleapis';
 import { RequestAuth } from '../../common/classes/request-auth';
+import { BaseContext } from '../../common/context/base.context';
 
 
 export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDashboardCreationAttributes> implements INpmsDashboardAttributes {
@@ -30,7 +27,7 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   [NpmsDashboardField.id]!: NpmsDashboardId;
   [NpmsDashboardField.name]!: string;
   [NpmsDashboardField.order]!: number;
-  [NpmsDashboardField.shadow_id]!: OrNull<string>;
+  [NpmsDashboardField.aid]!: OrNull<string>;
   [NpmsDashboardField.owner_id]!: OrNull<UserId>;
   [NpmsDashboardField.status_id]!: UserId;
 
@@ -51,23 +48,23 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
   //
 
   // helpers
-  isDraft() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Draft; }
-  isRejected() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Rejected; }
-  isSubmitted() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Submitted; }
-  isPublished() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Published; }
-  isUnpublished() { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Unpublished; }
+  isDraft(): boolean { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Draft; }
+  isRejected(): boolean { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Rejected; }
+  isSubmitted(): boolean { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Submitted; }
+  isPublished(): boolean { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Published; }
+  isUnpublished(): boolean { return this[NpmsDashboardField.status_id] === NpmsDashboardStatus.Unpublished; }
 
   /** Is the NpmsDashboardModel Submittable? */
-  isSubmittable() { return this.isDraft() || this.isRejected() || this.isUnpublished(); }
+  isSubmittable(): boolean { return this.isDraft() || this.isRejected() || this.isUnpublished(); }
 
   /** Is the NpmsDashboardModel Rejectable? */
-  isRejectable() { return this.isSubmitted() || this.isPublished() || this.isUnpublished(); }
+  isRejectable(): boolean { return this.isSubmitted() || this.isPublished() || this.isUnpublished(); }
 
   /** Is the NpmsDashboardModel Publishable? */
-  isPublishable() { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
+  isPublishable(): boolean { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
 
   /** Is the NpmsDashboardModel Unpublishable? */
-  isUnpublishable() { return this.isPublished(); }
+  isUnpublishable(): boolean { return this.isPublished(); }
 
 
   /**
@@ -76,7 +73,7 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
    * @param auth
    */
   isOwnedBy(auth: RequestAuth): boolean {
-    return auth.isMeById(this.owner_id) || auth.isMeByShadowId(this.shadow_id);
+    return auth.isMeById(this.owner_id) || auth.isMeByAId(this.aid);
   }
 
   /**
@@ -84,7 +81,7 @@ export class NpmsDashboardModel extends Model<INpmsDashboardAttributes, INpmsDas
    *
    * @param ctx
    */
-  isOwnedByCtx(ctx: IRequestContext): boolean {
+  isOwnedByCtx(ctx: BaseContext): boolean {
     return this.isOwnedBy(ctx.auth);
   }
 }
@@ -97,7 +94,7 @@ export const initNpmsDashboardModel: ModelInitFn = (arg) => {
     name: { type: DataTypes.STRING(NpmsDashboardDefinition.name.max), allowNull: false, },
     order: { type: DataTypes.INTEGER, allowNull: false, },
     owner_id: { type: DataTypes.INTEGER, references: { model: UserModel as typeof Model, key: NpmsDashboardField.id }, allowNull: true, },
-    shadow_id: { type: DataTypes.STRING(255), allowNull: true },
+    aid: { type: DataTypes.STRING(255), allowNull: true },
     status_id: { type: DataTypes.INTEGER, references: { model: NpmsDashboardStatusModel as typeof Model, key: NpmsDashboardStatusField.id }, allowNull: false, },
     ...pretendAuditable,
     ...pretendSoftDeleteable,

@@ -56,9 +56,17 @@ import { UserTokenAssociation } from './app/user-token/user-token.associations';
 import { UserTokenTypeField } from './app/user-token-type/user-token-type.attributes';
 import { UserTokenTypeAssociation } from './app/user-token-type/user-token-type.associations';
 import { initPermissionCategoryModel, PermissionCategoryModel } from './app/permission-category/permission-category.model';
-import { PermissionCategory } from './app/permission-category/permission-category.const';
 import { PermissionCategoryAssociation } from './app/permission-category/permission-category.associations';
 import { PermissionCategoryField } from './app/permission-category/permission-category.attributes';
+import { BlogPostStatusModel, initBlogPostStatusModel } from './app/blog-post-status/blog-post-status.model';
+import { BlogPostModel, initBlogPostModel } from './app/blog-post/blog-post.model';
+import { BlogPostCommentModel, initBlogPostCommentModel } from './app/blog-post-comment/blog-post-comment.model';
+import { BlogPostField } from './app/blog-post/blog-post.attributes';
+import { BlogPostCommentField } from './app/blog-post-comment/blog-post-comment.attributes';
+import { BlogPostStatusAssociation } from './app/blog-post-status/blog-post-status.associations';
+import { BlogPostStatusField } from './app/blog-post-status/blog-post-status.attributes';
+import { BlogPostAssociation } from './app/blog-post/blog-post.associations';
+import { BlogPostCommentAssociation } from './app/blog-post-comment/blog-post-comment.associations';
 
 
 /**
@@ -75,7 +83,7 @@ export async function initialiseDb(arg: { sequelize: Sequelize, env: EnvService;
 
   // make sure db creds work...
   try {
-    const auth = await sequelize.authenticate();
+    await sequelize.authenticate();
   } catch (error) {
     logger.debug('Failed to authenticate with database...');
     throw error;
@@ -120,7 +128,7 @@ async function initialiseWithTransaction(arg: {
   // ----------------------
   // --- run all migrations ---
   // ----------------------
-  await migrateUp();
+  await migrateUp({});
 
   // --------------
   // --- models ---
@@ -145,6 +153,10 @@ async function initialiseWithTransaction(arg: {
   initUserTokenTypeModel({ env, sequelize, });
   initUserTokenModel({ env, sequelize, });
 
+  initBlogPostStatusModel({ env, sequelize, });
+  initBlogPostModel({ env, sequelize, });
+  initBlogPostCommentModel({ env, sequelize, });
+
 
   // -----------------------
   // --- model relations ---
@@ -158,6 +170,8 @@ async function initialiseWithTransaction(arg: {
   UserModel.hasMany(NewsArticleModel, { as: UserAssociation.newsArticles, sourceKey: UserField.id, foreignKey: NewsArticleField.author_id, })
   UserModel.hasMany(NpmsDashboardModel, { as: UserAssociation.npmsDashboards, sourceKey: UserField.id, foreignKey: NpmsDashboardField.owner_id, })
   UserModel.hasMany(UserTokenModel, { as: UserAssociation.userLinks, sourceKey: UserField.id, foreignKey: UserTokenField.user_id, })
+  UserModel.hasMany(BlogPostModel, { as: UserAssociation.blogPosts, sourceKey: UserField.id, foreignKey: BlogPostField.author_id, })
+  UserModel.hasMany(BlogPostCommentModel, { as: UserAssociation.blogPostComments, sourceKey: UserField.id, foreignKey: BlogPostCommentField.author_id, })
 
   // user password
   UserPasswordModel.belongsTo(UserModel, { as: UserPasswordAssociation.user, foreignKey: UserPasswordField.user_id, targetKey: UserField.id, });
@@ -214,4 +228,16 @@ async function initialiseWithTransaction(arg: {
 
   // user link type
   UserTokenTypeModel.hasMany(UserTokenModel, { as: UserTokenTypeAssociation.links, sourceKey: UserTokenTypeField.id, foreignKey: UserTokenField.type_id, })
+
+  // blog post status
+  BlogPostStatusModel.hasMany(BlogPostModel, { as: BlogPostStatusAssociation.posts, sourceKey: BlogPostStatusField.id, foreignKey: BlogPostField.status_id, })
+
+  // blog post
+  BlogPostModel.belongsTo(BlogPostStatusModel, { as: BlogPostAssociation.status, targetKey: BlogPostStatusField.id, foreignKey: BlogPostField.status_id, })
+  BlogPostModel.belongsTo(UserModel, { as: BlogPostAssociation.author, targetKey: UserField.id, foreignKey: BlogPostField.author_id, })
+  BlogPostModel.hasMany(BlogPostCommentModel, { as: BlogPostAssociation.comments, sourceKey: BlogPostField.id, foreignKey: BlogPostCommentField.post_id, })
+
+  // blog post comment
+  BlogPostCommentModel.belongsTo(UserModel, { as: BlogPostCommentAssociation.author, targetKey: UserField.id, foreignKey: BlogPostCommentField.author_id, })
+  BlogPostCommentModel.belongsTo(BlogPostModel, { as: BlogPostCommentAssociation.post, targetKey: BlogPostField.id, foreignKey: BlogPostCommentField.post_id, })
 }

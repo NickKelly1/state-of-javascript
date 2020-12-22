@@ -1,4 +1,13 @@
-import { GraphQLFieldConfigMap, GraphQLFloat, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLString, Thunk } from "graphql";
+import {
+  GraphQLFieldConfigMap,
+  GraphQLFloat,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+  Thunk,
+} from "graphql";
 import { GqlContext } from "../../common/context/gql.context";
 import { GqlJsonObjectScalar } from "../../common/gql/gql.json.scalar";
 import { IJson } from "../../common/interfaces/json.interface";
@@ -9,8 +18,9 @@ import { ist } from "../../common/helpers/ist.helper";
 import { JobStatusGqlEnum } from "../../common/gql/job-status.gql.enum";
 import { OrNull } from "../../common/types/or-null.type";
 import { BullJobStatus } from "../../common/constants/job-status.const";
-import { IGmailJob } from "../google/gmail.job.interface";
+import { IEmailjob } from "../google/email.job.interface";
 import { OrUndefined } from "../../common/types/or-undefined.type";
+import { JobLang } from './job.lang';
 
 
 // TODO: separate files...
@@ -51,6 +61,12 @@ export const JobGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = ()
     type: GraphQLNonNull(GraphQLList(GraphQLNonNull(JobGqlNode))),
     args: { query: { type: JobOptionsGqlInput, }, },
     resolve: async (parent, args, ctx): Promise<IJobGqlNodeSource[]> => {
+      // authorise access
+      ctx.authorize(ctx.services.jobPolicy.canAccess(), JobLang.CannotAccess);
+      // authorise find-many
+      ctx.authorize(ctx.services.jobPolicy.canFindMany(), JobLang.CannotFindMany);
+
+      // prepare
       const query: OrNullable<IJobOptionsGqlInput> = ist.defined(args)
         ? ctx.validate(JobOptionsGqlInputValidator, args.query)
         : null;
@@ -69,7 +85,13 @@ export const JobGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>> = ()
       const start = query?.start ?? undefined;
       const end = query?.end ?? undefined;
       const asc = query?.asc ?? undefined;
-      const jobs: Array<Job<IGmailJob>> = await ctx.services.universal.gmailQueue.getJobs(statuses, start, end, asc);
+      // find
+      const jobs: Array<Job<IEmailjob>> = await ctx
+        .services
+        .universal
+        .queueService
+        .email
+        .getJobs(statuses, start, end, asc);
       return jobs.map((job): IJobGqlNodeSource => job.toJSON());
     },
   },

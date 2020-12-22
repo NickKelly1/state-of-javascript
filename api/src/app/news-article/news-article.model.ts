@@ -1,4 +1,4 @@
-import { Model, DataTypes, BelongsToGetAssociationMixin, } from 'sequelize';
+import { Model, DataTypes, } from 'sequelize';
 import { AuditableSchema } from '../../common/schemas/auditable.schema';
 import { AutoIncrementingId } from '../../common/schemas/auto-incrementing-id.schema';
 import { pretendAuditable } from '../../common/schemas/helpers/pretend-auditable.helper';
@@ -6,10 +6,6 @@ import { ModelInitFn } from '../../common/schemas/interfaces/model-init-fn.inter
 import { NewsArticleAssociation, NewsArticleAssociations } from './news-article.associations';
 import { INewsArticleAttributes, INewsArticleCreationAttributes, NewsArticleField } from '../news-article/news-article.attributes';
 import { NewsArticleId } from './news-article.id.type';
-import { PermissionModel } from '../../circle';
-import { RoleId } from '../role/role.id.type';
-import { RoleModel } from '../role/role.model';
-import { PermissionId } from '../permission/permission-id.type';
 import { UserId } from '../user/user.id.type';
 import { UserModel } from '../user/user.model';
 import { pretendSoftDeleteable } from '../../common/schemas/helpers/pretend-soft-deleteable.helper';
@@ -21,7 +17,7 @@ import { NewsArticleStatusField } from '../news-article-status/news-article-stat
 import { UserField } from '../user/user.attributes';
 import { NewsArticleStatus } from '../news-article-status/news-article-status.const';
 import { RequestAuth } from '../../common/classes/request-auth';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
+import { BaseContext } from '../../common/context/base.context';
 
 
 export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticleCreationAttributes> implements INewsArticleAttributes {
@@ -50,13 +46,13 @@ export class NewsArticleModel extends Model<INewsArticleAttributes, INewsArticle
   //
 
   // helpers
-  isDraft() { return this[NewsArticleField.status_id] === NewsArticleStatus.Draft; }
-  isRejected() { return this[NewsArticleField.status_id] === NewsArticleStatus.Rejected; }
-  isSubmitted() { return this[NewsArticleField.status_id] === NewsArticleStatus.Submitted; }
-  isApproved() { return this[NewsArticleField.status_id] === NewsArticleStatus.Approved; }
-  isPublished() { return this[NewsArticleField.status_id] === NewsArticleStatus.Published; }
+  isDraft(): boolean { return this[NewsArticleField.status_id] === NewsArticleStatus.Draft; }
+  isRejected(): boolean { return this[NewsArticleField.status_id] === NewsArticleStatus.Rejected; }
+  isSubmitted(): boolean { return this[NewsArticleField.status_id] === NewsArticleStatus.Submitted; }
+  isApproved(): boolean { return this[NewsArticleField.status_id] === NewsArticleStatus.Approved; }
+  isPublished(): boolean { return this[NewsArticleField.status_id] === NewsArticleStatus.Published; }
   authIsAuthor(auth: RequestAuth): boolean { return auth.isMeById(this.author_id); }
-  ctxIsAuthor(ctx: IRequestContext): boolean { return this.authIsAuthor(ctx.auth); }
+  ctxIsAuthor(ctx: BaseContext): boolean { return this.authIsAuthor(ctx.auth); }
 }
 
 

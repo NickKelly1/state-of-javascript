@@ -1,21 +1,34 @@
 import { RolePermissionModel } from "../../circle";
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 import { PermissionModel } from "../permission/permission.model";
 import { RoleModel } from "../role/role.model";
 
 export class RolePermissionPolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
 
 
   /**
-   * Can the Requester Find Many RolePermissions?
+   * Can the Requester Access RolePermissions?
+   */
+  canAccess(): boolean {
+
+    // roles and permissions must be accessable
+    return this.ctx.services.rolePolicy.canAccess() && this.ctx.services.permissionPolicy.canAccess();
+  }
+
+
+  /**
+   * Can the Requester FindMany RolePermissions?
    */
   canFindMany(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Can find Roles and Permissions
     return this.ctx.services.rolePolicy.canFindMany() && this.ctx.services.permissionPolicy.canFindMany();
@@ -30,6 +43,9 @@ export class RolePermissionPolicy {
   }): boolean {
     const { role } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // The Role must be Findable
     return this.ctx.services.rolePolicy.canFindOne({ model: role });
   }
@@ -42,6 +58,9 @@ export class RolePermissionPolicy {
     permission: PermissionModel;
   }): boolean {
     const { permission } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // The Role must be Findable
     return this.ctx.services.permissionPolicy.canFindOne({ model: permission });
@@ -58,6 +77,9 @@ export class RolePermissionPolicy {
   }): boolean {
     const { model, role, permission } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // The Role and Permission must both be Findable
     return this.canFindForRole({ role }) && this.canFindForPermission({ permission });
   }
@@ -72,6 +94,9 @@ export class RolePermissionPolicy {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // the Role must be Findable
     if (!this.ctx.services.rolePolicy.canFindOne({ model: role })) return false;
@@ -103,6 +128,9 @@ export class RolePermissionPolicy {
   }): boolean {
     const { permission } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // the Pemrission must be Findable
     if (!this.ctx.services.permissionPolicy.canFindOne({ model: permission })) return false;
 
@@ -128,6 +156,9 @@ export class RolePermissionPolicy {
   }): boolean {
     const { role, permission } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // Must be able to create given the Role and Permission
     return this.canCreateForRole({ role }) && this.canCreateForPermission({ permission })
   }
@@ -142,6 +173,9 @@ export class RolePermissionPolicy {
     role: RoleModel;
   }): boolean {
     const { role } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // the Role must be Findable
     if (!this.ctx.services.rolePolicy.canFindOne({ model: role })) return false;
@@ -173,6 +207,9 @@ export class RolePermissionPolicy {
   }): boolean {
     const { permission } = arg;
 
+    // can access
+    if (!this.canAccess()) return false;
+
     // the Pemrission must be Findable
     if (!this.ctx.services.permissionPolicy.canFindOne({ model: permission })) return false;
 
@@ -198,6 +235,9 @@ export class RolePermissionPolicy {
     permission: PermissionModel;
   }): boolean {
     const { model, role, permission } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
 
     // Must be able to delete given the Role and Permission
     return this.canHardDeleteForRole({ role }) && this.canHardDeleteForPermission({ permission });

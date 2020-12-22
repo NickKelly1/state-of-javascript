@@ -1,6 +1,7 @@
 import { Association } from "sequelize";
-import { UserModel, UserPasswordModel, RoleModel, UserRoleModel, NewsArticleModel  } from "../../circle";
+import { UserModel, UserPasswordModel, RoleModel, UserRoleModel, NewsArticleModel, BlogPostModel  } from "../../circle";
 import { K2K } from "../../common/types/k2k.type";
+import { BlogPostCommentModel } from "../blog-post-comment/blog-post-comment.model";
 import { NpmsDashboardModel } from "../npms-dashboard/npms-dashboard.model";
 import { UserTokenModel } from "../user-token/user-token.model";
 
@@ -12,7 +13,9 @@ export interface UserAssociations {
   userRoles: Association<UserModel, UserRoleModel>;
   npmsDashboards: Association<UserModel, NpmsDashboardModel>;
   userLinks: Association<UserModel, UserTokenModel>;
-};
+  blogPosts: Association<UserModel, BlogPostModel>;
+  blogPostComments: Association<UserModel, BlogPostCommentModel>;
+}
 
 export const UserAssociation: K2K<UserAssociations> = {
   newsArticles: 'newsArticles',
@@ -21,4 +24,6 @@ export const UserAssociation: K2K<UserAssociations> = {
   userRoles: 'userRoles',
   npmsDashboards: 'npmsDashboards',
   userLinks: 'userLinks',
+  blogPosts: 'blogPosts',
+  blogPostComments: 'blogPostComments',
 }

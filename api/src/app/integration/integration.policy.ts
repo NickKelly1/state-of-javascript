@@ -1,22 +1,20 @@
 import { IntegrationModel, } from "../../circle";
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 
 export class IntegrationPolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
 
   /**
-   * Can Find many?
+   * Can Access?
    *
    * @param arg
    */
-  canFindMany(arg?: {
-    //
-  }): boolean {
+  canAccess(): boolean {
     return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
       Permission.Integrations.Viewer,
@@ -25,13 +23,35 @@ export class IntegrationPolicy {
 
 
   /**
-   * Can Find one?
+   * Can FindMany?
+   *
+   * @param arg
+   */
+  canFindMany(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
+
+    return this.ctx.auth.hasPermission([
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Integrations.Viewer,
+    ]);
+  }
+
+
+  /**
+   * Can FindOne?
    *
    * @param arg
    */
   canFindOne(arg: {
     model: IntegrationModel;
   }): boolean {
+    const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
+
     return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
       Permission.Integrations.Viewer,
@@ -43,6 +63,10 @@ export class IntegrationPolicy {
    * Can show encrypted data
    */
   canShowSecrets(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
+
     return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
       Permission.Integrations.ViewSecrets,
@@ -57,8 +81,12 @@ export class IntegrationPolicy {
    */
   canShowSecretsOf(arg: {
     model: IntegrationModel;
-    //
   }): boolean {
+    const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
+
     return this.canShowSecrets();
   }
 
@@ -67,6 +95,10 @@ export class IntegrationPolicy {
    * Can initialise integrations?
    */
   canInititialise(): boolean {
+
+    // can access
+    if (!this.canAccess()) return false;
+
     return this.ctx.auth.hasPermission([
       Permission.SuperAdmin.SuperAdmin,
       Permission.Integrations.Manage,
@@ -82,6 +114,11 @@ export class IntegrationPolicy {
   canInititialiseOne(arg: {
     model: IntegrationModel
   }): boolean {
+    const { model } = arg;
+
+    // can access
+    if (!this.canAccess()) return false;
+
     return this.canInititialise();
   }
 }

@@ -19,11 +19,17 @@ import { JobGqlQuery } from './app/job/job.query';
 import { ActionsGqlQuery } from './app/actions/actions.query';
 import { PermissionCategoryGqlQuery } from './app/permission-category/gql/permission-category.gql.query';
 import { AuthGqlQuery } from './app/auth/auth.gql.query';
+import { BlogPostsGqlQuery } from './app/blog-post/gql/blog-post.gql.query';
+import { BlogPostCommentsGqlQuery } from './app/blog-post-comment/gql/blog-post-comment.gql.query';
+import { BlogPostStatusGqlQuery } from './app/blog-post-status/gql/blog-post-status.gql.query';
 
 
 export const GqlRootQuery = new GraphQLObjectType<undefined, GqlContext>({
   name: 'RootQueryType',
   fields: () => ({
+    ...unthunk(BlogPostsGqlQuery),
+    ...unthunk(BlogPostCommentsGqlQuery),
+    ...unthunk(BlogPostStatusGqlQuery),
     ...unthunk(NewsArticlesGqlQuery),
     ...unthunk(NewsArticleStatusGqlQuery),
     ...unthunk(PermissionGqlQuery),

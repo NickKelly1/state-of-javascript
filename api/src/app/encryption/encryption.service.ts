@@ -4,6 +4,7 @@ import bcryptjs from 'bcryptjs';
 import { IUniversalServices } from '../../common/interfaces/universal.services.interface';
 import { logger } from '../../common/logger/logger';
 import { prettyQ } from '../../common/helpers/pretty.helper';
+import { InitialisationException } from '../../common/exceptions/types/initialisation-exception';
 
 export class EncryptionService {
   constructor(
@@ -12,11 +13,21 @@ export class EncryptionService {
     //
   }
 
+  /**
+   * Initialise the service
+   */
+  protected _initialised = false;
+  public async init(): Promise<void> {
+    if (this._initialised) throw new InitialisationException();
+    logger.info(`initialising ${this.constructor.name}...`);
+    this._initialised = true;
+  }
+
 
   /**
    * Encryption Secret
    */
-  protected get cryptoSecret() {
+  protected get cryptoSecret(): string {
     return this.universal.env.SECRET.substr(0, 32);
   }
 
@@ -26,7 +37,7 @@ export class EncryptionService {
    *
    * Don't change this...
    */
-  protected get cryptoAlgorithm() {
+  protected get cryptoAlgorithm(): string {
     return 'aes-256-ctr';
   }
 
@@ -104,4 +115,4 @@ export class EncryptionService {
     const decrypted = Buffer.concat([decipher.update(Buffer.from(encrypted, 'hex'))]);
     return decrypted.toString();
   }
-};
+}

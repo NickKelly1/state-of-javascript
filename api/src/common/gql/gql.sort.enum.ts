@@ -4,7 +4,7 @@ import { OrNullable } from "../types/or-nullable.type";
 export enum GqlDirEnum {
   Asc = 'Asc',
   Desc = 'Desc',
-};
+}
 
 export const GqlDirEnumType = new GraphQLEnumType({
   name: 'SortDirection',

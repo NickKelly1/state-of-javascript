@@ -1,6 +1,12 @@
 import { GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { GqlContext } from "../../common/context/gql.context";
 import { GqlNever, IGqlNever } from "../../common/gql/gql.ever";
+import { BlogPostCommentCollectionGqlActions, IBlogPostCommentCollectionGqlActionSource } from "../blog-post-comment/gql/blog-post-comment.collection.gql.actions";
+import { IBlogPostCommentGqlActionsSource } from "../blog-post-comment/gql/blog-post-comment.gql.actions";
+import { BlogPostStatusCollectionGqlActions, IBlogPostStatusCollectionGqlActionSource } from "../blog-post-status/gql/blog-post-status.collection.gql.actions";
+import { BlogPostCollectionGqlActions, IBlogPostCollectionGqlActionSource } from "../blog-post/gql/blog-post.collection.gql.actions";
+import { BlogPostCollectionGqlNode } from "../blog-post/gql/blog-post.collection.gql.node";
+import { IBlogPostGqlActionsSource } from "../blog-post/gql/blog-post.gql.actions";
 import { IIntegrationCollectionGqlActionSource, IntegrationCollectionGqlActions } from "../integration/gql/integration.collection.gql.actions";
 import { JobCollectionGqlActions, IJobCollectionGqlActionSource } from "../job/job.collection.gql.actions";
 import { ILogCollectionGqlActionSource, LogCollectionGqlActions } from "../log/log.collection.gql.actions";
@@ -51,6 +57,18 @@ export const ActionsGqlNode = new GraphQLObjectType<IActionsGqlNodeSource, GqlCo
       type: GraphQLNonNull(NpmsDashboardItemCollectionGqlActions),
       resolve: (): INpmsDashboardItemCollectionGqlActionSource => GqlNever,
     },
+    blogPosts: {
+      type: GraphQLNonNull(BlogPostCollectionGqlActions),
+      resolve: (): IBlogPostCollectionGqlActionSource => GqlNever,
+    },
+    blogPostComments: {
+      type: GraphQLNonNull(BlogPostCommentCollectionGqlActions),
+      resolve: (): IBlogPostCommentCollectionGqlActionSource => GqlNever,
+    },
+    blogPostStatuses: {
+      type: GraphQLNonNull(BlogPostStatusCollectionGqlActions),
+      resolve: (): IBlogPostStatusCollectionGqlActionSource => GqlNever,
+    },
     newsArticles: {
       type: GraphQLNonNull(NewsArticleCollectionGqlActions),
       resolve: (): INewsArticleCollectionGqlActionSource => GqlNever,
@@ -71,6 +89,5 @@ export const ActionsGqlNode = new GraphQLObjectType<IActionsGqlNodeSource, GqlCo
       type: GraphQLNonNull(IntegrationCollectionGqlActions),
       resolve: (): IIntegrationCollectionGqlActionSource => GqlNever,
     },
-    // TODO: blogs
   }),
 });

@@ -1,6 +1,6 @@
+import { BaseContext } from '../../common/context/base.context';
 import { ist } from '../../common/helpers/ist.helper';
 import { IJson } from '../../common/interfaces/json.interface';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { IIntegrationServiceInitialiseIntegrationCredentialsDto } from './dtos/integration-service.initialise-integration-credentials.dto';
 import { IIntegrationServiceResetIntegrationDto } from './dtos/integration-service.reset-integration.dto';
@@ -9,7 +9,7 @@ import { IntegrationModel } from './integration.model';
 
 export class IntegrationService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -26,7 +26,7 @@ export class IntegrationService {
       .ctx
       .services
       .universal
-      .encryption
+      .encryptionService
       .encrypt({
         decrypted,
         iv: model.iv,
@@ -46,7 +46,7 @@ export class IntegrationService {
       .ctx
       .services
       .universal
-      .encryption
+      .encryptionService
       .decrypt({
         encrypted,
         iv: model.iv,
@@ -66,7 +66,7 @@ export class IntegrationService {
     runner: QueryRunner;
     model: IntegrationModel;
     dto: IIntegrationServiceInitialiseIntegrationCredentialsDto;
-  }) {
+  }): Promise<IntegrationModel> {
     const { model, dto, runner } = arg;
     const { transaction } = runner;
 
@@ -87,7 +87,7 @@ export class IntegrationService {
     
 
     // get a new iv
-    model.iv = this.ctx.services.universal.encryption.iv();
+    model.iv = this.ctx.services.universal.encryptionService.iv();
 
     // update the encrypted init data
     model.encrypted_init = this.encrypt({ model, decrypted: JSON.stringify(init), });

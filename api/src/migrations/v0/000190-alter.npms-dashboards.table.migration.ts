@@ -5,8 +5,8 @@ import { IMigration, IMigrationDownArg, IMigrationUpArg } from "../../common/mig
 export default class implements IMigration {
   tag = __filename;
 
-  up = async (arg: IMigrationUpArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  up = async (arg: IMigrationUpArg): Promise<void> => {
+    const { queryInterface, sequelize, transaction } = arg;
 
     // create nullable col
     await queryInterface.addColumn(
@@ -17,7 +17,7 @@ export default class implements IMigration {
     );
 
     // initialise order of all records
-    const [results] = await sequelize.query(`
+    await sequelize.query(`
       UPDATE "npms_dashboards"
       SET "order" = ("npms_dashboards"."id" - 1)
     `, { transaction });
@@ -31,8 +31,8 @@ export default class implements IMigration {
     );
   }
 
-  down = async (arg: IMigrationDownArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  down = async (arg: IMigrationDownArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     await queryInterface.removeColumn('npms_dashboards', 'order', { transaction });
   };
-};
+}

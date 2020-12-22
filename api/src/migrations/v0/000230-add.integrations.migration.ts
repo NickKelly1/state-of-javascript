@@ -1,4 +1,4 @@
-import { QueryInterface, Sequelize, DataTypes, Transaction, Op } from "sequelize";
+import { Op } from "sequelize";
 import { IMigration, IMigrationDownArg, IMigrationUpArg } from "../../common/migration/migration.interface";
 import crypto from 'crypto';
 
@@ -45,14 +45,14 @@ function getData() {
 export default class implements IMigration {
   tag = __filename;
 
-  up = async (arg: IMigrationUpArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  up = async (arg: IMigrationUpArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     const { integrations } = getData();
     await queryInterface.bulkInsert('integrations', integrations, { transaction });
   }
 
-  down = async (arg: IMigrationDownArg) => {
-    const { env, queryInterface, sequelize, transaction, } = arg;
+  down = async (arg: IMigrationDownArg): Promise<void> => {
+    const { queryInterface, transaction, } = arg;
     const { integrations } = getData();
     await queryInterface.bulkDelete(
       'integrations',
@@ -60,4 +60,4 @@ export default class implements IMigration {
       { transaction },
     );
   };
-};
+}

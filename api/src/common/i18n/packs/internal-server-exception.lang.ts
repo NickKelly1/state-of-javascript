@@ -20,4 +20,8 @@ export const InternalServerExceptionLang = {
     [Language.En]: `Unhandled UserLinkType: "${arg.type_id}"`,
     [Language.Ger]: '__TODO__',
   }),
+  TransactionAlreadyCommitted: {
+    [Language.En]: `The transaction has already been committed`,
+    [Language.Ger]: '__TODO__',
+  }
 }

@@ -2,10 +2,10 @@ import { GraphQLFieldConfigMap, GraphQLNonNull, GraphQLString, Thunk } from "gra
 import { GqlContext } from "../../../common/context/gql.context";
 import { GqlJsonObjectScalar } from "../../../common/gql/gql.json.scalar";
 import { IJson } from "../../../common/interfaces/json.interface";
-import { IIntegrationGqlNodeSource, IntegrationGqlNode } from "../../integration/gql/integration.gql.node";
 import { Integration } from "../../integration/integration.const";
 import { GoogleSendEmailGqlInput, GoogleSendEmailGqlInputValidator } from "../dtos/google.send-email.gql";
 import { IGoogleIntegrationServiceSendEmailDto } from "../dtos/google.service.send-email-dto";
+import { GoogleLang } from "../google.lang";
 import { GoogleGqlNode, IGoogleGqlNodeSource } from "./google.gql.node";
 
 export const GoogleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext>> = () => ({
@@ -19,7 +19,7 @@ export const GoogleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlConte
       const code: string = args.code;
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const model = await ctx.services.integrationRepository.findByPkOrfail(Integration.Google, { runner });
-        ctx.authorize(ctx.services.googlePolicy.canOAuth2({ model }));
+        ctx.authorize(ctx.services.googlePolicy.canOAuth2({ model }), GoogleLang.CannotOAuth2);
         const client = await ctx.services.googleService.oauthClient({ model, runner, });
         await ctx.services.googleService.handleOAuth2Code({ model, client, code, runner });
         return model;
@@ -38,7 +38,7 @@ export const GoogleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlConte
       const dto = ctx.validate(GoogleSendEmailGqlInputValidator, args.dto);
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const model = await ctx.services.integrationRepository.findByPkOrfail(Integration.Google, { runner });
-        ctx.authorize(ctx.services.googlePolicy.canSendGmail({ model }));
+        ctx.authorize(ctx.services.googlePolicy.canSendGmail({ model }), GoogleLang.CannotSendEmail);
         const serviceDto: IGoogleIntegrationServiceSendEmailDto = {
           subject: dto.subject,
           to: dto.to,

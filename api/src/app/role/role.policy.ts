@@ -1,12 +1,28 @@
 import { RoleModel } from "../../circle";
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
+import { BaseContext } from "../../common/context/base.context";
 import { Permission } from "../permission/permission.const";
 
 export class RolePolicy {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
+  }
+
+
+  /**
+   * Can the Requester Access Roles?
+   *
+   * @param arg
+   */
+  canAccess(): boolean {
+
+    // is SuperAdmin, RoleAdmin, or RoleViewer
+    return this.ctx.hasPermission(
+      Permission.SuperAdmin.SuperAdmin,
+      Permission.Roles.Admin,
+      Permission.Roles.Viewer,
+    );
   }
 
 

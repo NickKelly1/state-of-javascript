@@ -1,6 +1,5 @@
-import { QueryInterface, Sequelize, Transaction, } from 'sequelize';
+import { Sequelize, } from 'sequelize';
 import { EnvService } from '../../common/environment/env';
-import { pretty } from '../../common/helpers/pretty.helper';
 import { logger } from '../../common/logger/logger';
 
 

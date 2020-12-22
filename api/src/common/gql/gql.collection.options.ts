@@ -1,7 +1,8 @@
+import Joi from "joi";
 import { GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull } from "graphql";
 import { OrNullable } from "../types/or-nullable.type";
 import { GqlFilterFieldType, GqlFilterInputFactory, IGqlFilterGroup } from "./gql.filter.types";
-import { IGqlSortInput, GqlSortInput } from "./gql.sort.enum";
+import { IGqlSortInput, GqlSortInput, GqlDirEnum } from "./gql.sort.enum";
 
 export interface IGqlCollectionOptions {
   offset?: OrNullable<number>;
@@ -28,3 +29,15 @@ export const GqlCollectionOptionsInputFactory = (arg: {
   });
   return Obj;
 }
+
+export const CollectionOptionsValidator = Joi.object<IGqlCollectionOptions>({
+  offset: Joi.number().integer().optional(),
+  limit: Joi.number().integer().optional(),
+  // sorts
+  sorts: Joi.array().items(Joi.object({
+    field: Joi.string().required(),
+    dir: Joi.alternatives([ GqlDirEnum.Asc, GqlDirEnum.Desc, ]).required(),
+  }).required()).optional(),
+  // too complicated... don't bother validating filter...
+  filter: Joi.alternatives([Joi.array(), Joi.object()]).optional(),
+});

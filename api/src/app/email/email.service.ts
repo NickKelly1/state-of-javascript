@@ -1,12 +1,9 @@
-import { IRequestContext } from "../../common/interfaces/request-context.interface";
-import { createTransport } from 'nodemailer';
-import SMTPTransport from "nodemailer/lib/smtp-transport";
-import { google } from 'googleapis';
+import { BaseContext } from "../../common/context/base.context";
 
 // TODO....
 export class EmailService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

@@ -1,16 +1,16 @@
 import { Op } from 'sequelize';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
 import { ist } from '../../common/helpers/ist.helper';
-import { NpmsLang } from '../../common/i18n/packs/npms.lang';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
+import { NpmsDashboardLang } from '../npms-dashboard/npms-dashboard.lang';
 import { logger } from '../../common/logger/logger';
 import { QueryRunner } from '../db/query-runner';
 import { NpmsPackageField } from './npms-package.attributes';
 import { NpmsPackageModel } from './npms-package.model';
+import { BaseContext } from '../../common/context/base.context';
 
 export class NpmsPackageService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }
@@ -30,7 +30,7 @@ export class NpmsPackageService {
     const names = Array.from(new Set(dtos.flatMap(dto => dto.names)));
     const existing = await NpmsPackageModel.findAll({ where: { [NpmsPackageField.name]: { [Op.in]: names} }, transaction });
     if (existing.length) {
-      const message = this.ctx.lang(NpmsLang.AlreadyExists({ names: existing.map(ex => ex.name) }));
+      const message = this.ctx.lang(NpmsDashboardLang.AlreadyExists({ names: existing.map(ex => ex.name) }));
       throw new BadRequestException(
         message,
         ist.notUndefined(dataKey) ? { [NpmsPackageField.name]: [message] } : undefined,

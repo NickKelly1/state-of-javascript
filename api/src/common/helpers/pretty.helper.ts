@@ -8,6 +8,18 @@ export function pretty(json: Printable | $TS_FIX_ME<any>): string {
   return JSON.stringify(json, null, 2);
 }
 
+function renderError(error: Error): string {
+  const plainError: Record<any, any> = {};
+  Object
+    .getOwnPropertyNames(error)
+    .forEach(p => { plainError[p] = (error as any)[p]; });
+  Object
+    .getOwnPropertySymbols(error)
+    .forEach(s => { plainError[s as any] = (error as any)[s]; });
+  if (typeof plainError.stack === 'string') plainError.stack = plainError.stack.split('\n');
+  return prettyQ(plainError);
+}
+
 
 /**
  * Pretty query
@@ -19,13 +31,6 @@ export function pretty(json: Printable | $TS_FIX_ME<any>): string {
  * https://codereview.stackexchange.com/questions/214947/pretty-print-an-object-javascript
  */
 export function prettyQ(obj: Printable | $TS_FIX_ME<any>): string {
-  if (obj && obj instanceof Error) {
-    const plainError: Record<any, any> = {};
-    Object.getOwnPropertyNames(obj).forEach(p => { plainError[p] = (obj as any)[p]; });
-    Object.getOwnPropertySymbols(obj).forEach(s => { plainError[s as any] = (obj as any)[s]; });
-    return prettyQ(plainError);
-  }
-
   const printed: Set<any> = new Set();
 
   // if object has already been printed, show [Circular...] instead
@@ -53,7 +58,9 @@ export function prettyQ(obj: Printable | $TS_FIX_ME<any>): string {
     number:    (x: number) => x,
     bigint:    (x: number) => `__bigint__${x.toString()}__`,
     string:    (x: string) => enquote(x),
-    object:    (x: object | null) => x === null ? 'null' : singular(traverse)(x),
+    object:    (x: object | null) => x === null ? 'null'
+      : x instanceof Error ? singular(renderError)(x)
+      : singular(traverse)(x),
     function:  (x: Function) => x.toString(),
     symbol:    (x: symbol) => x.toString()
   };

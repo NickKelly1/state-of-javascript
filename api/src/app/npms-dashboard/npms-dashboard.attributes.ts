@@ -17,7 +17,7 @@ export interface INpmsDashboardAttributes extends IAuditable, ISoftDeleteable {
   order: number;
   owner_id: OrNull<UserId>;
   status_id: NpmsDashboardStatusId;
-  shadow_id: OrNull<string>;
+  aid: OrNull<string>;
 }
 
 export const NpmsDashboardField: K2K<INpmsDashboardAttributes> = {
@@ -26,12 +26,13 @@ export const NpmsDashboardField: K2K<INpmsDashboardAttributes> = {
   order: 'order',
   owner_id: 'owner_id',
   status_id: 'status_id',
-  shadow_id: 'shadow_id',
+  aid: 'aid',
   [created_at]: created_at,
   [updated_at]: updated_at,
   [deleted_at]: deleted_at,
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface INpmsDashboardCreationAttributes extends Optional<INpmsDashboardAttributes,
   | id
   | created_at

@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import { PermissionModel } from '../../../circle';
 import { PermissionDefinition } from '../permission.definition';
 
 export interface ICreatePermissionDto {

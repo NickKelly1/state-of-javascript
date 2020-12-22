@@ -1,20 +1,18 @@
 import { Op } from 'sequelize';
 import { RoleModel, UserModel, UserRoleModel } from '../../circle';
+import { BaseContext } from '../../common/context/base.context';
 import { BadRequestException } from '../../common/exceptions/types/bad-request.exception';
 import { assertDefined } from '../../common/helpers/assert-defined.helper';
-import { auditableRo } from '../../common/helpers/auditable-ro.helper';
 import { UserRoleLang } from '../../common/i18n/packs/user-role.lang';
-import { IRequestContext } from '../../common/interfaces/request-context.interface';
 import { QueryRunner } from '../db/query-runner';
 import { RoleId } from '../role/role.id.type';
 import { UserId } from '../user/user.id.type';
-import { IUserRoleRo } from './dtos/user-role.ro';
 import { UserRoleAssociation } from './user-role.associations';
 import { UserRoleField } from './user-role.attributes';
 
 export class UserRoleService {
   constructor(
-    protected readonly ctx: IRequestContext,
+    protected readonly ctx: BaseContext,
   ) {
     //
   }

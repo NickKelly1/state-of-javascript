@@ -1,13 +1,12 @@
-import { QueryInterface, Sequelize, DataTypes, Transaction } from "sequelize";
+import { DataTypes } from "sequelize";
 import { IMigration, IMigrationDownArg, IMigrationUpArg } from "../../common/migration/migration.interface";
-import { AutoIncrementingId } from "../../common/schemas/auto-incrementing-id.schema";
 
 // name for debugging purposes only
 export default class implements IMigration {
   tag = __filename;
 
-  up = async (arg: IMigrationUpArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  up = async (arg: IMigrationUpArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     await queryInterface.createTable('role_permissions', {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false, },
       role_id: { type: DataTypes.INTEGER, references: { model: 'roles', key: 'id' }, allowNull: false, },
@@ -17,11 +16,11 @@ export default class implements IMigration {
     }, { transaction });
   }
 
-  down = async (arg: IMigrationDownArg) => {
-    const { env, queryInterface, sequelize, transaction } = arg;
+  down = async (arg: IMigrationDownArg): Promise<void> => {
+    const { queryInterface, transaction } = arg;
     await queryInterface.dropTable(
       'role_permissions',
       { transaction },
     );
   };
-};
+}

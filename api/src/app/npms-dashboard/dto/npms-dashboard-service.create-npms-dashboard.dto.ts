@@ -3,6 +3,6 @@ import { NpmsDashboardStatusId } from '../../npms-dashboard-status/npms-dashboar
 
 export interface INpmsDashboardServiceCreateNpmsDashboardDto {
   name: string;
-  shadow_id?: OrNullable<string>;
+  aid?: OrNullable<string>;
   status_id: NpmsDashboardStatusId,
 }

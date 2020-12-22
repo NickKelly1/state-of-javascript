@@ -1,6 +1,5 @@
-import { GraphQLInt, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
+import { GraphQLObjectType } from "graphql";
 import { NewsArticleModel } from "../news-article.model";
-import { AuditableGql } from "../../../common/gql/gql.auditable";
 import { OrNull } from "../../../common/types/or-null.type";
 import { IUserGqlNodeSource, UserGqlNode } from "../../user/gql/user.gql.node";
 import { GqlContext } from "../../../common/context/gql.context";
