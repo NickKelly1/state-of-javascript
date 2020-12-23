@@ -12,9 +12,9 @@ export const BlogPostsGqlQuery: Thunk<GraphQLFieldConfigMap<unknown, GqlContext>
     args: gqlQueryArg(BlogPostCollectionOptionsGqlInput),
     resolve: async (parent, args, ctx): Promise<IBlogPostCollectionGqlNodeSource> => {
       // authorise access
-      ctx.authorize(ctx.services.userPolicy.canAccess(), BlogPostLang.CannotAccess);
+      ctx.authorize(ctx.services.blogPostPolicy.canAccess(), BlogPostLang.CannotAccess);
       // authorise find-many
-      ctx.authorize(ctx.services.userPolicy.canFindMany(), BlogPostLang.CannotFindMany);
+      ctx.authorize(ctx.services.blogPostPolicy.canFindMany(), BlogPostLang.CannotFindMany);
       // find
       const collection = await ctx.services.blogPostRepository.gqlCollection({
         args,

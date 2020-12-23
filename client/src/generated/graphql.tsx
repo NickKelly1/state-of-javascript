@@ -3784,6 +3784,32 @@ export type PasswordResetPageDataQuery = (
   ) }
 );
 
+export type FindBlogPostsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FindBlogPostsQuery = (
+  { __typename?: 'RootQueryType' }
+  & { blogPosts: (
+    { __typename?: 'BlogPostCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'BlogPostNode' }
+      & { data: (
+        { __typename?: 'BlogPostData' }
+        & Pick<BlogPostData, 'id' | 'title' | 'teaser' | 'body'>
+      ), relations: (
+        { __typename?: 'BlogPostRelations' }
+        & { status?: Maybe<(
+          { __typename?: 'BlogPostStatusNode' }
+          & { data: (
+            { __typename?: 'BlogPostStatusData' }
+            & Pick<BlogPostStatusData, 'id' | 'name' | 'colour'>
+          ) }
+        )> }
+      ) }
+    )>> }
+  ) }
+);
+
 export type IndexBlogPostsPageQueryQueryVariables = Exact<{
   blog_posts_offset?: Maybe<Scalars['Int']>;
   blog_posts_limit?: Maybe<Scalars['Int']>;

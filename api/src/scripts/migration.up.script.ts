@@ -7,13 +7,9 @@ import { logger } from '../common/logger/logger';
 import { MigrationRunner } from '../common/migration/migration.runner';
 import { migrateDown } from '../common/migration/migrate.down';
 import { migrateUp } from '../common/migration/migrate.up';
-import { ScriptGuard } from '../script-guard';
 
 const yargv = yargs(process.argv).argv;
 const to = Extractor({ fromObj: yargv, fromName: 'Argument' });
-
-// can execute scripts
-ScriptGuard.check();
 
 // this is the expected script
 to.oneOf(['migration_up'])('script');
