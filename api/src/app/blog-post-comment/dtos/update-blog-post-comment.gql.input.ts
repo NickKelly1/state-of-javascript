@@ -22,7 +22,7 @@ export const UpdateBlogPostCommentGqlInput = new GraphQLInputObjectType({
 
 export const UpdateBlogPostCommentValidator = Joi.object<IUpdateBlogPostCommentInput>({
   id: Joi.number().integer().positive().required(),
-  body: Joi.string().min(BlogPostCommentDefinition.title.min).max(BlogPostCommentDefinition.title.max).optional(),
+  body: Joi.string().min(BlogPostCommentDefinition.body.min).max(BlogPostCommentDefinition.body.max).optional(),
   visible: Joi.boolean().optional(),
   hidden: Joi.boolean().optional(),
 });

@@ -8,7 +8,7 @@ export const BlogPostLang = {
     [Language.Ger]: '__TODO__',
   },
   CannotAccess: {
-    [Language.En]: `you access blog-posts`,
+    [Language.En]: `you cannot access blog-posts`,
     [Language.Ger]: '__TODO__',
   },
   CannotFindMany: {

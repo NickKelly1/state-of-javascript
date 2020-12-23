@@ -60,6 +60,9 @@ export class BlogPostModel extends Model<IBlogPostAttributes, IBlogPostCreationA
   /** Is the BlogPost Rejectable? */
   isRejectable(): boolean { return this.isSubmitted() || this.isPublished() || this.isUnpublished(); }
 
+  /** Is the BlogPost Approvable? */
+  isApprovable(): boolean { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
+
   /** Is the BlogPost Publishable? */
   isPublishable(): boolean { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
 

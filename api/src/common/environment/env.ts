@@ -70,8 +70,8 @@ export class EnvService {
   // default: 1 min
   public readonly RATE_LIMIT_WINDOW_MS = to.optional(() => to.int('REFRESH_TOKEN_EXPIRES_IN_MS')) ?? 1000 * 60;
 
-  // default: 300
-  public readonly RATE_LIMIT_MAX = to.optional(() => to.int('DELAY')) ?? 500;
+  // default: 1000
+  public readonly RATE_LIMIT_MAX = to.optional(() => to.int('DELAY')) ?? 1_000;
 
   public readonly SECRET = to.string('SECRET');
 

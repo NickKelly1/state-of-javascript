@@ -1,4 +1,4 @@
-import { GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
+import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
 import { BlogPostModel, UserModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
@@ -106,15 +106,15 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
    * HardDelete a BlogPost
    */
   hardDeleteBlogPost: {
-    type: GraphQLNonNull(BlogPostGqlNode),
+    type: GraphQLNonNull(GraphQLBoolean),
     args: { dto: { type: GraphQLNonNull(TargetBlogPostGqlInput) } },
-    resolve: async (parent, args, ctx): Promise<IBlogPostGqlNodeSource> => {
+    resolve: async (parent, args, ctx): Promise<boolean> => {
       // authorise access
       ctx.authorize(ctx.services.blogPostPolicy.canAccess(), BlogPostLang.CannotAccess);
       // validate
       const dto = ctx.validate(TargetBlogPostValidator, args.dto);
 
-      const final = await ctx.services.universal.db.transact(async ({ runner }) => {
+      await ctx.services.universal.db.transact(async ({ runner }) => {
         // find
         const model: BlogPostModel = await ctx.services.blogPostRepository.findByPkOrfail(dto.id, {
           runner,
@@ -130,7 +130,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return true;
     },
   },
 

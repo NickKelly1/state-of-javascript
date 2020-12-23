@@ -14,12 +14,12 @@ export const NewsArticleLang = {
   },
 
   CannotAccess: {
-    [Language.En]: `you cannot access npms-dashoards`,
+    [Language.En]: `you cannot access news-articles`,
     [Language.Ger]: '__TODO__',
   },
 
   CannotCreate: {
-    [Language.En]: `you cannot create npms-dashoards`,
+    [Language.En]: `you cannot create news-articles`,
     [Language.Ger]: '__TODO__',
   },
 

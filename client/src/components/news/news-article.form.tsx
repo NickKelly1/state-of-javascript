@@ -1,11 +1,8 @@
 import {
   Box,
   Button,
-  ButtonGroup,
-  CircularProgress,
   FormHelperText,
   Grid,
-  Input,
   InputLabel,
   LinearProgress,
   makeStyles,
@@ -20,15 +17,11 @@ import React, {
   ChangeEventHandler,
   FormEvent,
   FormEventHandler,
-  useCallback,
-  useContext,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { Markdown } from "../markdown/markdown";
-import { ApiContext } from "../../components-contexts/api.context";
 import { OrNullable } from "../../types/or-nullable.type";
 import { ist } from "../../helpers/ist.helper";
 import { OrPromise } from "../../types/or-promise.type";
@@ -62,18 +55,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export interface INewsArticleFormData {
+export interface INewsArticleMutateFormData {
   title: string;
   teaser: string;
   body: string;
 }
 
-export interface ICreateNewsPageProps {
+export interface INewsArticleMutateFormProps {
   id: OrNullable<number>;
-  onSave: OrNullable<((data: INewsArticleFormData) => OrPromise<boolean>)>;
-  onAutoSave: OrNullable<((data: INewsArticleFormData) => unknown)>;
+  onSave: OrNullable<((data: INewsArticleMutateFormData) => OrPromise<boolean>)>;
+  onAutoSave: OrNullable<((data: INewsArticleMutateFormData) => unknown)>;
   lastSavedAt: OrNullable<number>;
-  initial: OrNullable<INewsArticleFormData>;
+  initial: OrNullable<INewsArticleMutateFormData>;
   isDisabled: boolean;
   error: OrNullable<IApiException>;
   canShow: boolean;
@@ -88,7 +81,7 @@ const _ls_news_draft = {
 } as const;
 
 
-export const NewsArticleForm = WithApi<ICreateNewsPageProps>((props) => {
+export const NewsArticleMutateForm = WithApi<INewsArticleMutateFormProps>((props) => {
   const {
     id,
     onSave,
@@ -118,9 +111,9 @@ export const NewsArticleForm = WithApi<ICreateNewsPageProps>((props) => {
   // initialise from localstorage...
   useEffect(() => {
     if (ist.nullable(id)) {
-      if (!title) { setTitle(_ls?.getItem(_ls_news_draft.title) ?? title); };
-      if (!teaser) { setTeaser(_ls?.getItem(_ls_news_draft.teaser) ?? teaser); };
-      if (!body) { setBody(_ls?.getItem(_ls_news_draft.body) ?? body); };
+      if (!title) { setTitle(_ls?.getItem(_ls_news_draft.title) ?? title); }
+      if (!teaser) { setTeaser(_ls?.getItem(_ls_news_draft.teaser) ?? teaser); }
+      if (!body) { setBody(_ls?.getItem(_ls_news_draft.body) ?? body); }
     }
   }, [process.browser]);
 

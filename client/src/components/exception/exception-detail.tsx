@@ -1,4 +1,4 @@
-import { Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import React from 'react';
 import { ApiException } from "../../backend-api/api.exception";
 import { OrNullable } from '../../types/or-nullable.type';
@@ -38,10 +38,101 @@ export function ExceptionDetail(props: IExceptionDetailProps): null | JSX.Elemen
 
   return (
     <>
-      <Grid className={clsx(classes.root, className)} container spacing={2}>
-        <Grid className={itemClassName} item xs={12}>
-          {/* nothing... */}
-        </Grid>
+      <Box className={clsx('centered col', classes.root, className)}>
+        {code && (
+          <Box mb={1} className={clsx(itemClassName, 'centered col')}>
+            <Typography variant="body2">
+              Code:
+            </Typography>
+            <Typography variant="body2" color="error">
+              {code}
+            </Typography>
+          </Box>
+        )}
+        {message && (
+          <Box mb={1} className={clsx(itemClassName, 'centered col')}>
+            <Typography variant="body2">
+              Message:
+            </Typography>
+            <Typography variant="body2" color="error">
+              {message}
+            </Typography>
+          </Box>
+        )}
+        {data && (
+          <Box mb={1} className={clsx(itemClassName, 'centered col')}>
+            <Typography variant="body2">
+              Data:
+            </Typography>
+            <Typography variant="body2" color="error">
+              <JsonPretty src={data} />
+            </Typography>
+          </Box>
+        )}
+        {trace && (
+          <Box mb={1} className={clsx(itemClassName, 'centered col')}>
+            <Typography variant="body2">
+              Trace:
+            </Typography>
+            <Typography variant="body2" color="error">
+              {trace.map((tr, i) => (
+                <div key={i}>
+                  <span>
+                    {tr}
+                  </span>
+                </div>
+              ))}
+            </Typography>
+          </Box>
+        )}
+        {stack && (
+          <Box mb={1} className={clsx(itemClassName, 'centered col')}>
+            <Typography variant="body2">
+              Stack:
+            </Typography>
+            <Typography component="div" variant="body2" color="error">
+              {stack.split('\n').map((tr, i) => (
+                <div key={i}>
+                  <span>
+                    {tr}
+                  </span>
+                </div>
+              ))}
+            </Typography>
+          </Box>
+        )}
+        {!!Object.keys(other).length && (
+          <Box mb={1} className={clsx(itemClassName, 'centered col')}>
+            <Typography variant="body2">
+              Other:
+            </Typography>
+            <Typography variant="body2" color="error">
+              <JsonPretty src={other} />
+            </Typography>
+          </Box>
+        )}
+      </Box>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* <Grid className={clsx(classes.root, className)} container spacing={2}>
+        <Grid className={itemClassName} item xs={12} />
         {code && (
           <Grid className={itemClassName} item xs={12}>
             <Typography variant="body2">
@@ -114,7 +205,7 @@ export function ExceptionDetail(props: IExceptionDetailProps): null | JSX.Elemen
             </Typography>
           </Grid>
         )}
-      </Grid>
+      </Grid> */}
     </>
   );
 }

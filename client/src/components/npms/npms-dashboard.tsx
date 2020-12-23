@@ -1,10 +1,5 @@
 // import * as remember from '../../custom.d.ts';
-import ThumbDownIcon from '@material-ui/icons/ThumbDownOutlined';
-import PublishIcon from '@material-ui/icons/PublishOutlined';
-import RemoveCircleOutlineIcon from '@material-ui/icons/RemoveCircleOutline';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDownOutlined';
-import SendIcon from '@material-ui/icons/SendOutlined';
-import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUpOutlined';
+import { Icons } from '../icons/icons.const';
 import React, {
   useCallback,
   useState,
@@ -472,14 +467,14 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
               <Box className="centered">
                 <Box className={hidex(!debugMode.isOn)} mr={1}>
                   <IconButton disabled={isDisabled} color="primary" onClick={debugDialog.doToggle}>
-                    <BugReportIcon />
+                    <Icons.Debug />
                   </IconButton>
                 </Box>
                 {dashboard.graphical.can.update && (
                   <Box>
                     <Box mr={1}>
                       <IconButton disabled={isDisabled} color="primary" onClick={mutationDialog.doOpen}>
-                        <EditIcon />
+                        <Icons.Edit />
                       </IconButton>
                     </Box>
                   </Box>
@@ -488,7 +483,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
                   <Box>
                     <Box mr={1}>
                       <IconButton disabled={isDisabled} color="primary" onClick={handleSoftDeleteDashboardClicked}>
-                        <DeleteIcon />
+                        <Icons.SoftDelete />
                       </IconButton>
                     </Box>
                   </Box>
@@ -496,7 +491,7 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
                 {hasExtraActions && (
                   <>
                     <Button
-                      startIcon={menuAnchor ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+                      startIcon={menuAnchor ? <Icons.ArrowDropUp /> : <Icons.ArrowDropDown />}
                       variant="outlined"
                       color="primary"
                       onClick={handleMenuClick}
@@ -511,25 +506,25 @@ export const NpmsDashboard = WithApi<INpmsDashboardProps>((props) => {
                     >
                       {canPublish && (
                         <MenuItem disabled={isDisabled} onClick={handlePublishDashboardClicked}>
-                          <ListItemIcon className={themeColours.success}><PublishIcon /></ListItemIcon>
+                          <ListItemIcon className={themeColours.success}><Icons.Publish /></ListItemIcon>
                           <ListItemText className={themeColours.success}>Publish</ListItemText>
                         </MenuItem>
                       )}
                       {canSubmit && (
                         <MenuItem onClick={handleSubmitDashboardClicked}>
-                          <ListItemIcon className={themeColours.primary}><SendIcon /></ListItemIcon>
+                          <ListItemIcon className={themeColours.primary}><Icons.Submit /></ListItemIcon>
                           <ListItemText className={themeColours.primary}>Submit</ListItemText>
                         </MenuItem>
                       )}
                       {canReject && (
                         <MenuItem disabled={isDisabled} onClick={handleRejectDashboardClicked}>
-                          <ListItemIcon className={themeColours.warning}><ThumbDownIcon /></ListItemIcon>
+                          <ListItemIcon className={themeColours.warning}><Icons.Reject /></ListItemIcon>
                           <ListItemText className={themeColours.warning}>Reject</ListItemText>
                         </MenuItem>
                       )}
                       {canUnpublish && (
                         <MenuItem disabled={isDisabled} onClick={handleUnpublishDashboardClicked}>
-                          <ListItemIcon className={themeColours.error}><RemoveCircleOutlineIcon /></ListItemIcon>
+                          <ListItemIcon className={themeColours.error}><Icons.Unpublish /></ListItemIcon>
                           <ListItemText className={themeColours.error}>Unpublish</ListItemText>
                         </MenuItem>
                       )}

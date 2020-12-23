@@ -7,7 +7,7 @@ import { OrUndefined } from "../types/or-undefined.type";
  * @param boolean
  */
 export function hide(boolean?: OrNullable<boolean>): string {
-  if (!!boolean) return 'visibility-hidden';
+  if (boolean) return 'visibility-hidden';
   return 'visibility-inherit';
 }
 
@@ -17,7 +17,7 @@ export function hide(boolean?: OrNullable<boolean>): string {
  * @param boolean
  */
 export function hidey(boolean?: OrNullable<boolean>): string {
-  if (!!boolean) return 'visibility-hidden-y';
+  if (boolean) return 'visibility-hidden-y';
   return 'visibility-inherit';
 }
 
@@ -27,6 +27,6 @@ export function hidey(boolean?: OrNullable<boolean>): string {
  * @param boolean
  */
 export function hidex(boolean?: OrNullable<boolean>): string {
-  if (!!boolean) return 'visibility-hidden-x';
+  if (boolean) return 'visibility-hidden-x';
   return 'visibility-inherit';
 }

@@ -164,7 +164,7 @@ export type BlogPostActions = {
 export type BlogPostRelations = {
   __typename?: 'BlogPostRelations';
   author?: Maybe<UserNode>;
-  status?: Maybe<UserNode>;
+  status?: Maybe<BlogPostStatusNode>;
   comments: BlogPostCommentCollectionNode;
 };
 
@@ -185,8 +185,8 @@ export type UserData = {
   __typename?: 'UserData';
   id: Scalars['Int'];
   name: Scalars['String'];
-  deactivated: Scalars['Boolean'];
   email?: Maybe<Scalars['String']>;
+  deactivated: Scalars['Boolean'];
   verified: Scalars['Boolean'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
@@ -899,19 +899,6 @@ export type FilterFieldDate = {
   null?: Maybe<Scalars['DateTime']>;
 };
 
-export type BlogPostCollectionActions = {
-  __typename?: 'BlogPostCollectionActions';
-  show: Scalars['Boolean'];
-  create: Scalars['Boolean'];
-};
-
-export type BlogPostStatusCollectionNode = {
-  __typename?: 'BlogPostStatusCollectionNode';
-  nodes: Array<Maybe<BlogPostStatusNode>>;
-  can: BlogPostStatusCollectionActions;
-  pagination: Meta;
-};
-
 export type BlogPostStatusNode = {
   __typename?: 'BlogPostStatusNode';
   cursor: Scalars['String'];
@@ -942,6 +929,19 @@ export type BlogPostStatusRelations = {
 
 export type BlogPostStatusRelationsPostsArgs = {
   query?: Maybe<BlogPostQuery>;
+};
+
+export type BlogPostCollectionActions = {
+  __typename?: 'BlogPostCollectionActions';
+  show: Scalars['Boolean'];
+  create: Scalars['Boolean'];
+};
+
+export type BlogPostStatusCollectionNode = {
+  __typename?: 'BlogPostStatusCollectionNode';
+  nodes: Array<Maybe<BlogPostStatusNode>>;
+  can: BlogPostStatusCollectionActions;
+  pagination: Meta;
 };
 
 export type BlogPostStatusCollectionActions = {
@@ -1679,7 +1679,7 @@ export type RootMutationType = {
   createBlogPost: BlogPostNode;
   updateBlogPost: BlogPostNode;
   softDeleteBlogPost: BlogPostNode;
-  hardDeleteBlogPost: BlogPostNode;
+  hardDeleteBlogPost: Scalars['Boolean'];
   restoreBlogPost: BlogPostNode;
   submitBlogPost: BlogPostNode;
   rejectBlogPost: BlogPostNode;
@@ -2331,6 +2331,15 @@ export type AuthorisedActionsFieldsFragment = (
   ), integrations: (
     { __typename?: 'IntegrationCollectionActions' }
     & Pick<IntegrationCollectionActions, 'show' | 'initialise'>
+  ), blogPosts: (
+    { __typename?: 'BlogPostCollectionActions' }
+    & Pick<BlogPostCollectionActions, 'show' | 'create'>
+  ), blogPostComments: (
+    { __typename?: 'BlogPostCommentCollectionActions' }
+    & Pick<BlogPostCommentCollectionActions, 'show' | 'create'>
+  ), blogPostStatuses: (
+    { __typename?: 'BlogPostStatusCollectionActions' }
+    & Pick<BlogPostStatusCollectionActions, 'show'>
   ) }
 );
 
@@ -2510,6 +2519,361 @@ export type RequestEmailChangeEmailMutationVariables = Exact<{
 export type RequestEmailChangeEmailMutation = (
   { __typename?: 'RootMutationType' }
   & Pick<RootMutationType, 'requestEmailChangeEmail'>
+);
+
+export type AllBlogPostStatusActionsFragment = (
+  { __typename?: 'BlogPostStatusActions' }
+  & Pick<BlogPostStatusActions, 'show'>
+);
+
+export type AllBlogPostStatusDataFragment = (
+  { __typename?: 'BlogPostStatusData' }
+  & Pick<BlogPostStatusData, 'id' | 'name' | 'colour' | 'created_at' | 'updated_at'>
+);
+
+export type BlogPostMutateFormQueryVariables = Exact<{
+  blog_post_id: Scalars['Float'];
+}>;
+
+
+export type BlogPostMutateFormQuery = (
+  { __typename?: 'RootQueryType' }
+  & { blogPosts: (
+    { __typename?: 'BlogPostCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'BlogPostNode' }
+      & Pick<BlogPostNode, 'cursor'>
+      & { data: (
+        { __typename?: 'BlogPostData' }
+        & AllBlogPostDataFragment
+      ), can: (
+        { __typename?: 'BlogPostActions' }
+        & AllBlogPostActionsFragment
+      ), relations: (
+        { __typename?: 'BlogPostRelations' }
+        & { author?: Maybe<(
+          { __typename?: 'UserNode' }
+          & { data: (
+            { __typename?: 'UserData' }
+            & AllUserDataFragment
+          ) }
+        )>, status?: Maybe<(
+          { __typename?: 'BlogPostStatusNode' }
+          & { data: (
+            { __typename?: 'BlogPostStatusData' }
+            & AllBlogPostStatusDataFragment
+          ), can: (
+            { __typename?: 'BlogPostStatusActions' }
+            & AllBlogPostStatusActionsFragment
+          ) }
+        )> }
+      ) }
+    )>> }
+  ) }
+);
+
+export type BlogPostUpdateMutationVariables = Exact<{
+  id: Scalars['Int'];
+  title?: Maybe<Scalars['String']>;
+  teaser?: Maybe<Scalars['String']>;
+  body?: Maybe<Scalars['String']>;
+}>;
+
+
+export type BlogPostUpdateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { updateBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type BlogPostCreateMutationVariables = Exact<{
+  title: Scalars['String'];
+  teaser: Scalars['String'];
+  body: Scalars['String'];
+}>;
+
+
+export type BlogPostCreateMutation = (
+  { __typename?: 'RootMutationType' }
+  & { createBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type BlogPostSoftDeleteMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type BlogPostSoftDeleteMutation = (
+  { __typename?: 'RootMutationType' }
+  & { softDeleteBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type BlogPostHardDeleteMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type BlogPostHardDeleteMutation = (
+  { __typename?: 'RootMutationType' }
+  & Pick<RootMutationType, 'hardDeleteBlogPost'>
+);
+
+export type BlogPostRestoreMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type BlogPostRestoreMutation = (
+  { __typename?: 'RootMutationType' }
+  & { restoreBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type BlogPostSubmitMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type BlogPostSubmitMutation = (
+  { __typename?: 'RootMutationType' }
+  & { submitBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type BlogPostRejectMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type BlogPostRejectMutation = (
+  { __typename?: 'RootMutationType' }
+  & { rejectBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type BlogPostApproveMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type BlogPostApproveMutation = (
+  { __typename?: 'RootMutationType' }
+  & { approveBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type BlogPostPublishMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type BlogPostPublishMutation = (
+  { __typename?: 'RootMutationType' }
+  & { publishBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type BlogPostUnpublishMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type BlogPostUnpublishMutation = (
+  { __typename?: 'RootMutationType' }
+  & { unpublishBlogPost: (
+    { __typename?: 'BlogPostNode' }
+    & { data: (
+      { __typename?: 'BlogPostData' }
+      & AllBlogPostDataFragment
+    ), can: (
+      { __typename?: 'BlogPostActions' }
+      & AllBlogPostActionsFragment
+    ), relations: (
+      { __typename?: 'BlogPostRelations' }
+      & { status?: Maybe<(
+        { __typename?: 'BlogPostStatusNode' }
+        & { data: (
+          { __typename?: 'BlogPostStatusData' }
+          & AllBlogPostStatusDataFragment
+        ), can: (
+          { __typename?: 'BlogPostStatusActions' }
+          & AllBlogPostStatusActionsFragment
+        ) }
+      )> }
+    ) }
+  ) }
+);
+
+export type AllBlogPostActionsFragment = (
+  { __typename?: 'BlogPostActions' }
+  & Pick<BlogPostActions, 'show' | 'showComments' | 'createComments' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'submit' | 'reject' | 'approve' | 'publish' | 'unpublish'>
+);
+
+export type AllBlogPostDataFragment = (
+  { __typename?: 'BlogPostData' }
+  & Pick<BlogPostData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
 );
 
 export type GoogleOAuth2ConnectorDataQueryVariables = Exact<{ [key: string]: never; }>;
@@ -3079,6 +3443,11 @@ export type UserUserRolesFormUpdateMutation = (
   ) }
 );
 
+export type AllUserDataFragment = (
+  { __typename?: 'UserData' }
+  & Pick<UserData, 'id' | 'name' | 'deactivated' | 'email' | 'verified' | 'created_at' | 'updated_at' | 'deleted_at'>
+);
+
 export type UserDetailDataQueryVariables = Exact<{
   id: Scalars['Float'];
 }>;
@@ -3412,6 +3781,81 @@ export type PasswordResetPageDataQuery = (
       { __typename?: 'UserData' }
       & Pick<UserData, 'id' | 'name' | 'deactivated' | 'email' | 'verified' | 'created_at' | 'updated_at' | 'deleted_at'>
     ) }
+  ) }
+);
+
+export type IndexBlogPostsPageQueryQueryVariables = Exact<{
+  blog_posts_offset?: Maybe<Scalars['Int']>;
+  blog_posts_limit?: Maybe<Scalars['Int']>;
+}>;
+
+
+export type IndexBlogPostsPageQueryQuery = (
+  { __typename?: 'RootQueryType' }
+  & { blogPosts: (
+    { __typename?: 'BlogPostCollectionNode' }
+    & { pagination: (
+      { __typename?: 'meta' }
+      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+    ), can: (
+      { __typename?: 'BlogPostCollectionActions' }
+      & Pick<BlogPostCollectionActions, 'show' | 'create'>
+    ), nodes: Array<Maybe<(
+      { __typename?: 'BlogPostNode' }
+      & Pick<BlogPostNode, 'cursor'>
+      & { can: (
+        { __typename?: 'BlogPostActions' }
+        & Pick<BlogPostActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
+      ), data: (
+        { __typename?: 'BlogPostData' }
+        & Pick<BlogPostData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
+      ), relations: (
+        { __typename?: 'BlogPostRelations' }
+        & { author?: Maybe<(
+          { __typename?: 'UserNode' }
+          & Pick<UserNode, 'cursor'>
+          & { can: (
+            { __typename?: 'UserActions' }
+            & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
+          ), data: (
+            { __typename?: 'UserData' }
+            & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+          ) }
+        )> }
+      ) }
+    )>> }
+  ) }
+);
+
+export type ViewBlogPostPageQueryVariables = Exact<{
+  news_article_id: Scalars['Float'];
+}>;
+
+
+export type ViewBlogPostPageQuery = (
+  { __typename?: 'RootQueryType' }
+  & { blogPosts: (
+    { __typename?: 'BlogPostCollectionNode' }
+    & { nodes: Array<Maybe<(
+      { __typename?: 'BlogPostNode' }
+      & Pick<BlogPostNode, 'cursor'>
+      & { can: (
+        { __typename?: 'BlogPostActions' }
+        & Pick<BlogPostActions, 'show' | 'update' | 'softDelete' | 'hardDelete'>
+      ), data: (
+        { __typename?: 'BlogPostData' }
+        & Pick<BlogPostData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
+      ), relations: (
+        { __typename?: 'BlogPostRelations' }
+        & { author?: Maybe<(
+          { __typename?: 'UserNode' }
+          & { data: (
+            { __typename?: 'UserData' }
+            & Pick<UserData, 'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at'>
+          ) }
+        )> }
+      ) }
+    )>> }
   ) }
 );
 

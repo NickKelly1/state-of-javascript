@@ -7,7 +7,7 @@ import { Api } from "../../../backend-api/api";
 import { serverSidePropsHandler } from "../../../helpers/server-side-props-handler.helper";
 import { OrNull } from "../../../types/or-null.type";
 import { useMutation } from "react-query";
-import { INewsArticleFormData, NewsArticleForm } from "../../../components/news/news-article.form";
+import { INewsArticleMutateFormData, NewsArticleMutateForm } from "../../../components/news/news-article.form";
 import { ApiException } from "../../../backend-api/api.exception";
 import { WithApi } from "../../../components-hoc/with-api/with-api.hoc";
 
@@ -128,7 +128,7 @@ export const EditNewsArticlePage = WithApi<IEditNewsArticlePageProps>((props) =>
     },
   );
 
-  const handleSave = useCallback(async (data: INewsArticleFormData): Promise<boolean> => {
+  const handleSave = useCallback(async (data: INewsArticleMutateFormData): Promise<boolean> => {
     const id = article?.data.id;
     if (ist.nullable(id)) throw new Error('id not defined...');
     const { title, teaser, body } = data;
@@ -150,7 +150,7 @@ export const EditNewsArticlePage = WithApi<IEditNewsArticlePageProps>((props) =>
   return (
     <Grid className={classes.root} container spacing={2}>
       <Grid item xs={12}>
-        <NewsArticleForm
+        <NewsArticleMutateForm
           id={article.data.id}
           onSave={handleSave}
           onAutoSave={undefined}

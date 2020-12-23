@@ -4,7 +4,7 @@ import React, { useCallback, } from "react";
 import { useMutation } from "react-query";
 import { IApiException } from "../../backend-api/types/api.exception.interface";
 import { CreateNewsArticle, CreateNewsArticleMutationVariables, } from "../../generated/graphql";
-import { INewsArticleFormData, NewsArticleForm } from "../../components/news/news-article.form";
+import { INewsArticleMutateFormData, NewsArticleMutateForm } from "../../components/news/news-article.form";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
 
 
@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ICreateNewsPageProps {
   //
 }
@@ -59,14 +60,14 @@ const CreateNewsPage = WithApi<ICreateNewsPageProps>((props) => {
     },
   );
 
-  const handleSave = useCallback(async (data: INewsArticleFormData): Promise<boolean> => {
+  const handleSave = useCallback(async (data: INewsArticleMutateFormData): Promise<boolean> => {
     const { title, teaser, body } = data;
     await postNewsArticle({ title, teaser, body });
     return true;
   }, [postNewsArticle]);
 
   return (
-    <NewsArticleForm
+    <NewsArticleMutateForm
       id={undefined}
       onSave={handleSave}
       onAutoSave={undefined}

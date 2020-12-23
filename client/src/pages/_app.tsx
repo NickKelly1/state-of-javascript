@@ -44,13 +44,19 @@ const queryCache = new QueryCache({
   defaultConfig: {
     //
     queries: {
-      retry: 2,
+      retry: 1,
+      //
+    },
+    mutations: {
+      //
+    },
+    shared: {
       //
     },
   },
 });
 
-export default function MyApp(props: IMyAppProps) {
+export default function MyApp(props: IMyAppProps): JSX.Element {
   const { Component, pageProps } = props;
 
   const { _me, ..._pageProps } = pageProps as IPageProps;

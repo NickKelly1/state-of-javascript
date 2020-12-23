@@ -1,4 +1,4 @@
-import { DialogTitle, DialogContent, Grid, Button, DialogActions } from "@material-ui/core";
+import { DialogTitle, DialogContent, Button, DialogActions, } from "@material-ui/core";
 import React from "react";
 import { WithDialogue } from "../../components-hoc/with-dialog/with-dialog";
 import { INodeable, nodeify } from "../../helpers/nodeify.helper";
@@ -9,7 +9,7 @@ import { JsonPretty } from "../json-pretty/json-pretty";
 
 export interface IJsonDialogProps {
   title: string;
-  data: any;
+  data: unknown;
   render?: OrNullable<INodeable>;
 }
 
@@ -22,13 +22,9 @@ export const JsonDialog = WithDialogue<IJsonDialogProps>({ fullWidth: true })((p
           {title}
         </span>
       </DialogTitle>
-      <DialogContent dividers>
-        <Grid container spacing={2}>
-          <Grid className="centered" item xs={12}>
-            {render && nodeify(render)}
-            {!render && <JsonPretty src={data} />}
-          </Grid>
-        </Grid>
+      <DialogContent className="centerd" dividers>
+        {render && nodeify(render)}
+        {!render && <JsonPretty src={data} />}
       </DialogContent>
       <DialogActions>
         <Button onClick={dialog.doClose} color="primary">

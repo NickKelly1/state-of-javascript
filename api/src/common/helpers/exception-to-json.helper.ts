@@ -1,7 +1,7 @@
 import httpErrors from 'http-errors';
 import { EnvServiceSingleton } from '../environment/env';
 
-const ignoreAlways = new Set([ 'name', 'message', 'statusCode', ]);
+const ignoreAlways = new Set([ 'name', 'status', 'message', 'statusCode', ]);
 const ignoreProduction = new Set([ 'stack', 'trace', ]);
 
 /**
@@ -21,7 +21,6 @@ export function exceptionToJson(exception: httpErrors.HttpError, touched?: Set<a
     const next = $mapProperty(_touched)(property);
     if (next !== undefined) json[name] = next;
   });
-  delete json.statusCode;
   return json;
 }
 

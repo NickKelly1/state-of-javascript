@@ -33,55 +33,22 @@ import { apiMeFns, IApiMe } from './api.me';
  */
 export const authorisedActionsFieldsFragment = gql`
 fragment AuthorisedActionsFields on ActionsNode {
-  users{
-    show
-    login
-    register
-    create
-    logout
-  }
-  roles{
-    show
-    create
-  }
-  userRoles{
-    show
-  }
-  permissions{
-    show
-  }
-  rolePermissions{
-    show
-  }
-  npmsPackages{
-    show
-    create
-  }
-  npmsDashboards{
-    show
-    sort
-    create
-  }
-  npmsDashboardItems{
-    show
-  }
-  newsArticles{
-    show
-    create
-  }
-  newsArticleStatuses{
-    show
-  }
-  jobs{
-    show
-  }
-  logs{
-    show
-  }
-  integrations{
-    show
-    initialise
-  }
+  users{ show login register create logout }
+  roles{ show create }
+  userRoles{ show }
+  permissions{ show }
+  rolePermissions{ show }
+  npmsPackages{ show create }
+  npmsDashboards{ show sort create }
+  npmsDashboardItems{ show }
+  newsArticles{ show create }
+  newsArticleStatuses{ show }
+  jobs{ show }
+  logs{ show }
+  integrations{ show initialise }
+  blogPosts{ show create }
+  blogPostComments{ show create }
+  blogPostStatuses{ show }
 }
 `;
 

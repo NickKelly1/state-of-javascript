@@ -252,8 +252,8 @@ export class BlogPostPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // is a Draft
-    if (!model.isDraft()) return false;
+    // is in a Submittable state
+    if (!model.isSubmittable()) return false;
 
     // have permission to Update
     return this.canUpdate({ model });
@@ -279,8 +279,8 @@ export class BlogPostPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // Is Submitted
-    if (!model.isSubmitted()) return false;
+    // is in a Rejectable state
+    if (!model.isRejectable()) return false;
 
     // is Admin|Manager
     return this.ctx.hasPermission(
@@ -309,8 +309,8 @@ export class BlogPostPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // is Submitted
-    if (!model.isSubmitted()) return false;
+    // is in an Approvable state
+    if (!model.isApprovable()) return false;
 
     // is Admin|Manager
     return this.ctx.hasPermission(
@@ -339,8 +339,8 @@ export class BlogPostPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // is Approved
-    if (!model.isApproved()) return false;
+    // is in a Publishable state
+    if (!model.isPublishable()) return false;
 
     // is Admin|Manager
     return this.ctx.hasPermission(
@@ -369,38 +369,8 @@ export class BlogPostPolicy {
     // must not be SoftDeleted
     if (model.isSoftDeleted()) return false;
 
-    // is Published
-    if (!model.isPublished()) return false;
-
-    // is Admin|Manager
-    return this.ctx.hasPermission(
-      Permission.BlogPosts.Admin,
-      Permission.BlogPosts.Manager,
-    );
-  }
-
-
-  /**
-   * Can the requester schedule this news article for publication?
-   *
-   * @param arg
-   */
-  canSchedule(arg: {
-    model: BlogPostModel,
-  }): boolean {
-    const { model } = arg;
-
-    // can access the domain
-    if (!this.canAccess()) return false;
-
-    // must be Findable
-    if (!this.canFindOne({ model })) return false;
-
-    // must not be SoftDeleted
-    if (model.isSoftDeleted()) return false;
-
-    // is Approved
-    if (!model.isApproved()) return false;
+    // is in an Unpublishable state
+    if (!model.isUnpublishable()) return false;
 
     // is Admin|Manager
     return this.ctx.hasPermission(

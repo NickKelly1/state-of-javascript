@@ -64,7 +64,8 @@ export async function bootHttp(arg: { universal: IUniversalServices, }): Promise
   app.use(rateLimit({
     windowMs: universal.env.RATE_LIMIT_WINDOW_MS,
     max: universal.env.RATE_LIMIT_MAX,
-    handler: (req, res, next) => next(new TooManyRequestsException()),
+    // handler: (req, res, next) => next(new TooManyRequestsException()),
+    handler: (req, res, next) => next(exceptionToJson(new TooManyRequestsException())),
   }));
   // gzip
   app.use(compression());
