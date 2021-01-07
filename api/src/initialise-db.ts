@@ -67,6 +67,12 @@ import { BlogPostStatusAssociation } from './app/blog-post-status/blog-post-stat
 import { BlogPostStatusField } from './app/blog-post-status/blog-post-status.attributes';
 import { BlogPostAssociation } from './app/blog-post/blog-post.associations';
 import { BlogPostCommentAssociation } from './app/blog-post-comment/blog-post-comment.associations';
+import { FileModel, initFileModel } from './app/file/file.model';
+import { ImageModel, initImageModel } from './app/image/image.model';
+import { ImageAssociation } from './app/image/image.associations';
+import { FileField } from './app/file/file.attributes';
+import { ImageField } from './app/image/image.attributes';
+import { FileAssociation } from './app/file/file.associations';
 
 
 /**
@@ -153,6 +159,9 @@ async function initialiseWithTransaction(arg: {
   initUserTokenTypeModel({ env, sequelize, });
   initUserTokenModel({ env, sequelize, });
 
+  initFileModel({ env, sequelize, });
+  initImageModel({ env, sequelize, });
+
   initBlogPostStatusModel({ env, sequelize, });
   initBlogPostModel({ env, sequelize, });
   initBlogPostCommentModel({ env, sequelize, });
@@ -164,80 +173,93 @@ async function initialiseWithTransaction(arg: {
   logger.info('registering model relations...');
 
   // user
-  UserModel.hasOne(UserPasswordModel, { as: UserAssociation.password, sourceKey: UserField.id, foreignKey: UserPasswordField.user_id, })
-  UserModel.hasMany(UserRoleModel, { as: UserAssociation.userRoles, sourceKey: UserField.id, foreignKey: UserRoleField.user_id, })
+  UserModel.hasOne(UserPasswordModel, { as: UserAssociation.password, sourceKey: UserField.id, foreignKey: UserPasswordField.user_id, });
+  UserModel.hasMany(UserRoleModel, { as: UserAssociation.userRoles, sourceKey: UserField.id, foreignKey: UserRoleField.user_id, });
   UserModel.belongsToMany(RoleModel, { as: UserAssociation.roles, through: UserRoleModel as typeof Model, sourceKey: UserField.id, targetKey: RoleField.id, foreignKey: UserRoleField.user_id, otherKey: UserRoleField.role_id });
-  UserModel.hasMany(NewsArticleModel, { as: UserAssociation.newsArticles, sourceKey: UserField.id, foreignKey: NewsArticleField.author_id, })
-  UserModel.hasMany(NpmsDashboardModel, { as: UserAssociation.npmsDashboards, sourceKey: UserField.id, foreignKey: NpmsDashboardField.owner_id, })
-  UserModel.hasMany(UserTokenModel, { as: UserAssociation.userLinks, sourceKey: UserField.id, foreignKey: UserTokenField.user_id, })
-  UserModel.hasMany(BlogPostModel, { as: UserAssociation.blogPosts, sourceKey: UserField.id, foreignKey: BlogPostField.author_id, })
-  UserModel.hasMany(BlogPostCommentModel, { as: UserAssociation.blogPostComments, sourceKey: UserField.id, foreignKey: BlogPostCommentField.author_id, })
+  UserModel.hasMany(NewsArticleModel, { as: UserAssociation.newsArticles, sourceKey: UserField.id, foreignKey: NewsArticleField.author_id, });
+  UserModel.hasMany(NpmsDashboardModel, { as: UserAssociation.npmsDashboards, sourceKey: UserField.id, foreignKey: NpmsDashboardField.owner_id, });
+  UserModel.hasMany(UserTokenModel, { as: UserAssociation.userLinks, sourceKey: UserField.id, foreignKey: UserTokenField.user_id, });
+  UserModel.hasMany(BlogPostModel, { as: UserAssociation.blogPosts, sourceKey: UserField.id, foreignKey: BlogPostField.author_id, });
+  UserModel.hasMany(BlogPostCommentModel, { as: UserAssociation.blogPostComments, sourceKey: UserField.id, foreignKey: BlogPostCommentField.author_id, });
 
   // user password
   UserPasswordModel.belongsTo(UserModel, { as: UserPasswordAssociation.user, foreignKey: UserPasswordField.user_id, targetKey: UserField.id, });
 
   // role
-  RoleModel.hasMany(UserRoleModel, { as: RoleAssociation.userRoles, sourceKey: RoleField.id, foreignKey: UserRoleField.role_id, })
-  RoleModel.hasMany(RolePermissionModel, { as: RoleAssociation.rolePermissions, sourceKey: RoleField.id, foreignKey: RolePermissionField.role_id, })
+  RoleModel.hasMany(UserRoleModel, { as: RoleAssociation.userRoles, sourceKey: RoleField.id, foreignKey: UserRoleField.role_id, });
+  RoleModel.hasMany(RolePermissionModel, { as: RoleAssociation.rolePermissions, sourceKey: RoleField.id, foreignKey: RolePermissionField.role_id, });
   RoleModel.belongsToMany(UserModel, { as: RoleAssociation.users, through: UserRoleModel as typeof Model, sourceKey: RoleField.id, targetKey: UserField.id, foreignKey: UserRoleField.role_id, otherKey: UserRoleField.user_id });
   RoleModel.belongsToMany(PermissionModel, { as : RoleAssociation.permissions, through: RolePermissionModel as typeof Model, sourceKey: RoleField.id, targetKey: PermissionField.id, foreignKey: RolePermissionField.role_id, otherKey: RolePermissionField.permission_id });
 
   // permission category
-  PermissionCategoryModel.hasMany(PermissionModel, { as: PermissionCategoryAssociation.permissions, sourceKey: PermissionCategoryField.id, foreignKey: PermissionField.category_id, })
+  PermissionCategoryModel.hasMany(PermissionModel, { as: PermissionCategoryAssociation.permissions, sourceKey: PermissionCategoryField.id, foreignKey: PermissionField.category_id, });
 
   // permission
-  PermissionModel.hasMany(RolePermissionModel, { as: PermissionAssociation.rolePermissions, sourceKey: PermissionField.id, foreignKey: RolePermissionField.permission_id, })
+  PermissionModel.hasMany(RolePermissionModel, { as: PermissionAssociation.rolePermissions, sourceKey: PermissionField.id, foreignKey: RolePermissionField.permission_id, });
   PermissionModel.belongsToMany(RoleModel, { as: PermissionAssociation.roles, through: RolePermissionModel as typeof Model, sourceKey: PermissionField.id, targetKey: RoleField.id, foreignKey: RolePermissionField.permission_id, otherKey: RolePermissionField.role_id });
-  PermissionModel.belongsTo(PermissionCategoryModel, { as: PermissionAssociation.category, targetKey: PermissionCategoryField.id, foreignKey: PermissionField.category_id, })
+  PermissionModel.belongsTo(PermissionCategoryModel, { as: PermissionAssociation.category, targetKey: PermissionCategoryField.id, foreignKey: PermissionField.category_id, });
 
   // role permission
-  RolePermissionModel.belongsTo(RoleModel, { as: RolePermissionAssociation.role, targetKey: RoleField.id, foreignKey: RolePermissionField.role_id, })
-  RolePermissionModel.belongsTo(PermissionModel, { as: RolePermissionAssociation.permission, targetKey: PermissionField.id, foreignKey: RolePermissionField.permission_id, })
+  RolePermissionModel.belongsTo(RoleModel, { as: RolePermissionAssociation.role, targetKey: RoleField.id, foreignKey: RolePermissionField.role_id, });
+  RolePermissionModel.belongsTo(PermissionModel, { as: RolePermissionAssociation.permission, targetKey: PermissionField.id, foreignKey: RolePermissionField.permission_id, });
 
   // user role
   UserRoleModel.belongsTo(UserModel, { as: UserRoleAssociation.user, targetKey: UserField.id, foreignKey: UserRoleField.user_id, });
-  UserRoleModel.belongsTo(RoleModel, { as: UserRoleAssociation.role, targetKey: RoleField.id, foreignKey: UserRoleField.role_id, })
+  UserRoleModel.belongsTo(RoleModel, { as: UserRoleAssociation.role, targetKey: RoleField.id, foreignKey: UserRoleField.role_id, });
 
   // news article
-  NewsArticleModel.belongsTo(UserModel, { as: NewsArticleAssociation.author, targetKey: UserField.id, foreignKey: NewsArticleField.author_id, })
-  NewsArticleModel.belongsTo(NewsArticleStatusModel, { as: NewsArticleAssociation.status, targetKey: NewsArticleStatusField.id, foreignKey: NewsArticleField.status_id, })
+  NewsArticleModel.belongsTo(UserModel, { as: NewsArticleAssociation.author, targetKey: UserField.id, foreignKey: NewsArticleField.author_id, });
+  NewsArticleModel.belongsTo(NewsArticleStatusModel, { as: NewsArticleAssociation.status, targetKey: NewsArticleStatusField.id, foreignKey: NewsArticleField.status_id, });
 
   // news article status
-  NewsArticleStatusModel.hasMany(NewsArticleModel, { as: NewsArticleStatusAssociation.articles, sourceKey: NewsArticleStatusField.id, foreignKey: NewsArticleField.status_id, })
+  NewsArticleStatusModel.hasMany(NewsArticleModel, { as: NewsArticleStatusAssociation.articles, sourceKey: NewsArticleStatusField.id, foreignKey: NewsArticleField.status_id, });
 
   // npms packages
-  NpmsPackageModel.hasMany(NpmsDashboardItemModel, { as: NpmsPackageAssociation.dashboard_items, sourceKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })
+  NpmsPackageModel.hasMany(NpmsDashboardItemModel, { as: NpmsPackageAssociation.dashboard_items, sourceKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, });
   NpmsPackageModel.belongsToMany(NpmsDashboardModel, { as: NpmsPackageAssociation.dashboards, through: NpmsDashboardItemModel as typeof Model, sourceKey: NpmsPackageField.id, targetKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.npms_package_id, otherKey: NpmsDashboardItemField.dashboard_id });
 
   // npms dashboard status
-  NpmsDashboardStatusModel.hasMany(NpmsDashboardModel, { as: NpmsDashboardStatusAssociation.dashboards, sourceKey: NpmsDashboardItemField.id, foreignKey: NpmsDashboardField.status_id, })
+  NpmsDashboardStatusModel.hasMany(NpmsDashboardModel, { as: NpmsDashboardStatusAssociation.dashboards, sourceKey: NpmsDashboardItemField.id, foreignKey: NpmsDashboardField.status_id, });
 
   // npms dashboard
-  NpmsDashboardModel.hasMany(NpmsDashboardItemModel, { as: NpmsDashboardAssociation.items, sourceKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, })
+  NpmsDashboardModel.hasMany(NpmsDashboardItemModel, { as: NpmsDashboardAssociation.items, sourceKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, });
   NpmsDashboardModel.belongsTo(UserModel, { as: NpmsDashboardAssociation.owner, targetKey: UserField.id, foreignKey: NpmsDashboardField.owner_id, });
   NpmsDashboardModel.belongsToMany(NpmsPackageModel, { as: NpmsDashboardAssociation.packages, through: NpmsDashboardItemModel as typeof Model, sourceKey: NpmsDashboardField.id, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.dashboard_id, otherKey: NpmsDashboardItemField.npms_package_id });
-  NpmsDashboardModel.belongsTo(NpmsDashboardStatusModel, { as: NpmsDashboardAssociation.status, targetKey: NpmsDashboardStatusField.id, foreignKey: NpmsDashboardField.status_id, })
+  NpmsDashboardModel.belongsTo(NpmsDashboardStatusModel, { as: NpmsDashboardAssociation.status, targetKey: NpmsDashboardStatusField.id, foreignKey: NpmsDashboardField.status_id, });
 
   // npms dashboard item
-  NpmsDashboardItemModel.belongsTo(NpmsPackageModel, { as: NpmsDashboardItemAssociation.npmsPackage, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, })
-  NpmsDashboardItemModel.belongsTo(NpmsDashboardModel, { as: NpmsDashboardItemAssociation.dashboard, targetKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, })
+  NpmsDashboardItemModel.belongsTo(NpmsPackageModel, { as: NpmsDashboardItemAssociation.npmsPackage, targetKey: NpmsPackageField.id, foreignKey: NpmsDashboardItemField.npms_package_id, });
+  NpmsDashboardItemModel.belongsTo(NpmsDashboardModel, { as: NpmsDashboardItemAssociation.dashboard, targetKey: NpmsDashboardField.id, foreignKey: NpmsDashboardItemField.dashboard_id, });
 
   // user link
-  UserTokenModel.belongsTo(UserModel, { as: UserTokenAssociation.user, targetKey: UserField.id, foreignKey: UserTokenField.user_id, })
-  UserTokenModel.belongsTo(UserTokenTypeModel, { as: UserTokenAssociation.type, targetKey: UserTokenTypeField.id, foreignKey: UserTokenField.type_id, })
+  UserTokenModel.belongsTo(UserModel, { as: UserTokenAssociation.user, targetKey: UserField.id, foreignKey: UserTokenField.user_id, });
+  UserTokenModel.belongsTo(UserTokenTypeModel, { as: UserTokenAssociation.type, targetKey: UserTokenTypeField.id, foreignKey: UserTokenField.type_id, });
 
   // user link type
-  UserTokenTypeModel.hasMany(UserTokenModel, { as: UserTokenTypeAssociation.links, sourceKey: UserTokenTypeField.id, foreignKey: UserTokenField.type_id, })
+  UserTokenTypeModel.hasMany(UserTokenModel, { as: UserTokenTypeAssociation.links, sourceKey: UserTokenTypeField.id, foreignKey: UserTokenField.type_id, });
+
+  // files
+  FileModel.belongsTo(UserModel, { as: FileAssociation.uploader, targetKey: UserField.id, foreignKey: FileField.uploader_id, });
+  FileModel.hasOne(ImageModel, { as: FileAssociation.display_images, sourceKey: FileField.id, foreignKey: ImageField.display_id, });
+  FileModel.hasOne(ImageModel, { as: FileAssociation.original_images, sourceKey: FileField.id, foreignKey: ImageField.original_id, });
+  FileModel.hasOne(ImageModel, { as: FileAssociation.thumbnail_images, sourceKey: FileField.id, foreignKey: ImageField.thumbnail_id, });
+
+  // images
+  ImageModel.belongsTo(FileModel, { as: ImageAssociation.display, targetKey: FileField.id, foreignKey: ImageField.display_id, });
+  ImageModel.belongsTo(FileModel, { as: ImageAssociation.original, targetKey: FileField.id, foreignKey: ImageField.original_id, });
+  ImageModel.belongsTo(FileModel, { as: ImageAssociation.thumbnail, targetKey: FileField.id, foreignKey: ImageField.thumbnail_id, });
+  ImageModel.hasMany(BlogPostModel, { as: ImageAssociation.posts, sourceKey: ImageField.id, foreignKey: BlogPostField.image_id, });
 
   // blog post status
-  BlogPostStatusModel.hasMany(BlogPostModel, { as: BlogPostStatusAssociation.posts, sourceKey: BlogPostStatusField.id, foreignKey: BlogPostField.status_id, })
+  BlogPostStatusModel.hasMany(BlogPostModel, { as: BlogPostStatusAssociation.posts, sourceKey: BlogPostStatusField.id, foreignKey: BlogPostField.status_id, });
 
   // blog post
-  BlogPostModel.belongsTo(BlogPostStatusModel, { as: BlogPostAssociation.status, targetKey: BlogPostStatusField.id, foreignKey: BlogPostField.status_id, })
-  BlogPostModel.belongsTo(UserModel, { as: BlogPostAssociation.author, targetKey: UserField.id, foreignKey: BlogPostField.author_id, })
-  BlogPostModel.hasMany(BlogPostCommentModel, { as: BlogPostAssociation.comments, sourceKey: BlogPostField.id, foreignKey: BlogPostCommentField.post_id, })
+  BlogPostModel.belongsTo(BlogPostStatusModel, { as: BlogPostAssociation.status, targetKey: BlogPostStatusField.id, foreignKey: BlogPostField.status_id, });
+  BlogPostModel.belongsTo(UserModel, { as: BlogPostAssociation.author, targetKey: UserField.id, foreignKey: BlogPostField.author_id, });
+  BlogPostModel.hasMany(BlogPostCommentModel, { as: BlogPostAssociation.comments, sourceKey: BlogPostField.id, foreignKey: BlogPostCommentField.post_id, });
+  BlogPostModel.belongsTo(ImageModel, { as: BlogPostAssociation.image, targetKey: ImageField.id, foreignKey: BlogPostField.image_id, });
 
   // blog post comment
-  BlogPostCommentModel.belongsTo(UserModel, { as: BlogPostCommentAssociation.author, targetKey: UserField.id, foreignKey: BlogPostCommentField.author_id, })
-  BlogPostCommentModel.belongsTo(BlogPostModel, { as: BlogPostCommentAssociation.post, targetKey: BlogPostField.id, foreignKey: BlogPostCommentField.post_id, })
+  BlogPostCommentModel.belongsTo(UserModel, { as: BlogPostCommentAssociation.author, targetKey: UserField.id, foreignKey: BlogPostCommentField.author_id, });
+  BlogPostCommentModel.belongsTo(BlogPostModel, { as: BlogPostCommentAssociation.post, targetKey: BlogPostField.id, foreignKey: BlogPostCommentField.post_id, });
 }

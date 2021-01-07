@@ -14,6 +14,9 @@ import { UserGqlMutations } from './app/user/gql/user.gql.mutations';
 import { UserEmailGqlMutations } from './app/user/gql/user-email.gql.mutations';
 import { GqlContext } from './common/context/gql.context';
 import { unthunk } from './common/helpers/unthunk.helper';
+import { FileGqlMutations } from './app/file/gql/file.gql.mutations';
+import { EmailGqlMutations } from './app/email/email.gql.mutations';
+import { ImageGqlMutations } from './app/image/gql/image.gql.mutations';
 
 export const GqlRootMutation = new GraphQLObjectType<undefined, GqlContext>({
   name: 'RootMutationType',
@@ -31,5 +34,8 @@ export const GqlRootMutation = new GraphQLObjectType<undefined, GqlContext>({
     ...unthunk(IntegrationGqlMutations),
     ...unthunk(GoogleGqlMutations),
     ...unthunk(AuthGqlMutations),
+    ...unthunk(FileGqlMutations),
+    ...unthunk(ImageGqlMutations),
+    ...unthunk(EmailGqlMutations),
   }),
 });

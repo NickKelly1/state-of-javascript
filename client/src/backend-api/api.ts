@@ -29,6 +29,7 @@ import { ApiCredentials,
   IApiCredentialsResetPasswordArg,
 } from "./api.credentials";
 import { IApiEvents } from "./api.events";
+import { IApiHttpClientRequestOptions } from "./api.http.client";
 import { IApiMe } from "./api.me";
 import { normaliseApiException, rethrow } from "./normalise-api-exception.helper";
 
@@ -36,7 +37,7 @@ import { normaliseApiException, rethrow } from "./normalise-api-exception.helper
 /**
  * Request a PasswordResetEmail
  */
-const requestPasswordResetEmail = gql`
+const REQUEST_PASSWORD_RESET_EMAIL_MUTATION = gql`
 mutation RequestPasswordResetEmail(
   $email:String!
 ){
@@ -52,7 +53,7 @@ mutation RequestPasswordResetEmail(
 /**
  * Request a VerificationEmail
  */
-const requestVerificationEmailMutation = gql`
+const REQUEST_VERIFICATION_EMAIL_MUTATION = gql`
 mutation RequestVerificationEmail(
   $id:Int!
 ){
@@ -68,7 +69,7 @@ mutation RequestVerificationEmail(
 /**
  * Request a WelcomeEmail
  */
-const requestWelcomeEmailMutation = gql`
+const REQUEST_WELCOME_EMAIL_MUTATION = gql`
 mutation RequestWelcomeEmail(
   $id:Int!
 ){
@@ -84,7 +85,7 @@ mutation RequestWelcomeEmail(
 /**
  * Request an EmailChangeEmail
  */
-const requestEmailChangeEmailMutation = gql`
+const REQUEST_EMAIL_CHANGE_EMAIL_MUTATION = gql`
 mutation RequestEmailChangeEmail(
   $user_id:Int!
   $email:String!
@@ -224,6 +225,22 @@ export class Api {
 
 
   /**
+   * Send a HTTP Request
+   *
+   * @param doc
+   * @param vars
+   *
+   * @throws ApiException
+   */
+  http(url: string, options: IApiHttpClientRequestOptions): Promise<Response> {
+    return this.connector.http(url, options).catch(error => {
+      console.error('Failed http request;', error);
+      return rethrow(normaliseApiException)(error);
+    });
+  }
+
+
+  /**
    * Get Me
    */
   get me(): IApiMe {
@@ -247,7 +264,7 @@ export class Api {
   async requestPasswordResetEmail(vars: RequestPasswordResetEmailMutationVariables): Promise<RequestPasswordResetEmailMutation> {
     return this
       .gql<RequestPasswordResetEmailMutation, RequestPasswordResetEmailMutationVariables>(
-        requestPasswordResetEmail,
+        REQUEST_PASSWORD_RESET_EMAIL_MUTATION,
         vars,
       )
       .catch(rethrow(normaliseApiException));
@@ -260,7 +277,7 @@ export class Api {
   async requestVerificationEmail(vars: RequestVerificationEmailMutationVariables): Promise<RequestVerificationEmailMutation> {
     return this
       .gql<RequestVerificationEmailMutation, RequestVerificationEmailMutationVariables>(
-        requestVerificationEmailMutation,
+        REQUEST_VERIFICATION_EMAIL_MUTATION,
         vars,
       )
       .catch(rethrow(normaliseApiException));
@@ -273,7 +290,7 @@ export class Api {
   async requestWelcomeEmail(vars: RequestWelcomeEmailMutationVariables): Promise<RequestWelcomeEmailMutation> {
     return this
       .gql<RequestWelcomeEmailMutation, RequestWelcomeEmailMutationVariables>(
-        requestWelcomeEmailMutation,
+        REQUEST_WELCOME_EMAIL_MUTATION,
         vars,
       )
       .catch(rethrow(normaliseApiException));
@@ -286,7 +303,7 @@ export class Api {
   async requestEmailChangeEmail(vars: RequestEmailChangeEmailMutationVariables): Promise<RequestEmailChangeEmailMutation> {
     return this
       .gql<RequestEmailChangeEmailMutation, RequestEmailChangeEmailMutationVariables>(
-        requestEmailChangeEmailMutation,
+        REQUEST_EMAIL_CHANGE_EMAIL_MUTATION,
         vars,
       )
       .catch(rethrow(normaliseApiException));

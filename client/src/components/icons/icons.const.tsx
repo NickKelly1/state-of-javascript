@@ -12,6 +12,12 @@ import ArrowDropUp from '@material-ui/icons/ArrowDropUpOutlined';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDownOutlined';
 import BugReportIcon from '@material-ui/icons/BugReportOutlined';
 import VisibilityIcon from '@material-ui/icons/Visibility';
+import AddPhotoAlternateIcon from "@material-ui/icons/AddPhotoAlternateOutlined";
+import ClearIcon from "@material-ui/icons/ClearOutlined";
+
+import CollectionsIcon from "@material-ui/icons/CollectionsOutlined";
+// import SearchIcon from "@material-ui/icons/Search";
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutlineOutlined';
 
 
 export const Icons = {
@@ -23,10 +29,14 @@ export const Icons = {
   Reject: ThumbDownIcon,
   Approve: ThumbUpIcon,
   Unpublish: RemoveCircleIcon,
+  Clear: ClearIcon,
   Edit: EditIcon,
   Save: SaveIcon,
   ArrowDropUp: ArrowDropUp,
   ArrowDropDown: ArrowDropDown,
   Debug: BugReportIcon,
   View: VisibilityIcon,
+  AddPhoto: AddPhotoAlternateIcon,
+  Collections: CollectionsIcon,
+  Error: ErrorOutlineIcon,
 };

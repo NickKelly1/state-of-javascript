@@ -4,7 +4,7 @@ import { GqlJsonObjectScalar } from "../../../common/gql/gql.json.scalar";
 import { IJson } from "../../../common/interfaces/json.interface";
 import { Integration } from "../../integration/integration.const";
 import { GoogleSendEmailGqlInput, GoogleSendEmailGqlInputValidator } from "../dtos/google.send-email.gql";
-import { IGoogleIntegrationServiceSendEmailDto } from "../dtos/google.service.send-email-dto";
+import { IGoogleServiceSendEmailDto } from "../dtos/google.service.send-email-dto";
 import { GoogleLang } from "../google.lang";
 import { GoogleGqlNode, IGoogleGqlNodeSource } from "./google.gql.node";
 
@@ -39,7 +39,7 @@ export const GoogleGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlConte
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const model = await ctx.services.integrationRepository.findByPkOrfail(Integration.Google, { runner });
         ctx.authorize(ctx.services.googlePolicy.canSendGmail({ model }), GoogleLang.CannotSendEmail);
-        const serviceDto: IGoogleIntegrationServiceSendEmailDto = {
+        const serviceDto: IGoogleServiceSendEmailDto = {
           subject: dto.subject,
           to: dto.to,
           cc: dto.cc ?? undefined,

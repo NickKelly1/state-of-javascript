@@ -1,0 +1,1 @@
+export function ident<T>(arg: T): T { return arg; }

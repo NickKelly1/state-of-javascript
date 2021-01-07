@@ -27,6 +27,8 @@ import httpErrors from 'http-errors';
 import { GraphQLError } from 'graphql';
 import { exceptionToJson } from './common/helpers/exception-to-json.helper';
 import { IUniversalServices } from './common/interfaces/universal.services.interface';
+import { graphqlUploadExpress, GraphQLUpload, FileUpload } from 'graphql-upload';
+
 
 export async function bootHttp(arg: { universal: IUniversalServices, }): Promise<void> {
   const { universal, } = arg;
@@ -64,8 +66,7 @@ export async function bootHttp(arg: { universal: IUniversalServices, }): Promise
   app.use(rateLimit({
     windowMs: universal.env.RATE_LIMIT_WINDOW_MS,
     max: universal.env.RATE_LIMIT_MAX,
-    // handler: (req, res, next) => next(new TooManyRequestsException()),
-    handler: (req, res, next) => next(exceptionToJson(new TooManyRequestsException())),
+    handler: (req, res, next) => next(new TooManyRequestsException()),
   }));
   // gzip
   app.use(compression());
@@ -132,12 +133,20 @@ export async function bootHttp(arg: { universal: IUniversalServices, }): Promise
   });
 
   // serve graphql on the primary gql route
-  app.use('/v1/gql', gqlMiddleware);
+  app.use(
+    '/v1/gql',
+    graphqlUploadExpress({ maxFieldSize: 100_000_000, maxFiles: 10, }),
+    gqlMiddleware,
+  );
   // also serve graphql on the refresh_token route...
   // refresh_token cookie is scoped to this
-  app.use('/refresh/v1/gql', gqlMiddleware);
+  app.use(
+    '/refresh/v1/gql',
+    graphqlUploadExpress({ maxFieldSize: 100_000_000, maxFiles: 10, }),
+    gqlMiddleware,
+  );
 
-  app.use(Routes({ app }));
+  app.use(Routes({ universal }));
 
   // health check
   app.get('/_health', (req, res) => res.status(200).json({

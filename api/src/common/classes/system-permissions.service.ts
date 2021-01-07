@@ -96,7 +96,7 @@ export class SystemPermissionsService {
       const pub = assertDefined(roles.find(role => role.isPublic())?.permissions);
       const authenticated = assertDefined(roles.find(role => role.isAuthenticated())?.permissions);
       const result: ISystemPermissionValue = { pub, authenticated, };
-      logger.debug(`[${this.constructor.name}::getPermissions::4] Finished...}`);
+      logger.debug(`[${this.constructor.name}::getPermissions::4] Finished`);
       this._cache.set(result);
       return result;
     // eslint-disable-next-line no-useless-catch

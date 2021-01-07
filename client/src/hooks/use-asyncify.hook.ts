@@ -58,7 +58,15 @@ function toAsyncSuccess<R>(success: R) {
 }
 
 /**
- * Asyncify
+ * Hook for a generic asynchronous function
+ * 
+ * Function can also be manually re-fired
+ *
+ * Gives isLoading, error, data
+ * 
+ * Function must take no arguments
+ * 
+ * Does NOT run on deps change. Can only be fired manually
  *
  * @param fn
  * @param deps

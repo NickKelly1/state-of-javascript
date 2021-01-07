@@ -10,6 +10,7 @@ import { BlogPostCommentCollectionGqlNode, IBlogPostCommentCollectionGqlNodeSour
 import { BlogPostCommentCollectionOptionsGqlInput } from "../../blog-post-comment/gql/blog-post-comment.collection.gql.options";
 import { BlogPostCommentField } from "../../blog-post-comment/blog-post-comment.attributes";
 import { Op } from "sequelize";
+import { IImageGqlNodeSource, ImageGqlNode } from "../../image/gql/image.gql.node";
 
 
 export type IBlogPostGqlRelationsSource = BlogPostModel;
@@ -40,7 +41,7 @@ export const BlogPostGqlRelations: GraphQLObjectType<IBlogPostGqlRelationsSource
       type: GraphQLNonNull(BlogPostCommentCollectionGqlNode),
       args: gqlQueryArg(BlogPostCommentCollectionOptionsGqlInput),
       resolve: async (parent, args, ctx): Promise<IBlogPostCommentCollectionGqlNodeSource> => {
-        ctx.authorize(ctx.services.userPolicy.canFindMany(), BlogPostCommentLang.CannotFindMany);
+        ctx.authorize(ctx.services.blogPostCommentPolicy.canFindMany(), BlogPostCommentLang.CannotFindMany);
         const collection = ctx.services.blogPostCommentRepository.gqlCollection({
           runner: null,
           args,
@@ -49,5 +50,18 @@ export const BlogPostGqlRelations: GraphQLObjectType<IBlogPostGqlRelationsSource
         return collection;
       },
     },
+
+    image: {
+      type: ImageGqlNode,
+      resolve: async (parent, args, ctx): Promise<OrNull<IImageGqlNodeSource>> => {
+        if (!parent.image_id) return null;
+        const model: OrNull<IImageGqlNodeSource> = await ctx.loader.images.load(parent.image_id);
+        if (!model) return null;
+        if (!ctx.services.imagePolicy.canFindOne({ model })) return null;
+        // TODO: actions allowed on this model....
+        return model;
+      },
+    },
+
   }),
 });

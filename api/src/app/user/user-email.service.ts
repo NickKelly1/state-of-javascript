@@ -64,14 +64,14 @@ export class UserEmailService {
       }
 
       // Queue the Gmail to Send
-      await this.ctx.services.universal.queueService.email.add({
+      await this.ctx.services.universal.jobService.email.enqueue({
           to: [user.email],
           cc: null,
           subject: this.ctx.lang(UserEmailLang.WelcomeEmailSubject({
             welcomeTo: 'nickkelly.dev',
             name: user.name,
           })),
-          body: this.ctx.lang(UserEmailLang.WelcomeEmailBody({
+          text: this.ctx.lang(UserEmailLang.WelcomeEmailBody({
             welcomeTo: 'nickkelly.dev',
             verifyUrl: link,
             name: user.name,
@@ -126,14 +126,14 @@ export class UserEmailService {
         return;
       }
       // Queue the Gmail to Send
-      await this.ctx.services.universal.queueService.email.add({
+      await this.ctx.services.universal.jobService.email.enqueue({
           to: [user.email],
           cc: null,
           subject: this.ctx.lang(UserEmailLang.VerificationSubject({
             welcomeTo: 'nickkelly.dev',
             name: user.name,
           })),
-          body: this.ctx.lang(UserEmailLang.VerificationBody({
+          text: this.ctx.lang(UserEmailLang.VerificationBody({
             welcomeTo: 'nickkelly.dev',
             verifyUrl: link,
             name: user.name,
@@ -189,14 +189,14 @@ export class UserEmailService {
         return;
       }
       // Queue the Gmail to Send
-      await this.ctx.services.universal.queueService.email.add({
+      await this.ctx.services.universal.jobService.email.enqueue({
           to: [user.email],
           cc: null,
           subject: this.ctx.lang(UserEmailLang.RegistrationEmailSubject({
             welcomeTo: 'nickkelly.dev',
             name: user.name,
           })),
-          body: this.ctx.lang(UserEmailLang.RegistrationEmailBody({
+          text: this.ctx.lang(UserEmailLang.RegistrationEmailBody({
             welcomeTo: 'nickkelly.dev',
             verifyUrl: link,
             name: user.name,
@@ -252,11 +252,11 @@ export class UserEmailService {
       }
 
       // Queue the Gmail to Send
-      await this.ctx.services.universal.queueService.email.add({
+      await this.ctx.services.universal.jobService.email.enqueue({
           to: [user.email],
           cc: null,
           subject: this.ctx.lang(UserEmailLang.PasswordResetEmailSubject()),
-          body: this.ctx.lang(UserEmailLang.PasswordResetEmailBody({
+          text: this.ctx.lang(UserEmailLang.PasswordResetEmailBody({
             welcomeTo: 'nickkelly.dev',
             resetUrl: link,
             name: user.name,
@@ -313,14 +313,14 @@ export class UserEmailService {
       const data = unwrap.right(TUserTokenVerifyEmailChangeData.decode(token.data));
 
       // Queue the Gmail to Send
-      await this.ctx.services.universal.queueService.email.add({
+      await this.ctx.services.universal.jobService.email.enqueue({
           to: [data.email],
           cc: null,
           subject: this.ctx.lang(UserEmailLang.EmailChangeSubject({
             welcomeTo: 'nickkelly.dev',
             name: user.name,
           })),
-          body: this.ctx.lang(UserEmailLang.EmailChangeBody({
+          text: this.ctx.lang(UserEmailLang.EmailChangeBody({
             welcomeTo: 'nickkelly.dev',
             verifyUrl: link,
             name: user.name,

@@ -1,15 +1,12 @@
 import { Model, DataTypes, } from 'sequelize';
 import { AuditableSchema } from '../../common/schemas/auditable.schema';
 import { pretendAuditable } from '../../common/schemas/helpers/pretend-auditable.helper';
-import { pretendSoftDeleteable } from '../../common/schemas/helpers/pretend-soft-deleteable.helper';
 import { ModelInitFn } from '../../common/schemas/interfaces/model-init-fn.interface';
-import { SoftDeleteableSchema } from '../../common/schemas/soft-deleteable.schema';
 import { OrNull } from '../../common/types/or-null.type';
 import { IntegrationAssociations } from './integration.associations';
 import { IntegrationDefinition } from './integration.definition';
 import { IntegrationId } from './integration-id.type';
 import { IIntegrationAttributes, IIntegrationCreationAttributes, IntegrationField } from './integration.attributes';
-import { IJson } from '../../common/interfaces/json.interface';
 import { Integration } from './integration.const';
 
 

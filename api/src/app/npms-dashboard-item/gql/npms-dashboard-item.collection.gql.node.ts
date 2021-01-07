@@ -1,7 +1,7 @@
 import { GqlContext } from "../../../common/context/gql.context";
 import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
 import { ICollectionMeta } from "../../../common/interfaces/collection-meta.interface";
-import { GqlMeta, IGqlMetaSource } from "../../../common/gql/gql.meta";
+import { GqlPagination, IGqlMetaSource } from "../../../common/gql/gql.pagination";
 import { OrNull } from "../../../common/types/or-null.type";
 import { GqlNever } from "../../../common/gql/gql.ever";
 import { INpmsDashboardItemGqlNodeSource, NpmsDashboardItemGqlNode } from "./npms-dashboard-item.gql.node";
@@ -25,7 +25,7 @@ export const NpmsDashboardItemCollectionGqlNode: GraphQLObjectType<INpmsDashboar
       resolve: (parent, args, ctx): INpmsDashboardItemCollectionGqlActionSource => GqlNever,
     },
     pagination: {
-      type: GraphQLNonNull(GqlMeta),
+      type: GraphQLNonNull(GqlPagination),
       resolve: (parent, args, ctx): IGqlMetaSource => parent.pagination,
     },
   }),

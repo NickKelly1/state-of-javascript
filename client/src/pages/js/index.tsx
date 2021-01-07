@@ -46,6 +46,7 @@ import { orNull } from '../../helpers/or-null.helper';
 import { WithApi } from '../../components-hoc/with-api/with-api.hoc';
 import { WithLoadable } from '../../components-hoc/with-loadable/with-loadable';
 import { WithoutSsr } from '../../components-hoc/without-first-load/without-ssr';
+import { Icons } from '../../components/icons/icons.const';
 
 const JsPageDashboardQueryName = 'JsPageDashboardQuery';
 const jsPageDashboardQuery = gql`
@@ -622,7 +623,7 @@ const JavaScriptPageContent = WithoutSsr(WithApi<IJavaScriptPageContentProps>((p
               <WhenDebugMode>
                 <Box pr={1}>
                   <IconButton color="primary" onClick={debugDialog.doOpen}>
-                    <BugReportIcon />
+                    <Icons.Debug />
                   </IconButton>
                 </Box>
               </WhenDebugMode>

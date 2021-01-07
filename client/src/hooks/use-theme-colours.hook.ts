@@ -26,3 +26,5 @@ export const useThemeColours = makeStyles((theme) => ({
   info: { color: theme.palette.info.main },
   bgInfo: { backgroundColor: theme.palette.info.main },
 }));
+
+export type ThemeColourKey = keyof ReturnType<typeof useThemeColours>;

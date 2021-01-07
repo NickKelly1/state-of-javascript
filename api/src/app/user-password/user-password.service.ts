@@ -46,12 +46,12 @@ export class UserPasswordService {
 
     const salt = await this.ctx.services.universal.encryptionService.bcryptHash({
       raw: Math.random().toString(),
-      rounds: this.ctx.services.universal.env.PSW_SALT_ROUNDS,
+      rounds: this.ctx.services.universal.env.PASSWORD_SALT_ROUNDS,
     });
 
     const hash = await this.ctx.services.universal.encryptionService.bcryptHash({
       raw: `${salt}${raw}`,
-      rounds: this.ctx.services.universal.env.PSW_SALT_ROUNDS,
+      rounds: this.ctx.services.universal.env.PASSWORD_SALT_ROUNDS,
     });
 
     return { hash, salt };

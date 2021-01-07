@@ -1,11 +1,8 @@
 import { PublicEnv } from "../env/public-env.helper";
-import { Debug } from "../debug/debug";
 import { RequestDocument, Variables } from "graphql-request/dist/types";
-import { ApiCredentials } from "./api.credentials";
-import { GraphQLClient, request } from "graphql-request";
+import { ApiCredentials, IHttpClientWrapper } from "./api.credentials";
 import { normaliseApiException } from "./normalise-api-exception.helper";
-import { isoFetch } from "../iso-fetch";
-import { GraphQLError } from "graphql";
+import { IApiHttpClientRequestOptions } from "./api.http.client";
 
 let counter = 0;
 
@@ -14,6 +11,27 @@ export class ApiConnector {
     protected readonly publicEnv: PublicEnv,
     protected readonly credentials: ApiCredentials,
   ) {
+    //
+  }
+
+
+  /**
+   * Make an Http request using the current credentials
+   *
+   * If credentials have expired, refresh & retry
+   * 
+   * @param doc
+   * @param vars
+   */
+  async http(path: string, options: IApiHttpClientRequestOptions): Promise<Response> {
+    return this._send(async ({ http }) => {
+      const result = await http.request(path, options);
+      if (!result.ok){ 
+        const error = await result.json();
+        throw error;
+      }
+      return result;
+    });
   }
 
 
@@ -25,7 +43,15 @@ export class ApiConnector {
    * @param doc
    * @param vars
    */
-  async graphql<T = any, V = Variables>(doc: RequestDocument, vars?: V): Promise<T> {
+  async graphql<T = unknown, V = Variables>(doc: RequestDocument, vars?: V): Promise<T> {
+    return this._send(({ graphql }) => graphql.request(doc, vars));
+  }
+
+
+  /**
+   * Send a request using the current authentication context...
+   */
+  async _send<T>(requestFn: (wrapper: IHttpClientWrapper) => Promise<T>): Promise<T> {
     const ident = counter += 1;
     console.log(`[ApiConnector::graphql] [${ident}] graphql request...`);
 
@@ -35,7 +61,7 @@ export class ApiConnector {
     console.log(`[ApiConnector::graphql] [${ident}] 1: credentialed: ${String(requester1.credentialed)}`);
 
     // requester isn't credentialed - just send raw request
-    if (!requester1.credentialed) return requester1.client.request<T, V>(doc, vars);
+    if (!requester1.credentialed) return requestFn(requester1);
 
     // send inside credentialed wrapping
 
@@ -43,7 +69,7 @@ export class ApiConnector {
     try {
       // 1: try
       console.log(`[ApiConnector::graphql] [${ident}] 1: try...`);
-      const result1 = await requester1.client.request<T, V>(doc, vars);
+      const result1 = await requestFn(requester1);
       // 1: success
       console.log(`[ApiConnector::graphql] [${ident}] 1: success...`);
       return result1;
@@ -86,7 +112,7 @@ export class ApiConnector {
         console.log(`[ApiConnector::graphql] [${ident}] 3: Re-requesting...`);
 
         // 4: redo the initial request with new credentials
-        const result3 = await requester3.client.request<T, V>(doc, vars);
+        const result3 = await requestFn(requester3);
 
         // 4: success
         return result3;

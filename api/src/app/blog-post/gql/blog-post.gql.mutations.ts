@@ -1,13 +1,113 @@
-import { GraphQLBoolean, GraphQLFieldConfigMap, GraphQLNonNull, Thunk } from "graphql";
+import {
+  GraphQLBoolean,
+  GraphQLFieldConfigMap,
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLString,
+  Thunk,
+} from "graphql";
 import { BlogPostModel, UserModel } from "../../../circle";
 import { GqlContext } from "../../../common/context/gql.context";
 import { assertDefined } from "../../../common/helpers/assert-defined.helper";
 import { BlogPostLang } from "../blog-post.lang";
 import { BlogPostAssociation } from "../blog-post.associations";
-import { CreateBlogPostGqlInput, CreateBlogPostValidator } from "../dtos/create-blog-post.gql.input";
-import { TargetBlogPostGqlInput, TargetBlogPostValidator } from "../dtos/target-blog-post.gql.input";
-import { UpdateBlogPostGqlInput, UpdateBlogPostValidator } from "../dtos/update-blog-post.gql.input";
 import { IBlogPostGqlNodeSource, BlogPostGqlNode } from "./blog-post.gql.node";
+import { FileUpload, GraphQLUpload } from "graphql-upload";
+import Joi from "joi";
+import { BlogPostDefinition } from "../blog-post.definition";
+import { OrNullable } from "../../../common/types/or-nullable.type";
+import { IBlogPostServiceCreateBlogPostDto } from "../blog-post.service";
+import tempy from "tempy";
+import mime from "mime-types";
+import { BadRequestException } from "../../../common/exceptions/types/bad-request.exception";
+import { FileLang } from "../../file/file.lang";
+import { filenameify, randomFileName } from "../../../common/helpers/filenameify.helper";
+import fs from 'fs';
+import path from 'path';
+import { logger } from "../../../common/logger/logger";
+
+// --------
+// create
+// --------
+
+export interface ICreateBlogPostInput {
+  title: string;
+  teaser: string;
+  body: string;
+  image: Promise<FileUpload>;
+}
+
+export const CreateBlogPostGqlInput = new GraphQLInputObjectType({
+  name: 'CreateBlogPost',
+  fields: () => ({
+    title: { type: GraphQLNonNull(GraphQLString), },
+    teaser: { type: GraphQLNonNull(GraphQLString), },
+    body: { type: GraphQLNonNull(GraphQLString), },
+    image: { type: GraphQLNonNull(GraphQLUpload), },
+  }),
+})
+
+export const CreateBlogPostValidator = Joi.object<ICreateBlogPostInput>({
+  title: Joi.string().min(BlogPostDefinition.title.min).max(BlogPostDefinition.title.max).required(),
+  teaser: Joi.string().min(BlogPostDefinition.teaser.min).max(BlogPostDefinition.teaser.max).required(),
+  body: Joi.string().min(BlogPostDefinition.body.min).max(BlogPostDefinition.body.max).required(),
+  image: Joi.object().required(),
+});
+
+// --------
+// update
+// --------
+
+export interface IUpdateBlogPostInput {
+  id: number;
+  title?: OrNullable<string>;
+  teaser?: OrNullable<string>;
+  body?: OrNullable<string>;
+  image?: OrNullable<Promise<FileUpload>>;
+}
+
+export const UpdateBlogPostGqlInput = new GraphQLInputObjectType({
+  name: 'UpdateBlogPost',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt), },
+    title: { type: GraphQLString, },
+    teaser: { type: GraphQLString, },
+    body: { type: GraphQLString, },
+    image: { type: GraphQLUpload, },
+  }),
+})
+
+export const UpdateBlogPostValidator = Joi.object<IUpdateBlogPostInput>({
+  id: Joi.number().integer().positive().required(),
+  title: Joi.string().min(BlogPostDefinition.title.min).max(BlogPostDefinition.title.max).optional(),
+  teaser: Joi.string().min(BlogPostDefinition.teaser.min).max(BlogPostDefinition.teaser.max).optional(),
+  body: Joi.string().min(BlogPostDefinition.body.min).max(BlogPostDefinition.body.max).optional(),
+  image: Joi.object().optional(),
+});
+
+// --------
+// target
+// --------
+
+export interface ITargetBlogPostInput {
+  id: number;
+}
+
+export const TargetBlogPostGqlInput = new GraphQLInputObjectType({
+  name: 'TargetBlogPost',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt), },
+  }),
+})
+
+export const TargetBlogPostValidator = Joi.object<ITargetBlogPostInput>({
+  id: Joi.number().integer().positive().required(),
+});
+
+// --------
+// mutations
+// --------
 
 export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlContext>> = () => ({
   /**
@@ -25,13 +125,47 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
       const author_id = ctx.assertAuthentication();
       // validate
       const dto = ctx.validate(CreateBlogPostValidator, args.dto);
+      // extract image
+      const upload = await (args.dto as ICreateBlogPostInput).image;
+
+      // prep the image file
+      const extension = mime.extension(upload.mimetype);
+      if (!extension) {
+        const msg = ctx.lang(FileLang.NoExtensionForMimtype({ mimetype: upload.mimetype }));
+        throw new BadRequestException(msg);
+      }
+      const imageFile = tempy.file({ extension });
+      const imageTitle = path.basename(upload.filename, path.extname(upload.filename));
+      // write the image file to temp a directory
+      const imageWriter = upload.createReadStream().pipe(fs.createWriteStream(imageFile));
+      await new Promise((res, rej) => imageWriter.once('error', rej).once('finish', res));
+
       const final = await ctx.services.universal.db.transact(async ({ runner }) => {
         const author = await ctx.services.userRepository.findByPkOrfail(author_id, { runner, unscoped: true });
-        // do create
-        const model = await ctx.services.blogPostService.create({ runner, author, dto });
+
+        const svcDto: IBlogPostServiceCreateBlogPostDto = {
+          image: {
+            encoding: upload.encoding,
+            mimetype: upload.encoding,
+            extension,
+            file: imageFile,
+            title: imageTitle,
+          },
+          body: dto.body,
+          teaser: dto.teaser,
+          title: dto.title,
+        };
+
+        // create the blog post and image
+        const model = await ctx
+          .services
+          .blogPostService
+          .create({ runner, author, dto: svcDto });
+
         return model;
       });
-      return final;
+
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 
@@ -64,7 +198,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 
@@ -97,7 +231,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 
@@ -163,7 +297,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 
@@ -192,7 +326,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 
@@ -221,7 +355,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 
@@ -250,7 +384,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 
@@ -279,7 +413,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 
@@ -308,7 +442,7 @@ export const BlogPostGqlMutations: Thunk<GraphQLFieldConfigMap<undefined, GqlCon
         return model;
       });
 
-      return final;
+      return ctx.services.blogPostRepository.fresh({ model: final }).then(assertDefined);
     },
   },
 });

@@ -1,11 +1,33 @@
+import { FileUpload } from 'graphql-upload';
 import { BlogPostModel } from '../../circle';
 import { BaseContext } from '../../common/context/base.context';
 import { ist } from '../../common/helpers/ist.helper';
+import { OrNullable } from '../../common/types/or-nullable.type';
 import { BlogPostStatus } from '../blog-post-status/blog-post-status.const';
 import { QueryRunner } from '../db/query-runner';
 import { UserModel } from '../user/user.model';
-import { ICreateBlogPostInput } from './dtos/create-blog-post.gql.input';
-import { IUpdateBlogPostInput } from './dtos/update-blog-post.gql.input';
+
+export interface IBlogPostServiceCreateBlogPostDto {
+  title: string;
+  teaser: string;
+  body: string;
+  image: {
+    encoding: string;
+    mimetype: string;
+    extension: string;
+    file: string;
+    title: string;
+  }
+}
+
+export interface IBlogPostServiceUpdateBlogPostDto {
+  id: number;
+  title?: OrNullable<string>;
+  teaser?: OrNullable<string>;
+  body?: OrNullable<string>;
+  image?: OrNullable<Promise<FileUpload>>;
+}
+
 
 export class BlogPostService {
   constructor(
@@ -23,12 +45,29 @@ export class BlogPostService {
   async create(arg: {
     runner: QueryRunner;
     author: UserModel,
-    dto: ICreateBlogPostInput,
+    dto: IBlogPostServiceCreateBlogPostDto,
   }): Promise<BlogPostModel> {
     const { runner, author, dto } = arg;
     const { transaction } = runner;
 
+    // create the image
+    const image = await this.ctx.services.imageService.create({ runner, dto: {
+      encoding: dto.image.encoding,
+      extension: dto.image.extension,
+      mimetype: dto.image.mimetype,
+      title: dto.image.title,
+      in_file: dto.image.file,
+      is_public: false,
+      mv: true,
+      uploader: {
+        aid: this.ctx.auth.aid,
+        user_id: this.ctx.auth.user_id ?? null,
+      },
+    }, });
+
+    // create the blog post
     const BlogPost = BlogPostModel.build({
+      image_id: image.id,
       author_id: author.id,
       status_id: BlogPostStatus.Draft,
       title: dto.title,
@@ -36,7 +75,9 @@ export class BlogPostService {
       body: dto.body,
     });
 
+    // save blog post
     await BlogPost.save({ transaction });
+
     return BlogPost;
   }
 
@@ -50,7 +91,7 @@ export class BlogPostService {
     runner: QueryRunner;
     author: UserModel,
     model: BlogPostModel;
-    dto: IUpdateBlogPostInput,
+    dto: IBlogPostServiceUpdateBlogPostDto,
   }): Promise<BlogPostModel> {
     const { runner, author, model, dto } = arg;
     const { transaction } = runner;

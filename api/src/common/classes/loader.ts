@@ -8,6 +8,12 @@ import { BlogPostStatusId } from '../../app/blog-post-status/blog-post-status.id
 import { BlogPostField } from '../../app/blog-post/blog-post.attributes';
 import { BlogPostId } from '../../app/blog-post/blog-post.id.type';
 import { QueryRunner } from '../../app/db/query-runner';
+import { FileField } from '../../app/file/file.attributes';
+import { FileId } from '../../app/file/file.id.type';
+import { FileModel } from '../../app/file/file.model';
+import { ImageField } from '../../app/image/image.attributes';
+import { ImageId } from '../../app/image/image.id.type';
+import { ImageModel } from '../../app/image/image.model';
 import { NewsArticleStatusId } from '../../app/news-article-status/news-article-status.id.type';
 import { NewsArticleField } from '../../app/news-article/news-article.attributes';
 import { NewsArticleId } from '../../app/news-article/news-article.id.type';
@@ -57,6 +63,8 @@ export type IPermissionDataLoader = DataLoader<PermissionId, OrNull<PermissionMo
 export type INewsArticleDataLoader = DataLoader<NewsArticleId, OrNull<NewsArticleModel>>;
 export type INewsArticleStatusDataLoader = DataLoader<NewsArticleStatusId, OrNull<NewsArticleStatusModel>>;
 export type IBlogPostDataLoader = DataLoader<BlogPostId, OrNull<BlogPostModel>>;
+export type IImageDataLoader = DataLoader<ImageId, OrNull<ImageModel>>;
+export type IFileDataLoader = DataLoader<FileId, OrNull<FileModel>>;
 export type IBlogPostCommentDataLoader = DataLoader<BlogPostCommentId, OrNull<BlogPostCommentModel>>;
 export type IBlogPostStatusDataLoader = DataLoader<BlogPostStatusId, OrNull<BlogPostStatusModel>>;
 export type INpmsPackageDataLoader = DataLoader<NpmsPackageId, OrNull<NpmsPackageModel>>;
@@ -361,5 +369,43 @@ export class Loader {
       return keys.map(key => map.get(key) ?? null);
     });
     return this._npmsDashboardItem;
+  }
+
+  // ==================
+  // ===== image ======
+  // ==================
+  protected _image?: IImageDataLoader;
+  public get images(): IImageDataLoader {
+    if (this._image) return this._image;
+    this._image = new DataLoader(async (keys): Promise<(OrNull<ImageModel>)[]> => {
+      const { runner } = this;
+      const models = await this.ctx.services.imageRepository.findAll({
+        runner,
+        unscoped: true,
+        options: { where: { [ImageField.id]: { [Op.in]: keys as ImageId[] } } },
+      });
+      const map = new Map(models.map(model => [model.id, model]));
+      return keys.map(key => map.get(key) ?? null)
+    });
+    return this._image;
+  }
+
+  // =================
+  // ===== file ======
+  // =================
+  protected _file?: IFileDataLoader;
+  public get files(): IFileDataLoader {
+    if (this._file) return this._file;
+    this._file = new DataLoader(async (keys): Promise<(OrNull<FileModel>)[]> => {
+      const { runner } = this;
+      const models = await this.ctx.services.fileRepository.findAll({
+        runner,
+        unscoped: true,
+        options: { where: { [FileField.id]: { [Op.in]: keys as FileId[] } } },
+      });
+      const map = new Map(models.map(model => [model.id, model]));
+      return keys.map(key => map.get(key) ?? null)
+    });
+    return this._file;
   }
 }

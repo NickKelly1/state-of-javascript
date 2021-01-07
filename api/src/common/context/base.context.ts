@@ -16,6 +16,7 @@ import { OrNullable } from "../types/or-nullable.type";
 import { NotFoundException } from "../exceptions/types/not-found.exception";
 import { UserModel } from "../../app/user/user.model";
 import { PermissionId } from "../../app/permission/permission-id.type";
+import { AuthLang } from "../i18n/packs/auth.lang";
 
 export abstract class BaseContext {
   abstract readonly auth: RequestAuth;
@@ -115,7 +116,7 @@ export abstract class BaseContext {
   assertAuthentication(): UserId {
     const user_id = this.auth.user_id;
     if (ist.nullable(user_id)) {
-      const message = this.lang(ExceptionLang.BadRequest);
+      const message = this.lang(AuthLang.LoginRequired);
       throw new UnauthenticatedException(message);
     }
     return user_id;

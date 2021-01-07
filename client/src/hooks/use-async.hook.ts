@@ -6,6 +6,17 @@ import { OrPromise } from "../types/or-promise.type";
 import { OrUndefined } from "../types/or-undefined.type";
 import { useAsyncify } from "./use-asyncify.hook";
 
+/**
+ * Hook for a generic asynchronous function
+ * 
+ * Function can also be manually re-fired
+ *
+ * Gives isLoading, error, data
+ * 
+ * Function must take no arguments
+ * 
+ * Auto-runs on deps change
+ */
 export interface IUseAsyncFireFnArg<R> { (): OrPromise<R>; }
 export interface IUseAsyncFireFnReturn { (): Promise<void>; }
 export type IUseAsyncReturn<R, E>  = [refire: IUseAsyncFireFnReturn, state: IAsyncState<R, E>];

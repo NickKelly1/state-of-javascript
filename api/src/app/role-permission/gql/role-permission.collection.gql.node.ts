@@ -2,7 +2,7 @@
 import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { RolePermissionModel } from "../../../circle";
 import { ICollectionMeta } from "../../../common/interfaces/collection-meta.interface";
-import { GqlMeta, IGqlMetaSource } from "../../../common/gql/gql.meta";
+import { GqlPagination, IGqlMetaSource } from "../../../common/gql/gql.pagination";
 import { OrNull } from "../../../common/types/or-null.type";
 import { IRolePermissionGqlNodeSource, RolePermissionGqlNode } from "./role-permission.gql.node";
 import { IRolePermissionCollectionGqlActionSource, RolePermissionCollectionGqlActions } from "./role-permission.collection.gql.actions";
@@ -25,7 +25,7 @@ export const RolePermissionCollectionGqlNode: GraphQLObjectType<IRolePermissionC
       resolve: (parent, args, ctx): IRolePermissionCollectionGqlActionSource => GqlNever,
     },
     pagination: {
-      type: GraphQLNonNull(GqlMeta),
+      type: GraphQLNonNull(GqlPagination),
       resolve: (parent, args, ctx): IGqlMetaSource => parent.pagination,
     },
   }),

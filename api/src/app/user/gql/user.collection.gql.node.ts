@@ -3,7 +3,7 @@ import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "g
 import { UserModel } from "../user.model";
 import { ICollectionMeta } from "../../../common/interfaces/collection-meta.interface";
 import { IUserCollectionGqlActionSource, UserCollectionGqlActions } from "./user.collection.gql.actions";
-import { GqlMeta, IGqlMetaSource } from "../../../common/gql/gql.meta";
+import { GqlPagination, IGqlMetaSource } from "../../../common/gql/gql.pagination";
 import { IUserGqlNodeSource, UserGqlNode } from "./user.gql.node";
 import { OrNull } from "../../../common/types/or-null.type";
 import { GqlNever } from "../../../common/gql/gql.ever";
@@ -25,7 +25,7 @@ export const UserCollectionGqlNode: GraphQLObjectType<IUserCollectionGqlNodeSour
       resolve: (parent, args, ctx): IUserCollectionGqlActionSource => GqlNever,
     },
     pagination: {
-      type: GraphQLNonNull(GqlMeta),
+      type: GraphQLNonNull(GqlPagination),
       resolve: (parent, args, ctx): IGqlMetaSource => parent.pagination,
     },
   }),

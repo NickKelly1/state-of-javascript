@@ -1,8 +1,6 @@
 import { ist } from "../../helpers/ist.helper";
 import { isu } from "../../helpers/isu.helper";
-import { $TS_DANGER } from "../../types/$ts-danger.type";
 import { OrUndefined } from "../../types/or-undefined.type";
-import { LanguageDefault } from "../consts/language.default";
 import { ALanguage, Language } from "../consts/language.enum";
 
 export type LangSwitch = Record<ALanguage, OrUndefined<string>>

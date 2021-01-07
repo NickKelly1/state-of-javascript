@@ -59,11 +59,20 @@ export const AuthLang = {
     [Language.Ger]: '__TODO__',
   },
 
+  NotLoggedIn: {
+    [Language.En]: 'you are not logged in',
+    [Language.Ger]: '__TODO__',
+  },
+
+  LoginRequired: {
+    [Language.En]: 'you must be logged in',
+    [Language.Ger]: '__TODO__',
+  },
+
   LoginExpired: {
     [Language.En]: 'login expired',
     [Language.Ger]: '__TODO__',
   },
-
 
 
   AccessExpired: (arg: { key: string }) => ({

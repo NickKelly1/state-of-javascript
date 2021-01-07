@@ -5,6 +5,7 @@ import { Api } from "./api";
 import { ApiConnector } from "./api.connector";
 import { ApiCredentialsFactory } from "./api.credentials";
 import { ApiEventsFactory } from "./api.events";
+import { ApiHttpClient } from "./api.http.client";
 import { IApiMe } from "./api.me";
 
 type IApiFactoryArg = {
@@ -81,11 +82,14 @@ export function ApiFactory(arg: IApiFactoryArg): Api {
     mode: 'cors',
   });
 
+  const httpClient = new ApiHttpClient(me, !!me.user?.id);
+
   const credentials = ApiCredentialsFactory({
     me,
     credentialedGqlClient,
     event,
     refreshGqlClient,
+    httpClient,
     uncredentialedGqlClient,
     publicEnv,
   });

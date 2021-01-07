@@ -6,7 +6,7 @@ import { EncryptionService } from "../../app/encryption/encryption.service";
 import { NpmsApi } from "../../app/npms-package/api/npms-api";
 import { SystemPermissionsService } from "../classes/system-permissions.service";
 import { EnvService } from "../environment/env";
-import { QueueService } from '../../app/queue/queue.service';
+import { JobService } from '../../app/job/job.service';
 import { RedisService } from "../../app/db/redis.service";
 import { SocketGateway } from '../../app/socket/socket.gateway';
 import { SocketService } from '../../app/socket/socket.service';
@@ -18,7 +18,7 @@ export interface IUniversalServices {
   npmsApi: NpmsApi;
   encryptionService: EncryptionService;
   redisService: RedisService;
-  queueService: QueueService;
+  jobService: JobService;
   db: DbService;
   app: Express;
   io: SocketIO.Server;

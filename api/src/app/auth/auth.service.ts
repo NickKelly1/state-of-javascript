@@ -12,12 +12,29 @@ import { PermissionId } from "../permission/permission-id.type";
 import { UserModel } from "../user/user.model";
 import { IAuthenticationGqlNodeSource, IAuthorisationRo } from "./gql-input/authorisation.gql";
 import { IAccessToken } from "./token/access.token.gql";
+import { IWhoami } from '../../common/interfaces/whoami.interface';
+import { QueryRunner } from "../db/query-runner";
+import { RequestAuth } from "../../common/classes/request-auth";
 
 export class AuthSerivce {
   constructor(
     protected readonly ctx: BaseContext,
   ) {
     //
+  }
+
+  /**
+   * Whoami of a request
+   */
+  async whoami(arg: {
+    auth: RequestAuth;
+  }): Promise<IWhoami> {
+    const { auth, } = arg;
+    const { user_id, aid } = auth;
+    return {
+      aid,
+      user_id: user_id ?? null,
+    }
   }
 
 

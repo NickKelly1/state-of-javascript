@@ -32,13 +32,13 @@ export const Extractor = (arg: { fromObj: Record<PropertyKey, any>, fromName: st
     },
 
     int(name: string): number {
-      let val = parseInt(extractAssert(name), 10);
+      const val = parseInt(extractAssert(name), 10);
       if (!Number.isFinite(val)) throw new TypeError(`${fromName} "${name}" must be a number`);
       return val;
     },
 
     bool(name: string): boolean {
-      let raw = extractAssert(name).trim().toLowerCase();
+      const raw = extractAssert(name).trim().toLowerCase();
       if (raw === 'true') return true;
       if (raw === '1') return true;
       if (raw === 'false') return false;
@@ -46,8 +46,8 @@ export const Extractor = (arg: { fromObj: Record<PropertyKey, any>, fromName: st
       throw new TypeError(`${fromName} "${name}" must be a boolean`);
     },
 
-    oneOf: <T extends string>(arg: T[]) => (name: string): T => {
-      let val = extractAssert(name);
+    oneOf: <T extends string | undefined>(arg: T[]) => (name: string): T => {
+      const val = extract(name);
       if (!arg.some(acceptable => acceptable === val)) {
         throw new TypeError(`${fromName} "${name}" must be one of ${arg.map(String).join(', ')}`);
       }
@@ -55,7 +55,7 @@ export const Extractor = (arg: { fromObj: Record<PropertyKey, any>, fromName: st
     },
 
     subsetOf: <T extends string>(arg: T[]) => (name: string): T[] => {
-      let raw = extract(name) ?? '';
+      const raw = extract(name) ?? '';
       const strs = raw.split(',').filter(Boolean);
       const extra = strs.filter(val => !arg.some(ar => ar === val));
       if (extra.length) throw new TypeError(`${fromName} "${name}" has unexpectd values: "${extra.join(',')}"`);

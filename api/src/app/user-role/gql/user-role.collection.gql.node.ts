@@ -1,7 +1,7 @@
 import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from "graphql";
 import { UserRoleModel } from "../../../circle";
 import { ICollectionMeta } from "../../../common/interfaces/collection-meta.interface";
-import { GqlMeta, IGqlMetaSource } from "../../../common/gql/gql.meta";
+import { GqlPagination, IGqlMetaSource } from "../../../common/gql/gql.pagination";
 import { IUserRoleGqlNodeSource, UserRoleGqlNode } from "./user-role.gql.node";
 import { IUserRoleCollectionGqlActionSource, UserRoleCollectionGqlActions } from "./user-role.collection.gql.actions";
 import { OrNull } from "../../../common/types/or-null.type";
@@ -24,7 +24,7 @@ export const UserRoleCollectionGqlNode: GraphQLObjectType<IUserRoleCollectionGql
       resolve: (parent, args, ctx): IUserRoleCollectionGqlActionSource => GqlNever,
     },
     pagination: {
-      type: GraphQLNonNull(GqlMeta),
+      type: GraphQLNonNull(GqlPagination),
       resolve: (parent, args, ctx): IGqlMetaSource => parent.pagination,
     },
   }),

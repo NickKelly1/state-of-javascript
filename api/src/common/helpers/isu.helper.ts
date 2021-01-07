@@ -1,14 +1,10 @@
 import { Exception } from "../exceptions/exception";
 import { ALanguage, Languages } from "../i18n/consts/language.enum";
-import { IResponder } from "../interfaces/responder.interface";
 import { Primitive } from "../types/primitive.type";
 import { SqlPrimitive } from "../types/sql-primitive.type";
 import { ist } from "./ist.helper";
 
 export const isu = {
-  responder: (arg: unknown): arg is IResponder => {
-    return ist.obj(arg) && ist.fn((arg as IResponder).respond);
-  },
   primitive: (arg: unknown): arg is Primitive => {
     return ist.bool(arg)
       || ist.num(arg)

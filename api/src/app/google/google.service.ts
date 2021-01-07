@@ -18,7 +18,7 @@ import { IIntegrationServiceResetIntegrationDto } from "../integration/dtos/inte
 import { TGoogleInit } from "./types/google.init.type";
 import { TGoogleState } from "./types/google.state.type";
 import { TGoogleToken } from "./types/google.token.type";
-import { IGoogleIntegrationServiceSendEmailDto } from "./dtos/google.service.send-email-dto";
+import { IGoogleServiceSendEmailDto } from "./dtos/google.service.send-email-dto";
 import { IIntegrationServiceInitialiseIntegrationCredentialsDto } from "../integration/dtos/integration-service.initialise-integration-credentials.dto";
 import { $TS_FIX_ME } from "../../common/types/$ts-fix-me.type";
 import { BaseContext } from "../../common/context/base.context";
@@ -340,7 +340,7 @@ export class GoogleService {
   async sendEmail(arg: {
     runner: QueryRunner;
     model: IntegrationModel;
-    dto: IGoogleIntegrationServiceSendEmailDto;
+    dto: IGoogleServiceSendEmailDto;
   }): Promise<gmail_v1.Schema$Message> {
     const { runner, model, dto, } = arg;
 

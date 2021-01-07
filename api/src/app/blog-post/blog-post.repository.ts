@@ -14,6 +14,8 @@ import { IBlogPostCollectionGqlNodeSource } from './gql/blog-post.collection.gql
 import { BlogPostLang } from './blog-post.lang';
 import { OrNullable } from "../../common/types/or-nullable.type";
 import { OrArray } from "../../common/types/or-array.type";
+import { ImageAssociation } from "../image/image.associations";
+import { FileAssociation } from "../file/file.associations";
 
 
 export class BlogPostRepository extends BaseRepository<BlogPostModel> {
@@ -25,6 +27,113 @@ export class BlogPostRepository extends BaseRepository<BlogPostModel> {
    */
   notFoundLang(): LangSwitch {
     return BlogPostLang.NotFound;
+  }
+
+
+  /**
+   * Default joins for priming
+   */
+  protected _includes(): Includeable[]  {
+    return [
+      { association: BlogPostAssociation.status, },
+      { association: BlogPostAssociation.author, },
+      {
+        association: BlogPostAssociation.image,
+        include: [
+          {
+            association: ImageAssociation.display,
+            include: [
+              { association: FileAssociation.uploader, }
+            ],
+          },
+          {
+            association: ImageAssociation.original,
+            include: [
+              { association: FileAssociation.uploader, }
+            ],
+          },
+          {
+            association: ImageAssociation.thumbnail,
+            include: [
+              { association: FileAssociation.uploader, }
+            ],
+          },
+        ],
+      },
+    ];
+  }
+
+
+  /**
+   * Default primes
+   */
+  protected _prime(arg: {
+    model: BlogPostModel,
+  }): void {
+    const { ctx } = this;
+    const { model } = arg;
+    // prime statuses...
+    const status = assertDefined(model.status);
+    this.ctx.loader.blogPostStatus.prime(status.id, status);
+
+    // prime authors...
+    const author = assertDefined(model.author);
+    ctx.loader.users.prime(author.id, author);
+
+    // prime images
+    const image = model.image;
+    if (model.image_id) { ctx.loader.images.prime(model.image_id, image ?? null); }
+    if (image) {
+      if (image.original) {
+        // prime original
+        ctx.loader.files.prime(image.original.id, image.original);
+        if (image.original.uploader) {
+          // prime original uploader
+          ctx.loader.users.prime(image.original.uploader.id, image.original.uploader);
+        }
+      }
+
+      if (image.thumbnail) {
+        // prime thumbnails
+        ctx.loader.files.prime(image.thumbnail.id, image.thumbnail);
+        if (image.thumbnail.uploader) {
+          // prime thumbnail uploader
+          ctx.loader.users.prime(image.thumbnail.uploader.id, image.thumbnail.uploader);
+        }
+      }
+
+      if (image.display) {
+        // prime displays
+        ctx.loader.files.prime(image.display.id, image.display);
+        if (image.display.uploader) {
+          // prime display uploader
+          ctx.loader.users.prime(image.display.uploader.id, image.display.uploader);
+        }
+      }
+    }
+  }
+
+  /**
+   * Get a fresh, deeply hydrated model & primed model
+   */
+  async fresh(arg: { 
+    model: BlogPostModel
+  }): Promise<OrNull<BlogPostModel>> {
+    const { model } = arg;
+    const reprimed = await this.findByPk(
+      model.id,
+      {
+        runner: null,
+        unscoped: true,
+        options: {
+          include: this._includes(),
+        },
+      },
+    );
+
+    if (!reprimed) return null;
+    this._prime({ model: reprimed });
+    return reprimed;
   }
 
 
@@ -48,24 +157,13 @@ export class BlogPostRepository extends BaseRepository<BlogPostModel> {
         include: concatIncludables([
           include,
           queryOptions.include,
-          [
-            { association: BlogPostAssociation.status, },
-            { association: BlogPostAssociation.author, },
-          ],
+          this._includes(),
         ]),
       },
     });
     const pagination = collectionMeta({ data: rows, total: count, page });
 
-    // prime statuses...
-    rows
-      .map(row => assertDefined(row.status))
-      .forEach(status => ctx.loader.blogPostStatus.prime(status.id, status));
-
-    // prime authors...
-    rows
-      .map(row => assertDefined(row.author))
-      .forEach(author => ctx.loader.users.prime(author.id, author));
+    rows.forEach(row => this._prime({ model: row }));
 
     const connection: IBlogPostCollectionGqlNodeSource = {
       models: rows.map((model): OrNull<BlogPostModel> =>

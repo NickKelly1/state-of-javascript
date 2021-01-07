@@ -94,7 +94,7 @@ export class RedisService {
    */
   protected async _up(): Promise<void> {
     const options: IORedis.RedisOptions = {
-      password: this.universal.env.REDIS_PSW,
+      password: this.universal.env.REDIS_PASSWORD,
       host: this.universal.env.REDIS_HOST,
       port: this.universal.env.REDIS_PORT,
     };

@@ -6,7 +6,7 @@ import { createSequelize, } from './app/db/create-sequelize';
 import { logger, } from './common/logger/logger';
 import { initialiseDb } from './initialise-db';
 import { prettyQ } from './common/helpers/pretty.helper';
-import { IGoogleIntegrationServiceSendEmailDto } from './app/google/dtos/google.service.send-email-dto';
+import { IGoogleServiceSendEmailDto } from './app/google/dtos/google.service.send-email-dto';
 import { Integration } from './app/integration/integration.const';
 import { JobRunnerFactory } from './common/helpers/jb.helper';
 import { CronTickHandlerFactory, ICronTickHandlerFnArg } from './common/helpers/cron-tick-handler.helper';
@@ -24,38 +24,36 @@ export async function bootServices(arg: { env: EnvService, }): Promise<IUniversa
   const universal = new UniversalSerivceContainer(env, sequelize);
   await universal.init();
 
-  /**
-   * Emails
-   * 
-   * TODO: put this elsewhere...
-   */
-  const jr = JobRunnerFactory(universal);
-  universal.queueService.email.process(jr(async ({ ctx, job }) => {
-    logger.info(`Processing email:\n${prettyQ(job.data)}`);
-    await ctx.services.universal.db.transact(async ({ runner }) => {
-      const serviceDto: IGoogleIntegrationServiceSendEmailDto = {
-        to: job.data.to,
-        body: job.data.body,
-        subject: job.data.subject,
-        cc: job.data.cc,
-      };
-      const model = await ctx
-        .services
-        .integrationRepository
-        .findByPkOrfail(Integration.Google, { runner, });
-      await ctx.services.googleService.sendEmail({
-        runner,
-        dto: serviceDto,
-        model,
-      });
-    });
-  }));
+  // /**
+  //  * Emails
+  //  * 
+  //  * TODO: put this elsewhere...
+  //  */
+  // const jr = JobRunnerFactory(universal);
+  // universal.queueService.email.process(jr(async ({ ctx, job }) => {
+  //   logger.info(`Processing email:\n${prettyQ(job.data)}`);
+  //   await ctx.services.universal.db.transact(async ({ runner }) => {
+  //     const serviceDto: IGoogleServiceSendEmailDto = {
+  //       to: job.data.to,
+  //       body: job.data.body,
+  //       subject: job.data.subject,
+  //       cc: job.data.cc,
+  //     };
+  //     const model = await ctx
+  //       .services
+  //       .integrationRepository
+  //       .findByPkOrfail(Integration.Google, { runner, });
+  //     await ctx.services.googleService.sendEmail({
+  //       runner,
+  //       dto: serviceDto,
+  //       model,
+  //     });
+  //   });
+  // }));
 
 
   /**
    * Cron
-   * 
-   * TODO: put this elsewhere...
    */
   if (env.MASTER) {
     const onTick = CronTickHandlerFactory(universal);

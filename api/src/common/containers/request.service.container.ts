@@ -39,6 +39,7 @@ import { NpmsDashboardStatusPolicy } from "../../app/npms-dashboard-status/npms-
 import { NpmsDashboardStatusRepository } from "../../app/npms-dashboard-status/npms-dashboard-status.repository";
 import { NpmsDashboardStatusService } from "../../app/npms-dashboard-status/npms-dashboard-status.service";
 import { EmailService } from "../../app/email/email.service";
+import { EmailPolicy } from "../../app/email/email.policy";
 import { IntegrationRepository } from "../../app/integration/integration.repository";
 import { IntegrationPolicy } from "../../app/integration/integration.policy";
 import { IntegrationService } from "../../app/integration/integration.service";
@@ -68,6 +69,12 @@ import { BaseContext } from "../context/base.context";
 import { AuthPolicy } from '../../app/user/auth.policy';
 import { UserEmailPolicy } from '../../app/user/user-email.policy';
 import { UserEmailService } from "../../app/user/user-email.service";
+import { FileService } from "../../app/file/file.service";
+import { FileRepository } from "../../app/file/file.repository";
+import { ImageService } from "../../app/image/image.service";
+import { ImageRepository } from "../../app/image/image.repository";
+import { ImagePolicy } from "../../app/image/image.policy";
+import { FilePolicy } from "../../app/file/file.policy";
 
 export class RequestSerivceContainer implements IRequestServices {
   constructor(
@@ -504,6 +511,48 @@ export class RequestSerivceContainer implements IRequestServices {
     return this._authService;
   }
 
+  protected _fileService: OrUndefined<FileService>
+  get fileService(): FileService {
+    if (this._fileService) return this._fileService;
+    this._fileService = new FileService(this._ctx);
+    return this._fileService;
+  }
+
+  protected _fileRepository: OrUndefined<FileRepository>
+  get fileRepository(): FileRepository {
+    if (this._fileRepository) return this._fileRepository;
+    this._fileRepository = new FileRepository(this._ctx);
+    return this._fileRepository;
+  }
+
+  protected _filePolicy: OrUndefined<FilePolicy>
+  get filePolicy(): FilePolicy {
+    if (this._filePolicy) return this._filePolicy;
+    this._filePolicy = new FilePolicy(this._ctx);
+    return this._filePolicy;
+  }
+
+  protected _imageService: OrUndefined<ImageService>
+  get imageService(): ImageService {
+    if (this._imageService) return this._imageService;
+    this._imageService = new ImageService(this._ctx);
+    return this._imageService;
+  }
+
+  protected _imageRepository: OrUndefined<ImageRepository>
+  get imageRepository(): ImageRepository {
+    if (this._imageRepository) return this._imageRepository;
+    this._imageRepository = new ImageRepository(this._ctx);
+    return this._imageRepository;
+  }
+
+  protected _imagePolicy: OrUndefined<ImagePolicy>
+  get imagePolicy(): ImagePolicy {
+    if (this._imagePolicy) return this._imagePolicy;
+    this._imagePolicy = new ImagePolicy(this._ctx);
+    return this._imagePolicy;
+  }
+
   protected _googleService: OrUndefined<GoogleService>
   get googleService(): GoogleService {
     if (this._googleService) return this._googleService;
@@ -537,5 +586,12 @@ export class RequestSerivceContainer implements IRequestServices {
     if (this._emailService) return this._emailService;
     this._emailService = new EmailService(this._ctx);
     return this._emailService;
+  }
+
+  protected _emailPolicy: OrUndefined<EmailPolicy>
+  get emailPolicy(): EmailPolicy {
+    if (this._emailPolicy) return this._emailPolicy;
+    this._emailPolicy = new EmailPolicy(this._ctx);
+    return this._emailPolicy;
   }
 }

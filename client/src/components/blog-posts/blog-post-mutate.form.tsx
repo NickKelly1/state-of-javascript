@@ -3,65 +3,40 @@ import {
   Button,
   Grid,
   IconButton,
-  LinearProgress,
-  ListItemIcon,
-  ListItemText,
   makeStyles,
-  Menu,
   Paper,
   Switch,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@material-ui/core";
 import { Icons } from '../icons/icons.const';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDownOutlined';
-import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUpOutlined';
-import SaveIcon from '@material-ui/icons/SaveOutlined';
-import NextLink from 'next/link';
-import MUILink from '@material-ui/core/Link';
 import React, {
   ChangeEventHandler,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
-import { Markdown } from "../markdown/markdown";
 import { OrNullable } from "../../types/or-nullable.type";
 import { ist } from "../../helpers/ist.helper";
 import { Debounce } from "../../helpers/debounce.helper";
 import { _ls } from "../../helpers/_ls.helper";
 import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
-import { ExceptionButton } from "../exception-button/exception-button.helper";
 import {
-  AllBlogPostActionsFragment,
-  AllBlogPostDataFragment,
   BlogPostCreateMutation,
   BlogPostCreateMutationVariables,
   BlogPostUpdateMutation,
   BlogPostUpdateMutationVariables,
-  BlogPostSubmitMutation,
-  BlogPostSubmitMutationVariables,
-  BlogPostRejectMutation,
-  BlogPostRejectMutationVariables,
-  BlogPostApproveMutation,
-  BlogPostApproveMutationVariables,
-  BlogPostPublishMutation,
-  BlogPostPublishMutationVariables,
-  BlogPostUnpublishMutation,
-  BlogPostUnpublishMutationVariables,
-  BlogPostSoftDeleteMutation,
-  BlogPostSoftDeleteMutationVariables,
-  BlogPostHardDeleteMutation,
-  BlogPostHardDeleteMutationVariables,
-  BlogPostRestoreMutation,
-  BlogPostRestoreMutationVariables,
-  AllBlogPostStatusDataFragment,
+  BlogPostActionsFragment,
+  BlogPostDataFragment,
+  BlogPostStatusDataFragment,
+  UserDataFragment,
+  ImageDataFragment,
+  FileDataFragment,
 } from "../../generated/graphql";
-import { useMutation } from "react-query";
-import { gql } from "graphql-request";
-import { allUserDataFragment } from "../users/user.data.fragment";
-import { allBlogPostActionsFragment } from "./blog-post.actions.fragment";
-import { allBlogPostDataFragment } from "./blog-post.data.fragment";
+import { useMutation, useQuery } from "react-query";
 import { OrNull } from "../../types/or-null.type";
 import { ApiException } from "../../backend-api/api.exception";
 import { useSubmitForm } from "../../hooks/use-submit-form.hook";
@@ -69,269 +44,17 @@ import { useDialog } from "../../hooks/use-dialog.hook";
 import { useSnackbar } from "notistack";
 import { LoadingDialog } from "../loading-dialog/loading-dialog";
 import { useThemeColours } from "../../hooks/use-theme-colours.hook";
-import { MenuItem } from "@material-ui/core";
 import { useRouter } from "next/router";
-import { allBlogPostStatusDataFragment } from "../blog-post-statuses/blog-post-status.data.fragment";
-import { allBlogPostStatusActionsFragment } from "../blog-post-statuses/blog-post-status.actions.fragment";
 import { hidex } from "../../helpers/hidden.helper";
-
-
-// query can be used elsewhere in parents...
-export const blogPostMutateFormQueryName = 'BlogPostMutateFormQuery';
-export const blogPostMutateFormQuery = gql`
-query BlogPostMutateForm(
-  $blog_post_id:Float!
-){
-  blogPosts(
-    query:{
-      offset:0
-      limit:1
-      filter:{
-        attr:{
-          id:{
-            eq:$blog_post_id
-          }
-        }
-      }
-    }
-  ){
-    nodes{
-      cursor
-      data{ ...AllBlogPostData }
-      can{ ...AllBlogPostActions }
-      relations{
-        author{
-          data{ ...AllUserData }
-        }
-        status{
-          data{ ...AllBlogPostStatusData }
-          can{ ...AllBlogPostStatusActions }
-        }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allUserDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`;
-
-const blogPostUpdateMutation = gql`
-mutation BlogPostUpdate(
-  $id:Int!
-  $title:String
-  $teaser:String
-  $body:String
-){
-  updateBlogPost(
-    dto:{
-      id:$id
-      title:$title
-      teaser:$teaser
-      body:$body
-    }
-  ){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`
-
-const blogPostCreateMutation = gql`
-mutation BlogPostCreate(
-  $title:String!
-  $teaser:String!
-  $body:String!
-){
-  createBlogPost(
-    dto:{
-      title:$title
-      teaser:$teaser
-      body:$body
-    }
-  ){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`
-
-const blogPostSoftDeleteMutation = gql`
-mutation BlogPostSoftDelete(
-  $id:Int!
-){
-  softDeleteBlogPost(dto:{id:$id}){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`;
-
-const blogPostHardDeleteMutation = gql`
-mutation BlogPostHardDelete(
-  $id:Int!
-){
-  hardDeleteBlogPost(dto:{id:$id})
-}
-`;
-
-const blogPostRestoreMutation = gql`
-mutation BlogPostRestore(
-  $id:Int!
-){
-  restoreBlogPost(dto:{id:$id}){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`;
-
-const blogPostSubmitMutation = gql`
-mutation BlogPostSubmit(
-  $id:Int!
-){
-  submitBlogPost(dto:{id:$id}){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`;
-
-const blogPostRejectMutation = gql`
-mutation BlogPostReject(
-  $id:Int!
-){
-  rejectBlogPost(dto:{id:$id}){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`;
-
-const blogPostApproveMutation = gql`
-mutation BlogPostApprove(
-  $id:Int!
-){
-  approveBlogPost(dto:{id:$id}){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`;
-
-const blogPostPublishMutation = gql`
-mutation BlogPostPublish(
-  $id:Int!
-){
-  publishBlogPost(dto:{id:$id}){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`;
-
-const blogPostUnpublishMutation = gql`
-mutation BlogPostUnpublish(
-  $id:Int!
-){
-  unpublishBlogPost(dto:{id:$id}){
-    data{ ...AllBlogPostData }
-    can{ ...AllBlogPostActions }
-    relations{
-      status{
-        data{ ...AllBlogPostStatusData }
-        can{ ...AllBlogPostStatusActions }
-      }
-    }
-  }
-}
-${allBlogPostActionsFragment}
-${allBlogPostDataFragment}
-${allBlogPostStatusDataFragment}
-${allBlogPostStatusActionsFragment}
-`;
+import { JsonDialog } from "../debug-json-dialog/json-dialog";
+import { OrUndefined } from "../../types/or-undefined.type";
+import { IImagePickerFallback, ImagePicker } from "../image-picker/image-picker";
+import { blogPostMutateToFormData, createBlogPostMutateDropdownList } from "./blog-post-mutate.dropdown";
+import { ActionDropdown } from "../../action-dropdown/action.dropdown";
+import { BLOG_POST_CREATE_MUTATION, BLOG_POST_UPDATE_MUTATION } from "./blog-post-mutate.queries";
+import { useDebugMode } from "../../components-contexts/debug-mode.context";
+import { useUpdate } from "../../hooks/use-update.hook";
+import { useAsyncify } from "../../hooks/use-asyncify.hook";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -353,12 +76,20 @@ const useStyles = makeStyles((theme) => ({
   markdownContainer: {
     paddingTop: '1em',
   },
+  fab: {
+    margin: theme.spacing(2),
+  },
 }));
 
 export interface IBlogPostMutateFormData {
-  data: AllBlogPostDataFragment;
-  can: AllBlogPostActionsFragment;
-  statusData: OrNullable<AllBlogPostStatusDataFragment>;
+  data: BlogPostDataFragment;
+  can: BlogPostActionsFragment;
+  statusData: OrNullable<BlogPostStatusDataFragment>;
+  author: OrNullable<UserDataFragment>;
+  image: OrNullable<ImageDataFragment>;
+  thumbnail: OrNullable<FileDataFragment>;
+  original: OrNullable<FileDataFragment>;
+  display: OrNullable<FileDataFragment>;
 }
 
 export interface IBlogPostMutateFormProps {
@@ -370,7 +101,6 @@ const _ls_blog_post_draft = {
   teaser: '_lsbp_teaser',
   body: '_lsbp_body',
 } as const;
-
 
 export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
   const {
@@ -390,11 +120,24 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
   }));
   const [autoSave, setAutoSave] = useState(true);
   const [current, setCurrent] = useState<OrNull<IBlogPostMutateFormData>>(initial ?? null);
-  interface IFormState { title: string; teaser: string; body: string; }
+  const handlePartialUpdate = useCallback((next: IBlogPostMutateFormData) => {
+    setCurrent((prev) => prev ? ({ ...prev, can: next.can, statusData: next.statusData, }) : next);
+  }, [setCurrent]);
+  useUpdate(() => { initial && handlePartialUpdate(initial); }, [initial]);
+
+  interface IFormState {
+    title: string;
+    teaser: string;
+    body: string;
+    // todo... image
+    image: OrUndefined<File>;
+  }
   const [formState, setFormState] = useState<IFormState>(() => ({
     title: initial?.data.title ?? '',
     teaser: initial?.data.teaser ?? '',
     body: initial?.data.body ?? '',
+    // todo... image
+    image: undefined,
   }));
   // eslint-disable-next-line @typescript-eslint/no-inferrable-types
   let isDisabled: boolean = false;
@@ -417,25 +160,19 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
 
   const handleTitleChange: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = (evt) => {
     const _title = evt.target.value;
-    if (ist.nullable(current?.data.id)) {
-      lsDebounce.title.set(() => _ls?.setItem(_ls_blog_post_draft.title, _title,));
-    }
+    if (ist.nullable(current?.data.id)) { lsDebounce.title.set(() => _ls?.setItem(_ls_blog_post_draft.title, _title,)); }
     setTitle(_title);
   }
 
   const handleTeaserChange: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = (evt) => {
     const _teaser = evt.target.value;
-    if (ist.nullable(current?.data.id)) {
-      lsDebounce.teaser.set(() => _ls?.setItem(_ls_blog_post_draft.teaser, _teaser));
-    }
+    if (ist.nullable(current?.data.id)) { lsDebounce.teaser.set(() => _ls?.setItem(_ls_blog_post_draft.teaser, _teaser)); }
     setTeaser(_teaser);
   }
 
   const handleBodyChange: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = (evt) => {
     const _body = evt.target.value;
-    if (ist.nullable(current?.data.id)) {
-      lsDebounce.body.set(() => _ls?.setItem(_ls_blog_post_draft.body, _body));
-    }
+    if (ist.nullable(current?.data.id)) { lsDebounce.body.set(() => _ls?.setItem(_ls_blog_post_draft.body, _body)); }
     setBody(_body);
   }
 
@@ -446,39 +183,37 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
   const [doMutate, mutateState] = useMutation<IBlogPostMutateFormData, ApiException>(
     async (): Promise<IBlogPostMutateFormData> => {
       if (current?.data.id) {
+
         // update
         const vars: BlogPostUpdateMutationVariables = {
           id: current.data.id,
           title: formState.title,
           teaser: formState.teaser,
           body: formState.body,
+          // image: formState.image,
         };
         const result = await api.gql<BlogPostUpdateMutation, BlogPostUpdateMutationVariables>(
-          blogPostUpdateMutation,
+          BLOG_POST_UPDATE_MUTATION,
           vars
         );
-        return {
-          can: result.updateBlogPost.can,
-          data: result.updateBlogPost.data,
-          statusData: result.updateBlogPost.relations.status?.data,
-        };
+        return blogPostMutateToFormData(result.updateBlogPost);
       }
 
       // create
+      const image = formState.image;
+      if (!image) throw ApiException({ code: -1, message: 'No image' });
+
       const vars: BlogPostCreateMutationVariables = {
         title: formState.title,
         teaser: formState.teaser,
         body: formState.body,
+        image,
       };
       const result = await api.gql<BlogPostCreateMutation, BlogPostCreateMutationVariables>(
-        blogPostCreateMutation,
+        BLOG_POST_CREATE_MUTATION,
         vars
       );
-      return {
-        can: result.createBlogPost.can,
-        data: result.createBlogPost.data,
-        statusData: result.createBlogPost.relations.status?.data,
-      };
+      return blogPostMutateToFormData(result.createBlogPost);
     },
     {
       onMutate: loadingDialog.doOpen,
@@ -496,7 +231,7 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
         enqueueSnackbar(`Saved Blog Post "${success.data.title}"`, { variant: 'success', });
         if (ist.nullable(current?.data.id)) {
           // on create
-          const editRoute = `/posts/edit/${success.data.id}`;
+          const editRoute = `/admin/posts/edit/${success.data.id}`;
           router.push(editRoute);
         } else {
           // on update
@@ -505,275 +240,23 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
       },
     },
   );
-  isLoading = mutateState.isLoading || isLoading ;
-  isDisabled = mutateState.isLoading || isDisabled ;
+  isLoading = mutateState.isLoading || isLoading;
+  isDisabled = mutateState.isLoading || isDisabled;
   error = mutateState.error || error ;
 
-  // ------------
-  // submit
-  // ------------
-
-  const [doSubmit, submitState] = useMutation<IBlogPostMutateFormData, ApiException>(
-    async (): Promise<IBlogPostMutateFormData> => {
-      if (!current?.data.id) throw ApiException({ code: -1, message: 'No id', });
-      const vars: BlogPostSubmitMutationVariables = { id: current.data.id, };
-      const result = await api.gql<BlogPostSubmitMutation, BlogPostSubmitMutationVariables>(
-        blogPostSubmitMutation,
-        vars,
-      );
-      return {
-        can: result.submitBlogPost.can,
-        data: result.submitBlogPost.data,
-        statusData: result.submitBlogPost.relations.status?.data,
-      };
-    },
-    {
-      onMutate: loadingDialog.doOpen,
-      onSettled: loadingDialog.doClose,
-      onError: (fail) => void enqueueSnackbar(`Failed to Submit Blog Post: ${fail.message}`, { variant: 'error', }),
-      onSuccess: (success) => {
-        enqueueSnackbar(`Submitted Blog Post "${success.data.title}"`, { variant: 'success', });
-        setCurrent(success);
-      },
-    },
-  );
-  isLoading = submitState.isLoading || isLoading ;
-  isDisabled = submitState.isLoading || isDisabled ;
-  error = submitState.error || error ;
-  hasExtraActions = current?.can.submit || hasExtraActions;
-  const handleSubmitClicked = useCallback(() => doSubmit(), [doSubmit]);
-
-  // ------------
-  // reject
-  // ------------
-  const [doReject, rejectState] = useMutation<IBlogPostMutateFormData, ApiException>(
-    async (): Promise<IBlogPostMutateFormData> => {
-      if (!current?.data.id) throw ApiException({ code: -1, message: 'No id', });
-      const vars: BlogPostRejectMutationVariables = { id: current.data.id, };
-      const result = await api.gql<BlogPostRejectMutation, BlogPostRejectMutationVariables>(
-        blogPostRejectMutation,
-        vars,
-      );
-      return {
-        can: result.rejectBlogPost.can,
-        data: result.rejectBlogPost.data,
-        statusData: result.rejectBlogPost.relations.status?.data,
-      };
-    },
-    {
-      onMutate: loadingDialog.doOpen,
-      onSettled: loadingDialog.doClose,
-      onError: (fail) => void enqueueSnackbar(`Failed to Reject Blog Post: ${fail.message}`, { variant: 'error', }),
-      onSuccess: (success) => {
-        enqueueSnackbar(`Rejected Blog Post "${success.data.title}"`, { variant: 'success', });
-        setCurrent(success);
-      },
-    },
-  );
-  isLoading = rejectState.isLoading || isLoading;
-  isDisabled = rejectState.isLoading || isDisabled;
-  error = rejectState.error || error;
-  hasExtraActions = current?.can.reject || hasExtraActions;
-  const handleRejectClicked = useCallback(() => doReject(), [doReject]);
-
-  // ------------
-  // approve
-  // ------------
-  const [doApprove, approveState] = useMutation<IBlogPostMutateFormData, ApiException>(
-    async (): Promise<IBlogPostMutateFormData> => {
-      if (!current?.data.id) throw ApiException({ code: -1, message: 'No id', });
-      const vars: BlogPostApproveMutationVariables = { id: current.data.id, };
-      const result = await api.gql<BlogPostApproveMutation, BlogPostApproveMutationVariables>(
-        blogPostApproveMutation,
-        vars,
-      );
-      return {
-        can: result.approveBlogPost.can,
-        data: result.approveBlogPost.data,
-        statusData: result.approveBlogPost.relations.status?.data,
-      };
-    },
-    {
-      onMutate: loadingDialog.doOpen,
-      onSettled: loadingDialog.doClose,
-      onError: (fail) => void enqueueSnackbar(`Failed to Approve Blog Post: ${fail.message}`, { variant: 'error', }),
-      onSuccess: (success) => {
-        enqueueSnackbar(`Approved Blog Post "${success.data.title}"`, { variant: 'success', });
-        setCurrent(success);
-      },
-    },
-  );
-  isLoading = approveState.isLoading || isLoading;
-  isDisabled = approveState.isLoading || isDisabled;
-  error = approveState.error || error;
-  hasExtraActions = current?.can.approve || hasExtraActions;
-  const handleApproveClicked = useCallback(() => doApprove(), [doApprove]);
-
-  // ------------
-  // publish
-  // ------------
-  const [doPublish, publishState] = useMutation<IBlogPostMutateFormData, ApiException>(
-    async (): Promise<IBlogPostMutateFormData> => {
-      if (!current?.data.id) throw ApiException({ code: -1, message: 'No id', });
-      const vars: BlogPostPublishMutationVariables = { id: current.data.id, };
-      const result = await api.gql<BlogPostPublishMutation, BlogPostPublishMutationVariables>(
-        blogPostPublishMutation,
-        vars,
-      );
-      return {
-        can: result.publishBlogPost.can,
-        data: result.publishBlogPost.data,
-        statusData: result.publishBlogPost.relations.status?.data,
-      };
-    },
-    {
-      onMutate: loadingDialog.doOpen,
-      onSettled: loadingDialog.doClose,
-      onError: (fail) => void enqueueSnackbar(`Failed to Publish Blog Post: ${fail.message}`, { variant: 'error', }),
-      onSuccess: (success) => {
-        enqueueSnackbar(`Publishd Blog Post "${success.data.title}"`, { variant: 'success', });
-        setCurrent(success);
-      },
-    },
-  );
-  isLoading = publishState.isLoading || isLoading;
-  isDisabled = publishState.isLoading || isDisabled;
-  error = publishState.error || error;
-  hasExtraActions = current?.can.publish || hasExtraActions;
-  const handlePublishClicked = useCallback(() => doPublish(), [doPublish]);
-
-  // ------------
-  // unpublish
-  // ------------
-
-  const [doUnpublish, unpublishState] = useMutation<IBlogPostMutateFormData, ApiException>(
-    async (): Promise<IBlogPostMutateFormData> => {
-      if (!current?.data.id) throw ApiException({ code: -1, message: 'No id', });
-      const vars: BlogPostUnpublishMutationVariables = { id: current.data.id, };
-      const result = await api.gql<BlogPostUnpublishMutation, BlogPostUnpublishMutationVariables>(
-        blogPostUnpublishMutation,
-        vars,
-      );
-      return {
-        can: result.unpublishBlogPost.can,
-        data: result.unpublishBlogPost.data,
-        statusData: result.unpublishBlogPost.relations.status?.data,
-      };
-    },
-    {
-      onMutate: loadingDialog.doOpen,
-      onSettled: loadingDialog.doClose,
-      onError: (fail) => void enqueueSnackbar(`Failed to Unpublish Blog Post: ${fail.message}`, { variant: 'error', }),
-      onSuccess: (success) => {
-        enqueueSnackbar(`Unpublishd Blog Post "${success.data.title}"`, { variant: 'success', });
-        setCurrent(success);
-      },
-    },
-  );
-  isLoading = unpublishState.isLoading || isLoading;
-  isDisabled = unpublishState.isLoading || isDisabled;
-  error = unpublishState.error || error;
-  hasExtraActions = current?.can.unpublish || hasExtraActions;
-  const handleUnpublishClicked = useCallback(() => doUnpublish(), [doUnpublish]);
-
-  // ------------
-  // soft-delete
-  // ------------
-
-  const [doSoftDelete, softDeleteState] = useMutation<IBlogPostMutateFormData, ApiException>(
-    async (): Promise<IBlogPostMutateFormData> => {
-      if (!current?.data.id) throw ApiException({ code: -1, message: 'No id', });
-      const vars: BlogPostSoftDeleteMutationVariables = { id: current.data.id, };
-      const result = await api.gql<BlogPostSoftDeleteMutation, BlogPostSoftDeleteMutationVariables>(
-        blogPostSoftDeleteMutation,
-        vars,
-      );
-      return {
-        can: result.softDeleteBlogPost.can,
-        data: result.softDeleteBlogPost.data,
-        statusData: result.softDeleteBlogPost.relations.status?.data,
-      };
-    },
-    {
-      onMutate: loadingDialog.doOpen,
-      onSettled: loadingDialog.doClose,
-      onError: (fail) => void enqueueSnackbar(`Failed to SoftDelete Blog Post: ${fail.message}`, { variant: 'error', }),
-      onSuccess: (success) => {
-        enqueueSnackbar(`SoftDeleted Blog Post "${success.data.title}"`, { variant: 'success', });
-        setCurrent(success);
-      },
-    },
-  );
-  isLoading = softDeleteState.isLoading || isLoading;
-  isDisabled = softDeleteState.isLoading || isDisabled;
-  error = softDeleteState.error || error;
-  hasExtraActions = current?.can.softDelete || hasExtraActions;
-  const handleSoftDeleteClicked = useCallback(() => doSoftDelete(), [doSoftDelete]);
-
-  // ------------
-  // hard-delete
-  // ------------
-
-  const [doHardDelete, hardDeleteState] = useMutation<boolean, ApiException>(
-    async (): Promise<boolean> => {
-      if (!current?.data.id) throw ApiException({ code: -1, message: 'No id', });
-      const vars: BlogPostHardDeleteMutationVariables = { id: current.data.id, };
-      const result = await api.gql<BlogPostHardDeleteMutation, BlogPostHardDeleteMutationVariables>(
-        blogPostHardDeleteMutation,
-        vars,
-      );
-      return result.hardDeleteBlogPost;
-    },
-    {
-      onMutate: loadingDialog.doOpen,
-      onSettled: loadingDialog.doClose,
-      onError: (fail) => void enqueueSnackbar(`Failed to HardDelete Blog Post: ${fail.message}`, { variant: 'error', }),
-      onSuccess: () => {
-        enqueueSnackbar(`HardDeleted Blog Post`, { variant: 'success', });
-        router.push('/posts');
-      },
-    },
-  );
-  isLoading = hardDeleteState.isLoading || isLoading;
-  isDisabled = hardDeleteState.isLoading || isDisabled;
-  error = hardDeleteState.error || error;
-  hasExtraActions = current?.can.hardDelete || hasExtraActions;
-  const handleHardDeleteClicked = useCallback(() => doHardDelete(), [doHardDelete]);
-
-  // ------------
-  // restore
-  // ------------
-
-  const [doRestore, restoreState] = useMutation<IBlogPostMutateFormData, ApiException>(
-    async (): Promise<IBlogPostMutateFormData> => {
-      if (!current?.data.id) throw ApiException({ code: -1, message: 'No id', });
-      const vars: BlogPostRestoreMutationVariables = { id: current.data.id, };
-      const result = await api.gql<BlogPostRestoreMutation, BlogPostRestoreMutationVariables>(
-        blogPostRestoreMutation,
-        vars,
-      );
-      return {
-        can: result.restoreBlogPost.can,
-        data: result.restoreBlogPost.data,
-        statusData: result.restoreBlogPost.relations.status?.data,
-      };
-    },
-    {
-      onMutate: loadingDialog.doOpen,
-      onSettled: loadingDialog.doClose,
-      onError: (fail) => void enqueueSnackbar(`Failed to Restore Blog Post: ${fail.message}`, { variant: 'error', }),
-      onSuccess: (success) => {
-        enqueueSnackbar(`Restored Blog Post "${success.data.title}"`, { variant: 'success', });
-        setCurrent(success);
-      },
-    },
-  );
-  isLoading = restoreState.isLoading || isLoading;
-  isDisabled = restoreState.isLoading || isDisabled;
-  error = restoreState.error || error;
-  hasExtraActions = current?.can.restore || hasExtraActions;
-  const handleRestoreClicked = useCallback(() => doRestore(), [doRestore]);
-
+  const dropdownList = useMemo(() =>
+    current?.data.id
+      ? createBlogPostMutateDropdownList({
+        can: current.can,
+        globalCan: me.can,
+        api,
+        id: current.data.id,
+        enqueueSnackbar,
+        onUpdated: handlePartialUpdate,
+        router,
+      })
+      : null
+    , [current, me, handlePartialUpdate, enqueueSnackbar,]);
 
   // -----------------
 
@@ -781,115 +264,62 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
 
   // -----------------
 
-  /**
-   * Menu
-   */
-  const themeColours = useThemeColours();
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const handleMenuClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => { setMenuAnchor(evt.currentTarget); }, []);
-  const handleMenuClose = useCallback(() => { setMenuAnchor(null); }, []);
-
   const saveIsDisabled = isDisabled || !(initial?.can.update || me.can?.blogPosts.create);
+
+  const debugDialog = useDialog();
+  const debugMode = useDebugMode();
+  const debugData = useMemo(
+    () => ({ current, formState, }),
+    [current, formState],
+  );
+
+  const theme = useTheme();
+  const is_xs = useMediaQuery(theme.breakpoints.down('xs'));
+
+  const formerImage = useQuery<undefined | IImagePickerFallback, ApiException>(
+    [me.hash, current?.display],
+    async () => {
+      if (!current?.display) return undefined;
+      const blob = await api
+        .http(`/blog-posts/${current.data.id}/display`, { method: 'GET' })
+        .then(result => result.blob());
+      // remember the blob so it doesn't get GC'd
+      // TODO: don't think __remember is actually required...
+      return { __remember: blob, src: URL.createObjectURL(blob) };
+    },
+    { refetchOnWindowFocus: false, },
+  )
 
   return (
     <>
       <LoadingDialog title="Loading..." dialog={loadingDialog} />
+      <JsonDialog title={"Form"} dialog={debugDialog} data={debugData} />
       <Grid className={classes.root} container spacing={2}>
         <Grid item xs={12}>
           <Paper className={classes.paper}>
             <form onSubmit={handleFormSubmitted}>
               <Grid container spacing={2}>
-                {/* settings & actions */}
-                <Grid item xs={12} sm={12}>
-                  <Box display="flex" justifyContent="flex-start" alignItems="center">
-                    <Box mr="1" display="flex" justifyContent="flex-start" alignItems="between" textAlign="center">
-                      <Typography className="centered" component="span" variant="body2">
-                        autosave
-                      </Typography>
-                      <Switch
-                        color="primary"
-                        checked={autoSave}
-                        onChange={() => setAutoSave(!autoSave)}
-                        name="Auto save"
-                        inputProps={{ 'aria-label': 'auto save' }}
-                      />
-                    </Box>
-                    <Box mr={1}>
-                      <IconButton
-                        disabled={saveIsDisabled}
-                        type="submit"
-                        color="primary"
-                      >
-                        <SaveIcon />
-                      </IconButton>
-                    </Box>
-                    <Box mr={1}>
-                      <Button
-                        startIcon={menuAnchor ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
-                        variant="outlined"
-                        color="primary"
-                        onClick={handleMenuClick}
-                        disabled={!hasExtraActions}
-                      >
-                        More Actions
-                      </Button>
-                    </Box>
-                    <Menu
-                      anchorEl={menuAnchor}
-                      onClose={handleMenuClose}
-                      open={!!menuAnchor}
-                      keepMounted
-                    >
-                      <>
-                        <MenuItem disabled={isDisabled || !current?.can.show}>
-                          <NextLink href={`/blog/view/${current?.data.id}`} passHref>
-                            <MUILink className="btn-link centered row" color="inherit">
-                              <ListItemIcon className={themeColours.primary}><Icons.View /></ListItemIcon>
-                              <ListItemText className={themeColours.primary}>View</ListItemText>
-                            </MUILink>
-                          </NextLink>
-                        </MenuItem>
-                        <MenuItem disabled={isDisabled || !current?.can.submit} onClick={handleSubmitClicked}>
-                          <ListItemIcon className={themeColours.primary}><Icons.Submit /></ListItemIcon>
-                          <ListItemText className={themeColours.primary}>Submit</ListItemText>
-                        </MenuItem>
-                        <MenuItem disabled={isDisabled || !current?.can.reject} onClick={handleRejectClicked}>
-                          <ListItemIcon className={themeColours.warning}><Icons.Reject /></ListItemIcon>
-                          <ListItemText className={themeColours.warning}>Reject</ListItemText>
-                        </MenuItem>
-                        <MenuItem disabled={isDisabled || !current?.can.approve} onClick={handleApproveClicked}>
-                          <ListItemIcon className={themeColours.success}><Icons.Approve /></ListItemIcon>
-                          <ListItemText className={themeColours.success}>Approve</ListItemText>
-                        </MenuItem>
-                        <MenuItem disabled={isDisabled || !current?.can.publish} onClick={handlePublishClicked}>
-                          <ListItemIcon className={themeColours.success}><Icons.Publish /></ListItemIcon>
-                          <ListItemText className={themeColours.success}>Publish</ListItemText>
-                        </MenuItem>
-                        <MenuItem disabled={isDisabled || !current?.can.unpublish} onClick={handleUnpublishClicked}>
-                          <ListItemIcon className={themeColours.error}><Icons.Unpublish /></ListItemIcon>
-                          <ListItemText className={themeColours.error}>Unpublish</ListItemText>
-                        </MenuItem>
-                        <MenuItem disabled={isDisabled || !current?.can.softDelete} onClick={handleSoftDeleteClicked}>
-                          <ListItemIcon className={themeColours.error}><Icons.SoftDelete /></ListItemIcon>
-                          <ListItemText className={themeColours.error}>Delete</ListItemText>
-                        </MenuItem>
-                        <MenuItem disabled={isDisabled || !current?.can.restore} onClick={handleRestoreClicked}>
-                          <ListItemIcon className={themeColours.info}><Icons.Restore /></ListItemIcon>
-                          <ListItemText className={themeColours.info}>Restore</ListItemText>
-                        </MenuItem>
-                        <MenuItem disabled={isDisabled || !current?.can.hardDelete} onClick={handleHardDeleteClicked}>
-                          <ListItemIcon className={themeColours.error}><Icons.HardDelete /></ListItemIcon>
-                          <ListItemText className={themeColours.error}>Delete Forever</ListItemText>
-                        </MenuItem>
-                      </>
-                    </Menu>
-                    <Box mx={1}>
-                      <ExceptionButton exception={error} />
-                    </Box>
-                  </Box>
+
+                {/* title */}
+                <Grid item xs={12}>
+                  <TextField
+                    label="title"
+                    margin="dense"
+                    fullWidth
+                    variant="standard"
+                    error={!!error?.data?.title}
+                    helperText={error?.data?.title?.join('\n')}
+                    disabled={saveIsDisabled}
+                    className={classes.fullWidth}
+                    onChange={handleTitleChange}
+                    value={formState.title}
+                  />
                 </Grid>
-                <Grid item xs={12} sm={12}>
-                  <Typography className="capitalise" component="h4" variant="h4">
+
+                {/* status */}
+                <Grid item xs={12} className="centered">
+                  <Typography style={{ display: 'inline' }} className="capitalise" component="h4" variant="h4">
+                    {'Status: '}
                     {current?.statusData?.colour && (
                       <span style={{ color: current.statusData.colour }}>
                         {current.statusData.name}
@@ -898,36 +328,30 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
                     {!current?.statusData?.colour && '?'}
                   </Typography>
                 </Grid>
-                {/* <Grid className={hidex(!isLoading)} item xs={12} sm={12}>
-                  <LinearProgress />
-                </Grid> */}
 
-                {/* title */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="title"
-                      margin="dense"
-                      fullWidth
-                      variant="standard"
-                      error={!!error?.data?.title}
-                      helperText={error?.data?.title?.join('\n')}
-                      disabled={saveIsDisabled}
-                      className={classes.fullWidth}
-                      onChange={handleTitleChange}
-                      value={formState.title}
-                    />
-                </Grid>
-
-                {/* title */}
-                <Grid item xs={12} sm={6}>
-                  <Typography gutterBottom={true} variant="h1" component="h1">
-                    {formState.title}
+                {/* author */}
+                <Grid item xs={12} className="centered">
+                  <Typography style={{ display: 'inline' }} className="capitalise" component="h4" variant="h4">
+                    {'Author: '}
+                    {current?.author?.name && current?.author?.name}
+                    {!current?.author?.name && '?'}
                   </Typography>
                 </Grid>
 
+                <Grid item xs={12} sm={12} className="centered">
+                  <ImagePicker
+                    onChange={(image) => {
+                      if (!image) setFormState((prev) => ({ ...prev, image: undefined }));
+                      else setFormState((prev) => ({ ...prev, image, }))
+                    }}
+                    image={formState.image}
+                    fallback={formerImage.data}
+                    isLoading={formerImage.isLoading}
+                  />
+                </Grid>
 
                 {/* teaser */}
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                   <TextField
                     label="teaser"
                     margin="dense"
@@ -943,18 +367,8 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
                     value={formState.teaser}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box className={classes.markdownContainer}>
-                    <Markdown>
-                      {formState.teaser}
-                    </Markdown>
-                  </Box>
-                </Grid>
-              </Grid>
 
-              {/* body */}
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                   <TextField
                     label="body"
                     margin="dense"
@@ -970,11 +384,56 @@ export const BlogPostMutateForm = WithApi<IBlogPostMutateFormProps>((props) => {
                     value={formState.body}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box className={classes.markdownContainer}>
-                    <Markdown>
-                      {formState.body}
-                    </Markdown>
+                <Grid item xs={12}>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent={is_xs ? 'center' : 'space-between'}
+                    flexDirection={is_xs ? 'column' : 'row'}
+                  >
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent={is_xs ? 'center' : 'space-between'}
+                      flexDirection={is_xs ? 'column' : 'row'}>
+                      <Box px={1} className="centered">
+                        <Typography className="centered" component="span" variant="body2">
+                          autosave
+                        </Typography>
+                        <Switch
+                          color="primary"
+                          checked={autoSave}
+                          onChange={() => setAutoSave(!autoSave)}
+                          name="Auto save"
+                          inputProps={{ 'aria-label': 'auto save' }}
+                        />
+                      </Box>
+                      {(!is_xs || debugMode.isOn) && (
+                        <Box
+                          px={1}
+                          className={hidex(!debugMode.isOn)}>
+                          <IconButton onClick={debugDialog.doToggle} color="primary">
+                            <Icons.Debug />
+                          </IconButton>
+                        </Box>
+                      )}
+                    </Box>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent={is_xs ? 'space-between' : 'center'}
+                      flexDirection={is_xs ? 'column' : 'row'}>
+                      {dropdownList && (
+                        <Box px={1}>
+                          <ActionDropdown actions={dropdownList} />
+                        </Box>
+                      )}
+                      <Box px={1}>
+                        <Button disabled={saveIsDisabled} type="submit" color="primary" endIcon={<Icons.Save />}>
+                          Save
+                        </Button>
+                      </Box>
+                    </Box>
                   </Box>
                 </Grid>
               </Grid>

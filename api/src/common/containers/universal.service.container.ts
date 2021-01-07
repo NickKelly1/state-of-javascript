@@ -6,7 +6,7 @@ import { NpmsApi } from "../../app/npms-package/api/npms-api";
 import { SystemPermissionsService } from "../classes/system-permissions.service";
 import { EnvService } from "../environment/env";
 import { IUniversalServices } from "../interfaces/universal.services.interface";
-import { QueueService } from '../../app/queue/queue.service';
+import { JobService } from '../../app/job/job.service';
 import { RedisService } from '../../app/db/redis.service';
 import { NpmsApiConnector } from '../../app/npms-package/api/npms-api-connector';
 import { InitialisationException } from '../exceptions/types/initialisation-exception';
@@ -24,7 +24,7 @@ export class UniversalSerivceContainer implements IUniversalServices {
   /**
    * Queue Service
    */
-  public readonly queueService: QueueService;
+  public readonly jobService: JobService;
 
 
   /**
@@ -82,7 +82,7 @@ export class UniversalSerivceContainer implements IUniversalServices {
     this.db = new DbService(this),
     this.encryptionService = new EncryptionService(this);
     this.redisService = new RedisService(this);
-    this.queueService = new QueueService(this);
+    this.jobService = new JobService(this);
     this.npmsApi = new NpmsApi(this, new NpmsApiConnector(env)),
     this.systemPermissionsService = new SystemPermissionsService(this);
     this.socketService = new SocketService(this);
@@ -99,7 +99,7 @@ export class UniversalSerivceContainer implements IUniversalServices {
     await this.db.init();
     await this.encryptionService.init();
     await this.redisService.init();
-    await this.queueService.init();
+    await this.jobService.init();
     await this.npmsApi.init();
     await this.systemPermissionsService.init();
     await this.socketService.init();

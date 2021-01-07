@@ -19,11 +19,16 @@ import { BlogPostStatusModel } from '../../circle';
 import { BlogPostStatusField } from '../blog-post-status/blog-post-status.attributes';
 import { BaseContext } from '../../common/context/base.context';
 import { BlogPostCommentModel } from '../blog-post-comment/blog-post-comment.model';
+import { ImageId } from '../image/image.id.type';
+import { OrNull } from '../../common/types/or-null.type';
+import { ImageModel } from '../image/image.model';
+import { ImageField } from '../image/image.attributes';
 
 
 export class BlogPostModel extends Model<IBlogPostAttributes, IBlogPostCreationAttributes> implements IBlogPostAttributes {
   // fields
   [BlogPostField.id]!: BlogPostId;
+  [BlogPostField.image_id]!: OrNull<ImageId>;
   [BlogPostField.author_id]!: UserId;
   [BlogPostField.status_id]!: BlogPostStatusId;
   [BlogPostField.title]!: string;
@@ -41,6 +46,7 @@ export class BlogPostModel extends Model<IBlogPostAttributes, IBlogPostCreationA
   // eager loaded associations
   [BlogPostAssociation.author]?: UserModel;
   [BlogPostAssociation.status]?: BlogPostStatusModel;
+  [BlogPostAssociation.image]?: OrNull<ImageModel>;
   [BlogPostAssociation.comments]?: BlogPostCommentModel[];
 
   // associations
@@ -55,19 +61,41 @@ export class BlogPostModel extends Model<IBlogPostAttributes, IBlogPostCreationA
   isUnpublished(): boolean { return this[BlogPostField.status_id] === BlogPostStatus.Unpublished; }
 
   /** Is the BlogPost Submittable? */
-  isSubmittable(): boolean { return this.isDraft() || this.isRejected() || this.isUnpublished(); }
+  isSubmittable(): boolean {
+    return this.isDraft()
+      || this.isRejected()
+      || this.isUnpublished();
+  }
 
   /** Is the BlogPost Rejectable? */
-  isRejectable(): boolean { return this.isSubmitted() || this.isPublished() || this.isUnpublished(); }
+  isRejectable(): boolean {
+    return this.isSubmitted()
+      || this.isApproved()
+      || this.isPublished()
+      || this.isUnpublished();
+  }
 
   /** Is the BlogPost Approvable? */
-  isApprovable(): boolean { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
+  isApprovable(): boolean {
+    return this.isDraft()
+      || this.isRejected()
+      || this.isSubmitted()
+      || this.isUnpublished();
+  }
 
   /** Is the BlogPost Publishable? */
-  isPublishable(): boolean { return this.isDraft() || this.isRejected() || this.isSubmitted() || this.isUnpublished(); }
+  isPublishable(): boolean {
+    return this.isDraft()
+      || this.isRejected()
+      || this.isSubmitted()
+      || this.isApproved()
+      || this.isUnpublished();
+  }
 
   /** Is the BlogPost Unpublishable? */
-  isUnpublishable(): boolean { return this.isPublished(); }
+  isUnpublishable(): boolean {
+    return this.isPublished();
+  }
 
   authIsAuthor(auth: RequestAuth): boolean { return auth.isMeById(this.author_id); }
   ctxIsAuthor(ctx: BaseContext): boolean { return this.authIsAuthor(ctx.auth); }
@@ -78,6 +106,11 @@ export const initBlogPostModel: ModelInitFn = (arg) => {
   const { sequelize, env } = arg;
   BlogPostModel.init({
     id: AutoIncrementingId,
+    image_id: {
+      type: DataTypes.INTEGER,
+      references: { model: ImageModel as typeof Model, key: ImageField.id },
+      allowNull: true,
+    },
     author_id: {
       type: DataTypes.INTEGER,
       references: { model: UserModel as typeof Model, key: UserField.id },

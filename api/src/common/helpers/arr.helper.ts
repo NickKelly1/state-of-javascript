@@ -1,6 +1,11 @@
 import { OrUndefined } from "../types/or-undefined.type";
 
 export const Arr = {
+  wrap: <T>(mbArr: T | T[]): T[] => {
+    if (Array.isArray(mbArr)) return mbArr; 
+    return [mbArr];
+  },
+
   max: <K extends string>(key: K) => <T extends Record<K, any>>(arr: T[]): OrUndefined<T[K]> => {
     if (arr.length === 0) return undefined;
     const first = arr[0];

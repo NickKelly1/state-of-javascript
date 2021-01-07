@@ -37,6 +37,7 @@ import { NpmsDashboardStatusPolicy } from "../../app/npms-dashboard-status/npms-
 import { NpmsDashboardStatusRepository } from "../../app/npms-dashboard-status/npms-dashboard-status.repository";
 import { NpmsDashboardStatusService } from "../../app/npms-dashboard-status/npms-dashboard-status.service";
 import { EmailService } from "../../app/email/email.service";
+import { EmailPolicy } from "../../app/email/email.policy";
 import { IntegrationService } from "../../app/integration/integration.service";
 import { IntegrationRepository } from "../../app/integration/integration.repository";
 import { IntegrationPolicy } from "../../app/integration/integration.policy";
@@ -67,6 +68,12 @@ import { BlogPostStatusPolicy } from '../../app/blog-post-status/blog-post-statu
 import { AuthPolicy } from '../../app/user/auth.policy';
 import { UserEmailPolicy } from '../../app/user/user-email.policy';
 import { UserEmailService } from '../../app/user/user-email.service';
+import { FileRepository } from "../../app/file/file.repository";
+import { FileService } from "../../app/file/file.service";
+import { ImageService } from "../../app/image/image.service";
+import { ImageRepository } from "../../app/image/image.repository";
+import { ImagePolicy } from "../../app/image/image.policy";
+import { FilePolicy } from "../../app/file/file.policy";
 
 export interface IRequestServices {
   universal: IUniversalServices;
@@ -145,6 +152,14 @@ export interface IRequestServices {
   userTokenRepository: UserTokenRepository;
   userTokenPolicy: UserTokenPolicy;
 
+  fileService: FileService;
+  fileRepository: FileRepository;
+  filePolicy: FilePolicy;
+
+  imageService: ImageService;
+  imageRepository: ImageRepository;
+  imagePolicy: ImagePolicy;
+
   userTokenTypeService: UserTokenTypeService;
   userTokenTypeRepository: UserTokenTypeRepository;
   userTokenTypePolicy: UserLinkTypePolicy;
@@ -159,4 +174,5 @@ export interface IRequestServices {
   jwtService: JwtService;
   authService: AuthSerivce;
   emailService: EmailService;
+  emailPolicy: EmailPolicy;
 }

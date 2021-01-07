@@ -239,8 +239,8 @@ export default class implements IMigration {
     await queryInterface.bulkInsert('user_roles', userRoles, { transaction });
 
     // admin password
-    const adminPswSalt = await bcryptjs.hash(Math.random.toString(), env.PSW_SALT_ROUNDS);
-    const adminPsw = await bcryptjs.hash(`${adminPswSalt}${env.ADMIN_INITIAL_PSW}`, env.PSW_SALT_ROUNDS);
+    const adminPswSalt = await bcryptjs.hash(Math.random.toString(), env.PASSWORD_SALT_ROUNDS);
+    const adminPsw = await bcryptjs.hash(`${adminPswSalt}${env.ADMIN_INITIAL_PSW}`, env.PASSWORD_SALT_ROUNDS);
     await queryInterface.bulkInsert('user_passwords', [{
       user_id: 1,
       hash: adminPsw,

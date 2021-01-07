@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { TopBar } from "./top-bar";
 import { AppProps } from 'next/app';
 import { Footer } from "./footer";
 import { AppBar, Container, makeStyles, Paper, Toolbar } from "@material-ui/core";
+import { WithApi } from "../../components-hoc/with-api/with-api.hoc";
+import { gql } from "graphql-request";
+import { UploadTestMutation, UploadTestMutationVariables } from '../../generated/graphql';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -34,10 +37,12 @@ export interface ILayoutProps {
   appProps: AppProps;
 }
 
-export function Layout(props: ILayoutProps) {
-  const { appProps } = props
+
+export const Layout = WithApi<ILayoutProps>((props) => {
+  const { appProps, api, me, } = props
   const { Component, pageProps } = appProps;
   const classes = useStyles();
+
   return (
     <div className={classes.container}>
       {/* header */}
@@ -66,4 +71,4 @@ export function Layout(props: ILayoutProps) {
       </Paper>
     </div>
   )
-}
+});

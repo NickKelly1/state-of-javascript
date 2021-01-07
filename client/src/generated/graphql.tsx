@@ -11,6 +11,8 @@ export type Scalars = {
   DateTime: any;
   /** Json object with unknown keys & values */
   JsonObject: any;
+  /** The `Upload` scalar type represents a file upload. */
+  Upload: any;
 };
 
 export type RootQueryType = {
@@ -32,7 +34,10 @@ export type RootQueryType = {
   integrations: IntegrationCollectionNode;
   google: GoogleNode;
   googleOAuth2GetUrl: Scalars['String'];
-  gmailJobs: Array<JobNode>;
+  emailJobs: Array<JobNode>;
+  processOriginalImageJobs: Array<JobNode>;
+  processThumbnailImageJobs: Array<JobNode>;
+  processDisplayImageJobs: Array<JobNode>;
   can: ActionsNode;
   permissionCategoryies: PermissionCategoryCollectionNode;
 };
@@ -108,7 +113,22 @@ export type RootQueryTypeIntegrationsArgs = {
 };
 
 
-export type RootQueryTypeGmailJobsArgs = {
+export type RootQueryTypeEmailJobsArgs = {
+  query?: Maybe<JobOptions>;
+};
+
+
+export type RootQueryTypeProcessOriginalImageJobsArgs = {
+  query?: Maybe<JobOptions>;
+};
+
+
+export type RootQueryTypeProcessThumbnailImageJobsArgs = {
+  query?: Maybe<JobOptions>;
+};
+
+
+export type RootQueryTypeProcessDisplayImageJobsArgs = {
   query?: Maybe<JobOptions>;
 };
 
@@ -121,7 +141,7 @@ export type BlogPostCollectionNode = {
   __typename?: 'BlogPostCollectionNode';
   nodes: Array<Maybe<BlogPostNode>>;
   can: BlogPostCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type BlogPostNode = {
@@ -166,6 +186,7 @@ export type BlogPostRelations = {
   author?: Maybe<UserNode>;
   status?: Maybe<BlogPostStatusNode>;
   comments: BlogPostCommentCollectionNode;
+  image?: Maybe<ImageNode>;
 };
 
 
@@ -261,7 +282,7 @@ export type UserRoleCollectionNode = {
   __typename?: 'UserRoleCollectionNode';
   nodes: Array<Maybe<UserRoleNode>>;
   can: UserRoleCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type UserRoleNode = {
@@ -427,7 +448,7 @@ export type RolePermissionCollectionNode = {
   __typename?: 'RolePermissionCollectionNode';
   nodes: Array<Maybe<RolePermissionNode>>;
   actions: RolePermissionCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type RolePermissionNode = {
@@ -544,7 +565,7 @@ export type PermissionCollectionNode = {
   __typename?: 'PermissionCollectionNode';
   nodes: Array<Maybe<PermissionNode>>;
   actions: PermissionCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type PermissionCollectionActions = {
@@ -552,8 +573,8 @@ export type PermissionCollectionActions = {
   show: Scalars['Boolean'];
 };
 
-export type Meta = {
-  __typename?: 'meta';
+export type Pagination = {
+  __typename?: 'Pagination';
   limit: Scalars['Int'];
   offset: Scalars['Int'];
   total: Scalars['Int'];
@@ -616,7 +637,7 @@ export type RoleCollectionNode = {
   __typename?: 'RoleCollectionNode';
   nodes: Array<Maybe<RoleNode>>;
   can: RoleCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type RoleCollectionActions = {
@@ -650,7 +671,7 @@ export type UserCollectionNode = {
   __typename?: 'UserCollectionNode';
   nodes: Array<Maybe<UserNode>>;
   can: UserCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type UserCollectionActions = {
@@ -719,7 +740,7 @@ export type NewsArticleCollectionNode = {
   __typename?: 'NewsArticleCollectionNode';
   nodes: Array<Maybe<NewsArticleNode>>;
   can: NewsArticleCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type NewsArticleNode = {
@@ -822,7 +843,7 @@ export type BlogPostCommentCollectionNode = {
   __typename?: 'BlogPostCommentCollectionNode';
   nodes: Array<Maybe<BlogPostCommentNode>>;
   can: BlogPostCommentCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type BlogPostCommentNode = {
@@ -931,6 +952,86 @@ export type BlogPostStatusRelationsPostsArgs = {
   query?: Maybe<BlogPostQuery>;
 };
 
+export type ImageNode = {
+  __typename?: 'ImageNode';
+  cursor: Scalars['String'];
+  data: ImageData;
+  can: ImageActions;
+  relations: ImageRelations;
+};
+
+export type ImageData = {
+  __typename?: 'ImageData';
+  id: Scalars['Float'];
+  fsid: Scalars['String'];
+  title: Scalars['String'];
+  thumbnail_id?: Maybe<Scalars['Float']>;
+  original_id?: Maybe<Scalars['Float']>;
+  display_id?: Maybe<Scalars['Float']>;
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+  deleted_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type ImageActions = {
+  __typename?: 'ImageActions';
+  show: Scalars['Boolean'];
+  update: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  restore: Scalars['Boolean'];
+};
+
+export type ImageRelations = {
+  __typename?: 'ImageRelations';
+  original?: Maybe<FileNode>;
+  display?: Maybe<FileNode>;
+  thumbnail?: Maybe<FileNode>;
+  blogPosts: BlogPostCollectionNode;
+};
+
+
+export type ImageRelationsBlogPostsArgs = {
+  query?: Maybe<BlogPostQuery>;
+};
+
+export type FileNode = {
+  __typename?: 'FileNode';
+  cursor: Scalars['String'];
+  data: FileData;
+  can: FileActions;
+  relations: FileRelations;
+};
+
+export type FileData = {
+  __typename?: 'FileData';
+  id: Scalars['Float'];
+  uploader_aid: Scalars['String'];
+  uploader_id: Scalars['Float'];
+  title: Scalars['String'];
+  encoding: Scalars['String'];
+  mimetype: Scalars['String'];
+  filename: Scalars['String'];
+  is_public: Scalars['Boolean'];
+  created_at: Scalars['DateTime'];
+  updated_at: Scalars['DateTime'];
+  deleted_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type FileActions = {
+  __typename?: 'FileActions';
+  show: Scalars['Boolean'];
+  update: Scalars['Boolean'];
+  softDelete: Scalars['Boolean'];
+  hardDelete: Scalars['Boolean'];
+  restore: Scalars['Boolean'];
+};
+
+export type FileRelations = {
+  __typename?: 'FileRelations';
+  uploader?: Maybe<UserNode>;
+};
+
 export type BlogPostCollectionActions = {
   __typename?: 'BlogPostCollectionActions';
   show: Scalars['Boolean'];
@@ -941,7 +1042,7 @@ export type BlogPostStatusCollectionNode = {
   __typename?: 'BlogPostStatusCollectionNode';
   nodes: Array<Maybe<BlogPostStatusNode>>;
   can: BlogPostStatusCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type BlogPostStatusCollectionActions = {
@@ -975,7 +1076,7 @@ export type NewsArticleStatusCollectionNode = {
   __typename?: 'NewsArticleStatusCollectionNode';
   nodes: Array<Maybe<NewsArticleStatusNode>>;
   can: NewsArticleStatusCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type NewsArticleStatusNode = {
@@ -1051,7 +1152,7 @@ export type NpmsPackageCollectionNode = {
   __typename?: 'NpmsPackageCollectionNode';
   nodes: Array<Maybe<NpmsPackageNode>>;
   can: NpmsPackageCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type NpmsPackageNode = {
@@ -1284,7 +1385,7 @@ export type NpmsDashboardItemCollectionNode = {
   __typename?: 'NpmsDashboardItemCollectionNode';
   nodes: Array<Maybe<NpmsDashboardItemNode>>;
   can: NpmsDashboardItemCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type NpmsDashboardItemNode = {
@@ -1405,7 +1506,7 @@ export type NpmsDashboardCollectionNode = {
   __typename?: 'NpmsDashboardCollectionNode';
   nodes: Array<Maybe<NpmsDashboardNode>>;
   can: NpmsDashboardCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type NpmsDashboardCollectionActions = {
@@ -1495,7 +1596,7 @@ export type IntegrationCollectionNode = {
   __typename?: 'IntegrationCollectionNode';
   nodes: Array<Maybe<IntegrationNode>>;
   actions: IntegrationCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type IntegrationNode = {
@@ -1644,7 +1745,7 @@ export type PermissionCategoryCollectionNode = {
   __typename?: 'PermissionCategoryCollectionNode';
   nodes: Array<Maybe<PermissionCategoryNode>>;
   actions: PermissionCategoryCollectionActions;
-  pagination: Meta;
+  pagination: Pagination;
 };
 
 export type PermissionCategoryCollectionActions = {
@@ -1734,6 +1835,7 @@ export type RootMutationType = {
   register: AuthenticationNode;
   login: AuthenticationNode;
   logout: LogoutNode;
+  sendEmail: Scalars['Boolean'];
 };
 
 
@@ -1748,42 +1850,42 @@ export type RootMutationTypeUpdateBlogPostArgs = {
 
 
 export type RootMutationTypeSoftDeleteBlogPostArgs = {
-  dto: DeleteBlogPost;
+  dto: TargetBlogPost;
 };
 
 
 export type RootMutationTypeHardDeleteBlogPostArgs = {
-  dto: DeleteBlogPost;
+  dto: TargetBlogPost;
 };
 
 
 export type RootMutationTypeRestoreBlogPostArgs = {
-  dto: DeleteBlogPost;
+  dto: TargetBlogPost;
 };
 
 
 export type RootMutationTypeSubmitBlogPostArgs = {
-  dto: DeleteBlogPost;
+  dto: TargetBlogPost;
 };
 
 
 export type RootMutationTypeRejectBlogPostArgs = {
-  dto: DeleteBlogPost;
+  dto: TargetBlogPost;
 };
 
 
 export type RootMutationTypeApproveBlogPostArgs = {
-  dto: DeleteBlogPost;
+  dto: TargetBlogPost;
 };
 
 
 export type RootMutationTypePublishBlogPostArgs = {
-  dto: DeleteBlogPost;
+  dto: TargetBlogPost;
 };
 
 
 export type RootMutationTypeUnpublishBlogPostArgs = {
-  dto: DeleteBlogPost;
+  dto: TargetBlogPost;
 };
 
 
@@ -2021,20 +2123,28 @@ export type RootMutationTypeLoginArgs = {
   dto?: Maybe<Login>;
 };
 
+
+export type RootMutationTypeSendEmailArgs = {
+  dto: SendEmailInput;
+};
+
 export type CreateBlogPost = {
   title: Scalars['String'];
   teaser: Scalars['String'];
   body: Scalars['String'];
+  image: Scalars['Upload'];
 };
+
 
 export type UpdateBlogPost = {
   id: Scalars['Int'];
   title?: Maybe<Scalars['String']>;
   teaser?: Maybe<Scalars['String']>;
   body?: Maybe<Scalars['String']>;
+  image?: Maybe<Scalars['Upload']>;
 };
 
-export type DeleteBlogPost = {
+export type TargetBlogPost = {
   id: Scalars['Int'];
 };
 
@@ -2290,6 +2400,13 @@ export type LogoutNode = {
   can: ActionsNode;
 };
 
+export type SendEmailInput = {
+  to?: Maybe<Array<Scalars['String']>>;
+  cc?: Maybe<Array<Scalars['String']>>;
+  subject: Scalars['String'];
+  text: Scalars['String'];
+};
+
 export type AuthorisedActionsFieldsFragment = (
   { __typename?: 'ActionsNode' }
   & { users: (
@@ -2521,18 +2638,92 @@ export type RequestEmailChangeEmailMutation = (
   & Pick<RootMutationType, 'requestEmailChangeEmail'>
 );
 
-export type AllBlogPostStatusActionsFragment = (
+export type PaginationFragment = (
+  { __typename?: 'Pagination' }
+  & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+);
+
+export type BlogPostStatusActionsFragment = (
   { __typename?: 'BlogPostStatusActions' }
   & Pick<BlogPostStatusActions, 'show'>
 );
 
-export type AllBlogPostStatusDataFragment = (
+export type BlogPostStatusDataFragment = (
   { __typename?: 'BlogPostStatusData' }
   & Pick<BlogPostStatusData, 'id' | 'name' | 'colour' | 'created_at' | 'updated_at'>
 );
 
+export type BlogPostMutateDataFragment = (
+  { __typename?: 'BlogPostNode' }
+  & Pick<BlogPostNode, 'cursor'>
+  & { data: (
+    { __typename?: 'BlogPostData' }
+    & BlogPostDataFragment
+  ), can: (
+    { __typename?: 'BlogPostActions' }
+    & BlogPostActionsFragment
+  ), relations: (
+    { __typename?: 'BlogPostRelations' }
+    & { author?: Maybe<(
+      { __typename?: 'UserNode' }
+      & { data: (
+        { __typename?: 'UserData' }
+        & UserDataFragment
+      ) }
+    )>, status?: Maybe<(
+      { __typename?: 'BlogPostStatusNode' }
+      & { data: (
+        { __typename?: 'BlogPostStatusData' }
+        & BlogPostStatusDataFragment
+      ), can: (
+        { __typename?: 'BlogPostStatusActions' }
+        & BlogPostStatusActionsFragment
+      ) }
+    )>, image?: Maybe<(
+      { __typename?: 'ImageNode' }
+      & { data: (
+        { __typename?: 'ImageData' }
+        & ImageDataFragment
+      ), can: (
+        { __typename?: 'ImageActions' }
+        & ImageActionsFragment
+      ), relations: (
+        { __typename?: 'ImageRelations' }
+        & { original?: Maybe<(
+          { __typename?: 'FileNode' }
+          & { data: (
+            { __typename?: 'FileData' }
+            & FileDataFragment
+          ), can: (
+            { __typename?: 'FileActions' }
+            & FileActionsFragment
+          ) }
+        )>, thumbnail?: Maybe<(
+          { __typename?: 'FileNode' }
+          & { data: (
+            { __typename?: 'FileData' }
+            & FileDataFragment
+          ), can: (
+            { __typename?: 'FileActions' }
+            & FileActionsFragment
+          ) }
+        )>, display?: Maybe<(
+          { __typename?: 'FileNode' }
+          & { data: (
+            { __typename?: 'FileData' }
+            & FileDataFragment
+          ), can: (
+            { __typename?: 'FileActions' }
+            & FileActionsFragment
+          ) }
+        )> }
+      ) }
+    )> }
+  ) }
+);
+
 export type BlogPostMutateFormQueryVariables = Exact<{
-  blog_post_id: Scalars['Float'];
+  query?: Maybe<BlogPostQuery>;
 }>;
 
 
@@ -2542,32 +2733,7 @@ export type BlogPostMutateFormQuery = (
     { __typename?: 'BlogPostCollectionNode' }
     & { nodes: Array<Maybe<(
       { __typename?: 'BlogPostNode' }
-      & Pick<BlogPostNode, 'cursor'>
-      & { data: (
-        { __typename?: 'BlogPostData' }
-        & AllBlogPostDataFragment
-      ), can: (
-        { __typename?: 'BlogPostActions' }
-        & AllBlogPostActionsFragment
-      ), relations: (
-        { __typename?: 'BlogPostRelations' }
-        & { author?: Maybe<(
-          { __typename?: 'UserNode' }
-          & { data: (
-            { __typename?: 'UserData' }
-            & AllUserDataFragment
-          ) }
-        )>, status?: Maybe<(
-          { __typename?: 'BlogPostStatusNode' }
-          & { data: (
-            { __typename?: 'BlogPostStatusData' }
-            & AllBlogPostStatusDataFragment
-          ), can: (
-            { __typename?: 'BlogPostStatusActions' }
-            & AllBlogPostStatusActionsFragment
-          ) }
-        )> }
-      ) }
+      & BlogPostMutateDataFragment
     )>> }
   ) }
 );
@@ -2584,25 +2750,7 @@ export type BlogPostUpdateMutation = (
   { __typename?: 'RootMutationType' }
   & { updateBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
@@ -2610,6 +2758,7 @@ export type BlogPostCreateMutationVariables = Exact<{
   title: Scalars['String'];
   teaser: Scalars['String'];
   body: Scalars['String'];
+  image: Scalars['Upload'];
 }>;
 
 
@@ -2617,25 +2766,7 @@ export type BlogPostCreateMutation = (
   { __typename?: 'RootMutationType' }
   & { createBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
@@ -2648,25 +2779,7 @@ export type BlogPostSoftDeleteMutation = (
   { __typename?: 'RootMutationType' }
   & { softDeleteBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
@@ -2689,25 +2802,7 @@ export type BlogPostRestoreMutation = (
   { __typename?: 'RootMutationType' }
   & { restoreBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
@@ -2720,25 +2815,7 @@ export type BlogPostSubmitMutation = (
   { __typename?: 'RootMutationType' }
   & { submitBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
@@ -2751,25 +2828,7 @@ export type BlogPostRejectMutation = (
   { __typename?: 'RootMutationType' }
   & { rejectBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
@@ -2782,25 +2841,7 @@ export type BlogPostApproveMutation = (
   { __typename?: 'RootMutationType' }
   & { approveBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
@@ -2813,25 +2854,7 @@ export type BlogPostPublishMutation = (
   { __typename?: 'RootMutationType' }
   & { publishBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
@@ -2844,36 +2867,33 @@ export type BlogPostUnpublishMutation = (
   { __typename?: 'RootMutationType' }
   & { unpublishBlogPost: (
     { __typename?: 'BlogPostNode' }
-    & { data: (
-      { __typename?: 'BlogPostData' }
-      & AllBlogPostDataFragment
-    ), can: (
-      { __typename?: 'BlogPostActions' }
-      & AllBlogPostActionsFragment
-    ), relations: (
-      { __typename?: 'BlogPostRelations' }
-      & { status?: Maybe<(
-        { __typename?: 'BlogPostStatusNode' }
-        & { data: (
-          { __typename?: 'BlogPostStatusData' }
-          & AllBlogPostStatusDataFragment
-        ), can: (
-          { __typename?: 'BlogPostStatusActions' }
-          & AllBlogPostStatusActionsFragment
-        ) }
-      )> }
-    ) }
+    & BlogPostMutateDataFragment
   ) }
 );
 
-export type AllBlogPostActionsFragment = (
+export type BlogPostActionsFragment = (
   { __typename?: 'BlogPostActions' }
   & Pick<BlogPostActions, 'show' | 'showComments' | 'createComments' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'submit' | 'reject' | 'approve' | 'publish' | 'unpublish'>
 );
 
-export type AllBlogPostDataFragment = (
+export type BlogPostCollectionActionsFragment = (
+  { __typename?: 'BlogPostCollectionActions' }
+  & Pick<BlogPostCollectionActions, 'show' | 'create'>
+);
+
+export type BlogPostDataFragment = (
   { __typename?: 'BlogPostData' }
   & Pick<BlogPostData, 'id' | 'title' | 'teaser' | 'body' | 'author_id' | 'created_at' | 'updated_at' | 'deleted_at'>
+);
+
+export type FileActionsFragment = (
+  { __typename?: 'FileActions' }
+  & Pick<FileActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore'>
+);
+
+export type FileDataFragment = (
+  { __typename?: 'FileData' }
+  & Pick<FileData, 'id' | 'uploader_aid' | 'uploader_id' | 'title' | 'encoding' | 'mimetype' | 'filename' | 'is_public' | 'created_at' | 'updated_at' | 'deleted_at'>
 );
 
 export type GoogleOAuth2ConnectorDataQueryVariables = Exact<{ [key: string]: never; }>;
@@ -2949,6 +2969,16 @@ export type InitialiseIntegrationFormMutation = (
   ) }
 );
 
+export type ImageActionsFragment = (
+  { __typename?: 'ImageActions' }
+  & Pick<ImageActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore'>
+);
+
+export type ImageDataFragment = (
+  { __typename?: 'ImageData' }
+  & Pick<ImageData, 'id' | 'fsid' | 'title' | 'thumbnail_id' | 'original_id' | 'display_id' | 'created_at' | 'updated_at' | 'deleted_at'>
+);
+
 export type CreateNpmsDashboardFormMutationVariables = Exact<{
   name: Scalars['String'];
   npms_package_names?: Maybe<Array<Scalars['String']>>;
@@ -3006,8 +3036,8 @@ export type NpmsDashbortSortFormQuery = (
       { __typename?: 'NpmsDashboardCollectionActions' }
       & Pick<NpmsDashboardCollectionActions, 'show' | 'create'>
     ), pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+      { __typename?: 'Pagination' }
+      & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), nodes: Array<Maybe<(
       { __typename?: 'NpmsDashboardNode' }
       & Pick<NpmsDashboardNode, 'cursor'>
@@ -3191,8 +3221,8 @@ export type RoleRolePermissionsFormDataQuery = (
         & { permissions: (
           { __typename?: 'PermissionCollectionNode' }
           & { pagination: (
-            { __typename?: 'meta' }
-            & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+            { __typename?: 'Pagination' }
+            & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
           ), nodes: Array<Maybe<(
             { __typename?: 'PermissionNode' }
             & { can: (
@@ -3290,8 +3320,8 @@ export type RolesTableDataQuery = (
   & { roles: (
     { __typename?: 'RoleCollectionNode' }
     & { pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+      { __typename?: 'Pagination' }
+      & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), can: (
       { __typename?: 'RoleCollectionActions' }
       & Pick<RoleCollectionActions, 'show' | 'create'>
@@ -3395,8 +3425,8 @@ export type UserUserRolesFormDataQuery = (
         & { roles: (
           { __typename?: 'RoleCollectionNode' }
           & { pagination: (
-            { __typename?: 'meta' }
-            & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+            { __typename?: 'Pagination' }
+            & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
           ), nodes: Array<Maybe<(
             { __typename?: 'RoleNode' }
             & { can: (
@@ -3443,7 +3473,17 @@ export type UserUserRolesFormUpdateMutation = (
   ) }
 );
 
-export type AllUserDataFragment = (
+export type UserActionsFragment = (
+  { __typename?: 'UserActions' }
+  & Pick<UserActions, 'show' | 'update' | 'softDelete' | 'hardDelete' | 'restore' | 'deactivate' | 'forceUpdateEmail' | 'forceVerify' | 'login' | 'updatePassword' | 'createUserRoles' | 'hardDeleteUserRoles' | 'requestWelcomeEmail' | 'consumeWelcomeToken' | 'requestEmailChangeEmail' | 'consumeEmailChangeToken' | 'requestPasswordResetEmail' | 'consumePasswordResetToken'>
+);
+
+export type UserCollectionActionsFragment = (
+  { __typename?: 'UserCollectionActions' }
+  & Pick<UserCollectionActions, 'show' | 'login' | 'register' | 'logout' | 'create'>
+);
+
+export type UserDataFragment = (
   { __typename?: 'UserData' }
   & Pick<UserData, 'id' | 'name' | 'deactivated' | 'email' | 'verified' | 'created_at' | 'updated_at' | 'deleted_at'>
 );
@@ -3461,8 +3501,8 @@ export type UserDetailDataQuery = (
       { __typename?: 'UserCollectionActions' }
       & Pick<UserCollectionActions, 'show' | 'create'>
     ), pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+      { __typename?: 'Pagination' }
+      & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), nodes: Array<Maybe<(
       { __typename?: 'UserNode' }
       & { can: (
@@ -3487,8 +3527,8 @@ export type UsersTableDataQuery = (
   & { users: (
     { __typename?: 'UserCollectionNode' }
     & { pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+      { __typename?: 'Pagination' }
+      & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), can: (
       { __typename?: 'UserCollectionActions' }
       & Pick<UserCollectionActions, 'show' | 'create'>
@@ -3515,6 +3555,56 @@ export type UsersTableDeleteMutation = (
   & Pick<RootMutationType, 'softDeleteUser'>
 );
 
+export type PostsAdminPageQueryVariables = Exact<{
+  query?: Maybe<BlogPostQuery>;
+}>;
+
+
+export type PostsAdminPageQuery = (
+  { __typename?: 'RootQueryType' }
+  & { blogPosts: (
+    { __typename?: 'BlogPostCollectionNode' }
+    & { pagination: (
+      { __typename?: 'Pagination' }
+      & PaginationFragment
+    ), can: (
+      { __typename?: 'BlogPostCollectionActions' }
+      & BlogPostCollectionActionsFragment
+    ), nodes: Array<Maybe<(
+      { __typename?: 'BlogPostNode' }
+      & Pick<BlogPostNode, 'cursor'>
+      & { can: (
+        { __typename?: 'BlogPostActions' }
+        & BlogPostActionsFragment
+      ), data: (
+        { __typename?: 'BlogPostData' }
+        & BlogPostDataFragment
+      ), relations: (
+        { __typename?: 'BlogPostRelations' }
+        & { author?: Maybe<(
+          { __typename?: 'UserNode' }
+          & { can: (
+            { __typename?: 'UserActions' }
+            & UserActionsFragment
+          ), data: (
+            { __typename?: 'UserData' }
+            & UserDataFragment
+          ) }
+        )>, status?: Maybe<(
+          { __typename?: 'BlogPostStatusNode' }
+          & { can: (
+            { __typename?: 'BlogPostStatusActions' }
+            & BlogPostStatusActionsFragment
+          ), data: (
+            { __typename?: 'BlogPostStatusData' }
+            & BlogPostStatusDataFragment
+          ) }
+        )> }
+      ) }
+    )>> }
+  ) }
+);
+
 export type JsPageDashboardQueryVariables = Exact<{
   dashboardOffset?: Maybe<Scalars['Int']>;
   dashboardLimit?: Maybe<Scalars['Int']>;
@@ -3528,8 +3618,8 @@ export type JsPageDashboardQuery = (
   & { npmsDashboards: (
     { __typename?: 'NpmsDashboardCollectionNode' }
     & { pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+      { __typename?: 'Pagination' }
+      & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), nodes: Array<Maybe<(
       { __typename?: 'NpmsDashboardNode' }
       & Pick<NpmsDashboardNode, 'cursor'>
@@ -3550,8 +3640,8 @@ export type JsPageDashboardQuery = (
         )>, items: (
           { __typename?: 'NpmsDashboardItemCollectionNode' }
           & { pagination: (
-            { __typename?: 'meta' }
-            & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+            { __typename?: 'Pagination' }
+            & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
           ), nodes: Array<Maybe<(
             { __typename?: 'NpmsDashboardItemNode' }
             & { relations: (
@@ -3701,8 +3791,8 @@ export type IndexNewsPageQuery = (
   & { newsArticles: (
     { __typename?: 'NewsArticleCollectionNode' }
     & { pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+      { __typename?: 'Pagination' }
+      & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), can: (
       { __typename?: 'NewsArticleCollectionActions' }
       & Pick<NewsArticleCollectionActions, 'show' | 'create'>
@@ -3821,8 +3911,8 @@ export type IndexBlogPostsPageQueryQuery = (
   & { blogPosts: (
     { __typename?: 'BlogPostCollectionNode' }
     & { pagination: (
-      { __typename?: 'meta' }
-      & Pick<Meta, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
+      { __typename?: 'Pagination' }
+      & Pick<Pagination, 'limit' | 'offset' | 'total' | 'page_number' | 'pages' | 'more'>
     ), can: (
       { __typename?: 'BlogPostCollectionActions' }
       & Pick<BlogPostCollectionActions, 'show' | 'create'>

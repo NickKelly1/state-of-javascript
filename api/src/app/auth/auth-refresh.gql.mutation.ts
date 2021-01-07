@@ -58,7 +58,7 @@ export const AuthRefreshGqlMutation: Thunk<GraphQLFieldConfigMap<unknown, GqlCon
       // no token
       if (!maybeIncomingRefresh) {
         const message = ctx.lang(AuthLang.NoRefreshToken);
-        throw new BadRequestException(message);
+        throw new LoginExpiredException(message);
       }
 
       // decode

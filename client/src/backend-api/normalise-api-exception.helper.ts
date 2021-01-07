@@ -79,11 +79,25 @@ export function normaliseApiException(error: unknown): ApiException {
   }
 
   // check the graphql server-formatted error
-  const formattedError = response.errors?.[0];
+  const mbErrors = response.errors;
+  const formattedError = mbErrors?.[0];
   
   // check for an extension.exception
   const extendedError = formattedError?.extensions?.exception ?? formattedError;
   if (isu.apiPartialExceptionShape(extendedError)) return ApiException(extendedError);
+
+  // check for an "errors" array (happens when there are errors in the graphql)
+  if (Array.isArray(mbErrors) && mbErrors.every(ist.obj)) {
+    // concat messssages
+    const message = mbErrors
+      .map(mbErr => mbErr?.message)
+      .filter(ist.truthy)
+      .join('\n');
+    return ApiException({
+      code: -1,
+      message,
+    });
+  }
 
   // some kind of other error?
   if (error instanceof Error){ 

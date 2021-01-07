@@ -9,9 +9,12 @@ import { UserId } from "../user/user.id.type";
 import { deleted_at } from "../../common/schemas/constants/deleted_at.const";
 import { BlogPostStatusId } from "../blog-post-status/blog-post-status.id.type";
 import { BlogPostId } from "./blog-post.id.type";
+import { ImageId } from "../image/image.id.type";
+import { OrNull } from "../../common/types/or-null.type";
 
 export interface IBlogPostAttributes extends IAuditable, ISoftDeleteable {
   id: BlogPostId;
+  image_id: OrNull<ImageId>;
   status_id: BlogPostStatusId;
   author_id: UserId;
   title: string;
@@ -21,6 +24,7 @@ export interface IBlogPostAttributes extends IAuditable, ISoftDeleteable {
 
 export const BlogPostField: K2K<IBlogPostAttributes> = {
   id: 'id',
+  image_id: 'image_id',
   status_id: 'status_id',
   author_id: 'author_id',
   title: 'title',

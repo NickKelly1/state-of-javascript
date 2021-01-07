@@ -296,7 +296,7 @@ export class MigrationRunner {
           this._sortDbMigrationByNumber('desc', inBatch);
           for (let j = 0; j < inBatch.length; j += 1) {
             const dbm = inBatch[j];
-            logger.info(`migrating down [(${i.toString().padStart(2, ' ')}) / (${downCount.toString().padStart(2, ' ')})] - [(${(j + 1).toString().padStart(2, ' ')} / ${inBatch.length.toString().padStart(2, ' ')})]: ${dbm.number} - ${dbm.name}`);
+            logger.info(`migrating down [(${(i + 1).toString().padStart(2, ' ')}) / (${downCount.toString().padStart(2, ' ')})] - [(${(j + 1).toString().padStart(2, ' ')} / ${inBatch.length.toString().padStart(2, ' ')})]: ${dbm.number} - ${dbm.name}`);
             const fsm = assertDefined(fsMigrationsMap.get(dbm.number));
             await dbm.destroy({ transaction: this.transaction });
             await new fsm.Ctor().down({
@@ -313,7 +313,7 @@ export class MigrationRunner {
         const downCount = Math.max(0, Math.min(dbMigrations.length, step ?? dbMigrations.length));
         for (let i = 0; i < downCount; i += 1) {
           const dbm = dbMigrations[i];
-          logger.info(`migrating down (${i.toString().padStart(2, ' ')}) / (${downCount.toString().padStart(2, ' ')}): ${dbm.number} - ${dbm.name}`);
+          logger.info(`migrating down (${(i + 1).toString().padStart(2, ' ')}) / (${downCount.toString().padStart(2, ' ')}): ${dbm.number} - ${dbm.name}`);
           const fsm = assertDefined(fsMigrationsMap.get(dbm.number));
           await dbm.destroy({ transaction: this.transaction });
           await new fsm.Ctor().down({

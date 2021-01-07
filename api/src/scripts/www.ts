@@ -13,11 +13,15 @@ import { OrUndefined } from '../common/types/or-undefined.type';
 import { bootServices } from '../boot.services';
 import SocketIO from 'socket.io';
 import { bootWs } from '../boot.ws';
+import mkdirp from 'mkdirp';
 
 let _server: OrUndefined<http.Server>;
 
 async function bootServer(arg: { env: EnvService }) {
   const { env } = arg;
+  // ensure directories exist...
+  await mkdirp(env.LOG_DIR);
+  await mkdirp(env.UPLOADS_DIR);
   const universal = await bootServices({ env });
   const { app, io, } = universal;
   await bootHttp({ universal });
